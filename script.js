@@ -1,4 +1,3 @@
-const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
 
 async function submitData() {
   const name = document.getElementById("name").value;
@@ -6,15 +5,20 @@ async function submitData() {
   const message = document.getElementById("message").value;
 
   const data = { name, email, message };
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
 
   try {
     const response = await fetch(proxyURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
-      mode: 'no-cors'
     });
 
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    // Kiểm tra nếu dữ liệu trả về có phải JSON không
     const result = await response.json();
     alert(result.message);
   } catch (error) {
@@ -22,3 +26,4 @@ async function submitData() {
     alert("Không thể gửi dữ liệu. Vui lòng thử lại.");
   }
 }
+
