@@ -11,6 +11,7 @@ async function submitData() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
+            mode: "cors"
         });
         const result = await response.json();
         alert(result.message);
