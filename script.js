@@ -1,21 +1,23 @@
+const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
+
 async function submitData() {
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const message = document.getElementById("message").value;
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const message = document.getElementById("message").value;
 
-    const data = { name, email, message };
-    const apiURL = "https://script.google.com/macros/s/AKfycbwJUCBN2Z00QjjB64jelH95NkdFjQ5SS3gDRQKg9377SRY-lHND8rB6OLqo_dxSIKP1/exec"; // Thay bằng URL của Google Apps Script
+  const data = { name, email, message };
 
-    try {
-        const response = await fetch(apiURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-            mode: "cors",
-        });
-        const result = await response.json();
-        alert(result.message);
-    } catch (error) {
-        alert("Có lỗi xảy ra: " + error.message);
-    }
+  try {
+    const response = await fetch(proxyURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+    alert(result.message);
+  } catch (error) {
+    console.error("Có lỗi xảy ra:", error.message);
+    alert("Không thể gửi dữ liệu. Vui lòng thử lại.");
+  }
 }
