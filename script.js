@@ -23,7 +23,6 @@ async function submitData() {
     alert(result.message);
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
-    alert("Không thể gửi dữ liệu. Vui lòng thử lại.");
   }
 }
 
