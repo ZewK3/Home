@@ -100,16 +100,16 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
 });
 // Validate email format
-function isValidEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
+// function isValidEmail(email) {
+//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//   return emailRegex.test(email);
+// }
 
-// Validate phone number format (Vietnamese numbers as an example)
-function isValidPhone(phone) {
-  const phoneRegex = /^(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})$/;
-  return phoneRegex.test(phone);
-}
+// // Validate phone number format (Vietnamese numbers as an example)
+// function isValidPhone(phone) {
+//   const phoneRegex = /^(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})$/;
+//   return phoneRegex.test(phone);
+// }
 
 // Example usage during form validation
 // if (!isValidEmail(email)) {
