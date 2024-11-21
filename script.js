@@ -1,16 +1,23 @@
 // Function to submit contact data
 async function submitData() {
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const message = document.getElementById("message").value;
+  const employeeId = document.getElementById('employeeId').value;
+  const password = document.getElementById('password').value;
+  const fullName = document.getElementById('fullName').value;
+  const storeName = document.getElementById('storeName').value;
+  const position = document.getElementById('position').value;
+  const joinDate = document.getElementById('joinDate').value;
+  const phone = document.getElementById('phone').value;
+  const email = document.getElementById('email').value;
+  
+
   const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL
-  const data = { name, email, message };
+  const data1 = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
 
   try {
     const response = await fetch(proxyURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data1),
     });
 
     if (!response.ok) {
@@ -18,10 +25,14 @@ async function submitData() {
     }
 
     const result = await response.json();
-    alert(result.message); // Show success message
+    alert(result.message); // Show the server response message
+
+    // Optionally hide the form and show a success message
+    document.getElementById('registerFormContainer').style.display = 'none';
+    document.getElementById('welcomeContainer').style.display = 'block'; // Show welcome screen again
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
-    alert("Có lỗi xảy ra, vui lòng thử lại.");
+    alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
   }
 }
 
@@ -58,15 +69,6 @@ document.getElementById('backToWelcomeLogin').addEventListener('click', function
 document.getElementById('registerForm').addEventListener('submit', async function(event) {
   event.preventDefault(); // Prevent form submission
 
-  const employeeId = document.getElementById('employeeId').value;
-  const password = document.getElementById('password').value;
-  const fullName = document.getElementById('fullName').value;
-  const storeName = document.getElementById('storeName').value;
-  const position = document.getElementById('position').value;
-  const joinDate = document.getElementById('joinDate').value;
-  const phone = document.getElementById('phone').value;
-  const email = document.getElementById('email').value;
-
   // Validate employee ID
   if (!isValidEmployeeId(employeeId)) {
     document.getElementById('employeeIdError').style.display = 'block';
@@ -79,31 +81,6 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   if (!email || !phone || !password) {
     alert("Vui lòng điền đầy đủ thông tin.");
     return;
-  }
-
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL
-  const data1 = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
-
-  try {
-    const response = await fetch(proxyURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data1),
-    });
-
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    const result = await response.json();
-    alert(result.message); // Show the server response message
-
-    // Optionally hide the form and show a success message
-    document.getElementById('registerFormContainer').style.display = 'none';
-    document.getElementById('welcomeContainer').style.display = 'block'; // Show welcome screen again
-  } catch (error) {
-    console.error("Có lỗi xảy ra:", error.message);
-    alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
   }
 });
 
