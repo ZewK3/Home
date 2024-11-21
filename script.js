@@ -99,6 +99,28 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   // Proceed with submitting data to Cloudflare Worker
   await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
 });
+// Validate email format
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Validate phone number format (Vietnamese numbers as an example)
+function isValidPhone(phone) {
+  const phoneRegex = /^(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})$/;
+  return phoneRegex.test(phone);
+}
+
+// Example usage during form validation
+if (!isValidEmail(email)) {
+  alert("Email không hợp lệ.");
+  return;
+}
+
+if (!isValidPhone(phone)) {
+  alert("Số điện thoại không hợp lệ.");
+  return;
+}
 
 
 // Handle login form submission
