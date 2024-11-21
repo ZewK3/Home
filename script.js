@@ -1,11 +1,11 @@
-const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
+
 
 // Function to submit data
 async function submitData() {
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const message = document.getElementById("message").value;
-
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
   const data = { name, email, message };
 
   try {
@@ -75,7 +75,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   } else {
     document.getElementById('employeeIdError').style.display = 'none';
   }
-
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
   const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
 
   try {
