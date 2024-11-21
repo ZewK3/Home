@@ -1,11 +1,9 @@
-
-
-// Function to submit data
+// Function to submit contact data
 async function submitData() {
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
   const message = document.getElementById("message").value;
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL
   const data = { name, email, message };
 
   try {
@@ -20,9 +18,10 @@ async function submitData() {
     }
 
     const result = await response.json();
-    alert(result.message);
+    alert(result.message); // Show success message
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
+    alert("Có lỗi xảy ra, vui lòng thử lại.");
   }
 }
 
@@ -75,7 +74,14 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   } else {
     document.getElementById('employeeIdError').style.display = 'none';
   }
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
+
+  // Optional: Validate other fields (email, phone, password)
+  if (!email || !phone || !password) {
+    alert("Vui lòng điền đầy đủ thông tin.");
+    return;
+  }
+
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL
   const data1 = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
 
   try {
@@ -90,13 +96,15 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 
     const result = await response.json();
-    alert(result.message);
+    alert(result.message); // Show the server response message
+
+    // Optionally hide the form and show a success message
+    document.getElementById('registerFormContainer').style.display = 'none';
+    document.getElementById('welcomeContainer').style.display = 'block'; // Show welcome screen again
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
     alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
   }
-
-  alert('Đăng ký thành công!');
 });
 
 // Handle login form submission
@@ -114,6 +122,6 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     document.getElementById('loginEmployeeIdError').style.display = 'none';
   }
 
-  // Simulate login success
+  // Simulate login success (replace with actual authentication logic)
   alert('Đăng nhập thành công!');
 });
