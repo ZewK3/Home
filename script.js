@@ -112,10 +112,10 @@ function isValidPhone(phone) {
 }
 
 // Example usage during form validation
-if (!isValidEmail(email)) {
-  alert("Email không hợp lệ.");
-  return;
-}
+// if (!isValidEmail(email)) {
+//   alert("Email không hợp lệ.");
+//   return;
+// }
 
 if (!isValidPhone(phone)) {
   alert("Số điện thoại không hợp lệ.");
