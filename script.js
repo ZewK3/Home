@@ -76,13 +76,13 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     document.getElementById('employeeIdError').style.display = 'none';
   }
   const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL Cloudflare Worker
-  const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
+  const data1 = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
 
   try {
     const response = await fetch(proxyURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data1),
     });
 
     if (!response.ok) {
