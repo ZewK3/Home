@@ -21,7 +21,8 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      const errorDetails = await response.text(); // Đọc nội dung phản hồi lỗi chi tiết
+      throw new Error(`Network response was not ok: ${errorDetails}`);
     }
 
     const result = await response.json(); // Đọc phản hồi từ server
