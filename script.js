@@ -1,15 +1,4 @@
-// Function to submit contact data
-async function submitData() {
-  const employeeId = document.getElementById('employeeId').value;
-  const password = document.getElementById('password').value;
-  const fullName = document.getElementById('fullName').value;
-  const storeName = document.getElementById('storeName').value;
-  const position = document.getElementById('position').value;
-  const joinDate = document.getElementById('joinDate').value;
-  const phone = document.getElementById('phone').value;
-  const email = document.getElementById('email').value;
-  
-
+async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
   const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL
   const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
 
@@ -35,7 +24,6 @@ async function submitData() {
     alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
   }
 }
-
 // Function to validate employee ID
 function isValidEmployeeId(employeeId) {
   return employeeId.includes("CHMN") || employeeId.includes("VP");
@@ -66,8 +54,19 @@ document.getElementById('backToWelcomeLogin').addEventListener('click', function
 });
 
 // Handle register form submission
+// Handle register form submission
 document.getElementById('registerForm').addEventListener('submit', async function(event) {
   event.preventDefault(); // Prevent form submission
+
+  // Get values from the form fields
+  const employeeId = document.getElementById('employeeId').value;
+  const password = document.getElementById('password').value;
+  const fullName = document.getElementById('fullName').value;
+  const storeName = document.getElementById('storeName').value;
+  const position = document.getElementById('position').value;
+  const joinDate = document.getElementById('joinDate').value;
+  const phone = document.getElementById('phone').value;
+  const email = document.getElementById('email').value;
 
   // Validate employee ID
   if (!isValidEmployeeId(employeeId)) {
@@ -82,7 +81,11 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     alert("Vui lòng điền đầy đủ thông tin.");
     return;
   }
+
+  // Proceed with submitting data to Cloudflare Worker
+  await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
 });
+
 
 // Handle login form submission
 document.getElementById('loginForm').addEventListener('submit', function(event) {
