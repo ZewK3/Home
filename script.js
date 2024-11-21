@@ -1,6 +1,7 @@
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL (consider using a secure environment variable for production)
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL của Cloudflare Worker
 
+  // Tạo dữ liệu để gửi
   const data = {
     employeeId,
     password,
@@ -10,7 +11,6 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     joinDate,
     phone,
     email,
-
   };
 
   try {
@@ -21,58 +21,60 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");   
-
+      throw new Error("Network response was not ok");
     }
 
-    const result = await response.json();   
+    const result = await response.json(); // Đọc phản hồi từ server
 
-    alert(result.message); // Show the server response message
-
-    // Optionally hide the form and show a success message with a clear indicator
-    document.getElementById('registerFormContainer').style.display = 'none';
-    document.getElementById('successMessage').innerHTML = 'Registration successful!'; // Use innerHTML for clear messaging
-    document.getElementById('successMessage').style.display = 'block'; // Show success message
+    if (result.status === "success") {
+      alert("Dữ liệu đã được gửi thành công!");
+      // Ẩn form đăng ký và hiển thị thông báo thành công
+      document.getElementById('registerFormContainer').style.display = 'none';
+      document.getElementById('successMessage').innerHTML = 'Đăng ký thành công!';
+      document.getElementById('successMessage').style.display = 'block';
+    } else {
+      alert(`Lỗi: ${result.message}`);
+    }
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
     alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
   }
 }
-// Function to validate employee ID
+
+// Xác thực mã nhân viên (ID)
 function isValidEmployeeId(employeeId) {
   return employeeId.includes("CHMN") || employeeId.includes("VP");
 }
 
-// Show register form
-document.getElementById('registerBtn').addEventListener('click', function() {
-  document.getElementById('welcomeContainer').style.display = 'none';  // Hide welcome screen
-  document.getElementById('registerFormContainer').style.display = 'block';  // Show register form
+// Hiển thị form đăng ký
+document.getElementById('registerBtn').addEventListener('click', function () {
+  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
+  document.getElementById('registerFormContainer').style.display = 'block'; // Hiển thị form đăng ký
 });
 
-// Show login form
-document.getElementById('loginBtn').addEventListener('click', function() {
-  document.getElementById('welcomeContainer').style.display = 'none';  // Hide welcome screen
-  document.getElementById('loginFormContainer').style.display = 'block';  // Show login form
+// Hiển thị form đăng nhập
+document.getElementById('loginBtn').addEventListener('click', function () {
+  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
+  document.getElementById('loginFormContainer').style.display = 'block'; // Hiển thị form đăng nhập
 });
 
-// Back to welcome screen from register
-document.getElementById('backToWelcome').addEventListener('click', function() {
+// Quay lại màn hình chào mừng từ đăng ký
+document.getElementById('backToWelcome').addEventListener('click', function () {
   document.getElementById('registerFormContainer').style.display = 'none';
   document.getElementById('welcomeContainer').style.display = 'block';
 });
 
-// Back to welcome screen from login
-document.getElementById('backToWelcomeLogin').addEventListener('click', function() {
+// Quay lại màn hình chào mừng từ đăng nhập
+document.getElementById('backToWelcomeLogin').addEventListener('click', function () {
   document.getElementById('loginFormContainer').style.display = 'none';
   document.getElementById('welcomeContainer').style.display = 'block';
 });
 
-// Handle register form submission
-// Handle register form submission
-document.getElementById('registerForm').addEventListener('submit', async function(event) {
-  event.preventDefault(); // Prevent form submission
+// Xử lý gửi form đăng ký
+document.getElementById('registerForm').addEventListener('submit', async function (event) {
+  event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
 
-  // Get values from the form fields
+  // Lấy giá trị từ các trường input
   const employeeId = document.getElementById('employeeId').value;
   const password = document.getElementById('password').value;
   const fullName = document.getElementById('fullName').value;
@@ -82,7 +84,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
   const phone = document.getElementById('phone').value;
   const email = document.getElementById('email').value;
 
-  // Validate employee ID
+  // Kiểm tra ID hợp lệ
   if (!isValidEmployeeId(employeeId)) {
     document.getElementById('employeeIdError').style.display = 'block';
     return;
@@ -90,47 +92,24 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     document.getElementById('employeeIdError').style.display = 'none';
   }
 
-  // Optional: Validate other fields (email, phone, password)
+  // Kiểm tra các trường bắt buộc khác
   if (!email || !phone || !password) {
     alert("Vui lòng điền đầy đủ thông tin.");
     return;
   }
 
-  // Proceed with submitting data to Cloudflare Worker
+  // Gửi dữ liệu
   await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
 });
-// Validate email format
-// function isValidEmail(email) {
-//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   return emailRegex.test(email);
-// }
 
-// // Validate phone number format (Vietnamese numbers as an example)
-// function isValidPhone(phone) {
-//   const phoneRegex = /^(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})$/;
-//   return phoneRegex.test(phone);
-// }
-
-// Example usage during form validation
-// if (!isValidEmail(email)) {
-//   alert("Email không hợp lệ.");
-//   return;
-// }
-
-// if (!isValidPhone(phone)) {
-//   alert("Số điện thoại không hợp lệ.");
-//   return;
-// }
-
-
-// Handle login form submission
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-  event.preventDefault(); // Prevent form submission
+// Xử lý gửi form đăng nhập
+document.getElementById('loginForm').addEventListener('submit', function (event) {
+  event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
 
   const loginEmployeeId = document.getElementById('loginEmployeeId').value;
   const loginPassword = document.getElementById('loginPassword').value;
 
-  // Validate employee ID
+  // Kiểm tra ID hợp lệ
   if (!isValidEmployeeId(loginEmployeeId)) {
     document.getElementById('loginEmployeeIdError').style.display = 'block';
     return;
@@ -138,6 +117,6 @@ document.getElementById('loginForm').addEventListener('submit', function(event) 
     document.getElementById('loginEmployeeIdError').style.display = 'none';
   }
 
-  // Simulate login success (replace with actual authentication logic)
+  // Mô phỏng đăng nhập thành công
   alert('Đăng nhập thành công!');
 });
