@@ -10,7 +10,7 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     joinDate,
     phone,
     email,
-    op: "Re", // Consider making "op" a more descriptive constant
+
   };
 
   try {
