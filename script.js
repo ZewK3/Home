@@ -117,10 +117,10 @@ function isValidPhone(phone) {
 //   return;
 // }
 
-if (!isValidPhone(phone)) {
-  alert("Số điện thoại không hợp lệ.");
-  return;
-}
+// if (!isValidPhone(phone)) {
+//   alert("Số điện thoại không hợp lệ.");
+//   return;
+// }
 
 
 // Handle login form submission
