@@ -1,6 +1,17 @@
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL
-  const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email, op: "Re" };
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // Cloudflare Worker URL (consider using a secure environment variable for production)
+
+  const data = {
+    employeeId,
+    password,
+    fullName,
+    storeName,
+    position,
+    joinDate,
+    phone,
+    email,
+    op: "Re", // Consider making "op" a more descriptive constant
+  };
 
   try {
     const response = await fetch(proxyURL, {
@@ -10,15 +21,18 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      throw new Error("Network response was not ok");   
+
     }
 
-    const result = await response.json();
+    const result = await response.json();   
+
     alert(result.message); // Show the server response message
 
-    // Optionally hide the form and show a success message
+    // Optionally hide the form and show a success message with a clear indicator
     document.getElementById('registerFormContainer').style.display = 'none';
-    document.getElementById('welcomeContainer').style.display = 'block'; // Show welcome screen again
+    document.getElementById('successMessage').innerHTML = 'Registration successful!'; // Use innerHTML for clear messaging
+    document.getElementById('successMessage').style.display = 'block'; // Show success message
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
     alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
