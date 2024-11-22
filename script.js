@@ -1,6 +1,8 @@
 // Sửa lại async function submitData để sử dụng proxyURL đúng và thêm kiểm tra lỗi
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-  const proxyURL = "https://tocotoco.dailoi1106.workers.dev"; // URL của Cloudflare Worker
+  const proxyURL = "https://cors-anywhere.herokuapp.com/";
+ const apiURL = `${proxyURL}https://tocotoco.dailoi1106.workers.dev/`; // Prepend the target URL
+
   
   // Tạo dữ liệu để gửi, theo định dạng yêu cầu
   const data = {
@@ -18,7 +20,7 @@ async function submitData(employeeId, password, fullName, storeName, position, j
   console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
   
   try {
-    const response = await fetch(proxyURL, {
+    const response = await fetch(apiURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" }, // Gửi yêu cầu JSON
       body: JSON.stringify(data), // Gửi data dưới dạng JSON
