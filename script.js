@@ -51,7 +51,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
   try {
     // Gửi yêu cầu POST tới Worker
-    const response = await fetch("https://<your-worker-url>/register", {
+    const response = await fetch("https://tocotoco.dailoi1106.workers.dev/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
