@@ -1,15 +1,7 @@
-
-
 // Hiển thị form đăng ký
 document.getElementById("registerBtn").addEventListener("click", function() {
   document.getElementById("welcomeContainer").style.display = "none";
   document.getElementById("registerFormContainer").style.display = "block";
-});
-
-// Hiển thị form đăng nhập
-document.getElementById("loginBtn").addEventListener("click", function(){
-  document.getElementById("welcomeContainer").style.display = "none";
-  document.getElementById("loginFormContainer").style.display = "block";
 });
 
 // Quay lại màn hình chào mừng từ đăng ký
@@ -18,39 +10,31 @@ document.getElementById("backToWelcome").addEventListener("click", function() {
   document.getElementById("welcomeContainer").style.display = "block";
 });
 
-// Quay lại màn hình chào mừng từ đăng nhập
-document.getElementById("backToWelcomeLogin").addEventListener("click", (function() {
-  document.getElementById("loginFormContainer").style.display = "none";
-  document.getElementById("welcomeContainer").style.display = "block";
-});
-
-document.getElementById("registerForm").addEventListener("submit", async function (event) {
-  event.preventDefault(); // Ngăn chặn hành động mặc định (reload trang)
+// Gửi dữ liệu đăng ký
+document.getElementById("registerForm").addEventListener("submit", async function(event) {
+  event.preventDefault(); // Ngăn chặn reload trang
 
   // Lấy dữ liệu từ form
-  const employeeId = document.getElementById("employeeId").value;
-  const password = document.getElementById("password").value;
-  const fullName = document.getElementById("fullName").value;
-  const storeName = document.getElementById("storeName").value;
-  const position = document.getElementById("position").value;
-  const joinDate = document.getElementById("joinDate").value;
-  const phone = document.getElementById("phone").value;
-  const email = document.getElementById("email").value;
-
-  // Dữ liệu gửi đến Worker
   const data = {
-    employeeId,
-    password,
-    fullName,
-    storeName,
-    position,
-    joinDate,
-    phone,
-    email,
+    employeeId: document.getElementById("employeeId").value.trim(),
+    password: document.getElementById("password").value.trim(),
+    fullName: document.getElementById("fullName").value.trim(),
+    storeName: document.getElementById("storeName").value.trim(),
+    position: document.getElementById("position").value.trim(),
+    joinDate: document.getElementById("joinDate").value,
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim(),
   };
 
+  // Kiểm tra dữ liệu hợp lệ
+  if (!data.employeeId || !data.password || !data.fullName || !data.storeName ||
+      !data.position || !data.joinDate || !data.phone || !data.email) {
+    alert("Vui lòng nhập đầy đủ thông tin!");
+    return;
+  }
+
   try {
-    // Gửi yêu cầu POST tới Worker
+    // Gửi dữ liệu tới Worker
     const response = await fetch("https://tocotoco.dailoi1106.workers.dev/register", {
       method: "POST",
       headers: {
@@ -60,16 +44,21 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     });
 
     if (response.ok) {
-      const result = await response.json();
-      console.log(result.message); // Thông báo thành công
-      document.getElementById("successMessage").style.display = "block";
+      alert("Đăng ký thành công!");
       document.getElementById("registerFormContainer").style.display = "none";
+      document.getElementById("successMessage").style.display = "block";
     } else {
-      console.error("Lỗi khi gửi dữ liệu:", response.statusText);
+      const error = await response.text();
+      alert(`Lỗi đăng ký: ${error}`);
+      console.error("Lỗi:", error);
     }
   } catch (error) {
-    console.error("Lỗi:", error);
+    console.error("Lỗi kết nối:", error);
+    alert("Đã xảy ra lỗi. Vui lòng thử lại sau.");
   }
 });
 
-
+// Làm mới trang khi đăng ký thành công
+function reloadPage() {
+  window.location.reload();
+}
