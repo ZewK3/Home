@@ -1,59 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Web App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-        }
-    </style>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js"></script>
+    <title>Đăng Ký và Đăng Nhập</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Liên kết tới file CSS -->
+    <!-- Thêm Firebase SDK -->
 </head>
 <body>
-    <h1>Welcome to My Web App</h1>
-    <form id="dataForm">
-        <input type="text" id="dataInput" placeholder="Enter some data" required>
-        <button type="submit">Submit</button>
+
+<!-- Giao diện Chào Mừng -->
+<div class="welcome-container" id="welcomeContainer">
+    <h1>Chào Mừng!</h1>
+    <p>Chọn một trong hai tùy chọn để tiếp tục</p>
+    <button class="btn btn-primary" id="registerBtn">Đăng Ký</button>
+    <button class="btn btn-primary" id="loginBtn">Đăng Nhập</button>
+</div>
+<!-- Success Message -->
+  <div id="successMessage" style="display: none;">
+    <h2>Đăng ký thành công!</h2>
+    <p></p>
+    <button onclick="reloadPage()">Quay lại</button>
+  </div>
+<!-- Giao diện Đăng Ký -->
+<div class="form-container" id="registerFormContainer" style="display:none;">
+    <h2>Đăng Ký</h2>
+    <form id="registerForm">
+        <div class="form-group">
+            <label for="employeeId">Mã Nhân Viên</label>
+            <input type="text" class="form-control" id="employeeId" placeholder="Mã nhân viên" required>
+            <small id="employeeIdError" class="form-text" style="display:none;">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
+        </div>
+        <div class="form-group">
+            <label for="password">Mật Khẩu</label>
+            <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+        </div>
+        <div class="form-group">
+            <label for="fullName">Tên Nhân Viên</label>
+            <input type="text" class="form-control" id="fullName" placeholder="Tên nhân viên" required>
+        </div>
+        <div class="form-group">
+            <label for="storeName">Tên Cửa Hàng</label>
+            <select class="form-control" id="storeName" required>
+                <option value="">Chọn cửa hàng</option>
+                <option value="Cửa Hàng 1">970 Lạc Long Quân</option>
+                <option value="Cửa Hàng 2">201 Lạc Long Quân</option>
+                <option value="Cửa Hàng 3">478 Luỹ Bán Bích</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="position">Chức Vụ</label>
+            <select class="form-control" id="position" required>
+                <option value="">Chọn chức vụ</option>
+                <option value="Quản Lý Khu Vực">Quản Lý Khu Vực</option>
+                <option value="Quản Lý Cơ Sở">Quản Lý Cơ Sở</option>
+                <option value="TeamLeader">Team Leader</option>
+                <option value="Nhân Viên - FT">Nhân Viên - FT</option>
+                <option value="Nhân Viên - PT">Nhân Viên - PT</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="joinDate">Ngày Vào Làm</label>
+            <input type="date" class="form-control" id="joinDate" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Số Điện Thoại</label>
+            <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Email" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng Ký</button>
+        <button type="button" class="btn btn-secondary" id="backToWelcome">Quay lại</button>
     </form>
+</div>
 
-    <script>
-        // Cấu hình Firebase của bạn
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCB2n9YeiyOqCFdoiTyrc0lI7bFGNp4DhA",
-  authDomain: "zewk-ed0fc.firebaseapp.com",
-  projectId: "zewk-ed0fc",
-  storageBucket: "zewk-ed0fc.firebasestorage.app",
-  messagingSenderId: "611085438591",
-  appId: "1:611085438591:web:4c73b5b5f94b8e8dcef94a",
-  measurementId: "G-56L8X62ESH"
-};
+<!-- Giao diện Đăng Nhập -->
+<div class="form-container" id="loginFormContainer" style="display:none;">
+    <h2>Đăng Nhập</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="loginEmployeeId">Mã Nhân Viên</label>
+            <input type="text" class="form-control" id="loginEmployeeId" placeholder="Mã nhân viên" required>
+            <small id="loginEmployeeIdError" class="form-text" style="display:none;">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Mật Khẩu</label>
+            <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+        <button type="button" class="btn btn-secondary" id="backToWelcomeLogin">Quay lại</button>
+    </form>
+</div>
 
-        // Khởi tạo Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(app);  // Sử dụng cơ sở dữ liệu mặc định
-
-        // Lắng nghe sự kiện submit form
-        document.getElementById('dataForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const data = document.getElementById('dataInput').value;
-
-            // Lưu dữ liệu vào Firebase Realtime Database mặc định
-            const dataRef = db.ref();  // Không chỉ định đường dẫn, sẽ lưu vào root của database
-            dataRef.push({
-                value: data,
-                timestamp: new Date().toISOString()
-            });
-
-            // Xóa input sau khi gửi dữ liệu
-            document.getElementById('dataInput').value = '';
-        });
-    </script>
+<script src="script.js"></script>
 </body>
 </html>
