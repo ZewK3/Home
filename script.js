@@ -1,94 +1,38 @@
-// Sửa lại async function submitData để sử dụng proxyURL đúng và thêm kiểm tra lỗi
-async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-  const proxyURL = "https://cors-anywhere.herokuapp.com/";
- const apiURL = `${proxyURL}https://tocotoco.dailoi1106.workers.dev/`; // Prepend the target URL
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBYKq7cfWvR7Ex7CB2O43ql12mEIu_tJD4",
+  authDomain: "tocotoco-9b6d7.firebaseapp.com",
+  projectId: "tocotoco-9b6d7",
+  storageBucket: "tocotoco-9b6d7.firebasestorage.app",
+  messagingSenderId: "238255895493",
+  appId: "1:238255895493:web:90aaf46d56ab60ee3911ac",
+  measurementId: "G-NPLLCJHZMQ"
+};
 
-  
-  // Tạo dữ liệu để gửi, theo định dạng yêu cầu
-  const data = {
-    type: "register", // Thêm type để xác định yêu cầu đăng ký
-    employeeId,
-    password,
-    fullName,
-    storeName,
-    position,
-    joinDate,
-    phone,
-    email,
-  };
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
-  
-  try {
-    const response = await fetch(apiURL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" }, // Gửi yêu cầu JSON
-      body: JSON.stringify(data), // Gửi data dưới dạng JSON
-      mode: 'no-cors',
-    });
-
-    // Kiểm tra nếu response không thành công
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Lỗi từ server: ${errorText}`);
-    }
-
-    const result = await response.json(); // Chuyển đổi response sang JSON
-    if (result && result.message) {
-      alert(result.message); // Hiển thị thông báo từ API
-    } else {
-      throw new Error("Không có thông báo từ API.");
-    }
-  } catch (error) {
-    console.error("Có lỗi xảy ra:", error.message);
-    alert("Không thể gửi dữ liệu. Vui lòng thử lại sau.\nChi tiết lỗi: " + error.message);
-  }
+// Hàm kiểm tra Employee ID hợp lệ
+function isValidEmployeeId(id) {
+  return id && id.length >= 5; // Employee ID phải có ít nhất 5 ký tự
 }
-
-// Xác thực mã nhân viên (ID)
-function isValidEmployeeId(employeeId) {
-  return employeeId.includes("CHMN") || employeeId.includes("VP");
-}
-
-// Hiển thị form đăng ký
-document.getElementById('registerBtn').addEventListener('click', function () {
-  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
-  document.getElementById('registerFormContainer').style.display = 'block'; // Hiển thị form đăng ký
-});
-
-// Hiển thị form đăng nhập
-document.getElementById('loginBtn').addEventListener('click', function () {
-  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
-  document.getElementById('loginFormContainer').style.display = 'block'; // Hiển thị form đăng nhập
-});
-
-// Quay lại màn hình chào mừng từ đăng ký
-document.getElementById('backToWelcome').addEventListener('click', function () {
-  document.getElementById('registerFormContainer').style.display = 'none';
-  document.getElementById('welcomeContainer').style.display = 'block';
-});
-
-// Quay lại màn hình chào mừng từ đăng nhập
-document.getElementById('backToWelcomeLogin').addEventListener('click', function () {
-  document.getElementById('loginFormContainer').style.display = 'none';
-  document.getElementById('welcomeContainer').style.display = 'block';
-});
 
 // Xử lý gửi form đăng ký
 document.getElementById('registerForm').addEventListener('submit', async function (event) {
   event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
 
   // Lấy giá trị từ các trường input
-  const employeeId = document.getElementById('employeeId').value;
-  const password = document.getElementById('password').value;
-  const fullName = document.getElementById('fullName').value;
-  const storeName = document.getElementById('storeName').value;
-  const position = document.getElementById('position').value;
-  const joinDate = document.getElementById('joinDate').value;
-  const phone = document.getElementById('phone').value;
-  const email = document.getElementById('email').value;
+  const employeeId = document.getElementById('employeeId').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const fullName = document.getElementById('fullName').value.trim();
+  const storeName = document.getElementById('storeName').value.trim();
+  const position = document.getElementById('position').value.trim();
+  const joinDate = document.getElementById('joinDate').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const email = document.getElementById('email').value.trim();
 
-  // Kiểm tra ID hợp lệ
+  // Kiểm tra Employee ID hợp lệ
   if (!isValidEmployeeId(employeeId)) {
     document.getElementById('employeeIdError').style.display = 'block';
     return;
@@ -96,31 +40,58 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     document.getElementById('employeeIdError').style.display = 'none';
   }
 
-  // Kiểm tra các trường bắt buộc khác
+  // Kiểm tra các trường bắt buộc
   if (!email || !phone || !password) {
     alert("Vui lòng điền đầy đủ thông tin.");
     return;
   }
 
-  // Gửi dữ liệu
-  await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
+  try {
+    // Lưu dữ liệu vào Firestore
+    await db.collection('employees').doc(employeeId).set({
+      employeeId,
+      password,
+      fullName,
+      storeName,
+      position,
+      joinDate,
+      phone,
+      email,
+      createdAt: new Date().toISOString()
+    });
+
+    alert('Đăng ký thành công!');
+    document.getElementById('registerForm').reset(); // Reset form sau khi đăng ký thành công
+  } catch (error) {
+    console.error('Lỗi khi lưu dữ liệu vào Firestore:', error);
+    alert('Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.');
+  }
 });
 
 // Xử lý gửi form đăng nhập
-document.getElementById('loginForm').addEventListener('submit', function (event) {
+document.getElementById('loginForm').addEventListener('submit', async function (event) {
   event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
 
-  const loginEmployeeId = document.getElementById('loginEmployeeId').value;
-  const loginPassword = document.getElementById('loginPassword').value;
+  const loginEmployeeId = document.getElementById('loginEmployeeId').value.trim();
+  const loginPassword = document.getElementById('loginPassword').value.trim();
 
-  // Kiểm tra ID hợp lệ
+  // Kiểm tra Employee ID hợp lệ
   if (!isValidEmployeeId(loginEmployeeId)) {
     document.getElementById('loginEmployeeIdError').style.display = 'block';
     return;
   } else {
     document.getElementById('loginEmployeeIdError').style.display = 'none';
   }
-
-  // Mô phỏng đăng nhập thành công
-  alert('Đăng nhập thành công!');
+  try {
+    // Lấy dữ liệu từ Firestore
+    const doc = await db.collection('employees').doc(loginEmployeeId).get();
+    if (doc.exists && doc.data().password === loginPassword) {
+      alert('Đăng nhập thành công!');
+    } else {
+      alert('ID hoặc mật khẩu không đúng.');
+    }
+  } catch (error) {
+    console.error('Lỗi khi truy vấn Firestore:', error);
+    alert('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.');
+  }
 });
