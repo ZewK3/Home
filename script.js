@@ -93,6 +93,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 });
 
 // Xử lý đăng nhập
+// Xử lý đăng nhập
 document.getElementById("loginForm").addEventListener("submit", async function (event) {
   event.preventDefault(); // Ngăn reload trang
 
@@ -114,8 +115,48 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     if (loginResponse.ok) {
       const user = await loginResponse.json();
+
+      // Lấy password hash và salt đã lưu
+      const storedHash = new Uint8Array(user.passwordHash); // Hash đã lưu trong KV
+      const storedSalt = new Uint8Array(user.salt); // Salt đã lưu trong KV
+
+      // Hàm để mã hóa mật khẩu nhập vào và so sánh với hash đã lưu
+      async function verifyPassword(storedHash, storedSalt, inputPassword) {
+        const encoder = new TextEncoder();
+        const passwordBuffer = encoder.encode(inputPassword); // Mật khẩu nhập vào
+
+        // Tạo lại hash từ salt đã lưu và mật khẩu nhập vào
+        const hashedInputPassword = await crypto.subtle.importKey(
+          "raw",
+          passwordBuffer,
+          { name: "PBKDF2" },
+          false,
+          ["deriveKey"]
+        ).then(key => {
+          return crypto.subtle.deriveKey(
+            {
+              name: "PBKDF2",
+              salt: storedSalt,
+              iterations: 100000,
+              hash: "SHA-256",
+            },
+            key,
+            { name: "HMAC", hash: "SHA-256", length: 256 },
+            false,
+            ["sign"]
+          );
+        });
+
+        const hashedInputPasswordBuffer = await crypto.subtle.sign("HMAC", hashedInputPassword, passwordBuffer);
+
+        // So sánh hash của mật khẩu nhập vào với hash đã lưu
+        return storedHash.every((val, index) => val === new Uint8Array(hashedInputPasswordBuffer)[index]);
+      }
+
       // Kiểm tra mật khẩu
-      if (user.password === loginPassword) {
+      const isPasswordCorrect = await verifyPassword(storedHash, storedSalt, loginPassword);
+
+      if (isPasswordCorrect) {
         // Đăng nhập thành công
         alert("Đăng nhập thành công!");
         // Chuyển tới trang chính hoặc giao diện sau khi đăng nhập
@@ -133,7 +174,5 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     }
   } catch (error) {
     console.error("Lỗi:", error);
-    alert("Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại sau.");
   }
 });
-
