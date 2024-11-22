@@ -1,7 +1,7 @@
 // Sửa lại async function submitData để sử dụng proxyURL đúng và thêm kiểm tra lỗi
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
   const proxyURL = "https://tocotoco.dailoi1106.workers.dev"; // URL của Cloudflare Worker
-  const apiURL = `${proxyURL}/register`; // Đảm bảo có endpoint API đúng
+  const apiURL = `${proxyURL}`; // Đảm bảo có endpoint API đúng
   // Tạo dữ liệu để gửi
   const data = {
     employeeId,
