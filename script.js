@@ -67,7 +67,29 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     alert('Đã xảy ra lỗi khi lưu dữ liệu. Vui lòng thử lại.');
   }
 });
+// Hiển thị form đăng ký
+document.getElementById('registerBtn').addEventListener('click', function () {
+  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
+  document.getElementById('registerFormContainer').style.display = 'block'; // Hiển thị form đăng ký
+});
 
+// Hiển thị form đăng nhập
+document.getElementById('loginBtn').addEventListener('click', function () {
+  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
+  document.getElementById('loginFormContainer').style.display = 'block'; // Hiển thị form đăng nhập
+});
+
+// Quay lại màn hình chào mừng từ đăng ký
+document.getElementById('backToWelcome').addEventListener('click', function () {
+  document.getElementById('registerFormContainer').style.display = 'none';
+  document.getElementById('welcomeContainer').style.display = 'block';
+});
+
+// Quay lại màn hình chào mừng từ đăng nhập
+document.getElementById('backToWelcomeLogin').addEventListener('click', function () {
+  document.getElementById('loginFormContainer').style.display = 'none';
+  document.getElementById('welcomeContainer').style.display = 'block';
+});
 // Xử lý gửi form đăng nhập
 document.getElementById('loginForm').addEventListener('submit', async function (event) {
   event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
