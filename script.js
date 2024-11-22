@@ -37,6 +37,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     // Gửi dữ liệu tới Worker
     const response = await fetch("https://tocotoco.dailoi1106.workers.dev/register", {
       method: "POST",
+      mode: 'no-cors',
       headers: {
         "Content-Type": "application/json",
       },
