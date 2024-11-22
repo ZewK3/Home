@@ -50,7 +50,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   try {
     // Kiểm tra employeeId có tồn tại
     const checkResponse = await fetch(
-      `https://tocotoco.dailoi1106.workers.dev/register?employeeId=${employeeId}`,
+      `https://zewk.tocotoco.workers.dev/register?employeeId=${employeeId}`,
       {
         method: "GET",
         headers: {
@@ -67,7 +67,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     if (checkResponse.status === 404) {
       // Mã nhân viên chưa tồn tại, thực hiện đăng ký
-      const registerResponse = await fetch("https://tocotoco.dailoi1106.workers.dev/register", {
+      const registerResponse = await fetch("https://zewk.tocotoco.workers.dev/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +103,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
   try {
     // Kiểm tra thông tin đăng nhập
     const loginResponse = await fetch(
-      `https://tocotoco.dailoi1106.workers.dev/register?employeeId=${loginEmployeeId}`,
+      `https://zewk.tocotoco.workers.dev/register?employeeId=${loginEmployeeId}`,
       {
         method: "GET",
         headers: {
