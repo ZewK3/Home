@@ -80,7 +80,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         alert(result.message); // Hiển thị thông báo thành công
         document.getElementById("successMessage").style.display = "block";
         document.getElementById("registerFormContainer").style.display = "none";
-        await delay(3000);
         document.getElementById("loginFormContainer").style.display = "block";
       } else {
         alert("Đăng ký thất bại! Vui lòng thử lại");
