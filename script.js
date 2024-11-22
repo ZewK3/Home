@@ -1,43 +1,39 @@
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL của Cloudflare Worker
+  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/";
 
   // Tạo dữ liệu để gửi, đảm bảo tất cả các giá trị là chuỗi
   const data = {
-    employeeId: String(employeeId || ""),  // Chuyển đổi sang chuỗi
-    password: String(password || ""),      // Chuyển đổi sang chuỗi
-    fullName: String(fullName || ""),      // Chuyển đổi sang chuỗi
-    storeName: String(storeName || ""),    // Chuyển đổi sang chuỗi
-    position: String(position || ""),      // Chuyển đổi sang chuỗi
-    joinDate: String(joinDate || ""),      // Chuyển đổi sang chuỗi
-    phone: String(phone || ""),            // Chuyển đổi sang chuỗi
-    email: String(email || ""),            // Chuyển đổi sang chuỗi
+    employeeId: String(employeeId || ""),
+    password: String(password || ""),
+    fullName: String(fullName || ""),
+    storeName: String(storeName || ""),
+    position: String(position || ""),
+    joinDate: String(joinDate || ""),
+    phone: String(phone || ""),
+    email: String(email || ""),
   };
 
-  // In dữ liệu ra console để kiểm tra
-  console.log("Sending data as strings:", data); // Xem dữ liệu trong console trước khi gửi
+  console.log("Sending data:", data);
 
   try {
     const response = await fetch(proxyURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data), // Chuyển đổi đối tượng thành JSON string
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      const responseText = await response.text(); // Lấy phản hồi chi tiết lỗi
-      throw new Error(Network response was not ok: ${responseText});
+      const responseText = await response.text();
+      throw new Error(`Network response was not ok: ${responseText}`);
     }
 
-    const result = await response.json(); // Đọc phản hồi từ server
+    const result = await response.json();
 
     if (result.status === "success") {
       alert("Dữ liệu đã được gửi thành công!");
-      // Ẩn form đăng ký và hiển thị thông báo thành công
-      document.getElementById('registerFormContainer').style.display = 'none';
-      document.getElementById('successMessage').innerHTML = 'Đăng ký thành công!';
-      document.getElementById('successMessage').style.display = 'block';
+      showSuccessMessage("Đăng ký thành công!");
     } else {
-      alert(Lỗi: ${result.message});
+      alert(`Lỗi: ${result.message}`);
     }
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
@@ -45,82 +41,67 @@ async function submitData(employeeId, password, fullName, storeName, position, j
   }
 }
 
-// Xác thực mã nhân viên (ID)
 function isValidEmployeeId(employeeId) {
   return employeeId.includes("CHMN") || employeeId.includes("VP");
 }
 
-// Hiển thị form đăng ký
-document.getElementById('registerBtn').addEventListener('click', function () {
-  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
-  document.getElementById('registerFormContainer').style.display = 'block'; // Hiển thị form đăng ký
-});
+function showForm(formId) {
+  document.querySelectorAll(".form-container").forEach((form) => {
+    form.style.display = "none";
+  });
+  document.getElementById(formId).style.display = "block";
+}
 
-// Hiển thị form đăng nhập
-document.getElementById('loginBtn').addEventListener('click', function () {
-  document.getElementById('welcomeContainer').style.display = 'none'; // Ẩn màn hình chào mừng
-  document.getElementById('loginFormContainer').style.display = 'block'; // Hiển thị form đăng nhập
-});
+// function showSuccessMessage(message) {
+//   document.getElementById("successMessage").innerHTML = message;
+//   document.getElementById("registerFormContainer").style.display = "none";
+//   document.getElementById("successMessage").style.display = "block";
+// }
 
-// Quay lại màn hình chào mừng từ đăng ký
-document.getElementById('backToWelcome').addEventListener('click', function () {
-  document.getElementById('registerFormContainer').style.display = 'none';
-  document.getElementById('welcomeContainer').style.display = 'block';
-});
+document.getElementById("registerBtn").addEventListener("click", () => showForm("registerFormContainer"));
+document.getElementById("loginBtn").addEventListener("click", () => showForm("loginFormContainer"));
+document.getElementById("backToWelcome").addEventListener("click", () => showForm("welcomeContainer"));
+document.getElementById("backToWelcomeLogin").addEventListener("click", () => showForm("welcomeContainer"));
 
-// Quay lại màn hình chào mừng từ đăng nhập
-document.getElementById('backToWelcomeLogin').addEventListener('click', function () {
-  document.getElementById('loginFormContainer').style.display = 'none';
-  document.getElementById('welcomeContainer').style.display = 'block';
-});
+document.getElementById("registerForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
 
-// Xử lý gửi form đăng ký
-document.getElementById('registerForm').addEventListener('submit', async function (event) {
-  event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
+  const employeeId = document.getElementById("employeeId").value;
+  const password = document.getElementById("password").value;
+  const fullName = document.getElementById("fullName").value;
+  const storeName = document.getElementById("storeName").value;
+  const position = document.getElementById("position").value;
+  const joinDate = document.getElementById("joinDate").value;
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
 
-  // Lấy giá trị từ các trường input
-  const employeeId = document.getElementById('employeeId').value;
-  const password = document.getElementById('password').value;
-  const fullName = document.getElementById('fullName').value;
-  const storeName = document.getElementById('storeName').value;
-  const position = document.getElementById('position').value;
-  const joinDate = document.getElementById('joinDate').value;
-  const phone = document.getElementById('phone').value;
-  const email = document.getElementById('email').value;
-
-  // Kiểm tra ID hợp lệ
   if (!isValidEmployeeId(employeeId)) {
-    document.getElementById('employeeIdError').style.display = 'block';
+    document.getElementById("employeeIdError").style.display = "block";
     return;
   } else {
-    document.getElementById('employeeIdError').style.display = 'none';
+    document.getElementById("employeeIdError").style.display = "none";
   }
 
-  // Kiểm tra các trường bắt buộc khác
   if (!email || !phone || !password) {
     alert("Vui lòng điền đầy đủ thông tin.");
     return;
   }
 
-  // Gửi dữ liệu
   await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
 });
 
-// Xử lý gửi form đăng nhập
-document.getElementById('loginForm').addEventListener('submit', function (event) {
-  event.preventDefault(); // Ngăn form gửi đi theo cách mặc định
+document.getElementById("loginForm").addEventListener("submit", (event) => {
+  event.preventDefault();
 
-  const loginEmployeeId = document.getElementById('loginEmployeeId').value;
-  const loginPassword = document.getElementById('loginPassword').value;
+  const loginEmployeeId = document.getElementById("loginEmployeeId").value;
+  const loginPassword = document.getElementById("loginPassword").value;
 
-  // Kiểm tra ID hợp lệ
   if (!isValidEmployeeId(loginEmployeeId)) {
-    document.getElementById('loginEmployeeIdError').style.display = 'block';
+    document.getElementById("loginEmployeeIdError").style.display = "block";
     return;
   } else {
-    document.getElementById('loginEmployeeIdError').style.display = 'none';
+    document.getElementById("loginEmployeeIdError").style.display = "none";
   }
 
-  // Mô phỏng đăng nhập thành công
-  alert('Đăng nhập thành công!');
+  alert("Đăng nhập thành công!");
 });
