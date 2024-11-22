@@ -1,5 +1,7 @@
+// Sửa lại async function submitData để sử dụng proxyURL đúng và thêm kiểm tra lỗi
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
   const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL của Cloudflare Worker
+  const apiURL = `${proxyURL}/submit`; // Đảm bảo có endpoint API đúng
 
   // Tạo dữ liệu để gửi
   const data = {
@@ -13,7 +15,8 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     email,
   };
   console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
-    try {
+
+  try {
     const response = await fetch(apiURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" }, // Gửi yêu cầu JSON
@@ -25,7 +28,7 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     }
 
     const result = await response.json();
-    alert(result.message);
+    alert(result.message); // Hiển thị thông báo từ API
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
     alert("Không thể gửi dữ liệu. Vui lòng thử lại.");
