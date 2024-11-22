@@ -1,10 +1,21 @@
+// Hàm mã hóa mật khẩu
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+// Hàm gửi dữ liệu
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
   const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/";
 
-  // Tạo dữ liệu để gửi, đảm bảo tất cả các giá trị là chuỗi
+  const hashedPassword = await hashPassword(password); // Mã hóa mật khẩu
+
   const data = {
     employeeId: String(employeeId || ""),
-    password: String(password || ""),
+    password: hashedPassword,
     fullName: String(fullName || ""),
     storeName: String(storeName || ""),
     position: String(position || ""),
@@ -14,6 +25,11 @@ async function submitData(employeeId, password, fullName, storeName, position, j
   };
 
   console.log("Sending data:", data);
+
+  // Trạng thái loading
+  const submitButton = document.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+  submitButton.textContent = "Đang gửi...";
 
   try {
     const response = await fetch(proxyURL, {
@@ -33,18 +49,30 @@ async function submitData(employeeId, password, fullName, storeName, position, j
       alert("Dữ liệu đã được gửi thành công!");
       showSuccessMessage("Đăng ký thành công!");
     } else {
-      alert(`Lỗi: ${result.message}`);
+      showError(`Lỗi: ${result.message}`);
     }
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
-    alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
+    showError("Đã có lỗi xảy ra. Vui lòng thử lại.");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Gửi";
   }
 }
 
+// Hàm kiểm tra tính hợp lệ của mã nhân viên
 function isValidEmployeeId(employeeId) {
   return employeeId.includes("CHMN") || employeeId.includes("VP");
 }
 
+// Hiển thị thông báo lỗi
+function showError(message) {
+  const errorContainer = document.getElementById("errorContainer");
+  errorContainer.style.display = "block";
+  errorContainer.textContent = message;
+}
+
+// Hiển thị form
 function showForm(formId) {
   document.querySelectorAll(".form-container").forEach((form) => {
     form.style.display = "none";
@@ -52,17 +80,13 @@ function showForm(formId) {
   document.getElementById(formId).style.display = "block";
 }
 
-function showSuccessMessage(message) {
-   document.getElementById("successMessage").innerHTML = message;
-   document.getElementById("registerFormContainer").style.display = "none";
-   document.getElementById("successMessage").style.display = "block";
- }
-
+// Chuyển đổi giữa các form
 document.getElementById("registerBtn").addEventListener("click", () => showForm("registerFormContainer"));
 document.getElementById("loginBtn").addEventListener("click", () => showForm("loginFormContainer"));
 document.getElementById("backToWelcome").addEventListener("click", () => showForm("welcomeContainer"));
 document.getElementById("backToWelcomeLogin").addEventListener("click", () => showForm("welcomeContainer"));
 
+// Xử lý đăng ký
 document.getElementById("registerForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -83,13 +107,14 @@ document.getElementById("registerForm").addEventListener("submit", async (event)
   }
 
   if (!email || !phone || !password) {
-    alert("Vui lòng điền đầy đủ thông tin.");
+    showError("Vui lòng điền đầy đủ thông tin.");
     return;
   }
 
   await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
 });
 
+// Xử lý đăng nhập
 document.getElementById("loginForm").addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -97,10 +122,8 @@ document.getElementById("loginForm").addEventListener("submit", (event) => {
   const loginPassword = document.getElementById("loginPassword").value;
 
   if (!isValidEmployeeId(loginEmployeeId)) {
-    document.getElementById("loginEmployeeIdError").style.display = "block";
+    showError("Mã nhân viên không hợp lệ!");
     return;
-  } else {
-    document.getElementById("loginEmployeeIdError").style.display = "none";
   }
 
   alert("Đăng nhập thành công!");
