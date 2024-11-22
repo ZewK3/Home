@@ -93,7 +93,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 });
 
 // Xử lý đăng nhập
-// Xử lý đăng nhập
 document.getElementById("loginForm").addEventListener("submit", async function (event) {
   event.preventDefault(); // Ngăn reload trang
 
@@ -117,7 +116,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
       const user = await loginResponse.json();
 
       // Lấy password hash và salt đã lưu
-      const storedHash = new Uint8Array(user.passwordHash); // Hash đã lưu trong KV
+      const storedHash = new Uint8Array(user.password); // Hash đã lưu trong KV
       const storedSalt = new Uint8Array(user.salt); // Salt đã lưu trong KV
 
       // Hàm để mã hóa mật khẩu nhập vào và so sánh với hash đã lưu
