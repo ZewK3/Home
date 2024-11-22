@@ -16,7 +16,7 @@ async function submitData(employeeId, password, fullName, storeName, position, j
   console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
   
   try {
-    const response = await fetch(apiURL, {
+    const response = await fetch(proxyURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" }, // Gửi yêu cầu JSON
       body: JSON.stringify(data),
