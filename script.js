@@ -41,18 +41,19 @@ document.getElementById("backToWelcomeLogin").addEventListener("click", (functio
   document.getElementById("welcomeContainer").style.display = "block";
 });
 
-// Lưu dữ liệu vào Realtime Database
+// Lưu dữ liệu vào Firestore
 async function saveEmployeeData(employeeId, data) {
   try {
-    await database.ref("employees/" + employeeId).set(data); // Lưu vào node 'employees/employeeId'
-    console.log("Dữ liệu đã được lưu vào Realtime Database!");
+    // Thêm dữ liệu vào collection "employees" với document ID là "employeeId"
+    await db.collection("employees").doc(employeeId).set(data);
+
+    console.log("Dữ liệu đã được lưu thành công!");
     alert("Đăng ký thành công!");
   } catch (error) {
     console.error("Lỗi khi lưu dữ liệu:", error);
-    alert("Không thể lưu dữ liệu vào Realtime Database.");
+    alert("Không thể lưu dữ liệu vào Firestore.");
   }
 }
-
 // Gọi hàm khi người dùng đăng ký
 document.getElementById("registerForm").addEventListener("submit", (event) => {
   event.preventDefault();
