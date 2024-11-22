@@ -1,21 +1,4 @@
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBYKq7cfWvR7Ex7CB2O43ql12mEIu_tJD4",
-  authDomain: "tocotoco-9b6d7.firebaseapp.com",
-  projectId: "tocotoco-9b6d7",
-  storageBucket: "tocotoco-9b6d7.appspot.com",
-  messagingSenderId: "238255895493",
-  appId: "1:238255895493:web:90aaf46d56ab60ee3911ac",
-  measurementId: "G-NPLLCJHZMQ",
-};
-// Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-// Kiểm tra Employee ID hợp lệ
-function isValidEmployeeId(id) {
-  return id && id.length >= 5;
-}
 
 // Hiển thị form đăng ký
 document.getElementById("registerBtn").addEventListener("click", function() {
@@ -41,59 +24,52 @@ document.getElementById("backToWelcomeLogin").addEventListener("click", (functio
   document.getElementById("welcomeContainer").style.display = "block";
 });
 
-// Lưu dữ liệu vào Firestore
-async function saveEmployeeData(employeeId, data) {
-  try {
-    // Thêm dữ liệu vào collection "employees" với document ID là "employeeId"
-    await db.collection("employees").doc(employeeId).set(data);
+document.getElementById("registerForm").addEventListener("submit", async function (event) {
+  event.preventDefault(); // Ngăn chặn hành động mặc định (reload trang)
 
-    console.log("Dữ liệu đã được lưu thành công!");
-    alert("Đăng ký thành công!");
-  } catch (error) {
-    console.error("Lỗi khi lưu dữ liệu:", error);
-    alert("Không thể lưu dữ liệu vào Firestore.");
-  }
-}
-// Gọi hàm khi người dùng đăng ký
-document.getElementById("registerForm").addEventListener("submit", (event) => {
-  event.preventDefault();
+  // Lấy dữ liệu từ form
+  const employeeId = document.getElementById("employeeId").value;
+  const password = document.getElementById("password").value;
+  const fullName = document.getElementById("fullName").value;
+  const storeName = document.getElementById("storeName").value;
+  const position = document.getElementById("position").value;
+  const joinDate = document.getElementById("joinDate").value;
+  const phone = document.getElementById("phone").value;
+  const email = document.getElementById("email").value;
 
-  const employeeId = document.getElementById("employeeId").value.trim();
+  // Dữ liệu gửi đến Worker
   const data = {
-    password: document.getElementById("password").value.trim(),
-    fullName: document.getElementById("fullName").value.trim(),
-    storeName: document.getElementById("storeName").value.trim(),
-    position: document.getElementById("position").value.trim(),
-    joinDate: document.getElementById("joinDate").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    createdAt: new Date().toISOString(),
+    employeeId,
+    password,
+    fullName,
+    storeName,
+    position,
+    joinDate,
+    phone,
+    email,
   };
 
-  saveEmployeeData(employeeId, data);
-});
-document.getElementById("loginForm").addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
-  const loginPassword = document.getElementById("loginPassword").value.trim();
-
-  if (!isValidEmployeeId(loginEmployeeId)) {
-    document.getElementById("loginEmployeeIdError").style.display = "block";
-    return;
-  } else {
-    document.getElementById("loginEmployeeIdError").style.display = "none";
-  }
-
   try {
-    const doc = await db.collection("employees").doc(loginEmployeeId).get();
-    if (doc.exists && doc.data().password === loginPassword) {
-      alert("Đăng nhập thành công!");
+    // Gửi yêu cầu POST tới Worker
+    const response = await fetch("https://<your-worker-url>/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log(result.message); // Thông báo thành công
+      document.getElementById("successMessage").style.display = "block";
+      document.getElementById("registerFormContainer").style.display = "none";
     } else {
-      alert("ID hoặc mật khẩu không đúng!");
+      console.error("Lỗi khi gửi dữ liệu:", response.statusText);
     }
   } catch (error) {
     console.error("Lỗi:", error);
-    alert("Đã xảy ra lỗi khi đăng nhập!");
   }
-});​18:54/-strong/-heart:>:o:-((:-hĐã gửi Xem trước khi gửiThả Files vào đây để xem lại trước khi gửi
+});
+
+
