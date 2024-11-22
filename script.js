@@ -19,25 +19,25 @@ function isValidEmployeeId(id) {
 }
 
 // Hiển thị form đăng ký
-document.getElementById("registerBtn").addEventListener("click", () => {
+document.getElementById("registerBtn").addEventListener("click", function() {
   document.getElementById("welcomeContainer").style.display = "none";
   document.getElementById("registerFormContainer").style.display = "block";
 });
 
 // Hiển thị form đăng nhập
-document.getElementById("loginBtn").addEventListener("click", () => {
+document.getElementById("loginBtn").addEventListener("click", function(){
   document.getElementById("welcomeContainer").style.display = "none";
   document.getElementById("loginFormContainer").style.display = "block";
 });
 
 // Quay lại màn hình chào mừng từ đăng ký
-document.getElementById("backToWelcome").addEventListener("click", () => {
+document.getElementById("backToWelcome").addEventListener("click", function() {
   document.getElementById("registerFormContainer").style.display = "none";
   document.getElementById("welcomeContainer").style.display = "block";
 });
 
 // Quay lại màn hình chào mừng từ đăng nhập
-document.getElementById("backToWelcomeLogin").addEventListener("click", () => {
+document.getElementById("backToWelcomeLogin").addEventListener("click", (function() {
   document.getElementById("loginFormContainer").style.display = "none";
   document.getElementById("welcomeContainer").style.display = "block";
 });
