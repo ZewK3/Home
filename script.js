@@ -1,6 +1,6 @@
 // Sửa lại async function submitData để sử dụng proxyURL đúng và thêm kiểm tra lỗi
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-  const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/"; // URL của Cloudflare Worker
+  const proxyURL = "https://tocotoco.dailoi1106.workers.dev"; // URL của Cloudflare Worker
   const apiURL = `${proxyURL}/submit`; // Đảm bảo có endpoint API đúng
 
   // Tạo dữ liệu để gửi
@@ -24,14 +24,19 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     });
 
     if (!response.ok) {
-      throw new Error("Network response was not ok");
+      const errorText = await response.text();
+      throw new Error(`Lỗi từ server: ${errorText}`);
     }
 
     const result = await response.json();
-    alert(result.message); // Hiển thị thông báo từ API
+    if (result && result.message) {
+      alert(result.message); // Hiển thị thông báo từ API
+    } else {
+      throw new Error("Không có thông báo từ API.");
+    }
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
-    alert("Không thể gửi dữ liệu. Vui lòng thử lại.");
+    alert("Không thể gửi dữ liệu. Vui lòng thử lại sau.\nChi tiết lỗi: " + error.message);
   }
 }
 
