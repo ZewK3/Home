@@ -14,6 +14,7 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     email,
   };
   console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
+  
   try {
     const response = await fetch(apiURL, {
       method: "POST",
