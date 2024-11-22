@@ -2,8 +2,10 @@
 async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
   const proxyURL = "https://tocotoco.dailoi1106.workers.dev"; // URL của Cloudflare Worker
   const apiURL = `${proxyURL}`; // Đảm bảo có endpoint API đúng
-  // Tạo dữ liệu để gửi
+  
+  // Tạo dữ liệu để gửi, theo định dạng yêu cầu
   const data = {
+    type: "register", // Thêm type để xác định yêu cầu đăng ký
     employeeId,
     password,
     fullName,
@@ -13,21 +15,23 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     phone,
     email,
   };
+
   console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
   
   try {
-    const response = await fetch(proxyURL, {
+    const response = await fetch(apiURL, {
       method: "POST",
       headers: { "Content-Type": "application/json" }, // Gửi yêu cầu JSON
-      body: JSON.stringify(data),
+      body: JSON.stringify(data), // Gửi data dưới dạng JSON
     });
 
+    // Kiểm tra nếu response không thành công
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Lỗi từ server: ${errorText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json(); // Chuyển đổi response sang JSON
     if (result && result.message) {
       alert(result.message); // Hiển thị thông báo từ API
     } else {
