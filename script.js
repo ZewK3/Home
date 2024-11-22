@@ -35,7 +35,17 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   const joinDate = document.getElementById("joinDate").value;
   const phone = document.getElementById("phone").value.trim();
   const email = document.getElementById("email").value.trim();
-
+  
+  if (!employeeId.includes("CHMN") && !employeeId.includes("VP")) {
+    alert("Mã nhân viên phải chứa 'CHMN' hoặc 'VP'!");
+    return;
+  }
+  // Kiểm tra mật khẩu: phải có ít nhất 6 ký tự và có ít nhất một chữ cái in hoa
+  const passwordPattern = /^(?=.*[A-Z]).{6,}$/; // Biểu thức chính quy để kiểm tra
+  if (!passwordPattern.test(password)) {
+    alert("Mật khẩu >= 6 ký tự và chứa chữ cái in hoa.");
+    return;
+  }
   const data = {
     employeeId,
     password,
