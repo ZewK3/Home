@@ -1,67 +1,60 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Liên kết tới file CSS -->
-    <script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js"></script>
+    <title>My Web App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js"></script>
 </head>
 <body>
-
-<!-- Giao diện Đăng Ký -->
-<div class="form-container" id="registerFormContainer">
-    <h2>Đăng Ký</h2>
-    <form id="registerForm">
-        <div class="form-group">
-            <label for="employeeId">Mã Nhân Viên</label>
-            <input type="text" class="form-control" id="employeeId" placeholder="Mã nhân viên" required>
-            <small id="employeeIdError" class="form-text" style="display:none;">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
-        </div>
-        <div class="form-group">
-            <label for="password">Mật Khẩu</label>
-            <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
-        </div>
-        <div class="form-group">
-            <label for="fullName">Tên Nhân Viên</label>
-            <input type="text" class="form-control" id="fullName" placeholder="Tên nhân viên" required>
-        </div>
-        <div class="form-group">
-            <label for="storeName">Tên Cửa Hàng</label>
-            <select class="form-control" id="storeName" required>
-                <option value="">Chọn cửa hàng</option>
-                <option value="Cửa Hàng 1">970 Lạc Long Quân</option>
-                <option value="Cửa Hàng 2">201 Lạc Long Quân</option>
-                <option value="Cửa Hàng 3">478 Luỹ Bán Bích</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="position">Chức Vụ</label>
-            <select class="form-control" id="position" required>
-                <option value="">Chọn chức vụ</option>
-                <option value="Quản Lý Khu Vực">Quản Lý Khu Vực</option>
-                <option value="Quản Lý Cơ Sở">Quản Lý Cơ Sở</option>
-                <option value="TeamLeader">Team Leader</option>
-                <option value="Nhân Viên - FT">Nhân Viên - FT</option>
-                <option value="Nhân Viên - PT">Nhân Viên - PT</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="joinDate">Ngày Vào Làm</label><input type="date" class="form-control" id="joinDate" required>
-        </div>
-        <div class="form-group">
-            <label for="phone">Số Điện Thoại</label>
-            <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" placeholder="Email" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Đăng Ký</button>/-strong/-heart:>:o:-((:-h <button type="button" class="btn btn-secondary" onclick="window.location.href='login.html'">Quay lại Đăng Nhập</button>
+    <h1>Welcome to My Web App</h1>
+    <form id="dataForm">
+        <input type="text" id="dataInput" placeholder="Enter some data" required>
+        <button type="submit">Submit</button>
     </form>
-</div>
 
-<script src="script.js"></script>
+    <script>
+        // Cấu hình Firebase của bạn
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBYKq7cfWvR7Ex7CB2O43ql12mEIu_tJD4",
+  authDomain: "tocotoco-9b6d7.firebaseapp.com",
+  databaseURL: "https://tocotoco-9b6d7-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tocotoco-9b6d7",
+  storageBucket: "tocotoco-9b6d7.firebasestorage.app",
+  messagingSenderId: "238255895493",
+  appId: "1:238255895493:web:90aaf46d56ab60ee3911ac",
+  measurementId: "G-NPLLCJHZMQ"
+};
+
+        // Khởi tạo Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database(app);
+
+        // Lắng nghe sự kiện submit form
+        document.getElementById('dataForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const data = document.getElementById('dataInput').value;
+
+            // Lưu dữ liệu vào Firebase
+            const dataRef = db.ref('data');
+            dataRef.push({
+                value: data,
+                timestamp: new Date().toISOString()
+            });
+
+            // Xóa input sau khi gửi dữ liệu
+            document.getElementById('dataInput').value = '';
+        });
+    </script>
 </body>
 </html>
