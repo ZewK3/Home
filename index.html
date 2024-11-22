@@ -1,221 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng ký và Đăng nhập</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f4f4f4;
-    }
-    .form-container {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 300px;
-    }
-    .form-container h2 {
-      text-align: center;
-    }
-    .form-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    .form-container button {
-      width: 100%;
-      padding: 10px;
-      background: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .form-container button:hover {
-      background: #0056b3;
-    }
-    #errorContainer {
-      color: red;
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký và Đăng Nhập</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Liên kết tới file CSS -->
 </head>
 <body>
-  <div class="form-container" id="welcomeContainer">
-    <h2>Chào mừng</h2>
-    <button id="registerBtn">Đăng ký</button>
-    <button id="loginBtn">Đăng nhập</button>
-  </div>
 
-  <!-- Register Form -->
-  <div class="form-container" id="registerFormContainer" style="display:none;">
-    <h2>Đăng ký</h2>
+<!-- Giao diện Chào Mừng -->
+<div class="welcome-container" id="welcomeContainer">
+    <h1>Chào Mừng!</h1>
+    <p>Chọn một trong hai tùy chọn để tiếp tục</p>
+    <button class="btn btn-primary" id="registerBtn">Đăng Ký</button>
+    <button class="btn btn-primary" id="loginBtn">Đăng Nhập</button>
+</div>
+<!-- <!-- Success Message -->
+<!--   <div id="successMessage" style="display: none;">
+    <h2>Đăng ký thành công!</h2>
+    <p></p>
+    <button onclick="reloadPage()">Quay lại</button>
+  </div> --> 
+<!-- Giao diện Đăng Ký -->
+<div class="form-container" id="registerFormContainer" style="display:none;">
+    <h2>Đăng Ký</h2>
     <form id="registerForm">
-      <input type="text" id="employeeId" placeholder="Mã nhân viên" required />
-      <div id="employeeIdError" style="color: red; display: none;">Mã nhân viên không hợp lệ!</div>
-      <input type="password" id="password" placeholder="Mật khẩu" required />
-      <input type="text" id="fullName" placeholder="Họ và tên" />
-      <input type="text" id="storeName" placeholder="Tên cửa hàng" />
-      <input type="text" id="position" placeholder="Chức vụ" />
-      <input type="date" id="joinDate" />
-      <input type="text" id="phone" placeholder="Số điện thoại" />
-      <input type="email" id="email" placeholder="Email" />
-      <button type="submit">Gửi</button>
+        <div class="form-group">
+            <label for="employeeId">Mã Nhân Viên</label>
+            <input type="text" class="form-control" id="employeeId" placeholder="Mã nhân viên" required>
+            <small id="employeeIdError" class="form-text" style="display:none;">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
+        </div>
+        <div class="form-group">
+            <label for="password">Mật Khẩu</label>
+            <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+        </div>
+        <div class="form-group">
+            <label for="fullName">Tên Nhân Viên</label>
+            <input type="text" class="form-control" id="fullName" placeholder="Tên nhân viên" required>
+        </div>
+        <div class="form-group">
+            <label for="storeName">Tên Cửa Hàng</label>
+            <select class="form-control" id="storeName" required>
+                <option value="">Chọn cửa hàng</option>
+                <option value="Cửa Hàng 1">970 Lạc Long Quân</option>
+                <option value="Cửa Hàng 2">201 Lạc Long Quân</option>
+                <option value="Cửa Hàng 3">478 Luỹ Bán Bích</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="position">Chức Vụ</label>
+            <select class="form-control" id="position" required>
+                <option value="">Chọn chức vụ</option>
+                <option value="Quản Lý Khu Vực">Quản Lý Khu Vực</option>
+                <option value="Quản Lý Cơ Sở">Quản Lý Cơ Sở</option>
+                <option value="TeamLeader">Team Leader</option>
+                <option value="Nhân Viên - FT">Nhân Viên - FT</option>
+                <option value="Nhân Viên - PT">Nhân Viên - PT</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="joinDate">Ngày Vào Làm</label>
+            <input type="date" class="form-control" id="joinDate" required>
+        </div>
+        <div class="form-group">
+            <label for="phone">Số Điện Thoại</label>
+            <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Email" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng Ký</button>
+        <button type="button" class="btn btn-secondary" id="backToWelcome">Quay lại</button>
     </form>
-    <div id="errorContainer"></div>
-  </div>
+</div>
 
-  <!-- Login Form -->
-  <div class="form-container" id="loginFormContainer" style="display:none;">
-    <h2>Đăng nhập</h2>
+<!-- Giao diện Đăng Nhập -->
+<div class="form-container" id="loginFormContainer" style="display:none;">
+    <h2>Đăng Nhập</h2>
     <form id="loginForm">
-      <input type="text" id="loginEmployeeId" placeholder="Mã nhân viên" required />
-      <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
-      <button type="submit">Đăng nhập</button>
+        <div class="form-group">
+            <label for="loginEmployeeId">Mã Nhân Viên</label>
+            <input type="text" class="form-control" id="loginEmployeeId" placeholder="Mã nhân viên" required>
+            <small id="loginEmployeeIdError" class="form-text" style="display:none;">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
+        </div>
+        <div class="form-group">
+            <label for="loginPassword">Mật Khẩu</label>
+            <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+        <button type="button" class="btn btn-secondary" id="backToWelcomeLogin">Quay lại</button>
     </form>
-    <button id="backToWelcomeLogin">Trở lại</button>
-  </div>
+</div>
 
-  <script>
-    // Hàm mã hóa mật khẩu
-    async function hashPassword(password) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-    }
-
-    // Hàm gửi dữ liệu
-    async function submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email) {
-      const proxyURL = "https://noisy-sound-fe4a.dailoi1106.workers.dev/";
-
-      const hashedPassword = await hashPassword(password); // Mã hóa mật khẩu
-
-      const data = {
-        employeeId: String(employeeId || ""),
-        password: hashedPassword,
-        fullName: String(fullName || ""),
-        storeName: String(storeName || ""),
-        position: String(position || ""),
-        joinDate: String(joinDate || ""),
-        phone: String(phone || ""),
-        email: String(email || ""),
-      };
-
-      console.log("Sending data:", data);
-
-      // Trạng thái loading
-      const submitButton = document.querySelector("button[type='submit']");
-      submitButton.disabled = true;
-      submitButton.textContent = "Đang gửi...";
-
-      try {
-        const response = await fetch(proxyURL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-
-        if (!response.ok) {
-          const responseText = await response.text();
-          throw new Error(`Network response was not ok: ${responseText}`);
-        }
-
-        const result = await response.json();
-
-        if (result.status === "success") {
-          alert("Dữ liệu đã được gửi thành công!");
-          showSuccessMessage("Đăng ký thành công!");
-        } else {
-          showError(`Lỗi: ${result.message}`);
-        }
-      } catch (error) {
-        console.error("Có lỗi xảy ra:", error.message);
-        showError("Đã có lỗi xảy ra. Vui lòng thử lại.");
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = "Gửi";
-      }
-    }
-
-    // Hàm kiểm tra tính hợp lệ của mã nhân viên
-    function isValidEmployeeId(employeeId) {
-      return employeeId.includes("CHMN") || employeeId.includes("VP");
-    }
-
-    // Hiển thị thông báo lỗi
-    function showError(message) {
-      const errorContainer = document.getElementById("errorContainer");
-      errorContainer.style.display = "block";
-      errorContainer.textContent = message;
-    }
-
-    // Hiển thị form
-    function showForm(formId) {
-      document.querySelectorAll(".form-container").forEach((form) => {
-        form.style.display = "none";
-      });
-      document.getElementById(formId).style.display = "block";
-    }
-
-    // Chuyển đổi giữa các form
-    document.getElementById("registerBtn").addEventListener("click", () => showForm("registerFormContainer"));
-    document.getElementById("loginBtn").addEventListener("click", () => showForm("loginFormContainer"));
-    document.getElementById("backToWelcome").addEventListener("click", () => showForm("welcomeContainer"));
-    document.getElementById("backToWelcomeLogin").addEventListener("click", () => showForm("welcomeContainer"));
-
-    // Xử lý đăng ký
-    document.getElementById("registerForm").addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const employeeId = document.getElementById("employeeId").value;
-      const password = document.getElementById("password").value;
-      const fullName = document.getElementById("fullName").value;
-      const storeName = document.getElementById("storeName").value;
-      const position = document.getElementById("position").value;
-      const joinDate = document.getElementById("joinDate").value;
-      const phone = document.getElementById("phone").value;
-      const email = document.getElementById("email").value;
-
-      if (!isValidEmployeeId(employeeId)) {
-        document.getElementById("employeeIdError").style.display = "block";
-        return;
-      } else {
-        document.getElementById("employeeIdError").style.display = "none";
-      }
-
-      if (!email || !phone || !password) {
-        showError("Vui lòng điền đầy đủ thông tin.");
-        return;
-      }
-
-      await submitData(employeeId, password, fullName, storeName, position, joinDate, phone, email);
-    });
-
-    // Xử lý đăng nhập
-    document.getElementById("loginForm").addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      const loginEmployeeId = document.getElementById("loginEmployeeId").value;
-      const loginPassword = document.getElementById("loginPassword").value;
-
-      if (!isValidEmployeeId(loginEmployeeId)) {
-        showError("Mã nhân viên không hợp lệ!");
-        return;
-      }
-
-      alert("Đăng nhập thành công!");
-    });
-  </script>
+<script src="script.js"></script>
 </body>
 </html>
