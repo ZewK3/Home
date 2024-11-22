@@ -52,11 +52,11 @@ function showForm(formId) {
   document.getElementById(formId).style.display = "block";
 }
 
-// function showSuccessMessage(message) {
-//   document.getElementById("successMessage").innerHTML = message;
-//   document.getElementById("registerFormContainer").style.display = "none";
-//   document.getElementById("successMessage").style.display = "block";
-// }
+function showSuccessMessage(message) {
+   document.getElementById("successMessage").innerHTML = message;
+   document.getElementById("registerFormContainer").style.display = "none";
+   document.getElementById("successMessage").style.display = "block";
+ }
 
 document.getElementById("registerBtn").addEventListener("click", () => showForm("registerFormContainer"));
 document.getElementById("loginBtn").addEventListener("click", () => showForm("loginFormContainer"));
