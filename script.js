@@ -41,46 +41,37 @@ document.getElementById("backToWelcomeLogin").addEventListener("click", (functio
   document.getElementById("welcomeContainer").style.display = "block";
 });
 
-// Xử lý đăng ký
-document.getElementById("registerForm").addEventListener("submit", async (event) => {
+// Lưu dữ liệu vào Firestore
+async function saveEmployeeData(employeeId, data) {
+  try {
+    // Thêm dữ liệu vào collection "employees" với document ID là "employeeId"
+    await db.collection("employees").doc(employeeId).set(data);
+
+    console.log("Dữ liệu đã được lưu thành công!");
+    alert("Đăng ký thành công!");
+  } catch (error) {
+    console.error("Lỗi khi lưu dữ liệu:", error);
+    alert("Không thể lưu dữ liệu vào Firestore.");
+  }
+}
+// Gọi hàm khi người dùng đăng ký
+document.getElementById("registerForm").addEventListener("submit", (event) => {
   event.preventDefault();
 
   const employeeId = document.getElementById("employeeId").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const fullName = document.getElementById("fullName").value.trim();
-  const storeName = document.getElementById("storeName").value.trim();
-  const position = document.getElementById("position").value.trim();
-  const joinDate = document.getElementById("joinDate").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
+  const data = {
+    password: document.getElementById("password").value.trim(),
+    fullName: document.getElementById("fullName").value.trim(),
+    storeName: document.getElementById("storeName").value.trim(),
+    position: document.getElementById("position").value.trim(),
+    joinDate: document.getElementById("joinDate").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    createdAt: new Date().toISOString(),
+  };
 
-  if (!isValidEmployeeId(employeeId)) {
-    document.getElementById("employeeIdError").style.display = "block";
-    return;
-  } else {
-    document.getElementById("employeeIdError").style.display = "none";
-  }
-
-  try {
-    await db.collection("employees").doc(employeeId).set({
-      employeeId,
-      password,
-      fullName,
-      storeName,
-      position,
-      joinDate,
-      phone,
-      email,
-      createdAt: new Date().toISOString(),
-    });
-
-    alert("Đăng ký thành công!");
-    document.getElementById("registerForm").reset();
-  } catch (error) {
-    console.error("Lỗi:", error);
-    alert("Đã xảy ra lỗi khi đăng ký!");
-  }
-});/-strong/-heart:>:o:-((:-h // Xử lý đăng nhập
+  saveEmployeeData(employeeId, data);
+});
 document.getElementById("loginForm").addEventListener("submit", async (event) => {
   event.preventDefault();
 
