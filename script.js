@@ -61,7 +61,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     if (checkResponse.ok) {
       const existingUser = await checkResponse.json();
-      alert("Mã nhân viên đã tồn tại! Vui lòng sử dụng mã khác.");
+      alert("Mã nhân viên đã tồn tại! Vui lòng sử dụng mã khác");
       return;
     }
 
@@ -80,11 +80,54 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         alert(result.message); // Hiển thị thông báo thành công
         document.getElementById("successMessage").style.display = "block";
         document.getElementById("registerFormContainer").style.display = "none";
+        await delay(3000);
+        document.getElementById("loginFormContainer").style.display = "block";
       } else {
-        alert("Đăng ký thất bại! Vui lòng thử lại.");
+        alert("Đăng ký thất bại! Vui lòng thử lại");
       }
     } else {
       alert("Có lỗi xảy ra khi kiểm tra mã nhân viên!");
+    }
+  } catch (error) {
+    console.error("Lỗi:", error);
+  }
+});
+
+// Xử lý đăng nhập
+document.getElementById("loginForm").addEventListener("submit", async function (event) {
+  event.preventDefault(); // Ngăn reload trang
+
+  // Lấy dữ liệu từ form đăng nhập
+  const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
+  const loginPassword = document.getElementById("loginPassword").value.trim();
+
+  try {
+    // Kiểm tra thông tin đăng nhập
+    const loginResponse = await fetch(
+      `https://tocotoco.dailoi1106.workers.dev/register?employeeId=${loginEmployeeId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (loginResponse.ok) {
+      const user = await loginResponse.json();
+      if (user.password === loginPassword) {
+        // Đăng nhập thành công
+        alert("Đăng nhập thành công!");
+        // Chuyển tới trang chính hoặc giao diện sau khi đăng nhập
+        document.getElementById("loginFormContainer").style.display = "none";
+        document.getElementById("welcomeContainer").style.display = "block";
+      } else {
+        // Mật khẩu sai
+        alert("Mật khẩu không đúng!");
+      }
+    } else {
+      // Mã nhân viên không tồn tại
+      alert("Mã nhân viên không tồn tại!");
     }
   } catch (error) {
     console.error("Lỗi:", error);
