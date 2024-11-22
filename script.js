@@ -115,6 +115,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     if (loginResponse.ok) {
       const user = await loginResponse.json();
+      // Kiểm tra mật khẩu
       if (user.password === loginPassword) {
         // Đăng nhập thành công
         alert("Đăng nhập thành công!");
@@ -125,11 +126,15 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         // Mật khẩu sai
         alert("Mật khẩu không đúng!");
       }
-    } else {
+    } else if (loginResponse.status === 404) {
       // Mã nhân viên không tồn tại
       alert("Mã nhân viên không tồn tại!");
+    } else {
+      alert("Có lỗi xảy ra khi kiểm tra thông tin đăng nhập!");
     }
   } catch (error) {
     console.error("Lỗi:", error);
+    alert("Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại sau.");
   }
 });
+
