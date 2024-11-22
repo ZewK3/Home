@@ -13,32 +13,22 @@ async function submitData(employeeId, password, fullName, storeName, position, j
     email,
   };
   console.log("Sending data:", data); // In ra dữ liệu để kiểm tra
-  try {
-    const response = await fetch(proxyURL, {
+    try {
+    const response = await fetch(apiURL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" }, // Gửi yêu cầu JSON
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
-      const errorDetails = await response.text(); // Đọc nội dung phản hồi lỗi chi tiết
-      throw new Error(`Network response was not ok: ${errorDetails}`);
+      throw new Error("Network response was not ok");
     }
 
-    const result = await response.json(); // Đọc phản hồi từ server
-
-    if (result.status === "success") {
-      alert("Dữ liệu đã được gửi thành công!");
-      // Ẩn form đăng ký và hiển thị thông báo thành công
-      document.getElementById('registerFormContainer').style.display = 'none';
-      document.getElementById('successMessage').innerHTML = 'Đăng ký thành công!';
-      document.getElementById('successMessage').style.display = 'block';
-    } else {
-      alert(`Lỗi: ${result.message}`);
-    }
+    const result = await response.json();
+    alert(result.message);
   } catch (error) {
     console.error("Có lỗi xảy ra:", error.message);
-    alert("Đã có lỗi xảy ra. Vui lòng thử lại.");
+    alert("Không thể gửi dữ liệu. Vui lòng thử lại.");
   }
 }
 
