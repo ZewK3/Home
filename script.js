@@ -57,7 +57,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     if (checkResponse.ok) {
       const existingUser = await checkResponse.json();
-      showNotification("Mã nhân viên đã tồn tại!", "warning");
+      showNotification("Mã nhân viên đã tồn tại!", "warning",3000);
       return;
     }
 
@@ -78,10 +78,10 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         document.getElementById("registerFormContainer").style.display = "none";
         document.getElementById("loginFormContainer").style.display = "block";
       } else {
-        showNotification("Đăng ký thất bại! Vui lòng thử lại", "error");
+        showNotification("Đăng ký thất bại! Vui lòng thử lại", "error",3000);
       }
     } else {
-      showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error");
+      showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error",3000);
     }
   } catch (error) {
     console.error("Lỗi:", error);
@@ -146,27 +146,30 @@ document.getElementById("loginForm").addEventListener("submit", async function (
       
       if (isPasswordCorrect) {
         // Đăng nhập thành công
-        showNotification("Đăng nhập thành công!", "success");
+        showNotification("Đăng nhập thành công!", "success",3000);
       // Lưu thông tin người dùng vào localStorage
         localStorage.setItem("loggedInUser", JSON.stringify(user));
       // Chuyển hướng sang dashboard.html
-         window.location.href = "dashboard.html";
+        setTimeout(() => {
+           window.location.href = "dashboard.html";
+        }, 3000);
+         
       } else {
         // Mật khẩu sai
-        showNotification("Mật khẩu không đúng!", "error");
+        showNotification("Mật khẩu không đúng!", "error",3000);
       }
     } else if (loginResponse.status === 404) {
       // Mã nhân viên không tồn tại
-      showNotification("Mã nhân viên không tồn tại!", "warning");
+      showNotification("Mã nhân viên không tồn tại!", "warning",3000);
     } else {
-      showNotification("Có lỗi xảy ra khi kiểm tra đăng nhập", "error");
+      showNotification("Có lỗi xảy ra khi kiểm tra đăng nhập", "error",3000);
     }
   } catch (error) {
     console.error("Lỗi:", error);
   }
 });
 
-function showNotification(message, type = "success", duration = 30000) {
+function showNotification(message, type = "success", duration ) {
   const notification = document.getElementById("notification");
   // Xóa các class cũ và thêm class mới
   notification.className = type;
