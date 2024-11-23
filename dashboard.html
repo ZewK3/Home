@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .user-info {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 400px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome!</h1>
+  <div class="user-info">
+    <h2>User Information</h2>
+    <p><strong>Employee ID:</strong> <span id="employeeId"></span></p>
+    <p><strong>Full Name:</strong> <span id="fullName"></span></p>
+    <p><strong>Store Name:</strong> <span id="storeName"></span></p>
+    <p><strong>Position:</strong> <span id="position"></span></p>
+    <p><strong>Join Date:</strong> <span id="joinDate"></span></p>
+    <p><strong>Phone:</strong> <span id="phone"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+  </div>
+  <script>
+    // Lấy thông tin người dùng từ localStorage
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (user) {
+      document.getElementById("employeeId").innerText = user.employeeId;
+      document.getElementById("fullName").innerText = user.fullName;
+      document.getElementById("storeName").innerText = user.storeName;
+      document.getElementById("position").innerText = user.position;
+      document.getElementById("joinDate").innerText = user.joinDate;
+      document.getElementById("phone").innerText = user.phone;
+      document.getElementById("email").innerText = user.email;
+    } else {
+      alert("No user data found. Redirecting to login.");
+      window.location.href = "index.html"; // Quay lại trang đăng nhập
+    }
+  </script>
+</body>
+</html>
