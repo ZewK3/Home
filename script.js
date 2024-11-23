@@ -168,9 +168,10 @@ document.getElementById("loginForm").addEventListener("submit", async function (
       if (isPasswordCorrect) {
         // Đăng nhập thành công
         alert("Đăng nhập thành công!");
-        // Chuyển tới trang chính hoặc giao diện sau khi đăng nhập
-        document.getElementById("loginFormContainer").style.display = "none";
-        document.getElementById("welcomeContainer").style.display = "block";
+                // Lưu thông tin người dùng vào localStorage
+        localStorage.setItem("loggedInUser", JSON.stringify(user));
+        // Chuyển hướng sang dashboard.html
+        window.location.href = "dashboard.html";
       } else {
         // Mật khẩu sai
         alert("Mật khẩu không đúng!");
