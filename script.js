@@ -3,29 +3,24 @@ document.getElementById("registerBtn").addEventListener("click", function () {
   document.getElementById("welcomeContainer").style.display = "none";
   document.getElementById("registerFormContainer").style.display = "block";
 });
-
 // Hiển thị form đăng nhập
 document.getElementById("loginBtn").addEventListener("click", function () {
   document.getElementById("welcomeContainer").style.display = "none";
   document.getElementById("loginFormContainer").style.display = "block";
 });
-
 // Quay lại màn hình chào mừng từ đăng ký
 document.getElementById("backToWelcome").addEventListener("click", function () {
   document.getElementById("registerFormContainer").style.display = "none";
   document.getElementById("welcomeContainer").style.display = "block";
 });
-
 // Quay lại màn hình chào mừng từ đăng nhập
 document.getElementById("backToWelcomeLogin").addEventListener("click", function () {
   document.getElementById("loginFormContainer").style.display = "none";
   document.getElementById("welcomeContainer").style.display = "block";
 });
-
 // Xử lý đăng ký
 document.getElementById("registerForm").addEventListener("submit", async function (event) {
   event.preventDefault(); // Ngăn reload trang
-
   // Lấy dữ liệu từ form
   const employeeId = document.getElementById("employeeId").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -37,25 +32,16 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   const email = document.getElementById("email").value.trim();
   
   if (!employeeId.includes("CHMN") && !employeeId.includes("VP")) {
-    alert("Mã nhân viên phải chứa 'CHMN' hoặc 'VP'!");
-    return;
-  }
+     showNotification("Mã nhân viên phải chứa 'CHMN' hoặc 'VP'!", "warning");
+     return;
+ }
   // Kiểm tra mật khẩu: phải có ít nhất 6 ký tự và có ít nhất một chữ cái in hoa
   const passwordPattern = /^(?=.*[A-Z]).{6,}$/; // Biểu thức chính quy để kiểm tra
   if (!passwordPattern.test(password)) {
     alert("Mật khẩu >= 6 ký tự và chứa chữ cái in hoa.");
     return;
   }
-  const data = {
-    employeeId,
-    password,
-    fullName,
-    storeName,
-    position,
-    joinDate,
-    phone,
-    email,
-  };
+  const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email, };
 
   try {
     // Kiểm tra employeeId có tồn tại
@@ -71,7 +57,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     if (checkResponse.ok) {
       const existingUser = await checkResponse.json();
-      alert("Mã nhân viên đã tồn tại! Vui lòng sử dụng mã khác");
+      showNotification("Mã nhân viên đã tồn tại!", "warning");
       return;
     }
 
@@ -87,25 +73,23 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
       if (registerResponse.ok) {
         const result = await registerResponse.json();
-        alert(result.message); // Hiển thị thông báo thành công
+        showNotification(result.message, "success"); // Hiển thị thông báo thành công
         document.getElementById("successMessage").style.display = "block";
         document.getElementById("registerFormContainer").style.display = "none";
         document.getElementById("loginFormContainer").style.display = "block";
       } else {
-        alert("Đăng ký thất bại! Vui lòng thử lại");
+        showNotification("Đăng ký thất bại! Vui lòng thử lại", "error");
       }
     } else {
-      alert("Có lỗi xảy ra khi kiểm tra mã nhân viên!");
+      showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error");
     }
   } catch (error) {
     console.error("Lỗi:", error);
   }
 });
-
 // Xử lý đăng nhập
 document.getElementById("loginForm").addEventListener("submit", async function (event) {
   event.preventDefault(); // Ngăn reload trang
-
   // Lấy dữ liệu từ form đăng nhập
   const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
   const loginPassword = document.getElementById("loginPassword").value.trim();
@@ -124,16 +108,13 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     if (loginResponse.ok) {
       const user = await loginResponse.json();
-
       // Lấy password hash và salt đã lưu
       const storedHash = new Uint8Array(user.password); // Hash đã lưu trong KV
       const storedSalt = new Uint8Array(user.salt); // Salt đã lưu trong KV
-
       // Hàm để mã hóa mật khẩu nhập vào và so sánh với hash đã lưu
       async function verifyPassword(storedHash, storedSalt, inputPassword) {
         const encoder = new TextEncoder();
         const passwordBuffer = encoder.encode(inputPassword); // Mật khẩu nhập vào
-
         // Tạo lại hash từ salt đã lưu và mật khẩu nhập vào
         const hashedInputPassword = await crypto.subtle.importKey(
           "raw",
@@ -157,33 +138,43 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         });
 
         const hashedInputPasswordBuffer = await crypto.subtle.sign("HMAC", hashedInputPassword, passwordBuffer);
-
         // So sánh hash của mật khẩu nhập vào với hash đã lưu
         return storedHash.every((val, index) => val === new Uint8Array(hashedInputPasswordBuffer)[index]);
       }
-
       // Kiểm tra mật khẩu
       const isPasswordCorrect = await verifyPassword(storedHash, storedSalt, loginPassword);
-
+      
       if (isPasswordCorrect) {
         // Đăng nhập thành công
-        alert("Đăng nhập thành công!");
-                // Lưu thông tin người dùng vào localStorage
+        showNotification("Đăng nhập thành công!", "success");
+      // Lưu thông tin người dùng vào localStorage
         localStorage.setItem("loggedInUser", JSON.stringify(user));
-
       // Chuyển hướng sang dashboard.html
          window.location.href = "dashboard.html";
       } else {
         // Mật khẩu sai
-        alert("Mật khẩu không đúng!");
+        showNotification("Mật khẩu không đúng!", "error");
       }
     } else if (loginResponse.status === 404) {
       // Mã nhân viên không tồn tại
-      alert("Mã nhân viên không tồn tại!");
+      showNotification("Mã nhân viên không tồn tại!", "warning");
     } else {
-      alert("Có lỗi xảy ra khi kiểm tra thông tin đăng nhập!");
+      showNotification("Có lỗi xảy ra khi kiểm tra đăng nhập", "error");
     }
   } catch (error) {
     console.error("Lỗi:", error);
   }
 });
+
+function showNotification(message, type = "success", duration = 3000) {
+  const notification = document.getElementById("notification");
+  // Xóa các class cũ và thêm class mới
+  notification.className = type;
+  notification.innerText = message;
+  // Hiển thị thông báo
+  notification.style.display = "block";
+  // Ẩn thông báo sau một thời gian
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, duration);
+}
