@@ -149,3 +149,35 @@ html, body {
         font-size: 30px;
     }
 }
+/* CSS */
+#notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  padding: 15px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  display: none;
+  text-align: center;
+}
+
+#notification.success {
+  background-color: #28a745; /* Màu xanh thành công */
+}
+
+#notification.error {
+  background-color: #dc3545; /* Màu đỏ lỗi */
+}
+
+#notification.warning {
+  background-color: #ffc107; /* Màu vàng cảnh báo */
+}
+
+.hidden {
+  display: none;
+}
+
