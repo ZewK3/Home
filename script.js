@@ -170,8 +170,9 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         alert("Đăng nhập thành công!");
                 // Lưu thông tin người dùng vào localStorage
         localStorage.setItem("loggedInUser", JSON.stringify(user));
-        // Chuyển hướng sang dashboard.html
-        window.location.href = "https://zewk3.github.io/TocoToco/dashboard.html";
+
+      // Chuyển hướng sang dashboard.html
+         window.location.href = "dashboard.html";
       } else {
         // Mật khẩu sai
         alert("Mật khẩu không đúng!");
