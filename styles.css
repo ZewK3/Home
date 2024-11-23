@@ -149,20 +149,23 @@ html, body {
         font-size: 30px;
     }
 }
-/* CSS */
+
+/* CSS cho thông báo */
 #notification {
   position: fixed;
   top: 20px;
-  right: 20px;
-  width: 300px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%; /* Đảm bảo tương thích trên điện thoại */
+  max-width: 400px; /* Giới hạn chiều rộng trên máy tính */
   padding: 15px;
   border-radius: 5px;
   color: #fff;
-  font-size: 14px;
+  font-size: 16px;
+  text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 9999;
   display: none;
-  text-align: center;
 }
 
 #notification.success {
@@ -176,8 +179,3 @@ html, body {
 #notification.warning {
   background-color: #ffc107; /* Màu vàng cảnh báo */
 }
-
-.hidden {
-  display: none;
-}
-
