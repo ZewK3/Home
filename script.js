@@ -166,7 +166,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
   }
 });
 
-function showNotification(message, type = "success", duration = 3000) {
+function showNotification(message, type = "success", duration = 30000) {
   const notification = document.getElementById("notification");
   // Xóa các class cũ và thêm class mới
   notification.className = type;
