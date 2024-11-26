@@ -146,6 +146,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
       
       if (isPasswordCorrect) {
         // Đăng nhập thành công
+        document.getElementById("loginFormContainer").style.display = "none";
         showNotification("Đăng nhập thành công!", "success",3000);
       // Lưu thông tin người dùng vào localStorage
         localStorage.setItem("loggedInUser", JSON.stringify(user));
