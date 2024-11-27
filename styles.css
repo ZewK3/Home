@@ -7,7 +7,117 @@ html, body {
     background-color: #f4f4f4; /* Màu nền cho toàn bộ trang */
 }
 
-/* Giao diện welcome */
+/* Giao diện đăng nhập */
+.form-container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Các trường nhập liệu */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    transition: border-color 0.3s ease;
+}
+
+/* Hiệu ứng khi focus vào trường nhập liệu */
+.form-control:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Thông báo lỗi */
+.form-text {
+    font-size: 12px;
+    color: red;
+}
+
+/* Các nút trong giao diện */
+.btn {
+    padding: 15px 25px;
+    font-size: 18px;
+    cursor: pointer;
+    border: none;
+    margin: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Các nút chính */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px); /* Hiệu ứng nhấn */
+}
+
+/* Các nút phụ */
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px); /* Hiệu ứng nhấn */
+}
+
+/* Responsive cho thiết bị di động */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 15px;
+    }
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+}
+
+/* CSS cho thông báo */
+#notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%; /* Đảm bảo tương thích trên điện thoại */
+  max-width: 400px; /* Giới hạn chiều rộng trên máy tính */
+  padding: 15px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  display: none;
+}
+
+#notification.success {
+  background-color: #28a745; /* Màu xanh thành công */
+}
+
+#notification.error {
+  background-color: #dc3545; /* Màu đỏ lỗi */
+}
+
+#notification.warning {
+  background-color: #ffc107; /* Màu vàng cảnh báo */
+}
+
+/* Giao diện Welcome cho màn hình nhỏ */
 .welcome-container {
     text-align: center;
     margin-top: 50px;
@@ -59,123 +169,23 @@ html, body {
     pointer-events: none;
 }
 
-/* Các nút trong giao diện */
-.btn {
-    padding: 15px 25px;
-    font-size: 18px;
+/* Các liên kết chuyển từ đăng nhập sang đăng ký */
+.welcome-container a {
+    color: white;
+    text-decoration: underline;
     cursor: pointer;
-    border: none;
-    margin: 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-/* Các nút chính */
-.btn-primary {
-    background-color: #007bff;
-    color: white;
+.welcome-container a:hover {
+    text-decoration: none;
 }
 
-.btn-primary:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px); /* Hiệu ứng nhấn */
-}
-
-/* Các nút phụ */
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-    transform: translateY(-2px); /* Hiệu ứng nhấn */
-}
-
-/* Container của form đăng ký và đăng nhập */
-.form-container {
-    max-width: 500px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Các trường nhập liệu */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-control {
+/* Các nút trong giao diện đăng nhập và đăng ký */
+.form-container .btn {
     width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    transition: border-color 0.3s ease;
-}
-
-/* Hiệu ứng khi focus vào trường nhập liệu */
-.form-control:focus {
-    border-color: #007bff;
-    outline: none;
-}
-
-/* Thông báo lỗi */
-.form-text {
-    font-size: 12px;
-    color: red;
 }
 
 /* Hiệu ứng hover cho các nút */
 .btn:hover {
     opacity: 0.9;
-}
-
-/* Responsive cho thiết bị di động */
-@media (max-width: 768px) {
-    .form-container {
-        padding: 15px;
-    }
-    .btn {
-        padding: 10px 20px;
-        font-size: 16px;
-    }
-    .welcome-container {
-        padding: 30px;
-    }
-    .welcome-container h1 {
-        font-size: 30px;
-    }
-}
-
-/* CSS cho thông báo */
-#notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%; /* Đảm bảo tương thích trên điện thoại */
-  max-width: 400px; /* Giới hạn chiều rộng trên máy tính */
-  padding: 15px;
-  border-radius: 5px;
-  color: #fff;
-  font-size: 16px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-  display: none;
-}
-
-#notification.success {
-  background-color: #28a745; /* Màu xanh thành công */
-}
-
-#notification.error {
-  background-color: #dc3545; /* Màu đỏ lỗi */
-}
-
-#notification.warning {
-  background-color: #ffc107; /* Màu vàng cảnh báo */
 }
