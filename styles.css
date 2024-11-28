@@ -3,13 +3,18 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    overflow: hidden; /* Ngăn cuộn trang */
     font-family: 'Arial', sans-serif;
     color: #333;
     background: linear-gradient(120deg, #00b4d8, #0077b6, #90e0ef);
     background-size: 400% 400%;
     animation: gradientAnimation 10s ease infinite;
 }
-
+body {
+    display: flex; /* Để hỗ trợ căn giữa nội dung nếu cần */
+    justify-content: center;
+    align-items: center;
+}
 
 /* Giao diện container chính */
 .form-container {
