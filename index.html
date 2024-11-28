@@ -9,90 +9,95 @@
 <body>
 <!-- Thông báo toàn cục -->
 <div id="notification" class="hidden"></div>
+<div class="login-icon"></div>
+    <!-- Giao diện Đăng Nhập -->
+    <div class="form-container" id="loginFormContainer">
+        <div class="title-container">
+            <h2>Đăng Nhập</h2>
+        </div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmployeeId">Mã Nhân Viên</label>
+                <input type="text" class="form-control" id="loginEmployeeId" placeholder="Mã nhân viên" required>
+                <small id="loginEmployeeIdError" class="form-text text-danger">Phải chứa "CHMN" hoặc "VP".</small>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Mật Khẩu</label>
+                <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" required>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="rememberMe"> Nhớ đăng nhập
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+        </form>
+        <p>Chưa có tài khoản? <button type="button" id="goToRegister" class="link-button">Đăng ký</button></p>
+    </div>
 
-<!-- Giao diện Đăng Nhập -->
-<div class="form-container" id="loginFormContainer">
-    <h2>Đăng Nhập</h2>
-    <form id="loginForm">
-        <div class="form-group">
-            <label for="loginEmployeeId">Mã Nhân Viên</label>
-            <input type="text" class="form-control" id="loginEmployeeId" placeholder="Mã nhân viên" required>
-            <small id="loginEmployeeIdError" class="form-text">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
+    <!-- Giao diện Đăng Ký -->
+    <div class="form-container" id="registerFormContainer" style="display:none;">
+        <div class="title-container">
+            <h2>Đăng Ký</h2>
         </div>
-        <div class="form-group">
-            <label for="loginPassword">Mật Khẩu</label>
-            <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" required>
-        </div>
-        <div class="form-group">
-            <label>
-                <input type="checkbox" id="rememberMe"> Nhớ đăng nhập
-            </label>
-        </div>
-        <button type="submit" class="btn btn-primary">Đăng Nhập</button>
-    </form>
-    <p>Chưa có tài khoản? <a href="javascript:void(0);" id="goToRegister">Đăng ký</a></p>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="employeeId">Mã Nhân Viên</label>
+                <input type="text" class="form-control" id="employeeId" placeholder="Mã nhân viên" required>
+                <small id="employeeIdError" class="form-text text-danger">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
+            </div>
+            <div class="form-group">
+                <label for="password">Mật Khẩu</label>
+                <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+            </div>
+            <div class="form-group">
+                <label for="fullName">Tên Nhân Viên</label>
+                <input type="text" class="form-control" id="fullName" placeholder="Tên nhân viên" required>
+            </div>
+            <div class="form-group">
+                <label for="storeName">Tên Cửa Hàng</label>
+                <select class="form-control" id="storeName" required>
+                    <option value="" disabled selected>Chọn cửa hàng</option>
+                    <option value="ST1">970 Lạc Long Quân</option>
+                    <option value="ST2">201 Lạc Long Quân</option>
+                    <option value="ST3">478 Luỹ Bán Bích</option>
+                    <option value="ST4">156 Âu Cơ</option>
+                    <option value="ST5">29 Trường Sơn</option>
+                    <option value="ST6">152 Nguyễn Phúc Nguyên</option>
+                    <option value="ST7">1 Nguyễn Đình Chính</option>
+                    <option value="ST8">488 Cách Mạng Tháng 8</option>
+                    <option value="ST9">15 Thích Quản Đức</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="position">Chức Vụ</label>
+                <select class="form-control" id="position" required>
+                    <option value="" disabled selected>Chọn chức vụ</option>
+                    <option value="AM">Quản Lý Khu Vực</option>
+                    <option value="QL">Quản Lý Cơ Sở</option>
+                    <option value="TeamLeader">Team Leader</option>
+                    <option value="NVFT">Nhân Viên - FT</option>
+                    <option value="NVPT">Nhân Viên - PT</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="joinDate">Ngày Vào Làm</label>
+                <input type="date" class="form-control" id="joinDate" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Số Điện Thoại</label>
+                <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Email" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Đăng Ký</button>
+            <button type="button" class="btn btn-secondary" id="backToLogin">Quay lại</button>
+        </form>
 </div>
 
-<!-- Giao diện Đăng Ký -->
-<div class="form-container" id="registerFormContainer" style="display:none;">
-    <h2>Đăng Ký</h2>
-    <form id="registerForm">
-        <div class="form-group">
-            <label for="employeeId">Mã Nhân Viên</label>
-            <input type="text" class="form-control" id="employeeId" placeholder="Mã nhân viên" required>
-            <small id="employeeIdError" class="form-text">Mã nhân viên phải chứa "CHMN" hoặc "VP".</small>
-        </div>
-        <div class="form-group">
-            <label for="password">Mật Khẩu</label>
-            <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
-        </div>
-        <div class="form-group">
-            <label for="fullName">Tên Nhân Viên</label>
-            <input type="text" class="form-control" id="fullName" placeholder="Tên nhân viên" required>
-        </div>
-        <div class="form-group">
-            <label for="storeName">Tên Cửa Hàng</label>
-            <select class="form-control" id="storeName" required>
-                <option value="">Chọn cửa hàng</option>
-                <option value="ST1">970 Lạc Long Quân</option>
-                <option value="ST2">201 Lạc Long Quân</option>
-                <option value="ST3">478 Luỹ Bán Bích</option>
-                <option value="ST4">156 Âu Cơ</option>
-                <option value="ST5">29 Trường Sơn</option>
-                <option value="ST6">152 Nguyễn Phúc Nguyên</option>
-                <option value="ST7">1 Nguyễn Đình Chính</option>
-                <option value="ST8">488 Cách Mạng Tháng 8</option>
-                <option value="ST9">15 Thích Quản Đức</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="position">Chức Vụ</label>
-            <select class="form-control" id="position" required>
-                <option value="">Chọn chức vụ</option>
-                <option value="AM">Quản Lý Khu Vực</option>
-                <option value="QL">Quản Lý Cơ Sở</option>
-                <option value="TeamLeader">Team Leader</option>
-                <option value="NVFT">Nhân Viên - FT</option>
-                <option value="NVPT">Nhân Viên - PT</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="joinDate">Ngày Vào Làm</label>
-            <input type="date" class="form-control" id="joinDate" required>
-        </div>
-        <div class="form-group">
-            <label for="phone">Số Điện Thoại</label>
-            <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" placeholder="Email" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Đăng Ký</button>
-        <button type="button" class="btn btn-secondary" id="backToLogin">Quay lại</button>
-    </form>
-</div>
-
+    <!-- Liên kết file JavaScript -->
 <script src="script.js"></script>
 </body>
 </html>
