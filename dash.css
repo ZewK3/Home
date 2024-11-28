@@ -136,6 +136,19 @@ html, body {
     background-color: #ffc107;
     color: #333;
 }
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
 /* Style cho nút Đăng xuất */
 .logout-btn {
     margin-top: auto;
