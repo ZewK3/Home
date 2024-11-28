@@ -1,0 +1,253 @@
+/* Reset mặc định */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: row;  /* Dùng flex-direction: row để bố trí ngang */
+}
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px); /* Đưa tiêu đề xuống dưới */
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0); /* Tiêu đề trở lại vị trí ban đầu */
+    }
+}
+@keyframes waveColorChange {
+    0% {
+        color: #007bff; /* Màu xanh dương ban đầu */
+    }
+    25% {
+        color: #28a745; /* Màu xanh lá */
+    }
+    50% {
+        color: #ffc107; /* Màu vàng */
+    }
+    75% {
+        color: #dc3545; /* Màu đỏ */
+    }
+    100% {
+        color: #007bff; /* Quay lại màu xanh dương ban đầu */
+    }
+}
+
+/* Đảm bảo tiêu đề có độ mượt mà */
+.sidebar h2 {
+    font-size: 30px;
+    font-weight: bold;
+    transition: color 0.3s ease; /* Mượt mà khi đổi màu */
+}
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #9EAEFA;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;  /* Đặt sidebar cố định */
+    left: 0;
+    top: 0;
+    z-index: 1;
+}
+
+/* Tiêu đề trong Sidebar */
+.sidebar h2 {
+    text-align: center; /* Căn giữa tiêu đề */
+    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+    animation: fadeInUp 2s ease-in-out, waveColorChange 10s ease-in-out infinite; /* Hiệu ứng động cho tiêu đề */
+	
+}
+
+/* Danh sách các item */
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Các item trong sidebar */
+.sidebar ul li {
+    margin: 10px 0; /* Tạo khoảng cách giữa các item */
+    border-radius: 5px; /* Bo góc */
+    overflow: hidden; /* Đảm bảo không có phần thừa */
+}
+
+/* Liên kết trong các item */
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333; /* Màu chữ đen */
+    font-size: 18px;
+    padding: 12px 20px;
+    display: block;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển động khi hover */
+    border-radius: 5px;
+    text-align: center; /* Canh giữa chữ */
+    background-color: white; /* Nền trắng */
+    border: 2px solid #000; /* Viền đen */
+}
+
+/* Màu nền khi hover */
+.sidebar ul li a:hover {
+    background-color: #f4f4f4; /* Màu nền sáng khi hover */
+    color: #333; /* Đảm bảo màu chữ không thay đổi */
+    transform: translateX(10px); /* Di chuyển nút sang phải */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
+}
+
+/* Thêm hiệu ứng phóng to khi hover */
+.sidebar ul li a:active {
+    transform: scale(1.05); /* Phóng to nút khi nhấn */
+}
+/* Main content */
+.main {
+    flex: 1;
+    padding: 20px;
+    margin-left: 250px;  /* Đẩy nội dung bên phải qua để tránh bị che khuất bởi sidebar */
+    height: 100vh;  /* Chiếm toàn bộ chiều cao của màn hình */
+    overflow-y: auto;  /* Cho phép cuộn nếu nội dung vượt quá chiều cao */
+    background-color: #f4f4f4;
+}
+
+.main h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+/* Thông báo */
+#notification {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 400px;
+    width: 90%;
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#notification.success {
+    background-color: #28a745;
+}
+
+#notification.error {
+    background-color: #dc3545;
+}
+
+#notification.warning {
+    background-color: #ffc107;
+    color: #333;
+}
+/* Style cho nút Đăng xuất */
+.logout-btn {
+    margin-top: auto;
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #b02a37;
+}
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+select {
+    padding: 5px;
+    font-size: 16px;
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+/* Nút */
+.button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+.time-select {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.schedule-table th {
+    background-color: #007bff;
+    color: white;
+}
