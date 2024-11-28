@@ -1,5 +1,5 @@
 /* Cấu hình cơ bản cho body và html */
-html {
+html , body {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -212,13 +212,12 @@ html {
     }
 }
 body {
-    height: 100%;
     background: linear-gradient(120deg, #00b4d8, #0077b6, #90e0ef);
     background-size: 400% 400%;
     animation: gradientAnimation 10s ease infinite;
     font-family: 'Arial', sans-serif;
     margin: 0;
-    padding: 0;
+    padding: 0;  
 } 
 
 /* Animation cho nền */
