@@ -1,5 +1,5 @@
 /* Cấu hình cơ bản cho body và html */
-html, body {
+html {
     height: 100%;
     margin: 0;
     padding: 0;
@@ -236,7 +236,7 @@ body {
 .title-container {
     text-align: center; /* Căn giữa tiêu đề */
     margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
-    animation: fadeInUp 2s ease-in-out; /* Hiệu ứng động cho tiêu đề */
+    animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
 }
 
 /* Tiêu đề */
