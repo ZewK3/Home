@@ -21,6 +21,10 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   const phone = document.getElementById("phone").value.trim();
   const email = document.getElementById("email").value.trim();
   
+  if (!isValidName(fullName)) {
+        showNotification("Tên nhân viên Không chứa ký tự đặc biệt và không dài quá 30 ký tự","warning");
+        return;
+    }
   if (!employeeId.includes("CHMN") && !employeeId.includes("VP")) {
      showNotification("Mã nhân viên phải chứa 'CHMN' hoặc 'VP'!", "warning");
      return;
@@ -28,7 +32,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   // Kiểm tra mật khẩu: phải có ít nhất 6 ký tự và có ít nhất một chữ cái in hoa
   const passwordPattern = /^(?=.*[A-Z]).{6,}$/; // Biểu thức chính quy để kiểm tra
   if (!passwordPattern.test(password)) {
-    alert("Mật khẩu >= 6 ký tự và chứa chữ cái in hoa.");
+    showNotification("Mật khẩu >= 6 ký tự và chứa chữ cái in hoa","warning");
     return;
   }
   const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email, };
@@ -166,7 +170,10 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     console.error("Lỗi:", error);
   }
 });
-
+function isValidName(name) {
+    const regex = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểẾỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]{1,30}$/;
+    return regex.test(name);
+  }
 function showNotification(message, type = "success", duration = 3000) {
   const notification = document.getElementById("notification");
 
