@@ -1,191 +1,259 @@
-/* Cấu hình cơ bản cho body và html để chiếm toàn bộ màn hình */
+/* Cấu hình cơ bản cho body và html */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4; /* Màu nền cho toàn bộ trang */
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9; /* Màu nền dịu mắt */
+    color: #333;
 }
 
-/* Giao diện đăng nhập */
+/* Giao diện container chính */
 .form-container {
     max-width: 500px;
-    margin: 20px auto;
+    margin: 0 auto; /* Canh giữa trên màn hình */
     padding: 20px;
-    background-color: #fff;
+    background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+
+/* Animation vào trang */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Các trường nhập liệu */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .form-control {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    transition: border-color 0.3s ease;
+    width: 100%; /* Chiều rộng toàn bộ vùng cha */
+    padding: 12px; /* Khoảng cách bên trong */
+    border: 1px solid #ddd; /* Viền */
+    border-radius: 5px; /* Bo tròn viền */
+    font-size: 16px; /* Kích thước chữ */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng khi focus */
+    box-sizing: border-box; /* Đảm bảo padding và border không làm tăng kích thước */
+    margin-top: 1px; /* Khoảng cách giữa các trường */
 }
 
-/* Hiệu ứng khi focus vào trường nhập liệu */
+
+/* Hiệu ứng focus cho trường nhập liệu */
 .form-control:focus {
     border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     outline: none;
 }
 
 /* Thông báo lỗi */
 .form-text {
-    font-size: 12px;
+    font-size: 13px;
     color: red;
+    margin-top: 5px;
 }
 
-/* Các nút trong giao diện */
+/* Nút */
 .btn {
-    padding: 15px 25px;
+    display: block;
+    width: 100%;
+    padding: 15px;
     font-size: 18px;
-    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    color: #fff;
     border: none;
-    margin: 10px;
     border-radius: 5px;
-    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
 }
 
-/* Các nút chính */
+/* Nút chính */
 .btn-primary {
     background-color: #007bff;
-    color: white;
 }
 
 .btn-primary:hover {
     background-color: #0056b3;
-    transform: translateY(-2px); /* Hiệu ứng nhấn */
+    transform: translateY(-2px);
 }
 
-/* Các nút phụ */
+/* Nút phụ */
 .btn-secondary {
     background-color: #6c757d;
-    color: white;
 }
 
 .btn-secondary:hover {
     background-color: #5a6268;
-    transform: translateY(-2px); /* Hiệu ứng nhấn */
+    transform: translateY(-2px);
 }
 
-/* Responsive cho thiết bị di động */
-@media (max-width: 768px) {
-    .form-container {
-        padding: 15px;
-    }
-    .btn {
-        padding: 10px 20px;
-        font-size: 16px;
-    }
-}
-
-/* CSS cho thông báo */
-#notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%; /* Đảm bảo tương thích trên điện thoại */
-  max-width: 400px; /* Giới hạn chiều rộng trên máy tính */
-  padding: 15px;
-  border-radius: 5px;
-  color: #fff;
-  font-size: 16px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
-  display: none;
-}
-
-#notification.success {
-  background-color: #28a745; /* Màu xanh thành công */
-}
-
-#notification.error {
-  background-color: #dc3545; /* Màu đỏ lỗi */
-}
-
-#notification.warning {
-  background-color: #ffc107; /* Màu vàng cảnh báo */
-}
-
-/* Giao diện Welcome cho màn hình nhỏ */
-.welcome-container {
-    text-align: center;
-    margin-top: 50px;
-    padding: 50px;
-    background: #00b4d8;
-    color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    height: calc(100vh - 100px); /* Chiếm toàn bộ chiều cao màn hình trừ phần margin */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Tùy chỉnh tiêu đề */
-.welcome-container h1 {
-    font-size: 40px;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-/* Nền động */
-@keyframes backgroundAnimation {
-    0% {
-        transform: translateX(0) rotate(0deg);
-    }
-    50% {
-        transform: translateX(-50%) rotate(180deg);
-    }
-    100% {
-        transform: translateX(0) rotate(360deg);
-    }
-}
-
-.welcome-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(0, 0, 0, 0) 80%);
-    z-index: -1;
-    animation: backgroundAnimation 10s infinite ease-in-out;
-    pointer-events: none;
-}
-
-/* Các liên kết chuyển từ đăng nhập sang đăng ký */
-.welcome-container a {
-    color: white;
+/* Nút cho liên kết */
+.link-button {
+    background: none;
+    color: #007bff;
+    border: none;
+    font: inherit;
     text-decoration: underline;
     cursor: pointer;
 }
 
-.welcome-container a:hover {
+.link-button:hover {
+    color: #0056b3;
     text-decoration: none;
 }
 
-/* Các nút trong giao diện đăng nhập và đăng ký */
-.form-container .btn {
-    width: 100%;
+/* Thông báo */
+#notification {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 400px;
+    width: 90%;
+    padding: 15px;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Hiệu ứng hover cho các nút */
-.btn:hover {
-    opacity: 0.9;
+#notification.success {
+    background-color: #28a745;
+}
+
+#notification.error {
+    background-color: #dc3545;
+}
+
+#notification.warning {
+    background-color: #ffc107;
+    color: #333;
+}
+
+/* Responsive cho thiết bị nhỏ */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 15px;
+        margin: 20px;
+    }
+    .btn {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+/* Welcome Screen */
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: calc(100vh - 100px);
+    margin: 0 20px;
+    padding: 40px;
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.welcome-container h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.welcome-container a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.welcome-container a:hover {
+    text-decoration: none;
+    color: #bbdefb;
+}
+
+/* Nền động */
+.welcome-container::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 80%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulse 6s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 1;
+    }
+}
+body {
+    background: linear-gradient(120deg, #00b4d8, #0077b6, #90e0ef);
+    background-size: 400% 400%;
+    animation: gradientAnimation 10s ease infinite;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+} 
+
+/* Animation cho nền */
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+/* Khối chứa tiêu đề */
+.title-container {
+    text-align: center; /* Căn giữa tiêu đề */
+    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+    animation: fadeInUp 2s ease-in-out; /* Hiệu ứng động cho tiêu đề */
+}
+
+/* Tiêu đề */
+.title-container h2 {
+    font-size: 28px; /* Kích thước chữ */
+    color: #007bff; /* Màu chữ */
+    margin: 0; /* Loại bỏ margin mặc định */
+}
+
+/* Hiệu ứng động fadeInUp */
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px); /* Đưa tiêu đề xuống dưới */
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0); /* Tiêu đề trở lại vị trí ban đầu */
+    }
 }
