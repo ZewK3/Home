@@ -138,9 +138,6 @@
             localStorage.setItem("lastActivity", now);
             document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
         }
-    } else {
-        // Quay lại trang đăng nhập nếu không có thông tin
-        window.location.href = "index.html";
     }
 
     // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
