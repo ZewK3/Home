@@ -1,112 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <style>
-        /* Reset mặc định */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 250px;
-            background-color: #007bff;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            height: 100vh;
-        }
-
-        .sidebar h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-
-        .sidebar ul {
-            list-style-type: none;
-        }
-
-        .sidebar ul li {
-            margin: 15px 0;
-        }
-
-        .sidebar ul li a {
-            text-decoration: none;
-            color: white;
-            font-size: 18px;
-            padding: 10px 15px;
-            border-radius: 5px;
-            display: block;
-            transition: background-color 0.3s;
-        }
-
-        .sidebar ul li a:hover {
-            background-color: #0056b3;
-        }
-
-        /* Main content */
-        .main {
-            flex: 1;
-            padding: 20px;
-        }
-
-        .main h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-
-        #notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 400px;
-            padding: 15px;
-            border-radius: 5px;
-            color: #fff;
-            font-size: 16px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 9999;
-            display: none;
-        }
-
-        #notification.success {
-            background-color: #28a745; /* Màu xanh thành công */
-        }
-
-        #notification.error {
-            background-color: #dc3545; /* Màu đỏ lỗi */
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>Chức năng</h2>
+        <h2>MENU ©𝕫𝕖𝕨𝕜</h2>
         <ul>
-            <li><a href="#">Đăng ký lịch làm</a></li>
+            <li><a href="#" id="openScheduleRegistration">Đăng ký lịch làm</a></li>
             <li><a href="#">Lịch làm chính thức</a></li>
             <li><a href="#">Thông tin cá nhân</a></li>
             <li><a href="#">Thông tin cửa hàng</a></li>
             <li><a href="#">Cài đặt</a></li>
         </ul>
-        <button id="logout" style="margin-top: auto; background-color: #dc3545; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">Đăng xuất</button>
+        <button id="logout" class="logout-btn">Đăng xuất</button>
     </div>
 
     <!-- Main Content -->
@@ -116,46 +27,6 @@
         <div id="userInfo"></div>
     </div>
 
-    <script>
-        const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
-
-    // Lấy thông tin người dùng từ localStorage
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
-    const lastActivity = localStorage.getItem("lastActivity");
-
-    // Kiểm tra nếu có thông tin người dùng và hoạt động gần nhất
-    if (user && lastActivity) {
-        const now = new Date().getTime();
-
-        // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
-        if (now - lastActivity > LOGOUT_TIME) {
-            localStorage.removeItem("loggedInUser");
-            localStorage.removeItem("lastActivity");
-            alert("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
-            window.location.href = "index.html";
-        } else {
-            // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
-            localStorage.setItem("lastActivity", now);
-            document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
-        }
-    }
-
-    // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
-    const updateLastActivity = () => {
-        localStorage.setItem("lastActivity", new Date().getTime());
-    };
-
-    // Lắng nghe sự kiện hoạt động của người dùng (di chuột, nhấn phím, cuộn)
-    window.addEventListener("mousemove", updateLastActivity);
-    window.addEventListener("keydown", updateLastActivity);
-    window.addEventListener("scroll", updateLastActivity);
-
-    // Xử lý logout
-    document.getElementById("logout").addEventListener("click", function () {
-        localStorage.removeItem("loggedInUser");
-        localStorage.removeItem("lastActivity");
-        window.location.href = "index.html";
-    });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
