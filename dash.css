@@ -251,3 +251,68 @@ button:hover {
     background-color: #007bff;
     color: white;
 }
+@media (max-width: 768px) {
+    html, body {
+        flex-direction: column;  /* Đổi từ row sang column cho giao diện mobile */
+    }
+
+    .sidebar {
+        width: 100%;  /* Sidebar chiếm toàn bộ chiều rộng */
+        height: auto;  /* Giảm chiều cao sidebar cho thiết bị di động */
+        position: relative;  /* Đặt sidebar không cố định */
+    }
+
+    .sidebar h2 {
+        font-size: 24px; /* Giảm kích thước font tiêu đề */
+    }
+
+    .sidebar ul li a {
+        font-size: 16px; /* Giảm kích thước font của các item */
+        padding: 10px 15px;  /* Giảm khoảng cách padding cho phù hợp */
+    }
+
+    .main {
+        margin-left: 0;  /* Đẩy phần nội dung lên ngay dưới thanh điều hướng */
+        padding: 10px;
+    }
+
+    .logout-btn {
+        font-size: 14px;  /* Giảm kích thước chữ của nút Đăng xuất */
+        padding: 8px;  /* Giảm khoảng cách cho nút */
+    }
+
+    table th, table td {
+        padding: 8px; /* Giảm padding trong bảng */
+    }
+
+    .button-container {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .btn {
+        font-size: 14px;  /* Giảm kích thước font cho nút */
+        padding: 8px 15px; /* Giảm padding */
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .sidebar ul li a {
+        font-size: 14px; /* Giảm kích thước font item */
+        padding: 8px 10px;  /* Giảm padding */
+    }
+
+    .main h1 {
+        font-size: 24px; /* Giảm kích thước tiêu đề trong main */
+    }
+
+    #notification {
+        font-size: 14px; /* Giảm font size cho thông báo */
+        width: 80%; /* Giảm width thông báo cho vừa màn hình nhỏ */
+    }
+}
