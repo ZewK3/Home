@@ -10,7 +10,7 @@ html, body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     display: flex;
-    flex-direction: column;  /* Sử dụng column để làm cho các phần tử chính đứng theo chiều dọc */
+    flex-direction: row;  /* Dùng flex-direction: row để bố trí ngang */
 }
 @keyframes fadeInUp {
     0% {
@@ -40,6 +40,12 @@ html, body {
     }
 }
 
+/* Đảm bảo tiêu đề có độ mượt mà */
+.sidebar h2 {
+    font-size: 30px;
+    font-weight: bold;
+    transition: color 0.3s ease; /* Mượt mà khi đổi màu */
+}
 /* Sidebar */
 .sidebar {
     width: 250px;
@@ -49,7 +55,7 @@ html, body {
     flex-direction: column;
     padding: 20px;
     height: 100vh;
-    position: fixed;
+    position: fixed;  /* Đặt sidebar cố định */
     left: 0;
     top: 0;
     z-index: 1;
@@ -57,9 +63,10 @@ html, body {
 
 /* Tiêu đề trong Sidebar */
 .sidebar h2 {
-    text-align: center;
-    margin-bottom: 10px;
-    animation: fadeInUp 2s ease-in-out, waveColorChange 10s ease-in-out infinite;
+    text-align: center; /* Căn giữa tiêu đề */
+    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+    animation: fadeInUp 2s ease-in-out, waveColorChange 10s ease-in-out infinite; /* Hiệu ứng động cho tiêu đề */
+	
 }
 
 /* Danh sách các item */
@@ -69,42 +76,52 @@ html, body {
     margin: 0;
 }
 
+/* Các item trong sidebar */
 .sidebar ul li {
-    margin: 10px 0;
-    border-radius: 5px;
-    overflow: hidden;
+    margin: 10px 0; /* Tạo khoảng cách giữa các item */
+    border-radius: 5px; /* Bo góc */
+    overflow: hidden; /* Đảm bảo không có phần thừa */
 }
 
 /* Liên kết trong các item */
 .sidebar ul li a {
     text-decoration: none;
-    color: #333;
+    color: #333; /* Màu chữ đen */
     font-size: 18px;
     padding: 12px 20px;
     display: block;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển động khi hover */
     border-radius: 5px;
-    text-align: center;
-    background-color: white;
-    border: 2px solid #000;
+    text-align: center; /* Canh giữa chữ */
+    background-color: white; /* Nền trắng */
+    border: 2px solid #000; /* Viền đen */
 }
 
 /* Màu nền khi hover */
 .sidebar ul li a:hover {
-    background-color: #f4f4f4;
-    color: #333;
-    transform: translateX(10px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #f4f4f4; /* Màu nền sáng khi hover */
+    color: #333; /* Đảm bảo màu chữ không thay đổi */
+    transform: translateX(10px); /* Di chuyển nút sang phải */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
 }
 
+/* Thêm hiệu ứng phóng to khi hover */
+.sidebar ul li a:active {
+    transform: scale(1.05); /* Phóng to nút khi nhấn */
+}
 /* Main content */
 .main {
     flex: 1;
     padding: 20px;
-    margin-left: 250px;
-    height: 100vh;
-    overflow-y: auto;
+    margin-left: 250px;  /* Đẩy nội dung bên phải qua để tránh bị che khuất bởi sidebar */
+    height: 100vh;  /* Chiếm toàn bộ chiều cao của màn hình */
+    overflow-y: auto;  /* Cho phép cuộn nếu nội dung vượt quá chiều cao */
     background-color: #f4f4f4;
+}
+
+.main h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
 }
 
 /* Thông báo */
@@ -124,6 +141,7 @@ html, body {
     display: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 #notification.success {
     background-color: #28a745;
 }
@@ -135,6 +153,23 @@ html, body {
 #notification.warning {
     background-color: #ffc107;
     color: #333;
+}
+/* Style cho nút Đăng xuất */
+.logout-btn {
+    margin-top: auto;
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #b02a37;
 }
 form {
     max-width: 400px;
@@ -149,22 +184,6 @@ form {
     margin-bottom: 15px;
 }
 
-/* Style cho nút Đăng xuất */
-.logout-btn {
-    margin-top: auto;
-    background-color: #dc3545;
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.logout-btn:hover {
-    background-color: #b02a37;
-}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -232,7 +251,6 @@ button:hover {
     background-color: #007bff;
     color: white;
 }
-/* Tối ưu cho các thiết bị di động */
 @media (max-width: 768px) {
     html, body {
         flex-direction: column;  /* Đổi từ row sang column cho giao diện mobile */
