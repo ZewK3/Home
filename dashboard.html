@@ -117,21 +117,48 @@
     </div>
 
     <script>
-        // Lấy thông tin người dùng từ localStorage
-        const user = JSON.parse(localStorage.getItem("loggedInUser"));
+        const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 
-        if (user) {
-            document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
-        } else {
-            // Quay lại trang đăng nhập nếu không có thông tin
-            window.location.href = "index.html";
-        }
+    // Lấy thông tin người dùng từ localStorage
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const lastActivity = localStorage.getItem("lastActivity");
 
-        // Xử lý logout
-        document.getElementById("logout").addEventListener("click", function () {
+    // Kiểm tra nếu có thông tin người dùng và hoạt động gần nhất
+    if (user && lastActivity) {
+        const now = new Date().getTime();
+
+        // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
+        if (now - lastActivity > LOGOUT_TIME) {
             localStorage.removeItem("loggedInUser");
+            localStorage.removeItem("lastActivity");
+            alert("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
             window.location.href = "index.html";
-        });
+        } else {
+            // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
+            localStorage.setItem("lastActivity", now);
+            document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
+        }
+    } else {
+        // Quay lại trang đăng nhập nếu không có thông tin
+        window.location.href = "index.html";
+    }
+
+    // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
+    const updateLastActivity = () => {
+        localStorage.setItem("lastActivity", new Date().getTime());
+    };
+
+    // Lắng nghe sự kiện hoạt động của người dùng (di chuột, nhấn phím, cuộn)
+    window.addEventListener("mousemove", updateLastActivity);
+    window.addEventListener("keydown", updateLastActivity);
+    window.addEventListener("scroll", updateLastActivity);
+
+    // Xử lý logout
+    document.getElementById("logout").addEventListener("click", function () {
+        localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("lastActivity");
+        window.location.href = "index.html";
+    });
     </script>
 </body>
 </html>
