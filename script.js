@@ -1,14 +1,13 @@
 // Chuyển đổi giữa giao diện đăng ký và đăng nhập
-document.getElementById("switchToRegister").onclick = function () {
-  document.getElementById("loginFormContainer").classList.add("hidden");
-  document.getElementById("registerFormContainer").classList.remove("hidden");
-};
+document.getElementById("goToRegister").addEventListener("click", function () {
+  document.getElementById("loginFormContainer").style.display = "none";
+  document.getElementById("registerFormContainer").style.display = "block";
+});
 
-document.getElementById("switchToLogin").onclick = function () {
-  document.getElementById("registerFormContainer").classList.add("hidden");
-  document.getElementById("loginFormContainer").classList.remove("hidden");
-};
-
+document.getElementById("backToLogin").addEventListener("click", function () {
+  document.getElementById("registerFormContainer").style.display = "none";
+  document.getElementById("loginFormContainer").style.display = "block";
+});
 // Xử lý đăng ký
 document.getElementById("registerForm").addEventListener("submit", async function (event) {
   event.preventDefault(); // Ngăn reload trang
