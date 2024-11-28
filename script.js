@@ -313,5 +313,10 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             alert("Lịch làm đã được gửi!");
         }
     });
+  document.getElementById("logout").addEventListener("click", function () {
+        localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("lastActivity");
+        window.location.href = "index.html";
+    });
 });
 
