@@ -140,12 +140,12 @@ document.getElementById("loginForm").addEventListener("submit", async function (
                     window.location.href = "dashboard.html";
                 }, 3000);
             } else {
-                showNotification("Mật khẩu không đúng!", "error", 3000);
+                showNotification(errorResult.message ||"Mật khẩu không đúng!", "error", 3000);
             }
         } else if (loginResponse.status === 404) {
-            showNotification("Mã nhân viên không tồn tại!", "warning", 3000);
+            showNotification(errorResult.message ||"Mã nhân viên không tồn tại!", "warning", 3000);
         } else {
-            showNotification("Có lỗi xảy ra khi kiểm tra đăng nhập", "error", 3000);
+            showNotification(errorResult.message || "Có lỗi xảy ra khi kiểm tra đăng nhập", "error", 3000);
         }
     } catch (error) {
         console.error("Lỗi:", error);
