@@ -12,6 +12,9 @@ html, body {
     display: flex;
     flex-direction: row;  /* Dùng flex-direction: row để bố trí ngang */
 }
+#backButton.hidden {
+    display: none;
+}
 @keyframes fadeInUp {
     0% {
         opacity: 0;
@@ -39,6 +42,7 @@ html, body {
         color: #007bff; /* Quay lại màu xanh dương ban đầu */
     }
 }
+// css hàm Main
 
 /* Đảm bảo tiêu đề có độ mượt mà */
 .sidebar h2 {
@@ -120,8 +124,12 @@ html, body {
 }
 
 .main h1 {
-    font-size: 28px;
-    margin-bottom: 20px;
+    text-align: center; /* Căn giữa tiêu đề */
+    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+    animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
+    font-size: 28px; /* Kích thước chữ */
+    color: #F08080; /* Màu chữ */
+    margin: 0; /* Loại bỏ margin mặc định */
 }
 
 /* Thông báo */
@@ -174,9 +182,9 @@ html, body {
 form {
     max-width: 400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
     background-color: #fff;
-    border: 1px solid #ddd;
+    border: 2px solid #ddd;
     border-radius: 5px;
 }
 
@@ -230,7 +238,7 @@ button:hover {
 .btn {
     padding: 10px 20px;
     font-size: 16px;
-    background-color: #007bff;
+    background-color: #0099FF;
     color: white;
     border: none;
     border-radius: 5px;
@@ -248,7 +256,7 @@ button:hover {
     border-radius: 4px;
 }
 .schedule-table th {
-    background-color: #007bff;
+    background-color: #0099FF;
     color: white;
 }
 @media (max-width: 768px) {
@@ -295,24 +303,93 @@ button:hover {
         padding: 8px 15px; /* Giảm padding */
     }
 }
+.sidebar, .main {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
 
-@media (max-width: 480px) {
+.sidebar.hidden {
+    transform: translateX(-100%); /* Đẩy sidebar ra khỏi màn hình */
+    opacity: 0;
+}
+
+.main.hidden {
+    transform: translateX(100%); /* Đẩy main ra khỏi màn hình */
+    opacity: 0;
+}
+
+@media (max-width: 768px) {
+    /* Sidebar chiếm toàn bộ màn hình */
     .sidebar {
         width: 100%;
-        padding: 10px;
+        height: 100%;
+        position: fixed;
+        z-index: 10;
+        top: 0;
+        left: 0;
     }
-
-    .sidebar ul li a {
-        font-size: 14px; /* Giảm kích thước font item */
-        padding: 8px 10px;  /* Giảm padding */
+    /* Main chiếm toàn bộ màn hình */
+    .main {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 5%;
+        left: 0;
+        background-color: #f4f4f4;
+        z-index: 5;
     }
-
     .main h1 {
-        font-size: 24px; /* Giảm kích thước tiêu đề trong main */
+        text-align: center; /* Căn giữa tiêu đề */
+        margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+        animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
+        font-size: 20px; /* Kích thước chữ */
+        color: #F08080; /* Màu chữ */
+        margin: 0; /* Loại bỏ margin mặc định */
+    }
+    form {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 10px;
+        background-color: #fff;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+    }
+    /* Sidebar ẩn khi có lớp hidden */
+    .sidebar.hidden {
+        display: none;
+    }
+    table td{
+      font-size: 12px;
+    }
+    .time-select {
+        padding: 8px;
+        font-size: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-align: center;
+    }
+    /* Main ẩn khi có lớp hidden */
+    .main.hidden {
+        display: none;
+    }
+    #backButton {
+        display: block;
+        position: fixed; /* Đặt cố định ở góc màn hình */
+        top: 10px;
+        left: 10px;
+        z-index: 100; /* Luôn hiển thị trên các thành phần khác */
+        background-color: #0099FF; /* Màu nền */
+        color: white; /* Màu chữ */
+        padding: 10px 15px; /* Khoảng cách trong nút */
+        border: none; /* Loại bỏ viền */
+        border-radius: 5px; /* Bo góc nút */
+        font-size: 14px; /* Kích thước chữ */
+        cursor: pointer; /* Thêm con trỏ chỉ tay */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng */
+        transition: background-color 0.3s ease; /* Hiệu ứng khi rê chuột */
     }
 
-    #notification {
-        font-size: 14px; /* Giảm font size cho thông báo */
-        width: 80%; /* Giảm width thông báo cho vừa màn hình nhỏ */
+    #backButton:hover {
+        background-color: #0056b3; /* Màu khi rê chuột */
     }
 }
+
