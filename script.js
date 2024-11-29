@@ -16,7 +16,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
   const password = document.getElementById("password").value.trim();
   const fullName = document.getElementById("fullName").value.trim();
   const storeName = document.getElementById("storeName").value;
-  const position = document.getElementById("position").value;
+  const position = "NV";
   const joinDate = document.getElementById("joinDate").value;
   const phone = document.getElementById("phone").value.trim();
   const email = document.getElementById("email").value.trim();
