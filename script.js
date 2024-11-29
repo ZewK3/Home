@@ -57,7 +57,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     try {
         // Kiểm tra mã nhân viên tồn tại
         const checkResponse = await fetch(
-            "https://zewk.tocotoco.workers.dev?action=register&employeeId=${employeeId}",
+            "https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}",
             {
                 method: "GET",
                 headers: {
