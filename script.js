@@ -31,7 +31,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     // Hàm kiểm tra tên hợp lệ
     function isValidName(name) {
-        // Khai báo và gán giá trị cho trimmedName
+        // Khai báo và gán giá trị
         const trimmedName = name.trim();
         if (trimmedName.length === 0 || trimmedName.length > 30) {
             return false;
