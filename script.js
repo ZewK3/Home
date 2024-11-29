@@ -111,7 +111,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     try {
         const loginResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev/register?employeeId=${loginEmployeeId}?action=login`,
+            `https://zewk.tocotoco.workers.dev?action=login&employeeId=${loginEmployeeId}`,
             {
                 method: "GET",
                 headers: {
