@@ -80,7 +80,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         if (checkResponse.status === 404) {
             // Đăng ký nếu mã nhân viên chưa tồn tại
             const registerResponse = await fetch(
-                "https://zewk.tocotoco.workers.dev/register&action=register",
+                "https://zewk.tocotoco.workers.dev/register?action=register",
                 {
                     method: "POST",
                     headers: {
@@ -116,7 +116,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     try {
         const loginResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev/register?employeeId=${loginEmployeeId}&action=login`,
+            `https://zewk.tocotoco.workers.dev/register?employeeId=${loginEmployeeId}?action=login`,
             {
                 method: "GET",
                 headers: {
