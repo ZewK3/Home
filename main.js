@@ -222,3 +222,20 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
 });
+function showNotification(message, type = "success", duration = 3000) {
+  const notification = document.getElementById("notification");
+
+  // Thêm hiệu ứng hiển thị
+  notification.className = `notification ${type}`;
+  notification.innerText = message;
+  notification.style.display = "block";
+  notification.style.opacity = "1";
+
+  // Ẩn thông báo sau một thời gian
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    setTimeout(() => {
+      notification.style.display = "none";
+    }, 500); // Thời gian animation
+  }, duration);
+}
