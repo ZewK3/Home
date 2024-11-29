@@ -31,17 +31,10 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     // Hàm kiểm tra tên hợp lệ
     function isValidName(name) {
-        const trimmedName = name.trim();
 
-        // Kiểm tra độ dài
         if (trimmedName.length === 0 || trimmedName.length > 30) {
             return false;
         }
-
-        // Biểu thức regex kiểm tra ký tự hợp lệ
-        const regex = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểẾỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴÝỶỸửữựỳỵỷỹ\s]+$/;
-
-        return regex.test(trimmedName);
     }
 
     // Kiểm tra mã nhân viên hợp lệ
@@ -62,7 +55,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     try {
         // Kiểm tra mã nhân viên tồn tại
         const checkResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev/register?employeeId=${employeeId}`,
+            `https://zewk.tocotoco.workers.dev?action=register?employeeId=${employeeId}`,
             {
                 method: "GET",
                 headers: {
