@@ -51,12 +51,23 @@ function createHourOptions(start, end) {
 document.getElementById("openScheduleRegistration").addEventListener("click", function (e) {
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
 
-    // Lấy phần tử main
+    // Lấy phần tử main và sidebar
     const mainContent = document.querySelector(".main");
+    const sidebar = document.querySelector(".sidebar");
+
+    // Kiểm tra nếu là thiết bị di động
+    const isMobile = window.innerWidth <= 768;
+
+    // Ẩn sidebar và hiển thị main trên thiết bị di động
+    if (isMobile) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+    }
 
     // Cập nhật nội dung của main
     mainContent.innerHTML = `
-        <h1>Đăng ký lịch làm</h1>
+        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+        <h1> Đăng ký lịch làm</h1>
         <form id="scheduleForm">
             <table class="schedule-table">
                 <thead>
@@ -90,6 +101,15 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
         </form>
     `;
 
+    // Gắn sự kiện click cho nút "Quay lại" nếu có
+    const backButton = document.getElementById("backButton");
+    if (backButton) {
+        backButton.addEventListener("click", function () {
+            mainContent.classList.add("hidden");
+            sidebar.classList.remove("hidden");
+        });
+    }
+
     // Gắn sự kiện submit cho form
     document.getElementById("scheduleForm").addEventListener("submit", function (e) {
         e.preventDefault();
@@ -120,10 +140,85 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             alert("Lịch làm đã được gửi!");
         }
     });
-  document.getElementById("logout").addEventListener("click", function () {
+
+    // Gắn sự kiện logout
+    document.getElementById("logout").addEventListener("click", function () {
         localStorage.removeItem("loggedInUser");
         localStorage.removeItem("lastActivity");
         window.location.href = "index.html";
     });
 });
 
+// Hàm tạo tùy chọn giờ
+function createHourOptions(start, end) {
+    let options = '<option value="">Chọn giờ</option>';
+    for (let i = start; i <= end; i++) {
+        options += `<option value="${i}">${i}:00</option>`;
+    }
+    return options;
+}
+
+// Hàm hiển thị thông báo
+function showNotification(message) {
+    const notification = document.getElementById("notification");
+    notification.innerText = message;
+    notification.classList.remove("hidden");
+    setTimeout(() => {
+        notification.classList.add("hidden");
+    }, 3000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const sidebar = document.querySelector(".sidebar");
+    const main = document.querySelector(".main");
+    const backButton = document.getElementById("backButton");
+    const listItems = document.querySelectorAll(".sidebar ul li a");
+
+    // Kiểm tra nếu đang ở chế độ màn hình nhỏ
+    const isMobile = () => window.innerWidth <= 768;
+
+    const handleResize = () => {
+        if (!isMobile()) {
+            // Nếu không phải trên điện thoại, đảm bảo cả sidebar và main luôn hiển thị
+            sidebar.classList.remove("hidden");
+            main.classList.remove("hidden");
+        }
+    };
+
+    // Gắn sự kiện click vào các mục trong sidebar
+    listItems.forEach(item => {
+        item.addEventListener("click", (e) => {
+            if (isMobile()) {
+                e.preventDefault();
+                sidebar.classList.add("hidden"); // Ẩn sidebar
+                main.classList.remove("hidden"); // Hiện main
+                backButton.classList.remove("hidden"); // Hiện nút quay lại
+            }
+        });
+    });
+
+    // Gắn sự kiện click vào nút quay lại
+    backButton.addEventListener("click", () => {
+        if (isMobile()) {
+            main.classList.add("hidden"); // Ẩn main
+            sidebar.classList.remove("hidden"); // Hiện sidebar
+        }
+    });
+    const userPosition = "QL" || "EMP"; // Ví dụ: "AD", "QL", hoặc "EMP"
+
+    // Lấy danh sách các mục trong menu
+    const menuItems = document.querySelectorAll("#menuList .menu-item");
+
+    // Duyệt qua từng mục và kiểm tra điều kiện hiển thị
+    menuItems.forEach(item => {
+        const roles = item.getAttribute("data-role").split(","); // Lấy danh sách các role được phép
+        if (!roles.includes(userPosition)) {
+            item.style.display = "none"; // Ẩn mục nếu vị trí không phù hợp
+        }
+    });
+    // Xử lý khi thay đổi kích thước cửa sổ
+    window.addEventListener("resize", handleResize);
+
+    // Gọi kiểm tra kích thước ngay khi tải trang
+    handleResize();
+});
