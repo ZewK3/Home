@@ -31,10 +31,12 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     // Hàm kiểm tra tên hợp lệ
     function isValidName(name) {
-
+        // Khai báo và gán giá trị cho trimmedName
+        const trimmedName = name.trim();
         if (trimmedName.length === 0 || trimmedName.length > 30) {
             return false;
         }
+        return true;
     }
 
     // Kiểm tra mã nhân viên hợp lệ
