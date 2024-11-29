@@ -114,14 +114,13 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 // Xử lý đăng nhập
 document.getElementById("loginForm").addEventListener("submit", async function (event) {
     event.preventDefault(); // Ngăn reload trang
-
     // Lấy dữ liệu từ form đăng nhập
     const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
     const loginPassword = document.getElementById("loginPassword").value.trim();
 
     try {
         const loginResponse = await fetch(
-            "https://zewk.tocotoco.workers.dev/?action=login&employeeId=${loginEmployeeId}&password=${password}",
+            "https://zewk.tocotoco.workers.dev/?action=login&employeeId=${loginEmployeeId}&password=${loginPassword}",
             {
                 method: "GET",
                 headers: {
