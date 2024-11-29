@@ -91,10 +91,10 @@ document.getElementById("registerForm").addEventListener("submit", async functio
                 document.getElementById("registerFormContainer").style.display = "none";
                 document.getElementById("loginFormContainer").style.display = "block";
             } else {
-                showNotification("Đăng ký thất bại! Vui lòng thử lại", "error", 3000);
+                showNotification(errorResult.message || "Đăng ký thất bại! Vui lòng thử lại", "error", 3000);
             }
         } else {
-            showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
+            showNotification(errorResult.message || "Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
         }
     } catch (error) {
         console.error("Lỗi:", error);
@@ -151,7 +151,6 @@ function showNotification(message, type = "success", duration = 3000) {
     notification.innerText = message;
     notification.style.display = "block";
     notification.style.opacity = "1";
-
     setTimeout(() => {
         notification.style.opacity = "0";
         setTimeout(() => {
