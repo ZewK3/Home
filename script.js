@@ -31,13 +31,23 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     // Hàm kiểm tra tên hợp lệ
     function isValidName(name) {
-        // Khai báo và gán giá trị
-        const trimmedName = name.trim();
-        if (trimmedName.length === 0 || trimmedName.length > 30) {
-            return false;
-        }
-        return true;
+    // Khai báo và gán giá trị
+    const trimmedName = name.trim();
+
+    // Kiểm tra độ dài của tên (tên phải dài hơn 0 và nhỏ hơn hoặc bằng 30 ký tự)
+    if (trimmedName.length === 0 || trimmedName.length > 30) {
+        return false;
     }
+
+    // Kiểm tra xem tên có chứa ký tự đặc biệt không
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/g;
+    if (specialCharRegex.test(trimmedName)) {
+        return false;
+    }
+
+    return true;
+}
+
 
     // Kiểm tra mã nhân viên hợp lệ
     if (!employeeId.includes("CHMN") && !employeeId.includes("VP")) {
