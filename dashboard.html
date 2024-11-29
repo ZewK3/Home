@@ -11,21 +11,24 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>MENU ©𝕫𝕖𝕨𝕜</h2>
-        <ul>
-            <li><a href="#" id="openScheduleRegistration">Đăng ký lịch làm</a></li>
-            <li><a href="#">Lịch làm chính thức</a></li>
-            <li><a href="#">Thông tin cá nhân</a></li>
-            <li><a href="#">Thông tin cửa hàng</a></li>
-            <li><a href="#">Cài đặt</a></li>
-        </ul>
+        <ul id="menuList">
+        <li class="menu-item" data-role="AD,QL,NVPT,TeamLeader"><a href="#" id="openScheduleRegistration">Đăng ký lịch làm</a></li>
+        <li class="menu-item" data-role="AD,QL,TeamLeader"><a href="#">Lịch làm chính thức</a></li>
+        <li class="menu-item" data-role="AD,QL,TeamLeader,NVPT"><a href="#">Thông tin cá nhân</a></li>
+        <li class="menu-item" data-role="AD"><a href="#">Thông tin cửa hàng</a></li>
+        <li class="menu-item" data-role="AD,QL,TeamLeader"><a href="#">Cài đặt</a></li>
+    </ul>
         <button id="logout" class="logout-btn">Đăng xuất</button>
     </div>
 
     <!-- Main Content -->
     <div class="main">
         <div id="notification" class="hidden"></div>
-        <h1>Dashboard</h1>
+        <button id="backButton" class="btn hidden">Quay lại</button>
+        <div id="content">
+          <h1>Dashboard</h1>
         <div id="userInfo"></div>
+    </div>
     </div>
 
     <script src="main.js"></script>
