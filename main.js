@@ -18,6 +18,7 @@ if (loggedInUser && loggedInUser.employeeId) {
         if (response.ok) {
             const user = await response.json();  // Lưu dữ liệu trả về vào biến user
             // Tiến hành xử lý dữ liệu (ví dụ: hiển thị thông tin người dùng)
+            document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
         } else {
             showNotification("Không tìm thấy người dùng với mã nhân viên này","warning",3000);
         }
@@ -41,7 +42,6 @@ if (user && lastActivity) {
     } else {
         // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
         localStorage.setItem("lastActivity", now);
-        document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
     }
 }
 
@@ -172,16 +172,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
         window.location.href = "index.html";
     });
 });
-
-// Hàm hiển thị thông báo
-function showNotification(message) {
-    const notification = document.getElementById("notification");
-    notification.innerText = message;
-    notification.classList.remove("hidden");
-    setTimeout(() => {
-        notification.classList.add("hidden");
-    }, 3000);
-}
 
 document.addEventListener("DOMContentLoaded", () => {
     const sidebar = document.querySelector(".sidebar");
