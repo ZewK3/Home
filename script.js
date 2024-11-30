@@ -113,45 +113,43 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
 // Xử lý đăng nhập
 document.getElementById("loginForm").addEventListener("submit", async function (event) {
-    event.preventDefault(); // Ngăn reload trang
-    // Lấy dữ liệu từ form đăng nhập
+    event.preventDefault();
+
     const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
     const loginPassword = document.getElementById("loginPassword").value.trim();
 
     try {
-        const loginResponse = await fetch(
-            "https://zewk.tocotoco.workers.dev?action=login&employeeId=${loginEmployeeId}&password=${loginPassword}",
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+        // Gửi yêu cầu login với phương thức POST
+        const loginResponse = await fetch("https://zewk.tocotoco.workers.dev?action=login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ employeeId: loginEmployeeId, password: loginPassword }),
+        });
 
         if (loginResponse.ok) {
-            const user = await loginResponse.json();
-            const isPasswordCorrect = loginPassword === user.password; // Demo chỉ kiểm tra đơn giản
+            const result = await loginResponse.json();
+            showNotification("Đăng nhập thành công!", "success", 3000);
 
-            if (isPasswordCorrect) {
-                showNotification("Đăng nhập thành công!", "success", 3000);
-                localStorage.setItem("loggedInUser", JSON.stringify(user));
-                setTimeout(() => {
-                    window.location.href = "dashboard.html";
-                }, 3000);
-            } else {
-                showNotification("Mật khẩu không đúng!", "error", 3000);
-            }
+            // Lưu thông tin người dùng và chuyển hướng
+            localStorage.setItem("loggedInUser", JSON.stringify(result.user));
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 3000);
+        } else if (loginResponse.status === 401) {
+            showNotification("Mật khẩu không đúng!", "error", 3000);
         } else if (loginResponse.status === 404) {
             showNotification("Mã nhân viên không tồn tại!", "warning", 3000);
         } else {
-            showNotification("Có lỗi xảy ra khi kiểm tra đăng nhập", "error", 3000);
+            showNotification("Đăng nhập thất bại! Vui lòng thử lại.", "error", 3000);
         }
     } catch (error) {
-    // Xử lý lỗi
-    console.error("Lỗi xảy ra:", error.message);
-}
+        console.error("Lỗi xảy ra:", error.message);
+        showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại.", "error", 3000);
+    }
 });
+
 
 // Hàm hiển thị thông báo
 function showNotification(message, type = "success", duration = 3000) {
