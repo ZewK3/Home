@@ -44,7 +44,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     if (specialCharRegex.test(trimmedName)) {
         return false;
     }
-
     return true;
 }
 
