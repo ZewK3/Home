@@ -80,7 +80,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         const checkResponse = await fetch(
             "https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}",
             {
-                method: "GET",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
