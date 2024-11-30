@@ -129,7 +129,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
     const loginPassword = document.getElementById("loginPassword").value.trim();
-    const url = "https://zewk.tocotoco.workers.dev/?action=login&employeeId=${loginEmployeeId}&password=${loginPassword}";
+    const url = "https://zewk.tocotoco.workers.dev?action=login&employeeId=${loginEmployeeId}&password=${loginPassword}";
 
     try {
         // Gửi yêu cầu login với phương thức POST
