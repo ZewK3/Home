@@ -1,17 +1,32 @@
 const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-const employeeId = loggedInUser.employeeId;
 // Lấy thông tin người dùng từ localStorage
-const user = await fetch(
-            "https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}",
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
+if (loggedInUser && loggedInUser.employeeId) {
+    const employeeId = loggedInUser.employeeId;
+
+    try {
+        // Gửi yêu cầu GET đến API và lưu dữ liệu trả về vào biến user
+        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        // Kiểm tra nếu yêu cầu thành công
+        if (response.ok) {
+            const user = await response.json();  // Lưu dữ liệu trả về vào biến user
+            // Tiến hành xử lý dữ liệu (ví dụ: hiển thị thông tin người dùng)
+        } else {
+            showNotification("Không tìm thấy người dùng với mã nhân viên này","warning",3000);
+        }
+    } catch (error) {
+        showNotification("Lỗi khi gửi yêu cầu:", "error" ,3000);
+    }
+} else {
+    showNotification("Chưa có thông tin người dùng đăng nhập","warning",3000);
+}
 const lastActivity = localStorage.getItem("lastActivity");
 
 // Kiểm tra nếu có thông tin người dùng và hoạt động gần nhất
