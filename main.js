@@ -148,7 +148,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
             if (start && end && parseInt(start) >= parseInt(end)) {
                 isValid = false;
-                showNotification(`Giờ vào phải nhỏ hơn giờ ra cho ${day}!`);
+                showNotification("Giờ vào phải nhỏ hơn giờ ra cho ${day}!","warning",3000);
             }
 
             shifts.push({
@@ -160,7 +160,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
         if (isValid) {
             console.log("Lịch làm việc đã chọn:", shifts);
-            alert("Lịch làm đã được gửi!");
+            showNotification("Lịch làm đã được gửi!","success",3000));
         }
     });
 });
