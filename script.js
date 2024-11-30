@@ -143,9 +143,17 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         if (loginResponse.ok) {
             const result = await loginResponse.json();
             showNotification("Đăng nhập thành công!", "success", 3000);
-            showNotification("WELCOME", "success", 3000);
             // Lưu thông tin người dùng và chuyển hướng
-            localStorage.setItem("loggedInUser", JSON.stringify(result.user));
+            localStorage.setItem("loggedInUser", JSON.stringify(data));
+
+            // If "Remember Me" is checked, save the employeeId and password
+            if (rememberMe) {
+                localStorage.setItem("rememberedEmployeeId", loginEmployeeId);
+                localStorage.setItem("rememberedPassword", loginPassword);
+            } else {
+                localStorage.removeItem("rememberedEmployeeId");
+                localStorage.removeItem("rememberedPassword");
+            }
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 3000);
@@ -153,8 +161,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             showNotification("Mật khẩu không đúng!", "error", 3000);
         } else if (loginResponse.status === 404) {
             showNotification("Mã nhân viên không tồn tại!", "warning", 3000);
-            console.log("loginEmployeeId:", loginEmployeeId);
-            console.log("loginPassword:", loginPassword);
+
         } else {
             showNotification("Đăng nhập thất bại! Vui lòng thử lại.", "error", 3000);
         }
