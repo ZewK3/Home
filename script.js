@@ -80,7 +80,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         const checkResponse = await fetch(
             "https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}",
             {
-                method: "POST",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -134,7 +134,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     try {
         // Gửi yêu cầu login với phương thức POST
         const loginResponse = await fetch(url ,{
-            method: "GET",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
