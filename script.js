@@ -134,7 +134,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             const isPasswordCorrect = loginPassword === user.password; // Demo chỉ kiểm tra đơn giản
 
             if (isPasswordCorrect) {
-                showNotification("Đăng nhập thành công!", "success", 3000);
+                showNotification(errorResult.message || "Đăng nhập thành công!", "success", 3000);
                 localStorage.setItem("loggedInUser", JSON.stringify(user));
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
