@@ -41,7 +41,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         showNotification("Tên nhân viên không chứa ký tự đặc biệt và không dài quá 30 ký tự", "warning");
         return;
     }
-
     // Hàm kiểm tra tên hợp lệ
     function isValidName(name) {
     // Khai báo và gán giá trị
