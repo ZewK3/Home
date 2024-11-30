@@ -1,7 +1,17 @@
 const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+const employeeId = loggedInUser.employeeId;
 // Lấy thông tin người dùng từ localStorage
-const user = JSON.parse(localStorage.getItem("loggedInUser"));
+const user = await fetch(
+            "https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}",
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
 const lastActivity = localStorage.getItem("lastActivity");
 
 // Kiểm tra nếu có thông tin người dùng và hoạt động gần nhất
