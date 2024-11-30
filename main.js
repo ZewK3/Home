@@ -4,42 +4,69 @@ let user;
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
-    try {
-        // Gửi yêu cầu GET để lấy thông tin người dùng
-        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+    document.querySelector(".sidebar").style.display = "none";
+    document.getElementById("loading").style.display = "flex";
+    document.getElementById("mainContent").style.display = "none";
 
-        if (response.ok) {
-            user = await response.json();  // Lưu dữ liệu trả về vào biến user
-            // Hiển thị thông tin người dùng
-            document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
-            updateMenuByRole(user.position);
-            // Kiểm tra thời gian hoạt động
-            const lastActivity = localStorage.getItem("lastActivity");
-            if (lastActivity) {
-                const now = new Date().getTime();
-                // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
-                if (now - lastActivity > LOGOUT_TIME) {
-                    localStorage.removeItem("lastActivity");
-                    showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
-                    window.location.href = "index.html";
-                } else {
-                    // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
-                    localStorage.setItem("lastActivity", now);
-                }
-            }
-        } else {
-            showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
+    // Cập nhật thanh tiến độ
+    let progress = 0;
+    const loadingBar = document.getElementById("loadingBar");
+    const loadingText = document.getElementById("loadingText");
+
+    const loadingInterval = setInterval(() => {
+        progress += 5;
+        loadingBar.style.width = `${progress}%`;
+        loadingText.innerText = `Đang tải... ${progress}%`;
+
+        if (progress >= 100) {
+            clearInterval(loadingInterval);
         }
-    } catch (error) {
-        showNotification("Lỗi khi gửi yêu cầu:", "error", 3000);
-    }
+    }, 100); // Tăng tiến độ mỗi 100ms
+    (async () => {
+        try {
+            // Gửi yêu cầu GET để lấy thông tin người dùng
+            const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.ok) {
+                user = await response.json();  // Lưu dữ liệu trả về vào biến user
+                // Hiển thị thông tin người dùng
+                document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
+                updateMenuByRole(user.position);
+                // Kiểm tra thời gian hoạt động
+                const lastActivity = localStorage.getItem("lastActivity");
+                if (lastActivity) {
+                    const now = new Date().getTime();
+                    // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
+                    if (now - lastActivity > LOGOUT_TIME) {
+                        localStorage.removeItem("lastActivity");
+                        showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+                        window.location.href = "index.html";
+                    } else {
+                        // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
+                        localStorage.setItem("lastActivity", now);
+                    }
+                }
+                // Ẩn loading và hiển thị giao diện chính, hiển thị sidebar lại
+                    document.getElementById("loading").style.display = "none";
+                    document.querySelector(".sidebar").style.display = "block";
+                    document.getElementById("mainContent").style.display = "block";
+            } else {
+                showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
+                 document.getElementById("loading").style.display = "none";
+            }
+        } catch (error) {
+            showNotification("Lỗi khi gửi yêu cầu:", "error", 3000);
+            document.getElementById("loading").style.display = "none";
+        }
+    })();
 } else {
     showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
+    document.getElementById("loading").style.display = "none";
 }
 
 // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
