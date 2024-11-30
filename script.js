@@ -78,6 +78,9 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         if (checkResponse.ok) {
             const existingUser = await checkResponse.json();
             showNotification("Mã nhân viên đã tồn tại!", "warning", 3000);
+            console.log("loginEmployeeId:", loginEmployeeId);
+            console.log("loginPassword:", loginPassword);
+
             return;
         }
 
