@@ -3,7 +3,7 @@ const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối �
 const loggedInUser = localStorage.getItem("loggedInUser");
 
 // Kiểm tra xem người dùng có thông tin đăng nhập không
-if (loggedInUser && loggedInUser.employeeId) {
+if (loggedInUser) {
     const employeeId = loggedInUser.employeeId;
 
     try {
