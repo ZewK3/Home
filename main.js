@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Kiểm tra và ẩn các mục menu không phù hợp với vai trò người dùng
-    const userPosition = user?.position || "NV"; // Ví dụ: "AD", "QL", hoặc "EMP"
+    const userPosition = user.position || "NV"; // Ví dụ: "AD", "QL", hoặc "EMP"
     const menuItems = document.querySelectorAll("#menuList .menu-item");
 
     menuItems.forEach(item => {
