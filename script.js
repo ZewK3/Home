@@ -142,7 +142,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         if (loginResponse.ok) {
             const result = await loginResponse.json();
             showNotification("Đăng nhập thành công!", "success", 3000);
-
+            showNotification("WELCOME", "success", 3000);
             // Lưu thông tin người dùng và chuyển hướng
             localStorage.setItem("loggedInUser", JSON.stringify(result.user));
             setTimeout(() => {
