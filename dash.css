@@ -95,19 +95,34 @@ html, body {
     transition: color 0.3s ease; /* Mượt mà khi đổi màu */
 }
 /* Sidebar */
+/* Sidebar */
 .sidebar {
     width: 250px;
     background-color: #9EAEFA;
     color: white;
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    flex-direction: column;  /* Các phần tử con xếp theo chiều dọc */
     padding: 20px;
     height: 100vh;
-    position: fixed;  /* Đặt sidebar cố định */
+    position: fixed;  /* Sidebar cố định */
     left: 0;
     top: 0;
     z-index: 1;
+}
+
+/* Nút Logout */
+.logout-btn {
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    margin-top: auto;  /* Đẩy nút xuống dưới cùng của sidebar */
+    align-self: center;  /* Căn giữa nút theo chiều ngang */
 }
 
 /* Tiêu đề trong Sidebar */
@@ -206,20 +221,6 @@ html, body {
 #notification.warning {
     background-color: #ffc107;
     color: #333;
-}
-/* Style cho nút Đăng xuất */
-.logout-btn {
-    background-color: #dc3545;
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    align-self: center;  /* Căn giữa nút theo chiều ngang */
-    margin-top: 20px; /* Khoảng cách trên nút */
 }
 
 .logout-btn:hover {
