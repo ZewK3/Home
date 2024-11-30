@@ -78,9 +78,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         if (checkResponse.ok) {
             const existingUser = await checkResponse.json();
             showNotification("Mã nhân viên đã tồn tại!", "warning", 3000);
-            console.log("loginEmployeeId:", loginEmployeeId);
-            console.log("loginPassword:", loginPassword);
-
             return;
         }
 
@@ -144,6 +141,8 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             showNotification("Mật khẩu không đúng!", "error", 3000);
         } else if (loginResponse.status === 404) {
             showNotification("Mã nhân viên không tồn tại!", "warning", 3000);
+            console.log("loginEmployeeId:", loginEmployeeId);
+            console.log("loginPassword:", loginPassword);
         } else {
             showNotification("Đăng nhập thất bại! Vui lòng thử lại.", "error", 3000);
         }
