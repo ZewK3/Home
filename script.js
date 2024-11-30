@@ -106,8 +106,9 @@ document.getElementById("registerForm").addEventListener("submit", async functio
             showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
         }
     } catch (error) {
-        console.error("Lỗi:", error);
-    }
+    // Xử lý lỗi
+    console.error("Lỗi xảy ra:", error.message);
+}
 });
 
 // Xử lý đăng nhập
@@ -147,8 +148,9 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             showNotification("Có lỗi xảy ra khi kiểm tra đăng nhập", "error", 3000);
         }
     } catch (error) {
-        console.error("Lỗi:", error);
-    }
+    // Xử lý lỗi
+    console.error("Lỗi xảy ra:", error.message);
+}
 });
 
 // Hàm hiển thị thông báo
