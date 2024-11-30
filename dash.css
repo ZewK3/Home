@@ -14,6 +14,40 @@ html, body {
 #backButton.hidden {
     display: none;
 }
+/* Màn hình loading */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none; /* Ban đầu ẩn đi */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Container của progress bar */
+.loading-container {
+    text-align: center;
+    color: white;
+}
+
+/* Thanh tải */
+.loading-bar {
+    width: 0;
+    height: 20px;
+    background-color: #4caf50;
+    transition: width 1s ease-in-out;
+    border-radius: 5px;
+}
+
+/* Text tải */
+#loadingText {
+    margin-top: 10px;
+    font-size: 18px;
+}
 @keyframes fadeInUp {
     0% {
         opacity: 0;
