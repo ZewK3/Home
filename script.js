@@ -170,3 +170,14 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại.", "error", 3000);
     }
 });
+window.addEventListener('DOMContentLoaded', () => {
+    const rememberedEmployeeId = localStorage.getItem("rememberedEmployeeId");
+    const rememberedPassword = localStorage.getItem("rememberedPassword");
+
+    // If saved credentials exist, pre-fill the form
+    if (rememberedEmployeeId && rememberedPassword) {
+        document.getElementById("loginEmployeeId").value = rememberedEmployeeId;
+        document.getElementById("loginPassword").value = rememberedPassword;
+        document.getElementById("rememberMe").checked = true; // Mark the "Remember Me" checkbox
+    }
+});
