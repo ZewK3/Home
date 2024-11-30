@@ -32,6 +32,22 @@ if (loggedInUser) {
                     localStorage.setItem("lastActivity", now);
                 }
             }
+                const userPosition = user.position; // Mặc định là "NV" nếu không có vai trò
+                // Lấy danh sách các mục menu
+                const menuItems = document.querySelectorAll("#menuList .menu-item");
+
+                // Duyệt qua từng mục menu
+                menuItems.forEach(item => {
+                   const roles = item.getAttribute("data-role"); // Lấy danh sách vai trò từ data-role
+                   if (roles) {
+                          const allowedRoles = roles.split(","); // Chuyển chuỗi vai trò thành mảng
+                       if (!allowedRoles.includes(userPosition)) {
+                        menu-item.classList.add("hidden"); // Thêm class ẩn
+                      }
+                  } else {
+                       console.warn(`Mục menu "${item.textContent}" không có thuộc tính data-role.`);
+                  }
+              });
 
         } else {
             showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
@@ -198,22 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isMobile()) {
             main.classList.add("hidden"); // Ẩn main
             sidebar.classList.remove("hidden"); // Hiện sidebar
-        }
-    });
-    const userPosition = user.position ; // Mặc định là "NV" nếu không có vai trò
-    // Lấy danh sách các mục menu
-    const menuItems = document.querySelectorAll("#menuList .menu-item");
-
-    // Duyệt qua từng mục menu
-    menuItems.forEach(item => {
-        const roles = item.getAttribute("data-role"); // Lấy danh sách vai trò từ data-role
-        if (roles) {
-            const allowedRoles = roles.split(","); // Chuyển chuỗi vai trò thành mảng
-            if (!allowedRoles.includes(userPosition)) {
-                menu-item.classList.add("hidden"); // Thêm class ẩn
-            }
-        } else {
-            console.warn(`Mục menu "${item.textContent}" không có thuộc tính data-role.`);
         }
     });
 
