@@ -6,7 +6,7 @@ if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
     document.querySelector(".sidebar").style.display = "none";
     document.getElementById("loading").style.display = "flex";
-    document.getElementById(".main").style.display = "none";
+    document.querySelector(".main").style.display = "none";
 
     // Cập nhật thanh tiến độ
     let progress = 0;
@@ -54,7 +54,7 @@ if (loggedInUser) {
                 // Ẩn loading và hiển thị giao diện chính, hiển thị sidebar lại
                     document.getElementById("loading").style.display = "none";
                     document.querySelector(".sidebar").style.display = "block";
-                    document.getElementById(".main").style.display = "block";
+                    document.querySelector(".main").style.display = "block";
             } else {
                 showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
                  document.getElementById("loading").style.display = "none";
