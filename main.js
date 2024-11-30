@@ -201,14 +201,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Kiểm tra và ẩn các mục menu không phù hợp với vai trò người dùng
-    const userPosition = user.position || "NV"; // Ví dụ: "AD", "QL", hoặc "EMP"
+    const userPosition = user?.position || "NV"; // Mặc định là "NV" nếu không có vai trò
+
+    // Lấy danh sách các mục menu
     const menuItems = document.querySelectorAll("#menuList .menu-item");
 
+    // Duyệt qua từng mục menu
     menuItems.forEach(item => {
-        const roles = item.getAttribute("data-role").split(","); // Lấy danh sách các role được phép
-        if (!roles.includes(userPosition)) {
-            item.style.display = "none"; // Ẩn mục nếu vị trí không phù hợp
+        const roles = item.getAttribute("data-role"); // Lấy danh sách vai trò từ data-role
+        if (roles) {
+            const allowedRoles = roles.split(","); // Chuyển chuỗi vai trò thành mảng
+            if (!allowedRoles.includes(userPosition)) {
+                item.classList.add("hidden"); // Thêm class ẩn
+            }
+        } else {
+            console.warn(`Mục menu "${item.textContent}" không có thuộc tính data-role.`);
         }
     });
 
