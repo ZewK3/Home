@@ -5,7 +5,7 @@ const loggedInUser = localStorage.getItem("loggedInUser");
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.employeeId;
-
+    console.log(employeeId);
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
