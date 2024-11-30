@@ -200,9 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
             sidebar.classList.remove("hidden"); // Hiện sidebar
         }
     });
-
-    const userPosition = user?.position || "NV"; // Mặc định là "NV" nếu không có vai trò
-    console.log(userPosition);
+    const userPosition = user.position ; // Mặc định là "NV" nếu không có vai trò
     // Lấy danh sách các mục menu
     const menuItems = document.querySelectorAll("#menuList .menu-item");
 
