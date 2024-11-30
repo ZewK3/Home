@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (roles) {
             const allowedRoles = roles.split(","); // Chuyển chuỗi vai trò thành mảng
             if (!allowedRoles.includes(userPosition)) {
-                item.classList.add("hidden"); // Thêm class ẩn
+                menu-item.classList.add("hidden"); // Thêm class ẩn
             }
         } else {
             console.warn(`Mục menu "${item.textContent}" không có thuộc tính data-role.`);
