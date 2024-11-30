@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const userPosition = user?.position || "NV"; // Mặc định là "NV" nếu không có vai trò
-
+    console.log(userPosition);
     // Lấy danh sách các mục menu
     const menuItems = document.querySelectorAll("#menuList .menu-item");
 
