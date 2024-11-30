@@ -1,12 +1,13 @@
 const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-// Lấy thông tin người dùng từ localStorage
+
+// Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser && loggedInUser.employeeId) {
     const employeeId = loggedInUser.employeeId;
 
     try {
-        // Gửi yêu cầu GET đến API và lưu dữ liệu trả về vào biến user
+        // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
             method: "GET",
             headers: {
@@ -14,35 +15,34 @@ if (loggedInUser && loggedInUser.employeeId) {
             },
         });
 
-        // Kiểm tra nếu yêu cầu thành công
         if (response.ok) {
             const user = await response.json();  // Lưu dữ liệu trả về vào biến user
-            // Tiến hành xử lý dữ liệu (ví dụ: hiển thị thông tin người dùng)
+            // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
+
+            // Kiểm tra thời gian hoạt động
+            const lastActivity = localStorage.getItem("lastActivity");
+            if (lastActivity) {
+                const now = new Date().getTime();
+                // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
+                if (now - lastActivity > LOGOUT_TIME) {
+                    localStorage.removeItem("lastActivity");
+                    showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+                    window.location.href = "index.html";
+                } else {
+                    // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
+                    localStorage.setItem("lastActivity", now);
+                }
+            }
+
         } else {
-            showNotification("Không tìm thấy người dùng với mã nhân viên này","warning",3000);
+            showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
         }
     } catch (error) {
-        showNotification("Lỗi khi gửi yêu cầu:", "error" ,3000);
+        showNotification("Lỗi khi gửi yêu cầu:", "error", 3000);
     }
 } else {
-    showNotification("Chưa có thông tin người dùng đăng nhập","warning",3000);
-}
-const lastActivity = localStorage.getItem("lastActivity");
-
-// Kiểm tra nếu có thông tin người dùng và hoạt động gần nhất
-if (user && lastActivity) {
-    const now = new Date().getTime();
-
-    // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
-    if (now - lastActivity > LOGOUT_TIME) {
-        localStorage.removeItem("lastActivity");
-        showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
-        window.location.href = "index.html";
-    } else {
-        // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
-        localStorage.setItem("lastActivity", now);
-    }
+    showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
 }
 
 // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
@@ -61,7 +61,7 @@ document.getElementById("logout").addEventListener("click", function () {
     localStorage.removeItem("lastActivity");
     window.location.href = "index.html";
 });
-// Lắng nghe sự kiện click vào "Đăng ký lịch làm"
+
 // Hàm tạo danh sách giờ
 function createHourOptions(start, end) {
     let options = '<option value="">Chọn giờ</option>';
@@ -91,7 +91,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
     // Cập nhật nội dung của main
     mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1> Đăng ký lịch làm</h1>
+        <h1>Đăng ký lịch làm</h1>
         <form id="scheduleForm">
             <table class="schedule-table">
                 <thead>
@@ -164,13 +164,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             alert("Lịch làm đã được gửi!");
         }
     });
-
-    // Gắn sự kiện logout
-    document.getElementById("logout").addEventListener("click", function () {
-        localStorage.removeItem("loggedInUser");
-        localStorage.removeItem("lastActivity");
-        window.location.href = "index.html";
-    });
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -209,38 +202,40 @@ document.addEventListener("DOMContentLoaded", () => {
             sidebar.classList.remove("hidden"); // Hiện sidebar
         }
     });
-    const userPosition = "QL" || "EMP"; // Ví dụ: "AD", "QL", hoặc "EMP"
 
-    // Lấy danh sách các mục trong menu
+    // Kiểm tra và ẩn các mục menu không phù hợp với vai trò người dùng
+    const userPosition = "QL" || "EMP"; // Ví dụ: "AD", "QL", hoặc "EMP"
     const menuItems = document.querySelectorAll("#menuList .menu-item");
 
-    // Duyệt qua từng mục và kiểm tra điều kiện hiển thị
     menuItems.forEach(item => {
         const roles = item.getAttribute("data-role").split(","); // Lấy danh sách các role được phép
         if (!roles.includes(userPosition)) {
             item.style.display = "none"; // Ẩn mục nếu vị trí không phù hợp
         }
     });
+
     // Xử lý khi thay đổi kích thước cửa sổ
     window.addEventListener("resize", handleResize);
 
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
 });
+
+// Hàm thông báo
 function showNotification(message, type = "success", duration = 3000) {
-  const notification = document.getElementById("notification");
+    const notification = document.getElementById("notification");
 
-  // Thêm hiệu ứng hiển thị
-  notification.className = `notification ${type}`;
-  notification.innerText = message;
-  notification.style.display = "block";
-  notification.style.opacity = "1";
+    // Thêm hiệu ứng hiển thị
+    notification.className = `notification ${type}`;
+    notification.innerText = message;
+    notification.style.display = "block";
+    notification.style.opacity = "1";
 
-  // Ẩn thông báo sau một thời gian
-  setTimeout(() => {
-    notification.style.opacity = "0";
+    // Ẩn thông báo sau một thời gian
     setTimeout(() => {
-      notification.style.display = "none";
-    }, 500); // Thời gian animation
-  }, duration);
+        notification.style.opacity = "0";
+        setTimeout(() => {
+            notification.style.display = "none";
+        }, 500); // Thời gian animation
+    }, duration);
 }
