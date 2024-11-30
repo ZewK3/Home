@@ -101,6 +101,7 @@ html, body {
     color: white;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     padding: 20px;
     height: 100vh;
     position: fixed;  /* Đặt sidebar cố định */
@@ -208,7 +209,6 @@ html, body {
 }
 /* Style cho nút Đăng xuất */
 .logout-btn {
-    margin-top: auto;
     background-color: #dc3545;
     border: none;
     color: white;
@@ -218,6 +218,8 @@ html, body {
     text-align: center;
     font-size: 16px;
     transition: background-color 0.3s;
+    align-self: center;  /* Căn giữa nút theo chiều ngang */
+    margin-top: 20px; /* Khoảng cách trên nút */
 }
 
 .logout-btn:hover {
