@@ -5,7 +5,6 @@ const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
-    console.log(employeeId);
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
@@ -18,7 +17,7 @@ if (loggedInUser) {
         if (response.ok) {
             const user = await response.json();  // Lưu dữ liệu trả về vào biến user
             // Hiển thị thông tin người dùng
-            document.getElementById("userInfo").innerText = `Chào ${user.fullName}, mã nhân viên: ${user.employeeId}`;
+            document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
 
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
@@ -204,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Kiểm tra và ẩn các mục menu không phù hợp với vai trò người dùng
-    const userPosition = "QL" || "EMP"; // Ví dụ: "AD", "QL", hoặc "EMP"
+    const userPosition = user?.position || "NV"; // Ví dụ: "AD", "QL", hoặc "EMP"
     const menuItems = document.querySelectorAll("#menuList .menu-item");
 
     menuItems.forEach(item => {
