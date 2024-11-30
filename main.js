@@ -173,15 +173,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
     });
 });
 
-// Hàm tạo tùy chọn giờ
-function createHourOptions(start, end) {
-    let options = '<option value="">Chọn giờ</option>';
-    for (let i = start; i <= end; i++) {
-        options += `<option value="${i}">${i}:00</option>`;
-    }
-    return options;
-}
-
 // Hàm hiển thị thông báo
 function showNotification(message) {
     const notification = document.getElementById("notification");
