@@ -8,7 +8,20 @@ document.getElementById("backToLogin").addEventListener("click", function () {
     document.getElementById("registerFormContainer").style.display = "none";
     document.getElementById("loginFormContainer").style.display = "block";
 });
+function showNotification(message, type = "success", duration = 3000) {
+    const notification = document.getElementById("notification");
 
+    notification.className = `notification ${type}`;
+    notification.innerText = message;
+    notification.style.display = "block";
+    notification.style.opacity = "1";
+    setTimeout(() => {
+        notification.style.opacity = "0";
+        setTimeout(() => {
+            notification.style.display = "none";
+        }, 500);
+    }, duration);
+}
 // Xử lý đăng ký
 document.getElementById("registerForm").addEventListener("submit", async function (event) {
     event.preventDefault(); // Ngăn reload trang
@@ -151,20 +164,3 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại.", "error", 3000);
     }
 });
-
-
-// Hàm hiển thị thông báo
-function showNotification(message, type = "success", duration = 3000) {
-    const notification = document.getElementById("notification");
-
-    notification.className = `notification ${type}`;
-    notification.innerText = message;
-    notification.style.display = "block";
-    notification.style.opacity = "1";
-    setTimeout(() => {
-        notification.style.opacity = "0";
-        setTimeout(() => {
-            notification.style.display = "none";
-        }, 500);
-    }, duration);
-}
