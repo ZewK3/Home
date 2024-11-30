@@ -142,10 +142,12 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
         if (loginResponse.ok) {
             const result = await loginResponse.json();
+            const now = new Date().getTime();
             showNotification("Đăng nhập thành công!", "success", 3000);
             document.getElementById("loginFormContainer").style.display = "block";
             // Lưu thông tin người dùng và chuyển hướng
             localStorage.setItem("loggedInUser", JSON.stringify(data));
+            localStorage.setItem("lastActivity", now);
 
             // If "Remember Me" is checked, save the employeeId and password
             if (rememberMe) {
