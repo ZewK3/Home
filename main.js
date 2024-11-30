@@ -1,6 +1,6 @@
 const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 
-const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+const loggedInUser = localStorage.getItem("loggedInUser");
 
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser && loggedInUser.employeeId) {
