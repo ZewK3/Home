@@ -20,7 +20,6 @@ if (user && lastActivity) {
 
     // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
     if (now - lastActivity > LOGOUT_TIME) {
-        localStorage.removeItem("loggedInUser");
         localStorage.removeItem("lastActivity");
         showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
         window.location.href = "index.html";
