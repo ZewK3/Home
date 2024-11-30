@@ -134,7 +134,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
     try {
         // Gửi yêu cầu login với phương thức POST
         const loginResponse = await fetch(url ,{
-            method: "POST",
+            method: "GET",
             headers: {
                 "Content-Type": "application/json",
             },
