@@ -129,14 +129,15 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
     const loginPassword = document.getElementById("loginPassword").value.trim();
-
+    const data = {loginEmployeeId,loginPassword};
     try {
         // Gửi yêu cầu login với phương thức POST
-        const loginResponse = await fetch("https://zewk.tocotoco.workers.dev?action=login&employeeId=${loginEmployeeId}&password=${loginPassword}" ,{
+        const loginResponse = await fetch("https://zewk.tocotoco.workers.dev?action=login" ,{
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
+            body: JSON.stringify(data),
         });
 
         if (loginResponse.ok) {
