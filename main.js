@@ -159,7 +159,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
         if (isValid) {
             console.log("Lịch làm việc đã chọn:", shifts);
-            showNotification("Lịch làm đã được gửi!","success",3000));
+            showNotification("Lịch làm đã được gửi!","success",3000);
         }
     });
 });
