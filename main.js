@@ -4,7 +4,7 @@ const loggedInUser = localStorage.getItem("loggedInUser");
 
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
-    const employeeId = loggedInUser.employeeId;
+    const employeeId = loggedInUser.loginEmployeeId;
     console.log(employeeId);
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
