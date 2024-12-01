@@ -25,11 +25,10 @@ if (loggedInUser) {
                 if (progress >= 100) {
                     clearInterval(interval);
                     resolve(); // Hoàn tất tiến trình
-                    // Truy cập phần tử
-                    const element = document.getElementById("myElement");
-                    // Xóa thuộc tính display
-                    element.style.removeProperty("display");
 
+                    // Xóa thuộc tính display cho các phần tử để hiển thị lại
+                    document.querySelector(".sidebar").style.removeProperty("display");
+                    document.querySelector(".main").style.removeProperty("display");
                 }
             }, 100); // Tăng mỗi 100ms
         });
@@ -75,13 +74,13 @@ if (loggedInUser) {
     // Chạy tiến trình
     (async () => {
         try {
-            await updateProgress();
-            await fetchUserData();
+            await updateProgress();  // Chạy cập nhật tiến độ
+            await fetchUserData();   // Tải thông tin người dùng
 
             // Ẩn loading và hiển thị giao diện
             document.getElementById("loading").style.display = "none";
-            document.querySelector(".sidebar").style.display = "block";
-            document.querySelector(".main").style.display = "block";
+            document.querySelector(".sidebar").style.display = "block"; // Hiển thị lại sidebar
+            document.querySelector(".main").style.display = "block";    // Hiển thị lại main
         } catch {
             // Đảm bảo ẩn loading nếu có lỗi
             document.getElementById("loading").style.display = "none";
@@ -91,6 +90,7 @@ if (loggedInUser) {
     showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
     document.getElementById("loading").style.display = "none";
 }
+
 
 // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
 const updateLastActivity = () => {
