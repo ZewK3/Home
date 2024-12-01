@@ -25,7 +25,8 @@ if (loggedInUser) {
                 if (progress >= 100) {
                     clearInterval(interval);
                     resolve(); // Hoàn tất tiến trình
-                    document.querySelector(".sidebar").style.display = "flex";
+                    document.querySelector(".sidebar").removeAttribute("style");
+                    document.querySelector(".main").removeAttribute("style");
                 }
             }, 100); // Tăng mỗi 100ms
         });
