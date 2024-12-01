@@ -265,7 +265,7 @@ table {
 
 th, td {
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #000;
     text-align: center;
 }
 
@@ -316,9 +316,10 @@ button:hover {
 }
 .time-select {
     padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ccc;
+    font-size: 16px;
+    border: 1px solid #000;
     border-radius: 4px;
+    text-align: center;
 }
 .schedule-table th {
     background-color: #0099FF;
@@ -398,13 +399,14 @@ button:hover {
     }
 
     /* Time Select */
-    .time-select {
+     .time-select {
         padding: 8px;
         font-size: 12px;
-        border: 1px solid #ccc;
+        border: 1px solid #000;
         border-radius: 4px;
         text-align: center;
     }
+
 
     /* Nút quay lại */
     #backButton {
