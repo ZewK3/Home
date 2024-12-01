@@ -25,8 +25,11 @@ if (loggedInUser) {
                 if (progress >= 100) {
                     clearInterval(interval);
                     resolve(); // Hoàn tất tiến trình
-                    document.querySelector(".sidebar").removeAttribute("style");
-                    document.querySelector(".main").removeAttribute("style");
+                    // Truy cập phần tử
+                    const element = document.getElementById("myElement");
+                    // Xóa thuộc tính display
+                    element.style.removeProperty("display");
+
                 }
             }, 100); // Tăng mỗi 100ms
         });
