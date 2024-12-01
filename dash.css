@@ -133,13 +133,14 @@ html, body {
     border: none;
     color: white;
     padding: 10px;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
     text-align: center;
     font-size: 16px;
     transition: background-color 0.3s;
-    margin-top: auto;  /* Đẩy nút xuống dưới cùng của sidebar */
-    align-self: center;  /* Căn giữa nút theo chiều ngang */
+    margin-top: auto;
+    align-self: center;
+    border: 2px solid white;
 }
 
 /* Tiêu đề trong Sidebar */
@@ -331,7 +332,7 @@ button:hover {
     /* Sidebar */
     .sidebar {
         width: 100%; /* Chiếm toàn bộ chiều rộng */
-        height: auto;
+        height: 100vh;
         position: fixed;
         z-index: 10;
         top: 0;
@@ -376,8 +377,8 @@ button:hover {
 
     /* Nút Đăng xuất */
     .logout-btn {
-        font-size: 14px; /* Giảm kích thước chữ */
-        padding: 8px; /* Giảm padding */
+        font-size: 16px;
+        padding: 10px;
     }
 
     /* Bảng */
@@ -399,7 +400,7 @@ button:hover {
     /* Time Select */
     .time-select {
         padding: 8px;
-        font-size: 10px;
+        font-size: 12px;
         border: 1px solid #ccc;
         border-radius: 4px;
         text-align: center;
