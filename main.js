@@ -4,85 +4,63 @@ let user;
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
-
-    // Hiển thị giao diện loading và ẩn sidebar/main
     document.querySelector(".sidebar").style.display = "none";
     document.getElementById("loading").style.display = "flex";
     document.querySelector(".main").style.display = "none";
 
+    // Cập nhật thanh tiến độ
+    let progress = 0;
     const loadingBar = document.getElementById("loadingBar");
     const loadingText = document.getElementById("loadingText");
 
-    // Hàm cập nhật thanh tiến độ
-    const updateProgress = () => {
-        let progress = 0;
-        return new Promise((resolve) => {
-            const interval = setInterval(() => {
-                progress += 5;
-                loadingBar.style.width = `${progress}%`;
-                loadingText.innerText = `Đang tải... ${progress}%`;
+    const loadingInterval = setInterval(() => {
+        progress += 5;
+        loadingBar.style.width = `${progress}%`;
+        loadingText.innerText = `Đang tải... ${progress}%`;
 
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    resolve(); // Hoàn tất tiến trình
-
-                    // Xóa thuộc tính display cho các phần tử để hiển thị lại
-                    document.querySelector(".sidebar").style.removeProperty("display");
-                    document.querySelector(".main").style.removeProperty("display");
-                }
-            }, 100); // Tăng mỗi 100ms
-        });
-    };
-
-    // Hàm tải thông tin người dùng
-    const fetchUserData = async () => {
-        try {
-            const response = await fetch(
-                `https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`,
-                {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-
-            if (!response.ok) {
-                showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
-                throw new Error("User not found");
-            }
-
-            const user = await response.json();
-            document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
-            updateMenuByRole(user.position);
-
-            // Kiểm tra thời gian hoạt động
-            const lastActivity = localStorage.getItem("lastActivity");
-            const now = new Date().getTime();
-
-            if (lastActivity && now - lastActivity > LOGOUT_TIME) {
-                localStorage.removeItem("lastActivity");
-                showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
-                window.location.href = "index.html";
-            } else {
-                localStorage.setItem("lastActivity", now);
-            }
-        } catch (error) {
-            showNotification("Lỗi khi tải dữ liệu: " + error.message, "error", 3000);
-            throw error;
+        if (progress >= 100) {
+            clearInterval(loadingInterval);
         }
-    };
-
-    // Chạy tiến trình
+    }, 100); // Tăng tiến độ mỗi 100ms
     (async () => {
         try {
-            await updateProgress();  // Chạy cập nhật tiến độ
-            await fetchUserData();   // Tải thông tin người dùng
+            // Gửi yêu cầu GET để lấy thông tin người dùng
+            const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
 
-            // Ẩn loading và hiển thị giao diện
-            document.getElementById("loading").style.display = "none";
-            document.querySelector(".sidebar").style.display = "block"; // Hiển thị lại sidebar
-            document.querySelector(".main").style.display = "block";    // Hiển thị lại main
-        } catch {
-            // Đảm bảo ẩn loading nếu có lỗi
+            if (response.ok) {
+                user = await response.json();  // Lưu dữ liệu trả về vào biến user
+                // Hiển thị thông tin người dùng
+                document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
+                updateMenuByRole(user.position);
+                // Kiểm tra thời gian hoạt động
+                const lastActivity = localStorage.getItem("lastActivity");
+                if (lastActivity) {
+                    const now = new Date().getTime();
+                    // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
+                    if (now - lastActivity > LOGOUT_TIME) {
+                        localStorage.removeItem("lastActivity");
+                        showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+                        window.location.href = "index.html";
+                    } else {
+                        // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
+                        localStorage.setItem("lastActivity", now);
+                    }
+                }
+                // Ẩn loading và hiển thị giao diện chính, hiển thị sidebar lại
+                    document.getElementById("loading").style.display = "none";
+                    document.querySelector(".sidebar").style.display = "block";
+                    document.querySelector(".main").style.display = "block";
+            } else {
+                showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
+                 document.getElementById("loading").style.display = "none";
+            }
+        } catch (error) {
+            showNotification("Lỗi khi gửi yêu cầu:", "error", 3000);
             document.getElementById("loading").style.display = "none";
         }
     })();
@@ -90,7 +68,6 @@ if (loggedInUser) {
     showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
     document.getElementById("loading").style.display = "none";
 }
-
 
 // Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
 const updateLastActivity = () => {
