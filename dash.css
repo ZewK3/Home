@@ -21,44 +21,61 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex; /* Sử dụng flexbox để căn giữa nội dung */
+    background-color: rgba(0, 0, 0, 0.5); /* Màu nền tối nhẹ */
+    display: flex; /* Flexbox để căn giữa */
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1000; /* Hiển thị trên các thành phần khác */
 }
 
 /* Container của progress bar */
 .loading-container {
     text-align: center;
     color: white;
+    max-width: 300px;
+    margin: 0 auto;
 }
 
 /* Thanh tải */
 .loading-bar {
     width: 0;
     height: 20px;
-    background-color: #4caf50;
-    transition: width 1s ease-in-out; /* Mượt mà khi thay đổi chiều rộng */
+    background: linear-gradient(90deg, #4caf50, #76c7c0); /* Hiệu ứng gradient */
+    transition: width 0.5s cubic-bezier(0.25, 0.8, 0.5, 1); /* Mượt mà hơn */
     border-radius: 5px;
-    animation: loading 3s forwards; /* Thêm animation để thanh tải đầy dần */
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Tạo hiệu ứng nổi */
 }
 
 /* Keyframe cho hiệu ứng tải */
 @keyframes loading {
     0% {
-        width: 0%; /* Bắt đầu từ 0% */
+        width: 0%;
     }
     100% {
-        width: 100%; /* Kết thúc ở 100% */
+        width: 100%;
     }
 }
 
-/* Text tải */
+/* Văn bản tải */
 #loadingText {
     margin-top: 10px;
     font-size: 18px;
+    font-weight: 500;
+    color: #ffffff;
 }
+
+/* Responsive cho mobile */
+@media screen and (max-width: 480px) {
+    .loading-bar {
+        height: 15px; /* Giảm kích thước thanh trên thiết bị nhỏ */
+    }
+
+    #loadingText {
+        font-size: 14px; /* Giảm kích thước văn bản */
+    }
+}
+
 @keyframes fadeInUp {
     0% {
         opacity: 0;
