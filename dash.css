@@ -8,74 +8,11 @@ html, body {
     height: 100%;
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    display: flex; 
     flex-direction: row;  /* Dùng flex-direction: row để bố trí ngang */
 }
 #backButton.hidden {
     display: none;
 }
-/* Màn hình loading */
-.loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Màu nền tối nhẹ */
-    display: flex; /* Flexbox để căn giữa */
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Hiển thị trên các thành phần khác */
-}
-
-/* Container của progress bar */
-.loading-container {
-    text-align: center;
-    color: white;
-    max-width: 300px;
-    margin: 0 auto;
-}
-
-/* Thanh tải */
-.loading-bar {
-    width: 0;
-    height: 20px;
-    background: linear-gradient(90deg, #4caf50, #76c7c0); /* Hiệu ứng gradient */
-    transition: width 0.5s cubic-bezier(0.25, 0.8, 0.5, 1); /* Mượt mà hơn */
-    border-radius: 5px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Tạo hiệu ứng nổi */
-}
-
-/* Keyframe cho hiệu ứng tải */
-@keyframes loading {
-    0% {
-        width: 0%;
-    }
-    100% {
-        width: 100%;
-    }
-}
-
-/* Văn bản tải */
-#loadingText {
-    margin-top: 10px;
-    font-size: 18px;
-    font-weight: 500;
-    color: #ffffff;
-}
-
-/* Responsive cho mobile */
-@media screen and (max-width: 480px) {
-    .loading-bar {
-        height: 15px; /* Giảm kích thước thanh trên thiết bị nhỏ */
-    }
-
-    #loadingText {
-        font-size: 14px; /* Giảm kích thước văn bản */
-    }
-}
-
 @keyframes fadeInUp {
     0% {
         opacity: 0;
@@ -117,36 +54,13 @@ html, body {
     background-color: #9EAEFA;
     color: white;
     display: flex;
-    flex-direction: column;  /* Các phần tử con xếp theo chiều dọc */
+    flex-direction: column;
     padding: 20px;
     height: 100vh;
-    position: fixed;  /* Sidebar cố định */
+    position: fixed;  /* Đặt sidebar cố định */
     left: 0;
     top: 0;
     z-index: 1;
-    position: relative;
-}
-
-/* Nút Logout */
-#logout {
-    background-color: #dc3545; /* Màu nền */
-    border: none; /* Loại bỏ viền */
-    color: white; /* Màu chữ */
-    padding: 10px; /* Khoảng cách bên trong */
-    border-radius: 10px; /* Bo góc */
-    cursor: pointer; /* Hiển thị con trỏ dạng tay khi hover */
-    text-align: center; /* Căn giữa chữ */
-    font-size: 16px; /* Kích thước chữ */
-    transition: background-color 0.3s; /* Hiệu ứng hover */
-    margin-top: auto; /* Đẩy nút xuống dưới cùng nếu dùng Flexbox */
-    align-self: center; /* Căn giữa trong Flexbox */
-    border: 2px solid white; /* Viền trắng */
-}
-
-/* Hiệu ứng khi hover */
-#logout:hover {
-    background-color: #c82333; /* Màu nền khi hover */
-    color: #f8f9fa; /* Màu chữ khi hover */
 }
 
 /* Tiêu đề trong Sidebar */
@@ -246,6 +160,19 @@ html, body {
     background-color: #ffc107;
     color: #333;
 }
+/* Style cho nút Đăng xuất */
+.logout-btn {
+    margin-top: auto;
+    background-color: #dc3545;
+    border: none;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
 
 .logout-btn:hover {
     background-color: #b02a37;
@@ -271,7 +198,7 @@ table {
 
 th, td {
     padding: 10px;
-    border: 1px solid #000;
+    border: 1px solid #ddd;
     text-align: center;
 }
 
@@ -322,79 +249,100 @@ button:hover {
 }
 .time-select {
     padding: 8px;
-    font-size: 16px;
-    border: 1px solid #000;
+    font-size: 14px;
+    border: 1px solid #ccc;
     border-radius: 4px;
-    text-align: center;
 }
 .schedule-table th {
     background-color: #0099FF;
     color: white;
 }
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     html, body {
-        flex-direction: column; /* Đổi từ row sang column cho giao diện mobile */
+        flex-direction: column;  /* Đổi từ row sang column cho giao diện mobile */
     }
 
-    /* Sidebar */
     .sidebar {
-        width: 100%; /* Chiếm toàn bộ chiều rộng */
-        height: 100vh;
+        width: 100%;  /* Sidebar chiếm toàn bộ chiều rộng */
+        height: auto;  /* Giảm chiều cao sidebar cho thiết bị di động */
+        position: relative;  /* Đặt sidebar không cố định */
+    }
+
+    .sidebar h2 {
+        font-size: 24px; /* Giảm kích thước font tiêu đề */
+    }
+
+    .sidebar ul li a {
+        font-size: 16px; /* Giảm kích thước font của các item */
+        padding: 10px 15px;  /* Giảm khoảng cách padding cho phù hợp */
+    }
+
+    .main {
+        margin-left: 0;  /* Đẩy phần nội dung lên ngay dưới thanh điều hướng */
+        padding: 10px;
+    }
+
+    .logout-btn {
+        font-size: 14px;  /* Giảm kích thước chữ của nút Đăng xuất */
+        padding: 8px;  /* Giảm khoảng cách cho nút */
+    }
+
+    table th, table td {
+        padding: 8px; /* Giảm padding trong bảng */
+    }
+
+    .button-container {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .btn {
+        font-size: 14px;  /* Giảm kích thước font cho nút */
+        padding: 8px 15px; /* Giảm padding */
+    }
+}
+.sidebar, .main {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.sidebar.hidden {
+    transform: translateX(-100%); /* Đẩy sidebar ra khỏi màn hình */
+    opacity: 0;
+}
+
+.main.hidden {
+    transform: translateX(100%); /* Đẩy main ra khỏi màn hình */
+    opacity: 0;
+}
+
+@media (max-width: 768px) {
+    /* Sidebar chiếm toàn bộ màn hình */
+    .sidebar {
+        width: 100%;
+        height: 100%;
         position: fixed;
         z-index: 10;
         top: 0;
         left: 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
     }
-    .sidebar.hidden {
-        display: none; /* Ẩn sidebar */
-    }
-    .sidebar h2 {
-        font-size: 24px; /* Giảm kích thước font tiêu đề */
-    }
-    .sidebar ul li a {
-        font-size: 16px; /* Giảm kích thước font của các item */
-        padding: 10px 15px; /* Giảm padding */
-    }
-
-    /* Main */
+    /* Main chiếm toàn bộ màn hình */
     .main {
-        width: 100%; /* Chiếm toàn bộ màn hình */
-        height: 100%; 
+        width: 100%;
+        height: 100%;
         position: fixed;
         top: 5%;
         left: 0;
         background-color: #f4f4f4;
         z-index: 5;
-        margin-left: 0;
-        padding: 10px;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-    .main.hidden {
-        display: none; /* Ẩn main */
     }
     .main h1 {
         text-align: center; /* Căn giữa tiêu đề */
-        margin: 0; /* Loại bỏ margin mặc định */
         margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
-        animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động */
-        font-size: 20px;
-        color: #F08080;
+        animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
+        font-size: 20px; /* Kích thước chữ */
+        color: #F08080; /* Màu chữ */
+        margin: 0; /* Loại bỏ margin mặc định */
     }
-
-    /* Nút Đăng xuất */
-    .logout-btn {
-        font-size: 16px;
-        padding: 10px;
-    }
-
-    /* Bảng */
-    table th, table td {
-        padding: 8px; /* Giảm padding trong bảng */
-        font-size: 12px; /* Font nhỏ hơn */
-    }
-
-    /* Form */
     form {
         max-width: 400px;
         margin: 0 auto;
@@ -403,47 +351,42 @@ button:hover {
         border: 2px solid #ddd;
         border-radius: 5px;
     }
-
-    /* Time Select */
-     .time-select {
+    /* Sidebar ẩn khi có lớp hidden */
+    .sidebar.hidden {
+        display: none;
+    }
+    table td{
+      font-size: 12px;
+    }
+    .time-select {
         padding: 8px;
-        font-size: 12px;
-        border: 1px solid #000;
+        font-size: 10px;
+        border: 1px solid #ccc;
         border-radius: 4px;
         text-align: center;
     }
-
-
-    /* Nút quay lại */
+    /* Main ẩn khi có lớp hidden */
+    .main.hidden {
+        display: none;
+    }
     #backButton {
         display: block;
-        position: fixed;
+        position: fixed; /* Đặt cố định ở góc màn hình */
         top: 10px;
         left: 10px;
-        z-index: 100;
-        background-color: #0099FF;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        font-size: 14px;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: background-color 0.3s ease;
-    }
-    #backButton:hover {
-        background-color: #0056b3;
+        z-index: 100; /* Luôn hiển thị trên các thành phần khác */
+        background-color: #0099FF; /* Màu nền */
+        color: white; /* Màu chữ */
+        padding: 10px 15px; /* Khoảng cách trong nút */
+        border: none; /* Loại bỏ viền */
+        border-radius: 5px; /* Bo góc nút */
+        font-size: 14px; /* Kích thước chữ */
+        cursor: pointer; /* Thêm con trỏ chỉ tay */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng */
+        transition: background-color 0.3s ease; /* Hiệu ứng khi rê chuột */
     }
 
-    /* Nút */
-    .button-container {
-        text-align: center;
-        margin-top: 15px;
-    }
-    .btn {
-        font-size: 14px;
-        padding: 8px 15px;
+    #backButton:hover {
+        background-color: #0056b3; /* Màu khi rê chuột */
     }
 }
-
-
