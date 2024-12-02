@@ -112,7 +112,6 @@ html, body {
     transition: color 0.3s ease; /* Mượt mà khi đổi màu */
 }
 /* Sidebar */
-/* Sidebar */
 .sidebar {
     width: 250px;
     background-color: #9EAEFA;
@@ -128,19 +127,25 @@ html, body {
 }
 
 /* Nút Logout */
-.logout-btn {
-    background-color: #dc3545;
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    margin-top: auto;
-    align-self: center;
-    border: 2px solid white;
+#logout {
+    background-color: #dc3545; /* Màu nền */
+    border: none; /* Loại bỏ viền */
+    color: white; /* Màu chữ */
+    padding: 10px; /* Khoảng cách bên trong */
+    border-radius: 10px; /* Bo góc */
+    cursor: pointer; /* Hiển thị con trỏ dạng tay khi hover */
+    text-align: center; /* Căn giữa chữ */
+    font-size: 16px; /* Kích thước chữ */
+    transition: background-color 0.3s; /* Hiệu ứng hover */
+    margin-top: auto; /* Đẩy nút xuống dưới cùng nếu dùng Flexbox */
+    align-self: center; /* Căn giữa trong Flexbox */
+    border: 2px solid white; /* Viền trắng */
+}
+
+/* Hiệu ứng khi hover */
+#logout:hover {
+    background-color: #c82333; /* Màu nền khi hover */
+    color: #f8f9fa; /* Màu chữ khi hover */
 }
 
 /* Tiêu đề trong Sidebar */
