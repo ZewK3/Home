@@ -215,7 +215,7 @@ function updateMenuByRole(userRole) {
     menuItems.forEach(item => {
         const allowedRoles = item.getAttribute("data-role")?.split(",") || []; // Lấy danh sách role được phép
         if (allowedRoles.includes(userRole)) {
-            item.style.display = "block; // Ẩn mục menu nếu vai trò không khớp
+            item.style.display = "block"; // Ẩn mục menu nếu vai trò không khớp
         }
     });
 }
