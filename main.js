@@ -136,7 +136,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
     }
 
     // Gắn sự kiện submit cho form
-    document.getElementById("scheduleForm").addEventListener("submit", function (e) {
+    document.getElementById("scheduleForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const shifts = [];
@@ -150,7 +150,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
             if (start && end && parseInt(start) >= parseInt(end)) {
                 isValid = false;
-                showNotification("Giờ vào phải nhỏ hơn giờ ra cho ${day}!","warning",3000);
+                showNotification(`Giờ vào phải nhỏ hơn giờ ra cho ${day}!`, "warning", 3000);
             }
 
             shifts.push({
@@ -160,6 +160,14 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             });
         });
 
+        // Giả sử bạn lưu thông tin user trong localStorage sau khi đăng nhập thành công
+        const user = JSON.parse(localStorage.getItem("user")); // Thay đổi nếu bạn sử dụng sessionStorage hoặc cookie
+
+        if (!user || !user.employeeId) {
+            showNotification("Lỗi: Không tìm thấy thông tin người dùng!", "error", 3000);
+            return;
+        }
+
         const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
 
         if (isValid) {
@@ -168,7 +176,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
             // Gửi yêu cầu POST đến Cloudflare Worker
             try {
-                const response = await fetch("https://zewk.tocotoco.workers.dev?saveSchedule?action=saveSchedule", {
+                const response = await fetch("https://zewk.tocotoco.workers.dev/saveSchedule?action=saveSchedule", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -192,6 +200,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
         }
     });
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
     const sidebar = document.querySelector(".sidebar");
