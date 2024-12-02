@@ -13,6 +13,49 @@ html, body {
 #backButton.hidden {
     display: none;
 }
+/* Màn hình loading */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Màu nền tối nhẹ */
+    display: flex; /* Flexbox để căn giữa */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Hiển thị trên các thành phần khác */
+    opacity: 1;
+    transition: opacity 1s ease-out;
+}
+
+/* Container của progress bar */
+.loading-container {
+    text-align: center;
+    color: white;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Thanh tải */
+.loading-bar {
+    width: 0;
+    height: 20px;
+    background: linear-gradient(90deg, #4caf50, #76c7c0); /* Hiệu ứng gradient */
+    transition: width 3s ease-in-out; /* Mượt mà hơn */
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Tạo hiệu ứng nổi */
+}
+
+/* Văn bản tải */
+#loadingText {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
 @keyframes fadeInUp {
     0% {
         opacity: 0;
