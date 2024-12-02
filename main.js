@@ -20,6 +20,7 @@ if (loggedInUser) {
             // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
+            menuList.style.display = 'block';
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
             if (lastActivity) {
