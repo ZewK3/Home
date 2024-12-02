@@ -191,10 +191,9 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
                 if (response.ok) {
                     showNotification("Lịch làm việc đã được lưu thành công!", "success", 3000);
                 } else {
-                    showNotification(result.message || "Có lỗi xảy ra khi lưu lịch làm việc!", "error", 3000);
+                    showNotification("Có lỗi xảy ra khi lưu lịch làm việc!", "error", 3000);
                 }
             } catch (error) {
-                console.error("Lỗi khi gửi yêu cầu:", error);
                 showNotification("Lỗi khi gửi yêu cầu!", "error", 3000);
             }
         }
