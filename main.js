@@ -160,14 +160,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             });
         });
 
-        // Giả sử bạn lưu thông tin user trong localStorage sau khi đăng nhập thành công
-        const user = JSON.parse(localStorage.getItem("user")); // Thay đổi nếu bạn sử dụng sessionStorage hoặc cookie
-
-        if (!user || !user.employeeId) {
-            showNotification("Lỗi: Không tìm thấy thông tin người dùng!", "error", 3000);
-            return;
-        }
-
         const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
 
         if (isValid) {
