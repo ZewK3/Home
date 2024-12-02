@@ -58,23 +58,22 @@ document.getElementById("logout").addEventListener("click", function () {
     localStorage.removeItem("lastActivity");
     window.location.href = "index.html";
 });
-window.addEventListener('load', function() {
-    // Hiển thị màn hình loading khi trang tải
+window.addEventListener("load", function() {
     const loadingScreen = document.getElementById('loadingScreen');
     const loadingBar = document.getElementById('loadingBar');
-    const loadingText = document.getElementById('loadingText');
 
-    // Mở thanh tải
-    loadingBar.style.width = "100%";
+    // Set the width dynamically according to loading progress if applicable
+    loadingBar.style.width = "100%";  // You can update this dynamically if necessary
 
-    // Ẩn màn hình loading sau khi thanh tải hoàn tất (khoảng 3s)
+    // Hide loading after content is fully loaded
     setTimeout(function() {
         loadingScreen.style.opacity = 0;
         setTimeout(function() {
             loadingScreen.style.display = 'none';
-        }, 1000); // Thời gian fade out
-    }, 3000); // Sau 3 giây, ẩn loading
+        }, 1000);  // fade out after 1 second
+    }, 3000);  // Stay for 3 seconds before fading out
 });
+
 
 // Hàm tạo danh sách giờ
 function createHourOptions(start, end) {
