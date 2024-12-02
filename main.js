@@ -1,6 +1,7 @@
 const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 let user;
+menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
@@ -57,21 +58,6 @@ document.getElementById("logout").addEventListener("click", function () {
     localStorage.removeItem("loggedInUser");
     localStorage.removeItem("lastActivity");
     window.location.href = "index.html";
-});
-window.addEventListener("load", function() {
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-
-    // Set the width dynamically according to loading progress if applicable
-    loadingBar.style.width = "100%";  // You can update this dynamically if necessary
-
-    // Hide loading after content is fully loaded
-    setTimeout(function() {
-        loadingScreen.style.opacity = 0;
-        setTimeout(function() {
-            loadingScreen.style.display = 'none';
-        }, 1000);  // fade out after 1 second
-    }, 3000);  // Stay for 3 seconds before fading out
 });
 
 
@@ -227,8 +213,8 @@ function updateMenuByRole(userRole) {
     const menuItems = document.querySelectorAll("#menuList .menu-item"); // Giả sử các mục menu có class "menu-item"
     menuItems.forEach(item => {
         const allowedRoles = item.getAttribute("data-role")?.split(",") || []; // Lấy danh sách role được phép
-        if (!allowedRoles.includes(userRole)) {
-            item.style.display = "none"; // Ẩn mục menu nếu vai trò không khớp
+        if (allowedRoles.includes(userRole)) {
+            item.style.display = "block; // Ẩn mục menu nếu vai trò không khớp
         }
     });
 }
