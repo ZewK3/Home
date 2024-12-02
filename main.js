@@ -168,7 +168,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
             // Gửi yêu cầu POST đến Cloudflare Worker
             try {
-                const response = await fetch("https://zewk.tocotoco.workers.dev/saveSchedule?action=saveSchedule", {
+                const response = await fetch("https://zewk.tocotoco.workers.dev?action=saveSchedule&employeeId=${employeeId}", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
