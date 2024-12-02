@@ -144,7 +144,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             const result = await loginResponse.json();
             const now = new Date().getTime();
             showNotification("Đăng nhập thành công!", "success", 3000);
-            document.getElementById("loginFormContainer").style.display = "block";
+            document.getElementById("loginFormContainer").style.display = "none";
             // Lưu thông tin người dùng và chuyển hướng
             localStorage.setItem("loggedInUser", JSON.stringify(data));
             localStorage.setItem("lastActivity", now);
