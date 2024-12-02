@@ -160,9 +160,35 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             });
         });
 
+        const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
+
         if (isValid) {
             console.log("Lịch làm việc đã chọn:", shifts);
-            showNotification("Lịch làm đã được gửi!","success",3000);
+            showNotification("Lịch làm đã được gửi!", "success", 3000);
+
+            // Gửi yêu cầu POST đến Cloudflare Worker
+            try {
+                const response = await fetch("https://your-worker-url/saveSchedule?action=saveSchedule", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        employeeId: employeeId, // Lấy employeeId từ thông tin người dùng
+                        shifts: shifts,
+                    }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    showNotification("Lịch làm việc đã được lưu thành công!", "success", 3000);
+                } else {
+                    showNotification(result.message || "Có lỗi xảy ra khi lưu lịch làm việc!", "error", 3000);
+                }
+            } catch (error) {
+                console.error("Lỗi khi gửi yêu cầu:", error);
+                showNotification("Lỗi khi gửi yêu cầu!", "error", 3000);
+            }
         }
     });
 });
