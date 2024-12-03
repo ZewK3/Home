@@ -278,7 +278,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             }
         }
     });
-}
+});
 
 
 
