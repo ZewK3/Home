@@ -182,9 +182,9 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             }
 
             shifts.push({
-                day,
-                start: start || "Off",
-                end: end || "Off"
+                day: day.replace("Thứ ", "T"), // Chuyển "Thứ 2" -> "T2"
+                start: parseInt(start),
+                end: parseInt(end),
             });
         });
 
