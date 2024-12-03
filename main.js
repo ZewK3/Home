@@ -103,7 +103,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     // Nếu người dùng đã có lịch làm, hiển thị lịch làm
         if (result.status === 200) {
         // Nếu đã có lịch làm, hiển thị thông tin lịch làm của người dùng
-        const scheduleContent = `
+        mainContent.innerHTML  = `
             ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
            <h1>Lịch đã đăng ký</h1>
             <form id="scheduleForm">
@@ -139,8 +139,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </form>
         `;
 
-        mainContent.innerHTML = scheduleContent;
-
         // Gắn sự kiện chỉnh sửa lịch làm
         document.querySelectorAll(".edit-schedule-btn").forEach(button => {
             button.addEventListener("click", function () {
@@ -152,7 +150,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         });
 
     } else {
-        const scheduleContent = `
+        mainContent.innerHTML  = `
             ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
             <h1>Đăng ký lịch làm</h1>
             <form id="scheduleForm">
@@ -187,7 +185,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
                 </div>
             </form>
         `;
-        mainContent.innerHTML = scheduleContent;
     }
 
     // Gắn sự kiện click cho nút "Quay lại" nếu có
