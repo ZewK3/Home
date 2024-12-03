@@ -168,14 +168,14 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
             // Gửi yêu cầu POST đến Cloudflare Worker
             try {
-                const response = await fetch("https://zewk.tocotoco.workers.dev?action=saveSchedule&employeeId=${employeeId}", {
+                const response = await fetch("https://zewk.tocotoco.workers.dev?action=saveSchedule", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
-                        employeeId: employeeId, // Lấy employeeId từ thông tin người dùng
-                        shifts: shifts,
+                        employeeId, // Lấy employeeId từ thông tin người dùng
+                        shifts,
                     }),
                 });
 
