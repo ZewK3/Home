@@ -76,40 +76,29 @@ function createHourOptions(start, end) {
 document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
 
+    // Lấy phần tử main và sidebar
     const mainContent = document.querySelector(".main");
     const sidebar = document.querySelector(".sidebar");
+
+    // Kiểm tra nếu là thiết bị di động
     const isMobile = window.innerWidth <= 768;
 
+    // Ẩn sidebar và hiển thị main trên thiết bị di động
     if (isMobile) {
         sidebar.classList.add("hidden");
         mainContent.classList.remove("hidden");
     }
 
-    const employeeId = user.employeeId; // Lấy employeeId của người dùng
-    let existingSchedule = null;
+    // Kiểm tra xem người dùng đã có lịch làm chưa
+    const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
+    const response = await fetch(`https://zewk.tocotoco.workers.dev?action=checkSchedule&employeeId=${employeeId}`);
+    const result = await response.json();
 
-    // Gọi API kiểm tra lịch làm
-    try {
-        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=checkSchedule&employeeId=${employeeId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });;
-        if (response.ok) {
-            existingSchedule = await response.json();
-        }
-    } catch (error) {
-        console.error("Lỗi khi kiểm tra lịch làm:", error);
-        showNotification("Không thể kiểm tra lịch làm!", "error", 3000);
-    }
-
-    // Nếu đã có lịch làm, hiển thị thông tin lịch làm
-    if (existingSchedule) {
-        const { shifts } = existingSchedule;
-        mainContent.innerHTML = `
-            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-            <h1>Lịch làm hiện tại</h1>
+    // Nếu người dùng đã có lịch làm, hiển thị lịch làm
+    if (result.schedule && result.schedule.length > 0) {
+        const shifts = result.schedule; // Dữ liệu lịch làm đã lưu
+        const scheduleContent = `
+            <h1>Lịch làm của bạn</h1>
             <table class="schedule-table">
                 <thead>
                     <tr>
@@ -119,39 +108,49 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
                     </tr>
                 </thead>
                 <tbody>
-                    ${shifts.map(shift => `
-                        <tr>
-                            <td>${shift.day}</td>
-                            <td>${shift.start || "Off"}</td>
-                            <td>${shift.end || "Off"}</td>
-                        </tr>
-                    `).join('')}
+                    ${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => {
+                        const shift = shifts.find(s => s.day === day);
+                        if (shift) {
+                            return `
+                                <tr>
+                                    <td>${shift.day}</td>
+                                    <td>${shift.start}</td>
+                                    <td>${shift.end}</td>
+                                </tr>
+                            `;
+                        } else {
+                            return `
+                                <tr>
+                                    <td>${day}</td>
+                                    <td>Chưa đăng ký</td>
+                                    <td>Chưa đăng ký</td>
+                                </tr>
+                            `;
+                        }
+                    }).join('')}
                 </tbody>
             </table>
             <div class="button-container">
-                <button id="editSchedule" class="btn">Chỉnh sửa</button>
+                <button id="editScheduleButton" class="btn">Chỉnh sửa lịch làm</button>
             </div>
         `;
 
-        document.getElementById("editSchedule").addEventListener("click", function () {
-            renderScheduleForm(mainContent, isMobile);
+        mainContent.innerHTML = scheduleContent;
+
+        // Gắn sự kiện "Chỉnh sửa lịch làm"
+        document.getElementById("editScheduleButton").addEventListener("click", function () {
+            // Chuyển sang form đăng ký lịch làm mới
+            openScheduleRegistrationForm(mainContent, sidebar, isMobile);
         });
+
     } else {
         // Nếu chưa có lịch làm, hiển thị form đăng ký lịch làm
-        renderScheduleForm(mainContent, isMobile);
-    }
-
-    const backButton = document.getElementById("backButton");
-    if (backButton) {
-        backButton.addEventListener("click", function () {
-            mainContent.classList.add("hidden");
-            sidebar.classList.remove("hidden");
-        });
+        openScheduleRegistrationForm(mainContent, sidebar, isMobile);
     }
 });
 
-// Hàm hiển thị form đăng ký lịch làm
-function renderScheduleForm(mainContent, isMobile) {
+async function openScheduleRegistrationForm(mainContent, sidebar, isMobile) {
+    // Cập nhật nội dung của main
     mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Đăng ký lịch làm</h1>
@@ -188,20 +187,32 @@ function renderScheduleForm(mainContent, isMobile) {
         </form>
     `;
 
+    // Gắn sự kiện click cho nút "Quay lại" nếu có
+    const backButton = document.getElementById("backButton");
+    if (backButton) {
+        backButton.addEventListener("click", function () {
+            mainContent.classList.add("hidden");
+            sidebar.classList.remove("hidden");
+        });
+    }
+
     // Gắn sự kiện tự động cập nhật giờ ra khi chọn giờ vào
     document.querySelectorAll(".start-select").forEach(select => {
         select.addEventListener("change", function () {
-            const day = this.getAttribute("data-day");
-            const endSelect = document.querySelector(`[name="${day}-end"]`);
-            const startValue = parseInt(this.value);
-
+            const day = this.getAttribute("data-day"); // Lấy ngày hiện tại
+            const endSelect = document.querySelector(`[name="${day}-end"]`); // Lấy ô giờ ra
+            const startValue = parseInt(this.value); // Giá trị giờ vào
+    
+            // Nếu giá trị giờ vào hợp lệ, cập nhật danh sách giờ ra
             if (!isNaN(startValue)) {
-                endSelect.innerHTML = createHourOptions(startValue + 4, 23);
+                const newOptions = createHourOptions(startValue + 4, 23); // Tạo danh sách giờ ra từ (start + 4) đến 23
+                endSelect.innerHTML = newOptions; // Gán lại danh sách giờ ra
             } else {
+                // Nếu không có giờ vào, đặt lại danh sách giờ ra mặc định
                 endSelect.innerHTML = createHourOptions(12, 23);
             }
         });
-    });
+   });
 
     // Gắn sự kiện submit cho form
     document.getElementById("scheduleForm").addEventListener("submit", async function (e) {
@@ -210,44 +221,55 @@ function renderScheduleForm(mainContent, isMobile) {
         const shifts = [];
         let isValid = true;
 
+        // Duyệt qua tất cả các cặp giờ vào và giờ ra
         document.querySelectorAll("tbody tr").forEach(row => {
-            const day = row.cells[0].innerText;
-            const formattedDay = day === "Chủ Nhật" ? "CN" : day.replace("Thứ ", "T");
-            const start = row.querySelector(`[name="${day}-start"]`).value;
-            const end = row.querySelector(`[name="${day}-end"]`).value;
-
+            const day = row.cells[0].innerText; // Tên ngày (Thứ 2, Thứ 3, ..., Chủ Nhật)
+            const formattedDay = day === "Chủ Nhật" ? "CN" : day.replace("Thứ ", "T"); // Chuyển đổi ngày
+            const start = row.querySelector(`[name="${day}-start"]`).value; // Giờ bắt đầu
+            const end = row.querySelector(`[name="${day}-end"]`).value; // Giờ kết thúc
+        
+            // Kiểm tra nếu chỉ có giờ vào hoặc giờ ra
             if ((start && !end) || (!start && end)) {
                 isValid = false;
                 showNotification(`Cần nhập đầy đủ cả giờ vào và giờ ra cho ${day}!`, "warning", 3000);
                 return;
             }
-
+        
+            // Kiểm tra nếu giờ vào >= giờ ra
             if (start && end && parseInt(start) >= parseInt(end)) {
                 isValid = false;
                 showNotification(`Giờ vào phải nhỏ hơn giờ ra cho ${day}!`, "warning", 3000);
                 return;
             }
 
+            // Thêm ca làm vào mảng shifts nếu hợp lệ
             if (start && end) {
                 shifts.push({
-                    day: formattedDay,
+                    day: formattedDay, // Sử dụng ngày đã định dạng
                     start: parseInt(start),
                     end: parseInt(end),
                 });
             }
         });
 
-        if (isValid) {
-            const employeeId = user.employeeId;
-            const data = { employeeId, shifts };
 
+        const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
+        const data = { employeeId, shifts };
+        if (isValid) {
+            console.log("Lịch làm việc đã chọn:", shifts);
+            showNotification("Lịch làm đã được gửi!", "success", 3000);
+
+            // Gửi yêu cầu POST đến Cloudflare Worker
             try {
                 const response = await fetch("https://zewk.tocotoco.workers.dev?action=savedk", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify(data),
                 });
 
+                const result = await response.json();
                 if (response.ok) {
                     showNotification("Lịch làm việc đã được lưu thành công!", "success", 3000);
                 } else {
