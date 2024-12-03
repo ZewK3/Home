@@ -67,7 +67,8 @@ document.getElementById("logout").addEventListener("click", function () {
 function createHourOptions(start, end) {
     let options = '<option value="">Chọn giờ</option>';
     for (let hour = start; hour <= end; hour++) {
-        options += `<option value="${hour}">${hour}:00</option>`;
+        const formattedHour = hour < 10 ? `0${hour}` : `${hour}`; // Định dạng giờ
+        options += `<option value="${formattedHour}">${formattedHour}:00</option>`;
     }
     return options;
 }
@@ -107,12 +108,12 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
                         <tr>
                             <td>${day}</td>
                             <td>
-                                <select name="${day}-start" class="time-select">
+                                <select name="${day}-start" class="time-select start-select" data-day="${day}">
                                     ${createHourOptions(8, 19)}
                                 </select>
                             </td>
                             <td>
-                                <select name="${day}-end" class="time-select">
+                                <select name="${day}-end" class="time-select end-select" data-day="${day}">
                                     ${createHourOptions(12, 23)}
                                 </select>
                             </td>
@@ -135,6 +136,20 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
         });
     }
 
+    // Gắn sự kiện tự động cập nhật giờ ra khi chọn giờ vào
+    document.querySelectorAll(".start-select").forEach(select => {
+        select.addEventListener("change", function () {
+            const day = this.getAttribute("data-day");
+            const endSelect = document.querySelector(`[name="${day}-end"]`);
+            const startValue = parseInt(this.value);
+
+            if (!isNaN(startValue)) {
+                const newEndValue = startValue + 4;
+                endSelect.value = newEndValue <= 23 ? (newEndValue < 10 ? `0${newEndValue}` : `${newEndValue}`) : ""; // Giờ tối đa là 23
+            }
+        });
+    });
+
     // Gắn sự kiện submit cho form
     document.getElementById("scheduleForm").addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -148,27 +163,36 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
             const start = row.querySelector(`[name="${day}-start"]`).value;
             const end = row.querySelector(`[name="${day}-end"]`).value;
 
+            // Kiểm tra nếu chỉ có giờ vào hoặc chỉ có giờ ra
+            if ((start && !end) || (!start && end)) {
+                isValid = false;
+                showNotification(`Cần nhập đầy đủ cả giờ vào và giờ ra cho ${day}!`, "warning", 3000);
+                return; // Dừng kiểm tra tiếp cho dòng hiện tại
+            }
+
+            // Kiểm tra giờ vào phải nhỏ hơn giờ ra
             if (start && end && parseInt(start) >= parseInt(end)) {
                 isValid = false;
                 showNotification(`Giờ vào phải nhỏ hơn giờ ra cho ${day}!`, "warning", 3000);
+                return;
             }
 
             shifts.push({
                 day,
-                start: start || "Không chọn",
-                end: end || "Không chọn"
+                start: start || "Off",
+                end: end || "Off"
             });
         });
 
         const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
-        const data = {employeeId,shifts};
+        const data = { employeeId, shifts };
         if (isValid) {
             console.log("Lịch làm việc đã chọn:", shifts);
             showNotification("Lịch làm đã được gửi!", "success", 3000);
 
             // Gửi yêu cầu POST đến Cloudflare Worker
             try {
-                const response = await fetch("https://zewk.tocotoco.workers.dev?action=savedk" , {
+                const response = await fetch("https://zewk.tocotoco.workers.dev?action=savedk", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -188,6 +212,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
         }
     });
 });
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
