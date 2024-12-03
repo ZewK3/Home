@@ -91,7 +91,12 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
 
     // Kiểm tra xem người dùng đã có lịch làm chưa
     const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
-    const response = await fetch(`https://zewk.tocotoco.workers.dev?action=checkSchedule&employeeId=${employeeId}`);
+    const response = await fetch(`https://zewk.tocotoco.workers.dev?action=checkSchedule&employeeId=${employeeId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
     const result = await response.json();
 
     // Nếu người dùng đã có lịch làm, hiển thị lịch làm
