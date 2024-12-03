@@ -163,30 +163,35 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
 
         // Duyệt qua tất cả các cặp giờ vào và giờ ra
         document.querySelectorAll("tbody tr").forEach(row => {
-            const day = row.cells[0].innerText;
-            const start = row.querySelector(`[name="${day}-start"]`).value;
-            const end = row.querySelector(`[name="${day}-end"]`).value;
-
-            // Kiểm tra nếu chỉ có giờ vào hoặc chỉ có giờ ra
+            const day = row.cells[0].innerText; // Tên ngày (Thứ 2, Thứ 3, ..., Chủ Nhật)
+            const formattedDay = day === "Chủ Nhật" ? "CN" : day.replace("Thứ ", "T"); // Chuyển đổi ngày
+            const start = row.querySelector(`[name="${day}-start"]`).value; // Giờ bắt đầu
+            const end = row.querySelector(`[name="${day}-end"]`).value; // Giờ kết thúc
+        
+            // Kiểm tra nếu chỉ có giờ vào hoặc giờ ra
             if ((start && !end) || (!start && end)) {
                 isValid = false;
                 showNotification(`Cần nhập đầy đủ cả giờ vào và giờ ra cho ${day}!`, "warning", 3000);
-                return; // Dừng kiểm tra tiếp cho dòng hiện tại
+                return;
             }
-
-            // Kiểm tra giờ vào phải nhỏ hơn giờ ra
+        
+            // Kiểm tra nếu giờ vào >= giờ ra
             if (start && end && parseInt(start) >= parseInt(end)) {
                 isValid = false;
                 showNotification(`Giờ vào phải nhỏ hơn giờ ra cho ${day}!`, "warning", 3000);
                 return;
             }
 
-            shifts.push({
-                day: day.replace("Thứ ", "T"), // Chuyển "Thứ 2" -> "T2"
-                start: parseInt(start),
-                end: parseInt(end),
-            });
+            // Thêm ca làm vào mảng shifts nếu hợp lệ
+            if (start && end) {
+                shifts.push({
+                    day: formattedDay, // Sử dụng ngày đã định dạng
+                    start: parseInt(start),
+                    end: parseInt(end),
+                });
+            }
         });
+
 
         const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
         const data = { employeeId, shifts };
