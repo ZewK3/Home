@@ -95,9 +95,10 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     const result = await response.json();
 
     // Nếu người dùng đã có lịch làm, hiển thị lịch làm
-    if (result.schedule && result.schedule.length > 0) {
-        const shifts = result.schedule; // Dữ liệu lịch làm đã lưu
+        if (result.schedule && result.schedule.length > 0) {
+        // Nếu đã có lịch làm, hiển thị thông tin lịch làm của người dùng
         const scheduleContent = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
             <h1>Lịch làm của bạn</h1>
             <table class="schedule-table">
                 <thead>
@@ -105,52 +106,41 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
                         <th>Ngày</th>
                         <th>Giờ vào</th>
                         <th>Giờ ra</th>
+                        <th>Chỉnh sửa</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(day => {
-                        const shift = shifts.find(s => s.day === day);
-                        if (shift) {
-                            return `
-                                <tr>
-                                    <td>${shift.day}</td>
-                                    <td>${shift.start}</td>
-                                    <td>${shift.end}</td>
-                                </tr>
-                            `;
-                        } else {
-                            return `
-                                <tr>
-                                    <td>${day}</td>
-                                    <td>Chưa đăng ký</td>
-                                    <td>Chưa đăng ký</td>
-                                </tr>
-                            `;
-                        }
+                    ${result.schedule.map(daySchedule => {
+                        const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
+                        const startTime = daySchedule.start ? daySchedule.start : "--:--";
+                        const endTime = daySchedule.end ? daySchedule.end : "--:--";
+                        return `
+                            <tr>
+                                <td>${dayName}</td>
+                                <td>${startTime}</td>
+                                <td>${endTime}</td>
+                                <td><button class="edit-schedule-btn" data-day="${daySchedule.day}">Chỉnh sửa</button></td>
+                            </tr>
+                        `;
                     }).join('')}
                 </tbody>
             </table>
-            <div class="button-container">
-                <button id="editScheduleButton" class="btn">Chỉnh sửa lịch làm</button>
-            </div>
         `;
 
         mainContent.innerHTML = scheduleContent;
 
-        // Gắn sự kiện "Chỉnh sửa lịch làm"
-        document.getElementById("editScheduleButton").addEventListener("click", function () {
-            // Chuyển sang form đăng ký lịch làm mới
-            openScheduleRegistrationForm(mainContent, sidebar, isMobile);
+        // Gắn sự kiện chỉnh sửa lịch làm
+        document.querySelectorAll(".edit-schedule-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const day = this.getAttribute("data-day");
+                // Tạo form chỉnh sửa lịch cho ngày đã chọn
+                // Ví dụ: Chuyển hướng tới form chỉnh sửa hoặc hiển thị form chỉnh sửa ở đây
+                editScheduleForm(day);
+            });
         });
 
     } else {
-        // Nếu chưa có lịch làm, hiển thị form đăng ký lịch làm
-        openScheduleRegistrationForm(mainContent, sidebar, isMobile);
-    }
-});
-
-async function openScheduleRegistrationForm(mainContent, sidebar, isMobile) {
-    // Cập nhật nội dung của main
+        / Cập nhật nội dung của main
     mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Đăng ký lịch làm</h1>
@@ -280,7 +270,13 @@ async function openScheduleRegistrationForm(mainContent, sidebar, isMobile) {
             }
         }
     });
-}
+        
+    }
+});
+
+
+    
+
 
 
 
