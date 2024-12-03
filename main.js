@@ -134,21 +134,18 @@ function renderSchedule(mainContent, isMobile, schedule) {
             <thead>
                 <tr>
                     <th>Ngày</th>
-                    <th>Giờ vào</th>
-                    <th>Giờ ra</th>
+                    <th>Ca làm</th>
                     <th>Chỉnh sửa</th>
                 </tr>
             </thead>
             <tbody>
                 ${schedule.map(daySchedule => {
                     const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
-                    const startTime = daySchedule.start ? daySchedule.start : "--:--";
-                    const endTime = daySchedule.end ? daySchedule.end : "--:--";
+                    const time = daySchedule.time ? daySchedule.time : "--:--";  // "12:00-22:00" hoặc "--:--"
                     return `
                         <tr>
                             <td>${dayName}</td>
-                            <td>${startTime}</td>
-                            <td>${endTime}</td>
+                            <td>${time}</td>  <!-- Gộp giờ vào và giờ ra thành một cột -->
                             <td><button class="edit-schedule-btn" data-day="${daySchedule.day}">Chỉnh sửa</button></td>
                         </tr>
                     `;
@@ -157,8 +154,9 @@ function renderSchedule(mainContent, isMobile, schedule) {
         </table>
     `;
     mainContent.innerHTML = scheduleContent;
-    setupEditButtons();
+    setupEditButtons();  // Thiết lập các nút chỉnh sửa
 }
+
 
 // Hàm hiển thị form đăng ký lịch làm
 function renderScheduleForm(mainContent, isMobile) {
