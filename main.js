@@ -161,22 +161,19 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
         });
 
         const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
-
+        const data = {employeeId,shifts};
         if (isValid) {
             console.log("Lịch làm việc đã chọn:", shifts);
             showNotification("Lịch làm đã được gửi!", "success", 3000);
 
             // Gửi yêu cầu POST đến Cloudflare Worker
             try {
-                const response = await fetch("https://zewk.tocotoco.workers.dev?action=saveSchedule", {
+                const response = await fetch("https://zewk.tocotoco.workers.dev?action=savedk" , {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({
-                        employeeId, // Lấy employeeId từ thông tin người dùng
-                        shifts,
-                    }),
+                    body: JSON.stringify(data),
                 });
 
                 const result = await response.json();
