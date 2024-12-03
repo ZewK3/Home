@@ -76,59 +76,35 @@ function createHourOptions(start, end) {
 
 document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
-    
+
     // Lấy phần tử main và sidebar
     const mainContent = document.querySelector(".main");
     const sidebar = document.querySelector(".sidebar");
 
-    // Kiểm tra nếu là thiết bị di động và thay đổi giao diện
+    // Kiểm tra nếu là thiết bị di động
     const isMobile = window.innerWidth <= 768;
-    toggleMobileView(isMobile, sidebar, mainContent);
 
-    // Lấy thông tin lịch làm từ API
-    const employeeId = user.employeeId;
-    const result = await fetchSchedule(employeeId);
-
-    // Cập nhật giao diện dựa trên kết quả
-    if (result.ok) {
-        renderSchedule(mainContent, isMobile, result.schedule);
-    } else {
-        renderScheduleForm(mainContent, isMobile);
-    }
-
-    // Gắn sự kiện quay lại
-    setupBackButton(mainContent, sidebar);
-
-    // Gắn sự kiện cập nhật giờ ra khi chọn giờ vào
-    setupStartSelectEvent();
-
-    // Gắn sự kiện gửi form
-    setupSubmitForm();
-});
-
-// Hàm toggle giao diện cho thiết bị di động
-function toggleMobileView(isMobile, sidebar, mainContent) {
+    // Ẩn sidebar và hiển thị main trên thiết bị di động
     if (isMobile) {
         sidebar.classList.add("hidden");
         mainContent.classList.remove("hidden");
     }
-}
 
-// Hàm lấy dữ liệu lịch làm từ API
-async function fetchSchedule(employeeId) {
+    // Kiểm tra xem người dùng đã có lịch làm chưa
+    const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
     const response = await fetch(`https://zewk.tocotoco.workers.dev?action=checkSchedule&employeeId=${employeeId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
             },
         });
-    return response.json();
-}
+    const result = await response.json();
 
-// Hàm hiển thị lịch làm
-function renderSchedule(mainContent, isMobile, schedule) {
-    const scheduleContent = `
-        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+    // Nếu người dùng đã có lịch làm, hiển thị lịch làm
+        if (result.schedule && result.schedule.length > 0) {
+        // Nếu đã có lịch làm, hiển thị thông tin lịch làm của người dùng
+        const scheduleContent = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
 <h1>Lịch làm của bạn</h1>
 <table class="schedule-table">
     <thead>
@@ -152,65 +128,60 @@ function renderSchedule(mainContent, isMobile, schedule) {
         }).join('')}
     </tbody>
 </table>
-    `;
-    mainContent.innerHTML = scheduleContent;
-    setupEditButtons();  // Thiết lập các nút chỉnh sửa
-}
+        `;
 
+        mainContent.innerHTML = scheduleContent;
 
-// Hàm hiển thị form đăng ký lịch làm
-function renderScheduleForm(mainContent, isMobile) {
-    const scheduleContent = `
-        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1>Đăng ký lịch làm</h1>
-        <form id="scheduleForm">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>Ngày</th>
-                        <th>Giờ vào</th>
-                        <th>Giờ ra</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
-                        <tr>
-                            <td>${day}</td>
-                            <td>
-                                <select name="${day}-start" class="time-select start-select" data-day="${day}">
-                                    ${createHourOptions(8, 19)}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="${day}-end" class="time-select end-select" data-day="${day}">
-                                    ${createHourOptions(12, 23)}
-                                </select>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            <div class="button-container">
-                <button type="submit" class="btn">Gửi</button>
-            </div>
-        </form>
-    `;
-    mainContent.innerHTML = scheduleContent;
-}
-
-// Hàm gắn sự kiện cho các nút "Chỉnh sửa"
-function setupEditButtons() {
-    document.querySelectorAll(".edit-schedule-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            const day = this.getAttribute("data-day");
-            // Xử lý chỉnh sửa lịch cho ngày đã chọn
-            editScheduleForm(day);
+        // Gắn sự kiện chỉnh sửa lịch làm
+        document.querySelectorAll(".edit-schedule-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const day = this.getAttribute("data-day");
+                // Tạo form chỉnh sửa lịch cho ngày đã chọn
+                // Ví dụ: Chuyển hướng tới form chỉnh sửa hoặc hiển thị form chỉnh sửa ở đây
+                editScheduleForm(day);
+            });
         });
-    });
-}
 
-// Hàm xử lý sự kiện "Quay lại"
-function setupBackButton(mainContent, sidebar) {
+    } else {
+        const scheduleContent = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            <h1>Đăng ký lịch làm</h1>
+            <form id="scheduleForm">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Giờ vào</th>
+                            <th>Giờ ra</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
+                            <tr>
+                                <td>${day}</td>
+                                <td>
+                                    <select name="${day}-start" class="time-select start-select" data-day="${day}">
+                                        ${createHourOptions(8, 19)}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="${day}-end" class="time-select end-select" data-day="${day}">
+                                        ${createHourOptions(12, 23)}
+                                    </select>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button type="submit" class="btn">Gửi</button>
+                </div>
+            </form>
+        `;
+        mainContent.innerHTML = scheduleContent;
+    }
+
+    // Gắn sự kiện click cho nút "Quay lại" nếu có
     const backButton = document.getElementById("backButton");
     if (backButton) {
         backButton.addEventListener("click", function () {
@@ -218,80 +189,92 @@ function setupBackButton(mainContent, sidebar) {
             sidebar.classList.remove("hidden");
         });
     }
-}
 
-// Hàm xử lý sự kiện thay đổi giờ vào
-function setupStartSelectEvent() {
+    // Gắn sự kiện tự động cập nhật giờ ra khi chọn giờ vào
     document.querySelectorAll(".start-select").forEach(select => {
         select.addEventListener("change", function () {
-            const day = this.getAttribute("data-day");
-            const endSelect = document.querySelector(`[name="${day}-end"]`);
-            const startValue = parseInt(this.value);
-            
+            const day = this.getAttribute("data-day"); // Lấy ngày hiện tại
+            const endSelect = document.querySelector(`[name="${day}-end"]`); // Lấy ô giờ ra
+            const startValue = parseInt(this.value); // Giá trị giờ vào
+    
+            // Nếu giá trị giờ vào hợp lệ, cập nhật danh sách giờ ra
             if (!isNaN(startValue)) {
-                const newOptions = createHourOptions(startValue + 4, 23);
-                endSelect.innerHTML = newOptions;
+                const newOptions = createHourOptions(startValue + 4, 23); // Tạo danh sách giờ ra từ (start + 4) đến 23
+                endSelect.innerHTML = newOptions; // Gán lại danh sách giờ ra
             } else {
+                // Nếu không có giờ vào, đặt lại danh sách giờ ra mặc định
                 endSelect.innerHTML = createHourOptions(12, 23);
             }
         });
-    });
-}
+   });
 
-// Hàm xử lý sự kiện gửi form
-function setupSubmitForm() {
+    // Gắn sự kiện submit cho form
     document.getElementById("scheduleForm").addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const shifts = [];
         let isValid = true;
 
+        // Duyệt qua tất cả các cặp giờ vào và giờ ra
         document.querySelectorAll("tbody tr").forEach(row => {
-            const day = row.cells[0].innerText;
-            const formattedDay = day === "Chủ Nhật" ? "CN" : day.replace("Thứ ", "T");
-            const start = row.querySelector(`[name="${day}-start"]`).value;
-            const end = row.querySelector(`[name="${day}-end"]`).value;
-
+            const day = row.cells[0].innerText; // Tên ngày (Thứ 2, Thứ 3, ..., Chủ Nhật)
+            const formattedDay = day === "Chủ Nhật" ? "CN" : day.replace("Thứ ", "T"); // Chuyển đổi ngày
+            const start = row.querySelector(`[name="${day}-start"]`).value; // Giờ bắt đầu
+            const end = row.querySelector(`[name="${day}-end"]`).value; // Giờ kết thúc
+        
+            // Kiểm tra nếu chỉ có giờ vào hoặc giờ ra
             if ((start && !end) || (!start && end)) {
                 isValid = false;
                 showNotification(`Cần nhập đầy đủ cả giờ vào và giờ ra cho ${day}!`, "warning", 3000);
                 return;
             }
-
+        
+            // Kiểm tra nếu giờ vào >= giờ ra
             if (start && end && parseInt(start) >= parseInt(end)) {
                 isValid = false;
                 showNotification(`Giờ vào phải nhỏ hơn giờ ra cho ${day}!`, "warning", 3000);
                 return;
             }
 
+            // Thêm ca làm vào mảng shifts nếu hợp lệ
             if (start && end) {
-                shifts.push({ day: formattedDay, start: parseInt(start), end: parseInt(end) });
+                shifts.push({
+                    day: formattedDay, // Sử dụng ngày đã định dạng
+                    start: parseInt(start),
+                    end: parseInt(end),
+                });
             }
         });
 
+
+        const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
+        const data = { employeeId, shifts };
         if (isValid) {
-            const data = { employeeId: user.employeeId, shifts };
             console.log("Lịch làm việc đã chọn:", shifts);
             showNotification("Lịch làm đã được gửi!", "success", 3000);
 
+            // Gửi yêu cầu POST đến Cloudflare Worker
             try {
                 const response = await fetch("https://zewk.tocotoco.workers.dev?action=savedk", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify(data),
                 });
 
                 const result = await response.json();
-                const message = response.ok ? "Lịch làm việc đã được lưu thành công!" : "Có lỗi xảy ra khi lưu lịch làm việc!";
-                showNotification(message, response.ok ? "success" : "error", 3000);
+                if (response.ok) {
+                    showNotification("Lịch làm việc đã được lưu thành công!", "success", 3000);
+                } else {
+                    showNotification("Có lỗi xảy ra khi lưu lịch làm việc!", "error", 3000);
+                }
             } catch (error) {
                 showNotification("Lỗi khi gửi yêu cầu!", "error", 3000);
             }
         }
     });
 }
-
-
 
 
 
