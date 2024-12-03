@@ -90,7 +90,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     const result = await fetchSchedule(employeeId);
 
     // Cập nhật giao diện dựa trên kết quả
-    if (result.schedule && result.schedule.length > 0) {
+    if (result.ok) {
         renderSchedule(mainContent, isMobile, result.schedule);
     } else {
         renderScheduleForm(mainContent, isMobile);
