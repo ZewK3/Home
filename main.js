@@ -139,16 +139,20 @@ document.getElementById("openScheduleRegistration").addEventListener("click", fu
     // Gắn sự kiện tự động cập nhật giờ ra khi chọn giờ vào
     document.querySelectorAll(".start-select").forEach(select => {
         select.addEventListener("change", function () {
-            const day = this.getAttribute("data-day");
-            const endSelect = document.querySelector(`[name="${day}-end"]`);
-            const startValue = parseInt(this.value);
-
+            const day = this.getAttribute("data-day"); // Lấy ngày hiện tại
+            const endSelect = document.querySelector(`[name="${day}-end"]`); // Lấy ô giờ ra
+            const startValue = parseInt(this.value); // Giá trị giờ vào
+    
+            // Nếu giá trị giờ vào hợp lệ, cập nhật danh sách giờ ra
             if (!isNaN(startValue)) {
-                const newEndValue = startValue + 4;
-                endSelect.value = newEndValue <= 23 ? (newEndValue < 10 ? `0${newEndValue}` : `${newEndValue}`) : ""; // Giờ tối đa là 23
+                const newOptions = createHourOptions(startValue + 4, 23); // Tạo danh sách giờ ra từ (start + 4) đến 23
+                endSelect.innerHTML = newOptions; // Gán lại danh sách giờ ra
+            } else {
+                // Nếu không có giờ vào, đặt lại danh sách giờ ra mặc định
+                endSelect.innerHTML = createHourOptions(12, 23);
             }
         });
-    });
+   });
 
     // Gắn sự kiện submit cho form
     document.getElementById("scheduleForm").addEventListener("submit", async function (e) {
