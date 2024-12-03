@@ -101,7 +101,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     const result = await response.json();
 
     // Nếu người dùng đã có lịch làm, hiển thị lịch làm
-        if (result.schedule && result.schedule.length > 0) {
+        if (result.status === 200) {
         // Nếu đã có lịch làm, hiển thị thông tin lịch làm của người dùng
         const scheduleContent = `
             ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
