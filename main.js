@@ -127,6 +127,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
                              </tr>
                          `;
                      }).join('')}
+                     <tbody>
                 </table>
                 <div class="button-container">
                     <button type="submit" class="btn">Gửi</button>
