@@ -123,9 +123,9 @@ body {
 /* Thông báo */
 #notification {
     position: fixed;
-    top: 10px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     max-width: 400px;
     width: 90%;
     padding: 15px;
