@@ -145,42 +145,43 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         });
 
     } else {
-        / Cập nhật nội dung của main
-    mainContent.innerHTML = `
-        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1>Đăng ký lịch làm</h1>
-        <form id="scheduleForm">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>Ngày</th>
-                        <th>Giờ vào</th>
-                        <th>Giờ ra</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
+        const scheduleContent = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            <h1>Đăng ký lịch làm</h1>
+            <form id="scheduleForm">
+                <table class="schedule-table">
+                    <thead>
                         <tr>
-                            <td>${day}</td>
-                            <td>
-                                <select name="${day}-start" class="time-select start-select" data-day="${day}">
-                                    ${createHourOptions(8, 19)}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="${day}-end" class="time-select end-select" data-day="${day}">
-                                    ${createHourOptions(12, 23)}
-                                </select>
-                            </td>
+                            <th>Ngày</th>
+                            <th>Giờ vào</th>
+                            <th>Giờ ra</th>
                         </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            <div class="button-container">
-                <button type="submit" class="btn">Gửi</button>
-            </div>
-        </form>
-    `;
+                    </thead>
+                    <tbody>
+                        ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
+                            <tr>
+                                <td>${day}</td>
+                                <td>
+                                    <select name="${day}-start" class="time-select start-select" data-day="${day}">
+                                        ${createHourOptions(8, 19)}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="${day}-end" class="time-select end-select" data-day="${day}">
+                                        ${createHourOptions(12, 23)}
+                                    </select>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button type="submit" class="btn">Gửi</button>
+                </div>
+            </form>
+        `;
+        mainContent.innerHTML = scheduleContent;
+    }
 
     // Gắn sự kiện click cho nút "Quay lại" nếu có
     const backButton = document.getElementById("backButton");
