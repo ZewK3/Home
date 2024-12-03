@@ -105,29 +105,33 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         // Nếu đã có lịch làm, hiển thị thông tin lịch làm của người dùng
         const scheduleContent = `
             ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-            <h1>Lịch Làm Đã Đăng Ký</h1>
+           <h1>Lịch đã đăng ký</h1>
             <form id="scheduleForm">
                 <table class="schedule-table">
                     <thead>
                         <tr>
                             <th>Ngày</th>
-                            <th>Ca làm</th>
-                            <th>Chỉnh sửa</th>
+                            <th>Giờ vào</th>
+                            <th>Giờ ra</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${shifts.map(daySchedule => {
-                         const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
-                         const time = daySchedule.time || "--:--";  // Dữ liệu đã định dạng sẵn
-                         return `
-                             <tr>
-                                 <td>${dayName}</td>
-                                 <td>${time}</td>  <!-- Hiển thị ca làm đã định dạng -->
-                                 <td><button class="edit-schedule-btn" data-day="${daySchedule.day}">Chỉnh sửa</button></td>
-                             </tr>
-                         `;
-                     }).join('')}
-                     <tbody>
+                        ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
+                            <tr>
+                                <td>${day}</td>
+                                <td>
+                                    <select name="${day}-start" class="time-select start-select" data-day="${day}">
+                                        ${createHourOptions(8, 19)}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="${day}-end" class="time-select end-select" data-day="${day}">
+                                        ${createHourOptions(12, 23)}
+                                    </select>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
                 </table>
                 <div class="button-container">
                     <button type="submit" class="btn">Gửi</button>
