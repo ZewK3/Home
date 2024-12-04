@@ -98,29 +98,36 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         const schedule = checkResult.shifts || [];
         mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1>Lịch làm của bạn</h1>
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Ngày</th>
-                    <th>Ca làm</th>
-                    <th>Chỉnh sửa</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${schedule.map(daySchedule => {
+        <h1>Đăng ký lịch làm</h1>
+        <form id="scheduleForm">
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                       <th>Ngày</th>
+                       <th>Ca làm</th>
+                       <th>Chỉnh sửa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${schedule.map(daySchedule => {
                     const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
-                    const time = daySchedule.time ? daySchedule.time : "--:--";  // "12:00-22:00" hoặc "--:--"
+                    const time = daySchedule.start && daySchedule.end 
+                        ? `${daySchedule.start}-${daySchedule.end}` 
+                        : "--:--"; // Hiển thị giờ vào và giờ ra hoặc "--:--"
                     return `
                         <tr>
                             <td>${dayName}</td>
-                            <td>${time}</td>  <!-- Gộp giờ vào và giờ ra thành một cột -->
+                            <td>${time}</td> <!-- Gộp giờ vào và giờ ra thành một cột -->
                             <td><button class="edit-schedule-btn" data-day="${daySchedule.day}">Chỉnh sửa</button></td>
                         </tr>
                     `;
                 }).join('')}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+            <div class="button-container">
+                <button type="submit" class="btn">Gửi</button>
+            </div>
+        </form>
     `;
     } else if (checkResponse.status === 404 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!") {
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
