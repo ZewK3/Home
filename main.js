@@ -313,7 +313,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
+    
+    const backgroundMusic = document.getElementById("backgroundMusic");
+    backgroundMusic.volume = 0.5; // Điều chỉnh âm lượng (0.0 - 1.0)
+
+    // Tự động phát nhạc nếu được phép
+    const playMusic = async () => {
+        try {
+            await backgroundMusic.play();
+            console.log("Nhạc nền đã bắt đầu phát!");
+        } catch (error) {
+            console.warn("Người dùng cần tương tác trước khi nhạc phát:", error);
+        }
+    };
+
+    playMusic();
 });
+
+function createSnowflake() {
+    const snowContainer = document.getElementById("snow-container");
+
+    // Tạo bông tuyết mới
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.textContent = "❄"; // Biểu tượng tuyết
+
+    // Vị trí ngẫu nhiên từ bên trái của màn hình
+    snowflake.style.left = Math.random() * window.innerWidth + "px";
+
+    // Kích thước ngẫu nhiên của bông tuyết
+    const size = Math.random() * 10 + 10; // Từ 10px đến 20px
+    snowflake.style.fontSize = size + "px";
+
+    // Thời gian rơi ngẫu nhiên từ 5s đến 10s để bông tuyết rơi hết màn hình
+    const fallDuration = Math.random() * 5 + 5; // Từ 5 đến 10 giây
+    snowflake.style.animationDuration = fallDuration + "s";
+
+    // Thời gian trễ ngẫu nhiên giữa các bông tuyết
+    const delay = Math.random() * 5; // Từ 0 đến 5 giây
+    snowflake.style.animationDelay = delay + "s";
+
+    snowContainer.appendChild(snowflake);
+
+    // Xóa bông tuyết sau khi nó đã rơi hết màn hình
+    setTimeout(() => {
+        snowflake.remove();
+    }, fallDuration * 1000); // Thời gian xóa bông tuyết = thời gian rơi
+}
+
+// Tạo tuyết rơi liên tục
+setInterval(createSnowflake, 200); // Tạo bông tuyết mới mỗi 200ms
 
 function updateMenuByRole(userRole) {
     const menuItems = document.querySelectorAll("#menuList .menu-item"); // Giả sử các mục menu có class "menu-item"
