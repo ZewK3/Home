@@ -93,7 +93,33 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
         // Nếu nhân viên đã đăng ký lịch làm
         showNotification("Bạn đã đăng ký lịch làm trước đó!", "warning", 3000);
-        return;
+        const schedule = checkResult.shifts || [];
+        mainContent.innerHTML = `
+        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+        <h1>Lịch làm của bạn</h1>
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Ngày</th>
+                    <th>Ca làm</th>
+                    <th>Chỉnh sửa</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${schedule.map(daySchedule => {
+                    const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
+                    const time = daySchedule.time ? daySchedule.time : "--:--";  // "12:00-22:00" hoặc "--:--"
+                    return `
+                        <tr>
+                            <td>${dayName}</td>
+                            <td>${time}</td>  <!-- Gộp giờ vào và giờ ra thành một cột -->
+                            <td><button class="edit-schedule-btn" data-day="${daySchedule.day}">Chỉnh sửa</button></td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
     } else if (checkResponse.status === 404 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!") {
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
