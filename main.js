@@ -330,39 +330,35 @@ document.addEventListener("DOMContentLoaded", () => {
     playMusic();
 });
 
+// Chọn container tuyết
+const snowContainer = document.getElementById('snow-container');
+
+// Hàm tạo bông tuyết ngẫu nhiên
 function createSnowflake() {
-    const snowContainer = document.getElementById("snow-container");
+    const snowflake = document.createElement('div');
+    snowflake.classList.add('snowflake');
+    
+    // Kích thước ngẫu nhiên cho bông tuyết
+    const size = Math.random() * 5 + 5; // Kích thước bông tuyết từ 5px đến 10px
+    snowflake.style.fontSize = `${size}px`;
 
-    // Tạo bông tuyết mới
-    const snowflake = document.createElement("div");
-    snowflake.classList.add("snowflake");
-    snowflake.textContent = "❄"; // Biểu tượng tuyết
+    // Vị trí ngẫu nhiên cho bông tuyết
+    snowflake.style.left = `${Math.random() * 100}%`; // Đặt vị trí ngang ngẫu nhiên
+    snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`; // Thời gian rơi ngẫu nhiên (từ 5 đến 10s)
+    snowflake.style.animationDelay = `${Math.random() * 5}s`; // Thời gian delay ngẫu nhiên (từ 0 đến 5s)
 
-    // Vị trí ngẫu nhiên từ bên trái của màn hình
-    snowflake.style.left = Math.random() * window.innerWidth + "px";
-
-    // Kích thước ngẫu nhiên của bông tuyết
-    const size = Math.random() * 10 + 10; // Từ 10px đến 20px
-    snowflake.style.fontSize = size + "px";
-
-    // Thời gian rơi ngẫu nhiên từ 5s đến 10s để bông tuyết rơi hết màn hình
-    const fallDuration = Math.random() * 5 + 5; // Từ 5 đến 10 giây
-    snowflake.style.animationDuration = fallDuration + "s";
-
-    // Thời gian trễ ngẫu nhiên giữa các bông tuyết
-    const delay = Math.random() * 5; // Từ 0 đến 5 giây
-    snowflake.style.animationDelay = delay + "s";
-
+    // Thêm bông tuyết vào container
     snowContainer.appendChild(snowflake);
 
-    // Xóa bông tuyết sau khi nó đã rơi hết màn hình
+    // Xóa bông tuyết khi nó rơi xuống hết màn hình
     setTimeout(() => {
         snowflake.remove();
-    }, fallDuration * 1000); // Thời gian xóa bông tuyết = thời gian rơi
+    }, (parseFloat(snowflake.style.animationDuration) + parseFloat(snowflake.style.animationDelay)) * 1000);
 }
 
-// Tạo tuyết rơi liên tục
-setInterval(createSnowflake, 200); // Tạo bông tuyết mới mỗi 200ms
+// Tạo bông tuyết mỗi 100ms
+setInterval(createSnowflake, 100);
+
 
 function updateMenuByRole(userRole) {
     const menuItems = document.querySelectorAll("#menuList .menu-item"); // Giả sử các mục menu có class "menu-item"
