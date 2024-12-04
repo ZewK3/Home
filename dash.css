@@ -155,7 +155,7 @@ html, body {
     margin-left: 250px;  /* Đẩy nội dung bên phải qua để tránh bị che khuất bởi sidebar */
     height: 100vh;  /* Chiếm toàn bộ chiều cao của màn hình */
     overflow-y: auto;  /* Cho phép cuộn nếu nội dung vượt quá chiều cao */
-    background-color: #f4f4f4;
+    background: linear-gradient(to bottom, #1e3c72, #2a5298); 
 }
 
 .main h1 {
