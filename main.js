@@ -82,18 +82,30 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
 
     // Kiểm tra xem user đã gửi lịch làm trước đó hay chưa
     try {
-        const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`);
-        const checkResult = await checkResponse.json();
-
-        if (checkResponse.ok && checkResult.registered) {
-            // Nếu user đã đăng ký lịch làm trước đó
-            showNotification("Bạn đã đăng ký lịch làm trước đó!", "warning", 3000);
-            return;
-        }
-    } catch (error) {
-        showNotification("Lỗi khi kiểm tra trạng thái lịch làm!", "error", 3000);
-        return;
+    const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`);
+    
+    if (!checkResponse.ok) {
+        throw new Error("Lỗi khi gửi yêu cầu kiểm tra trạng thái lịch làm!");
     }
+
+    const checkResult = await checkResponse.json();
+
+    if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
+        // Nếu nhân viên đã đăng ký lịch làm
+        showNotification("Bạn đã đăng ký lịch làm trước đó!", "warning", 3000);
+        return;
+    } else if (checkResponse.status === 404 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!") {
+        // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
+        console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
+    } else {
+        // Xử lý các phản hồi không mong đợi khác
+        throw new Error(checkResult.message || "Phản hồi không hợp lệ từ server!");
+    }
+} catch (error) {
+    console.error("Lỗi kiểm tra trạng thái lịch làm:", error);
+    showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
+    return;
+}
 
     // Nếu user chưa đăng ký, tiếp tục hiển thị giao diện đăng ký
     const mainContent = document.querySelector(".main");
