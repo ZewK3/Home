@@ -6,13 +6,47 @@
 }
 html, body {
     overflow: hidden;
-    height: 100%;
+    height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background: linear-gradient(to bottom, #1e3c72, #2a5298); 
     flex-direction: row;  /* Dùng flex-direction: row để bố trí ngang */
 }
 #backButton.hidden {
     display: none;
+}
+#snow-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Không làm ảnh hưởng đến tương tác người dùng */
+}
+
+.snowflake {
+    position: absolute;
+    top: -10px; /* Bắt đầu từ trên cùng */
+    color: white;
+    font-size: 1em;
+    user-select: none;
+    animation-name: fall, sway;
+    animation-timing-function: linear, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh); /* Rơi xuống hết chiều cao màn hình */
+    }
+}
+
+@keyframes sway {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(20px); /* Lắc nhẹ qua trái phải */
+    }
 }
 /* Màn hình loading */
 
