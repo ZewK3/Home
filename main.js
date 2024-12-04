@@ -79,7 +79,9 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
 
     const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
-
+    const mainContent = document.querySelector(".main");
+    const sidebar = document.querySelector(".sidebar");
+    const isMobile = window.innerWidth <= 768;
     // Kiểm tra xem user đã gửi lịch làm trước đó hay chưa
     try {
     const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`);
@@ -134,9 +136,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
 }
 
     // Nếu user chưa đăng ký, tiếp tục hiển thị giao diện đăng ký
-    const mainContent = document.querySelector(".main");
-    const sidebar = document.querySelector(".sidebar");
-    const isMobile = window.innerWidth <= 768;
 
     if (isMobile) {
         sidebar.classList.add("hidden");
