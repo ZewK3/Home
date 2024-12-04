@@ -96,9 +96,8 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         // Nếu nhân viên đã đăng ký lịch làm
         showNotification("Bạn đã đăng ký lịch làm trước đó!", "warning", 3000);
         const schedule = checkResult.shifts || [];
-        mainContent.innerHTML = `
-        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1>Đăng ký lịch làm</h1>
+        mainContent.innerHTML = ` ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+        <h1>Lịch đã đăng ký</h1>
         <form id="scheduleForm">
             <table class="schedule-table">
                 <thead>
@@ -132,25 +131,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     } else if (checkResponse.status === 404 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!") {
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
-    } else {
-        // Xử lý các phản hồi không mong đợi khác
-        throw new Error(checkResult.message || "Phản hồi không hợp lệ từ server!");
-    }
-} catch (error) {
-    console.error("Lỗi kiểm tra trạng thái lịch làm:", error);
-    showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
-    return;
-}
-
-    // Nếu user chưa đăng ký, tiếp tục hiển thị giao diện đăng ký
-
-    if (isMobile) {
-        sidebar.classList.add("hidden");
-        mainContent.classList.remove("hidden");
-    }
-
-    // Cập nhật nội dung của main
-    mainContent.innerHTML = `
+        mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Đăng ký lịch làm</h1>
         <form id="scheduleForm">
@@ -185,6 +166,24 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
+    } else {
+        // Xử lý các phản hồi không mong đợi khác
+        throw new Error(checkResult.message || "Phản hồi không hợp lệ từ server!");
+    }
+} catch (error) {
+    console.error("Lỗi kiểm tra trạng thái lịch làm:", error);
+    showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
+    return;
+}
+
+    // Nếu user chưa đăng ký, tiếp tục hiển thị giao diện đăng ký
+
+    if (isMobile) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+    }
+
+    // Cập nhật nội dung của mai
 
     const backButton = document.getElementById("backButton");
     if (backButton) {
