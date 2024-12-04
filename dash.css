@@ -15,7 +15,6 @@ html, body {
     display: none;
 }
 /* Màn hình loading */
-
 @keyframes fadeInUp {
     0% {
         opacity: 0;
