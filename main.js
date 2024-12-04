@@ -77,12 +77,18 @@ function createHourOptions(start, end) {
 // Mở giao diện đăng ký lịch làm
 document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
-
+    
     const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
     const mainContent = document.querySelector(".main");
     const sidebar = document.querySelector(".sidebar");
     const isMobile = window.innerWidth <= 768;
+
+    const originalMainContentHTML = mainContent.innerHTML;
     // Kiểm tra xem user đã gửi lịch làm trước đó hay chưa
+    if (isMobile) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+    }
     try {
     const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`);
     
@@ -110,9 +116,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
                 <tbody>
                     ${schedule.map(daySchedule => {
                     const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
-                    const time = daySchedule.start && daySchedule.end 
-                        ? `${daySchedule.start}-${daySchedule.end}` 
-                        : "--:--"; // Hiển thị giờ vào và giờ ra hoặc "--:--"
+                    const time = daySchedule.time || "--:--";  // Dữ liệu đã định dạng sẵn
                     return `
                         <tr>
                             <td>${dayName}</td>
@@ -176,22 +180,23 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     return;
 }
 
-    // Nếu user chưa đăng ký, tiếp tục hiển thị giao diện đăng ký
 
-    if (isMobile) {
-        sidebar.classList.add("hidden");
-        mainContent.classList.remove("hidden");
-    }
+    // Cập nhật nội dung của main
 
-    // Cập nhật nội dung của mai
-
-    const backButton = document.getElementById("backButton");
-    if (backButton) {
-        backButton.addEventListener("click", function () {
+const backButton = document.getElementById("backButton");
+if (backButton) {
+    backButton.addEventListener("click", function () {
+        if (isMobile) {
+            // Nếu là thiết bị di động
             mainContent.classList.add("hidden");
             sidebar.classList.remove("hidden");
-        });
-    }
+        } else {
+            // Nếu không phải thiết bị di động
+            mainContent.innerHTML = originalMainContentHTML;
+        }
+    });
+}
+
 
     document.querySelectorAll(".start-select").forEach(select => {
         select.addEventListener("change", function () {
