@@ -314,50 +314,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
     
-    const backgroundMusic = document.getElementById("backgroundMusic");
+    const music = document.getElementById("backgroundMusic");
     backgroundMusic.volume = 0.5; // Điều chỉnh âm lượng (0.0 - 1.0)
 
     // Tự động phát nhạc nếu được phép
-    const playMusic = async () => {
-        try {
-            await backgroundMusic.play();
-            console.log("Nhạc nền đã bắt đầu phát!");
-        } catch (error) {
-            console.warn("Người dùng cần tương tác trước khi nhạc phát:", error);
-        }
-    };
-
-    playMusic();
+    music.play().catch((error) => {
+        console.log("Tự động phát nhạc bị chặn bởi trình duyệt: ", error);
+    });
 });
-
-// Chọn container tuyết
-const snowContainer = document.getElementById('snow-container');
-
-// Hàm tạo bông tuyết ngẫu nhiên
-function createSnowflake() {
-    const snowflake = document.createElement('div');
-    snowflake.classList.add('snowflake');
-    
-    // Kích thước ngẫu nhiên cho bông tuyết
-    const size = Math.random() * 5 + 5; // Kích thước bông tuyết từ 5px đến 10px
-    snowflake.style.fontSize = `${size}px`;
-
-    // Vị trí ngẫu nhiên cho bông tuyết
-    snowflake.style.left = `${Math.random() * 100}%`; // Đặt vị trí ngang ngẫu nhiên
-    snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`; // Thời gian rơi ngẫu nhiên (từ 5 đến 10s)
-    snowflake.style.animationDelay = `${Math.random() * 5}s`; // Thời gian delay ngẫu nhiên (từ 0 đến 5s)
-
-    // Thêm bông tuyết vào container
-    snowContainer.appendChild(snowflake);
-
-    // Xóa bông tuyết khi nó rơi xuống hết màn hình
-    setTimeout(() => {
-        snowflake.remove();
-    }, (parseFloat(snowflake.style.animationDuration) + parseFloat(snowflake.style.animationDelay)) * 1000);
-}
-
-// Tạo bông tuyết mỗi 100ms
-setInterval(createSnowflake, 100);
 
 
 function updateMenuByRole(userRole) {
