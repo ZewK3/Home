@@ -279,9 +279,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
+
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
-        console.log("Video và nhạc nền bắt đầu phát.");
+        // Bật âm thanh sau khi video bắt đầu phát
+        setTimeout(() => {
+            video.muted = false; // Bật âm thanh
+            console.log("Bật âm thanh sau khi video bắt đầu phát.");
+        }, 1000); // Đợi 1 giây để đảm bảo video đã bắt đầu phát
     }).catch((error) => {
         console.log("Không thể tự động phát video hoặc âm thanh:", error);
     });
