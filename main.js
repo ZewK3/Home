@@ -278,7 +278,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
+   const music = document.getElementById("backgroundMusic");
+    const tryToPlayMusic = () => {
+        music.play().then(() => {
+        }).catch((error) => {
+            console.log("Không thể tự động phát nhạc:", error);
+        });
+    };
 
+    tryToPlayMusic();
     // Kiểm tra nếu đang ở chế độ màn hình nhỏ
     const isMobile = () => window.innerWidth <= 768;
 
@@ -316,13 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
     
-    const music = document.getElementById("backgroundMusic");
-    backgroundMusic.volume = 0.5; // Điều chỉnh âm lượng (0.0 - 1.0)
-
-    // Tự động phát nhạc nếu được phép
-    music.play().catch((error) => {
-        console.log("Tự động phát nhạc bị chặn bởi trình duyệt: ", error);
-    });
 });
 
 
