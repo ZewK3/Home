@@ -279,7 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
         console.log("Video và nhạc nền bắt đầu phát.");
