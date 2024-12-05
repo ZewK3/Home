@@ -97,7 +97,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             },
         });
     
-    if (!checkResponse.ok) {
+    if (checkResponse.status === 500) {
         throw new Error("Lỗi khi gửi yêu cầu kiểm tra trạng thái lịch làm!");
     }
 
@@ -137,7 +137,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } else if(checkResponse.status === 400 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!"){
+    } else if(checkResponse.status === 400"){
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
         mainContent.innerHTML = `
