@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             video.muted = false; // Bật âm thanh
             console.log("Bật âm thanh sau khi video bắt đầu phát.");
-        }, 1000); // Đợi 1 giây để đảm bảo video đã bắt đầu phát
+        }, 7000); // Đợi 1 giây để đảm bảo video đã bắt đầu phát
     }).catch((error) => {
         console.log("Không thể tự động phát video hoặc âm thanh:", error);
     });
