@@ -132,7 +132,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } else if (checkResponse.status === 404 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!") {
+    } else {
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
         mainContent.innerHTML = `
