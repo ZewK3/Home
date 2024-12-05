@@ -170,9 +170,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } else {
-        // Xử lý các phản hồi không mong đợi khác
-        throw new Error(checkResult.message || "Phản hồi không hợp lệ từ server!");
     }
 } catch (error) {
     console.error("Lỗi kiểm tra trạng thái lịch làm:", error);
