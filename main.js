@@ -278,15 +278,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
-   const music = document.getElementById("backgroundMusic");
-    const tryToPlayMusic = () => {
-        music.play().then(() => {
-        }).catch((error) => {
-            console.log("Không thể tự động phát nhạc:", error);
-        });
-    };
+    const video = document.getElementById("backgroundVideo");
 
-    tryToPlayMusic();
+    // Đảm bảo video tự động phát khi trang tải xong
+    video.play().then(() => {
+        console.log("Video và nhạc nền bắt đầu phát.");
+    }).catch((error) => {
+        console.log("Không thể tự động phát video hoặc âm thanh:", error);
+    });
     // Kiểm tra nếu đang ở chế độ màn hình nhỏ
     const isMobile = () => window.innerWidth <= 768;
 
