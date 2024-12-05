@@ -90,7 +90,12 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         mainContent.classList.remove("hidden");
     }
     try {
-    const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`);
+    const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
     
     if (!checkResponse.ok) {
         throw new Error("Lỗi khi gửi yêu cầu kiểm tra trạng thái lịch làm!");
@@ -132,8 +137,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } 
-   if(checkResponse.status === 400 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!"){
+    } else if(checkResponse.status === 400 && checkResult.message === "Nhân viên chưa đăng ký lịch làm!"){
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
         mainContent.innerHTML = `
