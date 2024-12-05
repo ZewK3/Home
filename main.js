@@ -137,7 +137,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } else if(checkResponse.status === 400"){
+    } else if(checkResponse.status === 400){
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
         mainContent.innerHTML = `
