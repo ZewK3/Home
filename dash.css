@@ -8,9 +8,10 @@ html, body {
     overflow: hidden;
     height: 100vh;
     font-family: Arial, sans-serif;
-    background: linear-gradient(to bottom, #b02a37, #b02a37);
+    background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
+	
 #backButton.hidden {
     display: none;
 }
@@ -43,7 +44,15 @@ html, body {
     }
 }
 // css hàm Main
-
+.sidebar.christmas {
+    background-color: #b1d6c5;
+}
+.main.christmas {
+    background: linear-gradient(to bottom, #e9eaec, #e9eaec);
+}
+.showUser.christmas {
+   background-color: #2ca677;
+}
 /* Đảm bảo tiêu đề có độ mượt mà */
 .sidebar h2 {
     font-size: 30px;
@@ -52,7 +61,7 @@ html, body {
 }
 .showUser {
     width: 100%;
-    background-color: #b02a37;
+    background-color: #ea4c4b;
     color: white;
     display: flex;
     flex-direction: column;
@@ -66,7 +75,7 @@ html, body {
 /* Sidebar */
 .sidebar {
     width: 19.6%;
-    background-color: #f08080;
+    background-color: #efb9b5;
     color: white;
     display: flex;
     flex-direction: column;
@@ -77,7 +86,6 @@ html, body {
     top: 5.4vh;
     z-index: 1;
 }
-
 /* Tiêu đề trong Sidebar */
 .sidebar h2 {
     text-align: center; /* Căn giữa tiêu đề */
@@ -134,13 +142,13 @@ html, body {
     margin-left: 20%;
     height: 95vh;
     overflow-y: auto;
-    background: linear-gradient(to bottom, #fff, #fff);
+    background: linear-gradient(to bottom, #f4f0ef, #f6f2ef);
     width: 80%;
 }
 
 .main h1 {
     text-align: center; /* Căn giữa tiêu đề */
-    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
+    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */	
     animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
     font-size: 28px; /* Kích thước chữ */
     color: #F08080; /* Màu chữ */
@@ -273,7 +281,7 @@ button:hover {
     border-radius: 4px;
 }
 .schedule-table th {
-    background-color: #b02a37;
+    background-color: #da5b55;
     color: white;
 }
 @media (max-width: 768px) {
