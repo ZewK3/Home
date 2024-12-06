@@ -180,7 +180,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     return;
 }
 
-
     // Cập nhật nội dung của main
 
 const backButton = document.getElementById("backButton");
