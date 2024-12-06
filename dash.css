@@ -412,7 +412,7 @@ button:hover {
 
 /*Hiệu ứng tuyết rơi*/
 .snowflake {
-color: red;
+color: #b2e2ff;
 }
 @-webkit-keyframes snowflakes-fall {
 0% {
