@@ -411,29 +411,36 @@ setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 
 
 //loading
 function showLoadingScreen() {
-  return new Promise((resolve) => {
-    const loadingPercent = document.getElementById('loading-percent');
-    const progressFill = document.getElementById('progress-fill');
-    const loadingScreen = document.getElementById('loading-screen');
-    
-    let percent = 1;
+    return new Promise((resolve) => {
+        const loadingPercent = document.getElementById('loading-percent');
+        const progressFill = document.getElementById('progress-fill');
+        const loadingScreen = document.getElementById('loading-screen');
+        
+        let percent = 0;
+        const duration = 3000; // Tổng thời gian loading (ms)
+        const startTime = Date.now();
 
-    const interval = setInterval(() => {
-        loadingPercent.textContent = `${percent}%`;
-        progressFill.style.width = `${percent}%`;
+        // Hàm cập nhật tiến trình loading
+        function update() {
+            const elapsed = Date.now() - startTime;
+            percent = Math.min(Math.round((elapsed / duration) ** 1.5 * 100), 100); // Tăng dần
+            loadingPercent.textContent = `${percent}%`;
+            progressFill.style.width = `${percent}%`;
 
-        if (percent >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-                loadingScreen.style.opacity = 0; // Tạo hiệu ứng fade out
+            // Khi loading hoàn tất
+            if (percent < 100) {
+                requestAnimationFrame(update); // Tiếp tục cập nhật
+            } else {
                 setTimeout(() => {
-                    loadingScreen.style.display = 'none'; // Ẩn hoàn toàn
-                     resolve();
+                    loadingScreen.style.opacity = 0; // Fade out hiệu ứng
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none'; // Ẩn màn hình loading
+                        resolve(); // Khi loading xong, resolve promise
+                    }, 500); // Thời gian fade out
                 }, 500);
-            }, 500);
+            }
         }
-        percent++;
-    }, 30); // 4 giây cho 100 bước (4000ms / 100 = 40ms mỗi bước)
-  });
-}
 
+        update(); // Bắt đầu cập nhật tiến trình
+    });
+}
