@@ -105,7 +105,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
 
     if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
         // Nếu nhân viên đã đăng ký lịch làm
-        showNotification("Bạn đã đăng ký lịch làm trước đó!", "warning", 3000);
         const schedule = checkResult.shifts || [];
         mainContent.innerHTML = ` ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Lịch đã đăng ký</h1>
@@ -139,7 +138,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     `;
     } else if(checkResponse.status === 400){
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
-        console.log("Người dùng chưa đăng ký lịch làm. Tiếp tục quá trình.");
         mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Đăng ký lịch làm</h1>
@@ -279,7 +277,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-
+    // Gọi hàm khi trang được tải
+    updateSidebarAndMainColor();
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
         // Bật âm thanh sau khi video bắt đầu phát
@@ -375,3 +374,26 @@ snowflakes.forEach(snowflake => {
   const randomFontSize = Math.floor(Math.random() * (50 - 10 + 1)) + 10; // Random từ 10 đến 50
   snowflake.style.fontSize = `${randomFontSize}px`;
 });
+
+function updateSidebarAndMainColor() {
+    const currentMonth = new Date().getMonth() // Lấy giờ hiện tại từ hệ thống
+
+    // Lấy các phần tử sidebar và main
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main');
+    const showUser =  document.querySelector('.showUser');
+    const snowflakes = document.querySelector('.snowflakes');
+
+    // Nếu giờ là 10h, thêm lớp "special-time" để thay đổi màu nền
+    if (currentMonth >= 11 && currentMonth <= 12) {
+        sidebar.classList.add('christmas');
+        mainContent.classList.add('christmas');
+        showUser.classList.add('christmas');
+    } else if(currentMonth >=1 && currentMonth <=3) {
+        sidebar.classList.add('newyear');
+        mainContent.classList.add('newyear');
+        showUser.classList.add('newyear');
+    }else{
+        snowflakes.classList.add('hidden'); 
+    }
+}
