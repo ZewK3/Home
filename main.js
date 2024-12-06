@@ -409,4 +409,30 @@ updateSidebarAndMainColor();
 // Đặt lịch kiểm tra mỗi ngày để tự động thay đổi nếu cần
 setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 giờ
 
+//loading
+function showLoadingScreen() {
+    const loadingPercent = document.getElementById('loading-percent');
+    const progressFill = document.getElementById('progress-fill');
+    const loadingScreen = document.getElementById('loading-screen');
+    
+    let percent = 1;
 
+    const interval = setInterval(() => {
+        loadingPercent.textContent = `${percent}%`;
+        progressFill.style.width = `${percent}%`;
+
+        if (percent >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                loadingScreen.style.opacity = 0; // Tạo hiệu ứng fade out
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none'; // Ẩn hoàn toàn
+                }, 500);
+            }, 500);
+        }
+        percent++;
+    }, 30); // 4 giây cho 100 bước (4000ms / 100 = 40ms mỗi bước)
+}
+
+// Hiển thị hiệu ứng loading khi trang tải
+document.addEventListener('DOMContentLoaded', showLoadingScreen);
