@@ -44,14 +44,15 @@ html, body {
     }
 }
 // css hàm Main
-.sidebar.christmas {
-    background-color: #b1d6c5;
-}
+
 .main.christmas {
     background: linear-gradient(to bottom, #e9eaec, #e9eaec);
 }
 .showUser.christmas {
    background-color: #2ca677;
+}
+.sidebar.christmas {
+    background-color: #b1d6c5;
 }
 /* Đảm bảo tiêu đề có độ mượt mà */
 .sidebar h2 {
