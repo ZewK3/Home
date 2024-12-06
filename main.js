@@ -368,3 +368,10 @@ function showNotification(message, type = "success", duration = 3000) {
         }, 500); // Thời gian animation
     }, duration);
 }
+const snowflakes = document.querySelectorAll('.snowflake');
+
+// Gán kích thước ngẫu nhiên từ 10px đến 50px
+snowflakes.forEach(snowflake => {
+  const randomFontSize = Math.floor(Math.random() * (50 - 10 + 1)) + 10; // Random từ 10 đến 50
+  snowflake.style.fontSize = `${randomFontSize}px`;
+});
