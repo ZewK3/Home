@@ -277,8 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-    // Gọi hàm khi trang được tải
-    updateSidebarAndMainColor();
+
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
         // Bật âm thanh sau khi video bắt đầu phát
@@ -374,26 +373,40 @@ snowflakes.forEach(snowflake => {
   const randomFontSize = Math.floor(Math.random() * (50 - 10 + 1)) + 10; // Random từ 10 đến 50
   snowflake.style.fontSize = `${randomFontSize}px`;
 });
-
 function updateSidebarAndMainColor() {
-    const currentMonth = new Date().getMonth() // Lấy giờ hiện tại từ hệ thống
+    const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
 
-    // Lấy các phần tử sidebar và main
+    // Lấy các phần tử cần thay đổi
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main');
-    const showUser =  document.querySelector('.showUser');
+    const showUser = document.querySelector('.showUser');
     const snowflakes = document.querySelector('.snowflakes');
 
-    // Nếu giờ là 10h, thêm lớp "special-time" để thay đổi màu nền
-    if (currentMonth >= 11 && currentMonth <= 12) {
-        sidebar.classList.add('christmas');
-        mainContent.classList.add('christmas');
-        showUser.classList.add('christmas');
-    } else if(currentMonth >=1 && currentMonth <=3) {
-        sidebar.classList.add('newyear');
-        mainContent.classList.add('newyear');
-        showUser.classList.add('newyear');
-    }else{
-        snowflakes.classList.add('hidden'); 
+    // Xóa tất cả các lớp trước khi thêm mới
+    sidebar?.classList.remove('christmas', 'newyear');
+    mainContent?.classList.remove('christmas', 'newyear');
+    showUser?.classList.remove('christmas', 'newyear');
+    snowflakes?.classList.remove('hidden');
+
+    // Xử lý các mùa lễ
+    if (currentMonth === 11 ) { // Tháng 12 và tháng 1
+        sidebar?.classList.add('christmas');
+        mainContent?.classList.add('christmas');
+        showUser?.classList.add('christmas');
+    } else if (currentMonth >= 1 && currentMonth <= 3) { // Tháng 2 đến tháng 4
+        sidebar?.classList.add('newyear');
+        mainContent?.classList.add('newyear');
+        showUser?.classList.add('newyear');
+    } else {
+        // Ẩn tuyết nếu không phải mùa lễ
+        snowflakes?.classList.add('hidden');
     }
 }
+
+// Gọi hàm ngay khi tải trang
+updateSidebarAndMainColor();
+
+// Đặt lịch kiểm tra mỗi ngày để tự động thay đổi nếu cần
+setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 giờ
+
+
