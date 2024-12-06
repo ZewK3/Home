@@ -8,8 +8,8 @@ html, body {
     overflow: hidden;
     height: 100vh;
     font-family: Arial, sans-serif;
-    background: linear-gradient(to bottom, #1e3c72, #2a5298); 
-    flex-direction: row;  /* Dùng flex-direction: row để bố trí ngang */
+    background: linear-gradient(to bottom, #b02a37, #b02a37);
+    flex-direction: row;
 }
 #backButton.hidden {
     display: none;
@@ -52,7 +52,7 @@ html, body {
 }
 .showUser {
     width: 100%;
-    background-color: #767676;
+    background-color: #b02a37;
     color: white;
     display: flex;
     flex-direction: column;
@@ -62,12 +62,11 @@ html, body {
     left: 0;
     top: 0;
     z-index: 1;
-    border: 1px solid #000;
 }
 /* Sidebar */
 .sidebar {
-    width: 20%;
-    background-color: #767676;
+    width: 19.6%;
+    background-color: #f08080;
     color: white;
     display: flex;
     flex-direction: column;
@@ -75,9 +74,8 @@ html, body {
     height: 95vh;
     position: fixed;
     left: 0;
-    top: 5vh;
+    top: 5.4vh;
     z-index: 1;
-    border: 1px solid #000;
 }
 
 /* Tiêu đề trong Sidebar */
@@ -130,15 +128,14 @@ html, body {
 }
 /* Main content */
 .main {
-   top: 5vh;
+   top: 5.4vh;
     padding: 10px;
     position: fixed;
     margin-left: 20%;
     height: 95vh;
     overflow-y: auto;
-    background: linear-gradient(to bottom, #f5f9ff, #fff);
+    background: linear-gradient(to bottom, #fff, #fff);
     width: 80%;
-    border: 1px solid black;
 }
 
 .main h1 {
@@ -236,9 +233,9 @@ select {
 }
 
 button {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #007bff;
+    padding: 5px;
+    font-size: 12px;
+    background-color: #f08080;
     color: white;
     border: none;
     border-radius: 5px;
@@ -247,7 +244,7 @@ button {
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #b02a37;
 }
 /* Nút */
 .button-container {
@@ -267,7 +264,7 @@ button:hover {
 }
 
 .btn:hover {
-    background-color: #0056b3;
+    background-color: #b02a37;
 }
 .time-select {
     padding: 8px;
