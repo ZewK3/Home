@@ -270,13 +270,14 @@ if (backButton) {
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",async () => {
+    await showLoadingScreen();
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-
+    
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
         // Bật âm thanh sau khi video bắt đầu phát
@@ -410,6 +411,7 @@ setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 
 
 //loading
 function showLoadingScreen() {
+  return new Promise((resolve) => {
     const loadingPercent = document.getElementById('loading-percent');
     const progressFill = document.getElementById('progress-fill');
     const loadingScreen = document.getElementById('loading-screen');
@@ -426,12 +428,12 @@ function showLoadingScreen() {
                 loadingScreen.style.opacity = 0; // Tạo hiệu ứng fade out
                 setTimeout(() => {
                     loadingScreen.style.display = 'none'; // Ẩn hoàn toàn
+                     resolve();
                 }, 500);
             }, 500);
         }
         percent++;
     }, 30); // 4 giây cho 100 bước (4000ms / 100 = 40ms mỗi bước)
+  });
 }
 
-// Hiển thị hiệu ứng loading khi trang tải
-document.addEventListener('DOMContentLoaded', showLoadingScreen);
