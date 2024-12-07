@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadingScreen = document.getElementById("loading-screen");
     setTimeout(() => {
     // Ẩn màn hình loading
-       loadingScreen.classList.add("hidden");
+       loadingScreen.remove();
     }, 3000); // Thời gian loading (3 giây)
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
