@@ -269,6 +269,17 @@ if (backButton) {
     });
 });
 
+window.onload = function() {
+    const popup = document.getElementById('popup');
+    
+    // Show the popup
+    popup.style.visibility = 'visible';
+    
+    // Hide the popup after 5 seconds
+    setTimeout(function() {
+        popup.style.visibility = 'hidden';
+    }, 5000); // 5000 milliseconds = 5 seconds
+};
 
 
 document.addEventListener("DOMContentLoaded", () => {
