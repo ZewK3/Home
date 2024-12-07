@@ -11,6 +11,7 @@ html, body {
     background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
+
 .popup {
     position: fixed;
     top: 0;
