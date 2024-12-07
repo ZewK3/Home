@@ -180,6 +180,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     return;
 }
 
+
     // Cập nhật nội dung của main
 
 const backButton = document.getElementById("backButton");
@@ -270,79 +271,61 @@ if (backButton) {
 
 
 
-document.addEventListener("DOMContentLoaded", async () => {
-    // Thêm lớp 'loading' để ẩn nội dung trang khi tải
-    document.body.classList.add('loading');
-
-    // Đợi màn hình loading hiển thị xong
-    await showLoadingScreen();
-
-    // Sau khi loading xong, thêm lớp 'loaded' để hiển thị lại nội dung trang
-    document.body.classList.remove('loading');
-    document.body.classList.add('loaded');
-
-    // Tiến hành các thao tác khác sau khi loading hoàn tất
-    // Các sự kiện, như xử lý sidebar, back button, video, có thể thêm vào đây
+document.addEventListener("DOMContentLoaded", () => {
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-    
+
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
+        // Bật âm thanh sau khi video bắt đầu phát
         setTimeout(() => {
-            video.muted = false; // Bật âm thanh sau khi video bắt đầu phát
-        }, 7000); // Đợi 7 giây để đảm bảo video đã bắt đầu phát
+            video.muted = false; // Bật âm thanh
+            console.log("Bật âm thanh sau khi video bắt đầu phát.");
+        }, 7000); // Đợi 1 giây để đảm bảo video đã bắt đầu phát
     }).catch((error) => {
         console.log("Không thể tự động phát video hoặc âm thanh:", error);
     });
+    // Kiểm tra nếu đang ở chế độ màn hình nhỏ
+    const isMobile = () => window.innerWidth <= 768;
 
-    // Tiến hành xử lý các sự kiện sidebar, backButton, và resize
+    const handleResize = () => {
+        if (!isMobile()) {
+            // Nếu không phải trên điện thoại, đảm bảo cả sidebar và main luôn hiển thị
+            sidebar.classList.remove("hidden");
+            main.classList.remove("hidden");
+        }
+    };
+
+    // Gắn sự kiện click vào các mục trong sidebar
     listItems.forEach(item => {
         item.addEventListener("click", (e) => {
             if (isMobile()) {
                 e.preventDefault();
-                sidebar.classList.add("hidden");
-                main.classList.remove("hidden");
-                backButton.classList.remove("hidden");
+                sidebar.classList.add("hidden"); // Ẩn sidebar
+                main.classList.remove("hidden"); // Hiện main
+                backButton.classList.remove("hidden"); // Hiện nút quay lại
             }
         });
     });
 
+    // Gắn sự kiện click vào nút quay lại
     backButton.addEventListener("click", () => {
         if (isMobile()) {
-            main.classList.add("hidden");
-            sidebar.classList.remove("hidden");
+            main.classList.add("hidden"); // Ẩn main
+            sidebar.classList.remove("hidden"); // Hiện sidebar
         }
     });
 
+    // Xử lý khi thay đổi kích thước cửa sổ
     window.addEventListener("resize", handleResize);
-    handleResize();  // Gọi kiểm tra kích thước ngay khi tải trang
-});
-// Hàm hiển thị màn hình loading
-async function showLoadingScreen() {
-    const loadingScreen = document.getElementById("loading-screen");
 
-    // Hiển thị màn hình loading
-    loadingScreen.style.display = "block";
+    // Gọi kiểm tra kích thước ngay khi tải trang
+    handleResize();
     
-    // Giả lập thời gian loading, có thể thay đổi thời gian này theo nhu cầu thực tế
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            loadingScreen.style.opacity = "0"; // Bắt đầu làm mờ màn hình loading
-            setTimeout(() => {
-                loadingScreen.style.display = "none"; // Ẩn hoàn toàn màn hình loading
-                loadingScreen.remove(); // Xóa div loading khỏi DOM
-                resolve(); // Khi hoàn tất, tiếp tục thực hiện các thao tác còn lại
-            }, 500); // Thời gian fade out (500ms)
-        }, 5000); // Thời gian loading (5 giây)
-    });
-}
-
-
-
-
+});
 
 
 function updateMenuByRole(userRole) {
@@ -425,4 +408,3 @@ updateSidebarAndMainColor();
 
 // Đặt lịch kiểm tra mỗi ngày để tự động thay đổi nếu cần
 setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 giờ
-
