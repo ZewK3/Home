@@ -410,37 +410,16 @@ updateSidebarAndMainColor();
 setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 giờ
 
 //loading
-function showLoadingScreen() {
-    return new Promise((resolve) => {
-        const loadingPercent = document.getElementById('loading-percent');
-        const progressFill = document.getElementById('progress-fill');
-        const loadingScreen = document.getElementById('loading-screen');
-        
-        let percent = 0;
-        const duration = 3000; // Tổng thời gian loading (ms)
-        const startTime = Date.now();
+window.onload = () => {
+  const loadingScreen = document.getElementById("loading-screen");
 
-        // Hàm cập nhật tiến trình loading
-        function update() {
-            const elapsed = Date.now() - startTime;
-            percent = Math.min(Math.round((elapsed / duration) ** 1.5 * 100), 100); // Tăng dần
-            loadingPercent.textContent = `${percent}%`;
-            progressFill.style.width = `${percent}%`;
+  // Giả lập thời gian tải nội dung (có thể thay bằng logic thực tế)
+  setTimeout(() => {
+    // Ẩn màn hình loading
+    loadingScreen.style.opacity = "0";
+    setTimeout(() => {
+      loadingScreen.style.display = "none";
 
-            // Khi loading hoàn tất
-            if (percent < 100) {
-                requestAnimationFrame(update); // Tiếp tục cập nhật
-            } else {
-                setTimeout(() => {
-                    loadingScreen.style.opacity = 0; // Fade out hiệu ứng
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none'; // Ẩn màn hình loading
-                        resolve(); // Khi loading xong, resolve promise
-                    }, 500); // Thời gian fade out
-                }, 500);
-            }
-        }
-
-        update(); // Bắt đầu cập nhật tiến trình
-    });
-}
+    }, 500); // Thời gian fade out
+  }, 3000); // Thời gian loading (3 giây)
+};
