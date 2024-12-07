@@ -282,6 +282,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add('loaded');
 
     // Tiến hành các thao tác khác sau khi loading hoàn tất
+    // Các sự kiện, như xử lý sidebar, back button, video, có thể thêm vào đây
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
@@ -290,57 +291,42 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
-        // Bật âm thanh sau khi video bắt đầu phát
         setTimeout(() => {
-            video.muted = false; // Bật âm thanh
-            console.log("Bật âm thanh sau khi video bắt đầu phát.");
+            video.muted = false; // Bật âm thanh sau khi video bắt đầu phát
         }, 7000); // Đợi 7 giây để đảm bảo video đã bắt đầu phát
     }).catch((error) => {
         console.log("Không thể tự động phát video hoặc âm thanh:", error);
     });
 
-    // Kiểm tra nếu đang ở chế độ màn hình nhỏ
-    const isMobile = () => window.innerWidth <= 768;
-
-    const handleResize = () => {
-        if (!isMobile()) {
-            // Nếu không phải trên điện thoại, đảm bảo cả sidebar và main luôn hiển thị
-            sidebar.classList.remove("hidden");
-            main.classList.remove("hidden");
-        }
-    };
-
-    // Gắn sự kiện click vào các mục trong sidebar
+    // Tiến hành xử lý các sự kiện sidebar, backButton, và resize
     listItems.forEach(item => {
         item.addEventListener("click", (e) => {
             if (isMobile()) {
                 e.preventDefault();
-                sidebar.classList.add("hidden"); // Ẩn sidebar
-                main.classList.remove("hidden"); // Hiện main
-                backButton.classList.remove("hidden"); // Hiện nút quay lại
+                sidebar.classList.add("hidden");
+                main.classList.remove("hidden");
+                backButton.classList.remove("hidden");
             }
         });
     });
 
-    // Gắn sự kiện click vào nút quay lại
     backButton.addEventListener("click", () => {
         if (isMobile()) {
-            main.classList.add("hidden"); // Ẩn main
-            sidebar.classList.remove("hidden"); // Hiện sidebar
+            main.classList.add("hidden");
+            sidebar.classList.remove("hidden");
         }
     });
 
-    // Xử lý khi thay đổi kích thước cửa sổ
     window.addEventListener("resize", handleResize);
-
-    // Gọi kiểm tra kích thước ngay khi tải trang
-    handleResize();
+    handleResize();  // Gọi kiểm tra kích thước ngay khi tải trang
 });
-
 // Hàm hiển thị màn hình loading
 async function showLoadingScreen() {
     const loadingScreen = document.getElementById("loading-screen");
 
+    // Hiển thị màn hình loading
+    loadingScreen.style.display = "block";
+    
     // Giả lập thời gian loading, có thể thay đổi thời gian này theo nhu cầu thực tế
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -353,6 +339,7 @@ async function showLoadingScreen() {
         }, 5000); // Thời gian loading (5 giây)
     });
 }
+
 
 
 
