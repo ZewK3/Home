@@ -270,17 +270,18 @@ if (backButton) {
 
 
 
-document.addEventListener("DOMContentLoaded", async () => {
-    // Đợi màn hình loading hiển thị xong
-    await showLoadingScreen();
-
+document.addEventListener("DOMContentLoaded", () => {
     // Sau khi loading xong, thực hiện các thao tác tiếp theo
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-    
+    const loadingScreen = document.getElementById("loading-screen");
+    setTimeout(() => {
+    // Ẩn màn hình loading
+       loadingScreen.style.display = "none";
+    }, 3000); // Thời gian loading (3 giây)
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
         // Bật âm thanh sau khi video bắt đầu phát
@@ -330,21 +331,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     handleResize();
 });
 
-// Hàm hiển thị màn hình loading
-async function showLoadingScreen() {
-    const loadingScreen = document.getElementById("loading-screen");
 
-    // Giả lập thời gian loading, có thể thay đổi thời gian này theo nhu cầu thực tế
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            loadingScreen.style.opacity = "0";
-            setTimeout(() => {
-                loadingScreen.style.display = "none";
-                resolve(); // Khi hoàn tất, tiếp tục thực hiện các thao tác còn lại
-            }, 500); // Thời gian fade out
-        }, 3000); // Thời gian loading (3 giây)
-    });
-}
 
 
 
