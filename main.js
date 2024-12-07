@@ -270,18 +270,24 @@ if (backButton) {
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    // Sau khi loading xong, thực hiện các thao tác tiếp theo
+document.addEventListener("DOMContentLoaded", async () => {
+    // Thêm lớp 'loading' để ẩn nội dung trang khi tải
+    document.body.classList.add('loading');
+
+    // Đợi màn hình loading hiển thị xong
+    await showLoadingScreen();
+
+    // Sau khi loading xong, thêm lớp 'loaded' để hiển thị lại nội dung trang
+    document.body.classList.remove('loading');
+    document.body.classList.add('loaded');
+
+    // Tiến hành các thao tác khác sau khi loading hoàn tất
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     const video = document.getElementById("backgroundVideo");
-    const loadingScreen = document.getElementById("loading-screen");
-    setTimeout(() => {
-    // Ẩn màn hình loading
-       loadingScreen.remove();
-    }, 3000); // Thời gian loading (3 giây)
+    
     // Đảm bảo video tự động phát khi trang tải xong
     video.play().then(() => {
         // Bật âm thanh sau khi video bắt đầu phát
@@ -330,6 +336,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
 });
+
+// Hàm hiển thị màn hình loading
+async function showLoadingScreen() {
+    const loadingScreen = document.getElementById("loading-screen");
+
+    // Giả lập thời gian loading, có thể thay đổi thời gian này theo nhu cầu thực tế
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            loadingScreen.style.opacity = "0"; // Bắt đầu làm mờ màn hình loading
+            setTimeout(() => {
+                loadingScreen.style.display = "none"; // Ẩn hoàn toàn màn hình loading
+                loadingScreen.remove(); // Xóa div loading khỏi DOM
+                resolve(); // Khi hoàn tất, tiếp tục thực hiện các thao tác còn lại
+            }, 500); // Thời gian fade out (500ms)
+        }, 5000); // Thời gian loading (5 giây)
+    });
+}
 
 
 
