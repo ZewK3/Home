@@ -11,6 +11,15 @@ html, body {
     background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
+/* Trạng thái ẩn body khi trang đang tải */
+body.loading {
+  visibility: hidden; /* Ẩn toàn bộ nội dung trang */
+}
+
+/* Trạng thái khi loading xong */
+body.loaded {
+  visibility: visible; /* Hiển thị lại nội dung trang */
+}
 	
 #backButton.hidden {
     display: none;
