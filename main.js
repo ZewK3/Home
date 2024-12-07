@@ -270,8 +270,11 @@ if (backButton) {
 
 
 
-document.addEventListener("DOMContentLoaded",async () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    // Đợi màn hình loading hiển thị xong
     await showLoadingScreen();
+
+    // Sau khi loading xong, thực hiện các thao tác tiếp theo
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
@@ -284,10 +287,11 @@ document.addEventListener("DOMContentLoaded",async () => {
         setTimeout(() => {
             video.muted = false; // Bật âm thanh
             console.log("Bật âm thanh sau khi video bắt đầu phát.");
-        }, 7000); // Đợi 1 giây để đảm bảo video đã bắt đầu phát
+        }, 7000); // Đợi 7 giây để đảm bảo video đã bắt đầu phát
     }).catch((error) => {
         console.log("Không thể tự động phát video hoặc âm thanh:", error);
     });
+
     // Kiểm tra nếu đang ở chế độ màn hình nhỏ
     const isMobile = () => window.innerWidth <= 768;
 
@@ -324,8 +328,24 @@ document.addEventListener("DOMContentLoaded",async () => {
 
     // Gọi kiểm tra kích thước ngay khi tải trang
     handleResize();
-    
 });
+
+// Hàm hiển thị màn hình loading
+async function showLoadingScreen() {
+    const loadingScreen = document.getElementById("loading-screen");
+
+    // Giả lập thời gian loading, có thể thay đổi thời gian này theo nhu cầu thực tế
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            loadingScreen.style.opacity = "0";
+            setTimeout(() => {
+                loadingScreen.style.display = "none";
+                resolve(); // Khi hoàn tất, tiếp tục thực hiện các thao tác còn lại
+            }, 500); // Thời gian fade out
+        }, 3000); // Thời gian loading (3 giây)
+    });
+}
+
 
 
 function updateMenuByRole(userRole) {
@@ -409,17 +429,3 @@ updateSidebarAndMainColor();
 // Đặt lịch kiểm tra mỗi ngày để tự động thay đổi nếu cần
 setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 giờ
 
-//loading
-window.onload = () => {
-  const loadingScreen = document.getElementById("loading-screen");
-
-  // Giả lập thời gian tải nội dung (có thể thay bằng logic thực tế)
-  setTimeout(() => {
-    // Ẩn màn hình loading
-    loadingScreen.style.opacity = "0";
-    setTimeout(() => {
-      loadingScreen.style.display = "none";
-
-    }, 500); // Thời gian fade out
-  }, 3000); // Thời gian loading (3 giây)
-};
