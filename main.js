@@ -6,7 +6,6 @@ menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
-    const ld = document.querySelector(".loading-container");
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
@@ -22,7 +21,6 @@ if (loggedInUser) {
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
             menuList.style.display = 'block';
-            ld.classList.add('hidden');
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
             if (lastActivity) {
@@ -357,6 +355,7 @@ function showNotification(message, type = "success", duration = 3000) {
     }, duration);
 }
 const snowflakes = document.querySelectorAll('.snowflake');
+snowflakes?.classList.add('hidden');
 
 // Gán kích thước ngẫu nhiên từ 10px đến 50px
 snowflakes.forEach(snowflake => {
@@ -376,20 +375,19 @@ function updateSidebarAndMainColor() {
     sidebar?.classList.remove('christmas', 'newyear');
     mainContent?.classList.remove('christmas', 'newyear');
     showUser?.classList.remove('christmas', 'newyear');
-    snowflakes?.classList.remove('hidden');
 
     // Xử lý các mùa lễ
     if (currentMonth === 11 ) { // Tháng 12 và tháng 1
         sidebar?.classList.add('christmas');
         mainContent?.classList.add('christmas');
         showUser?.classList.add('christmas');
+        snowflakes?.classList.remove('hidden');
     } else if (currentMonth >= 1 && currentMonth <= 3) { // Tháng 2 đến tháng 4
         sidebar?.classList.add('newyear');
         mainContent?.classList.add('newyear');
         showUser?.classList.add('newyear');
     } else {
         // Ẩn tuyết nếu không phải mùa lễ
-        snowflakes?.classList.add('hidden');
     }
 }
 
