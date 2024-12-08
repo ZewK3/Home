@@ -6,7 +6,7 @@ menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
-    const loading = document.getElementById("loading-container");
+    const sloading = document.getElementById("loading-container");
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
@@ -21,7 +21,7 @@ if (loggedInUser) {
             // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
-            loading.style.display = 'none';
+            sloading.style.display = 'none';
             menuList.style.display = 'block';
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
