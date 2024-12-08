@@ -22,7 +22,7 @@ if (loggedInUser) {
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
             menuList.style.display = 'block';
-            ld..classList.add('hidden');
+            ld.classList.add('hidden');
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
             if (lastActivity) {
