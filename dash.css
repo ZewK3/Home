@@ -546,7 +546,9 @@ animation-delay: 3s, 1.5s;
     position: fixed;
     z-index: 9999;̣̣̣̣̣;
 }
-
+.loading-container.hidden {
+    /* display: none; */
+}
 /* Wrapper setup */
 .wrapper {
     width: 200px;
