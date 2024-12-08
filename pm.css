@@ -1,0 +1,135 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f9f9f9;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    height: 100vh;
+}
+
+/* Div 1: Image Section */
+.image-section {
+    flex: 1;
+    max-width: 40%;
+    background: #fff;
+    border-right: 2px solid #eee;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#image-container {
+    width: 80%;
+    height: 300px;
+    border: 2px dashed #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+#display-image {
+    max-width: 100%;
+    max-height: 100%;
+    display: none;
+}
+
+#image-error {
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    display: none;
+}
+
+#transaction-input {
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+#add-transaction-btn {
+    background: #007bff;
+    color: white;
+}
+
+#add-transaction-btn:hover {
+    background: #0056b3;
+}
+
+.action-button {
+    background-color: #007bff;
+    color: white;
+    display: inline-block;
+    margin: 10px;
+}
+
+.action-button:hover {
+    background-color: #0056b3;
+}
+
+/* Div 2: Total Section */
+.total-section {
+    flex: 1;
+    max-width: 30%;
+    background: #f8f9fa;
+    border-bottom: 2px solid #eee;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.total-section h3 {
+    font-size: 20px;
+    color: #333;
+}
+
+#total-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Div 3: History Section */
+.history-section {
+    flex: 1;
+    max-width: 30%;
+    background: #fff;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.history-section h3 {
+    font-size: 20px;
+    color: #333;
+}
+
+#transaction-history {
+    list-style: none;
+    padding: 0;
+}
+
+#transaction-history li {
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #f1f1f1;
+    border-radius: 5px;
+}
