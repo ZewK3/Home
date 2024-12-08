@@ -354,8 +354,6 @@ function showNotification(message, type = "success", duration = 3000) {
     }, duration);
 }
 const snowflakes = document.querySelectorAll('.snowflake');
-snowflakes?.classList.add('hidden');
-
 // Gán kích thước ngẫu nhiên từ 10px đến 50px
 snowflakes.forEach(snowflake => {
   const randomFontSize = Math.floor(Math.random() * (50 - 10 + 1)) + 10; // Random từ 10 đến 50
@@ -369,7 +367,7 @@ function updateSidebarAndMainColor() {
     const mainContent = document.querySelector('.main');
     const showUser = document.querySelector('.showUser');
     const snowflakes = document.querySelector('.snowflakes');
-
+    snowflakes?.classList.add('hidden');
     // Xóa tất cả các lớp trước khi thêm mới
     sidebar?.classList.remove('christmas', 'newyear');
     mainContent?.classList.remove('christmas', 'newyear');
