@@ -384,10 +384,13 @@ function updateSidebarAndMainColor() {
         audioPlayer.querySelector('source').src = 'Music/songmc.mp3'; // Đổi nguồn nhạc
         audioPlayer.load(); // Tải lại nhạc mới
         audioPlayer.play(); // Phát nhạc mới
-    } else if (currentMonth >= 1 && currentMonth <= 3) { // Tháng 2 đến tháng 4
+    } else if (currentMonth >= 0 && currentMonth <= 2) { // Tháng 1 đến tháng 3
         sidebar?.classList.add('newyear');
         mainContent?.classList.add('newyear');
         showUser?.classList.add('newyear');
+        audioPlayer.querySelector('source').src = 'Music/songny.mp3'; // Đổi nguồn nhạc
+        audioPlayer.load(); // Tải lại nhạc mới
+        audioPlayer.play(); // Phát nhạc mới
     } else {
         // Ẩn tuyết nếu không phải mùa lễ
     }
