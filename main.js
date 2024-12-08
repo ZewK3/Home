@@ -2,15 +2,11 @@ const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối �
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 let user;
 const menuList = document.getElementById("menuList");
-    // Lấy các phần tử cần thay đổi
-const sidebar = document.querySelector('.sidebar');
-const mainContent = document.querySelector('.main');
-const showUser = document.querySelector('.showUser');
-const snowflakes = document.querySelector('.snowflakes');
 menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
+    const loading = document.getElementById("loading-container");
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
@@ -25,6 +21,7 @@ if (loggedInUser) {
             // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
+            loading.style.display = 'none';
             menuList.style.display = 'block';
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
@@ -84,6 +81,8 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
     
     const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
+    const mainContent = document.querySelector(".main");
+    const sidebar = document.querySelector(".sidebar");
     const isMobile = window.innerWidth <= 768;
 
     const originalMainContentHTML = mainContent.innerHTML;
@@ -286,6 +285,8 @@ window.onload = function() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    const sidebar = document.querySelector(".sidebar");
+    const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
     // Kiểm tra nếu đang ở chế độ màn hình nhỏ
@@ -375,6 +376,12 @@ snowflakes.forEach(snowflake => {
 });
 function updateSidebarAndMainColor() {
     const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
+
+    // Lấy các phần tử cần thay đổi
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main');
+    const showUser = document.querySelector('.showUser');
+    const snowflakes = document.querySelector('.snowflakes');
 
     // Xóa tất cả các lớp trước khi thêm mới
     sidebar?.classList.remove('christmas', 'newyear');
