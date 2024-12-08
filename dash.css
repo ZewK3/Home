@@ -12,27 +12,6 @@ html, body {
     flex-direction: row;
 }
 
-.popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    visibility: hidden; /* Initially hidden */
-}
-
-.popup-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    text-align: center;
-    font-size: 24px;
-    color: black;
-}	
 #backButton.hidden {
     display: none;
 }
@@ -564,6 +543,7 @@ animation-delay: 3s, 1.5s;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: fixed;
 }
 
 /* Wrapper setup */
