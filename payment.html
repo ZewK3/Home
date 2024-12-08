@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Div 1: Hiển thị ảnh và nhập giá trị -->
+        <div class="image-section">
+            <div id="image-container">
+                <img id="display-image" src="" alt="Image Preview">
+                <p id="image-error">Không tìm thấy ảnh</p>
+            </div>
+            <input type="text" id="transaction-input" placeholder="Nhập giá trị giao dịch">
+            <button id="add-transaction-btn">Tạo giao dịch</button>
+        </div>
+
+        <!-- Div 2: Hiển thị tổng giao dịch -->
+        <div class="total-section">
+            <h3>Tổng giao dịch</h3>
+            <p id="total-value">0 VNĐ</p>
+        </div>
+
+        <!-- Div 3: Hiển thị lịch sử giao dịch -->
+        <div class="history-section">
+            <h3>Lịch sử giao dịch</h3>
+            <ul id="transaction-history"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
