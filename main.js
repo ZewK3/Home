@@ -14,7 +14,6 @@ if (loggedInUser) {
                 "Content-Type": "application/json",
             },
         });
-
         if (response.ok) {
             user = await response.json();  // Lưu dữ liệu trả về vào biến user
             // Hiển thị thông tin người dùng
