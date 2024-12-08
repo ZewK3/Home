@@ -363,6 +363,7 @@ function updateSidebarAndMainColor() {
     const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
 
     // Lấy các phần tử cần thay đổi
+    const audioPlayer = document.getElementById('audioPlayer');
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main');
     const showUser = document.querySelector('.showUser');
@@ -379,6 +380,10 @@ function updateSidebarAndMainColor() {
         mainContent?.classList.add('christmas');
         showUser?.classList.add('christmas');
         snowflakes?.classList.remove('hidden');
+        
+        audioPlayer.querySelector('source').src = 'Music/songmc.mp3'; // Đổi nguồn nhạc
+        audioPlayer.load(); // Tải lại nhạc mới
+        audioPlayer.play(); // Phát nhạc mới
     } else if (currentMonth >= 1 && currentMonth <= 3) { // Tháng 2 đến tháng 4
         sidebar?.classList.add('newyear');
         mainContent?.classList.add('newyear');
