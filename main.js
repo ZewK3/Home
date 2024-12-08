@@ -2,6 +2,11 @@ const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối �
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 let user;
 const menuList = document.getElementById("menuList");
+    // Lấy các phần tử cần thay đổi
+const sidebar = document.querySelector('.sidebar');
+const mainContent = document.querySelector('.main');
+const showUser = document.querySelector('.showUser');
+const snowflakes = document.querySelector('.snowflakes');
 menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
@@ -79,8 +84,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
     
     const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
-    const mainContent = document.querySelector(".main");
-    const sidebar = document.querySelector(".sidebar");
     const isMobile = window.innerWidth <= 768;
 
     const originalMainContentHTML = mainContent.innerHTML;
@@ -283,22 +286,8 @@ window.onload = function() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    const sidebar = document.querySelector(".sidebar");
-    const main = document.querySelector(".main");
     const backButton = document.getElementById("backButton");
     const listItems = document.querySelectorAll(".sidebar ul li a");
-    const video = document.getElementById("backgroundVideo");
-
-    // Đảm bảo video tự động phát khi trang tải xong
-    video.play().then(() => {
-        // Bật âm thanh sau khi video bắt đầu phát
-        setTimeout(() => {
-            video.muted = false; // Bật âm thanh
-            console.log("Bật âm thanh sau khi video bắt đầu phát.");
-        }, 7000); // Đợi 1 giây để đảm bảo video đã bắt đầu phát
-    }).catch((error) => {
-        console.log("Không thể tự động phát video hoặc âm thanh:", error);
-    });
     // Kiểm tra nếu đang ở chế độ màn hình nhỏ
     const isMobile = () => window.innerWidth <= 768;
 
@@ -386,12 +375,6 @@ snowflakes.forEach(snowflake => {
 });
 function updateSidebarAndMainColor() {
     const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
-
-    // Lấy các phần tử cần thay đổi
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main');
-    const showUser = document.querySelector('.showUser');
-    const snowflakes = document.querySelector('.snowflakes');
 
     // Xóa tất cả các lớp trước khi thêm mới
     sidebar?.classList.remove('christmas', 'newyear');
