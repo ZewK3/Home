@@ -6,7 +6,7 @@ menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
-    const sloading = document.getElementById("loading-container");
+    const ld = document.querySelector(".loading-container);
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
         const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
@@ -21,8 +21,8 @@ if (loggedInUser) {
             // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
-            sloading.style.display = 'none';
             menuList.style.display = 'block';
+            ld..classList.add('hidden');
             // Kiểm tra thời gian hoạt động
             const lastActivity = localStorage.getItem("lastActivity");
             if (lastActivity) {
@@ -271,17 +271,6 @@ if (backButton) {
     });
 });
 
-window.onload = function() {
-    const popup = document.getElementById('popup');
-    
-    // Show the popup
-    popup.style.visibility = 'visible';
-    
-    // Hide the popup after 5 seconds
-    setTimeout(function() {
-        popup.style.visibility = 'hidden';
-    }, 5000); // 5000 milliseconds = 5 seconds
-};
 
 
 document.addEventListener("DOMContentLoaded", () => {
