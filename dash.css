@@ -544,6 +544,7 @@ animation-delay: 3s, 1.5s;
     justify-content: center;
     align-items: center;
     position: fixed;
+    z-index: 9999;̣̣̣̣̣;
 }
 
 /* Wrapper setup */
