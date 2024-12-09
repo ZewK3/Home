@@ -10,7 +10,7 @@ const backBtn = document.createElement("button");
 
 let total = 0;
 
-// Hàm định dạng số theo VNĐ
+// Hàm định dạng số liệu theo VNĐ
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
         style: "currency",
@@ -49,6 +49,7 @@ const resetInterface = () => {
     transactionInput.value = "";
 };
 
+// Xử lý sự kiện khi nhấn "Add Transaction"
 addTransactionBtn.addEventListener("click", () => {
     const transactionValue = transactionInput.value.trim();
 
@@ -58,7 +59,7 @@ addTransactionBtn.addEventListener("click", () => {
     }
 
     // Hiển thị ảnh dựa vào giá trị nhập
-    const imagePath = `/Payment/${transactionValue}.jpg`;
+    const imagePath = `Payment/${transactionValue}.jpg`;
     displayImage.src = imagePath;
 
     displayImage.onload = () => {
@@ -70,9 +71,11 @@ addTransactionBtn.addEventListener("click", () => {
     displayImage.onerror = () => {
         displayImage.style.display = "none";
         imageError.style.display = "block";
+        imageError.textContent = "Không tìm thấy ảnh phù hợp!";
     };
 });
 
+// Xử lý khi nhấn "Xác nhận"
 confirmBtn.addEventListener("click", () => {
     const transactionValue = transactionInput.value.trim();
     const transactionAmount = parseFloat(transactionValue);
@@ -81,12 +84,27 @@ confirmBtn.addEventListener("click", () => {
         total += transactionAmount;
         totalValue.textContent = formatCurrency(total);
 
+        // Lấy ngày giờ hiện tại
+        const now = new Date();
+        const dateTime = now.toLocaleString("vi-VN", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+
+        // Thêm giao dịch vào lịch sử
         const listItem = document.createElement("li");
-        listItem.textContent = `Giao dịch: ${formatCurrency(transactionAmount)}`;
+        listItem.textContent = `${dateTime} - Giao dịch: ${formatCurrency(transactionAmount)}`;
         transactionHistory.appendChild(listItem);
+    } else {
+        alert("Giá trị giao dịch không hợp lệ!");
     }
 
     resetInterface();
 });
 
+// Xử lý khi nhấn "Quay lại"
 backBtn.addEventListener("click", resetInterface);
