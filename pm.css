@@ -1,36 +1,53 @@
+/* Tổng quan */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background: #f9f9f9;
+    background: linear-gradient(135deg, #ece9e6, #ffffff);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .container {
-    display: flex;
-    flex-wrap: wrap;
-    height: 100vh;
+    width: 90%;
+    max-width: 1200px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-columns: 2fr 3fr; /* Chia cột */
+    grid-template-rows: auto 1fr; /* Chia hàng */
+    gap: 20px;
+    padding: 20px;
 }
 
-/* Div 1: Image Section */
+/* Div 1: Khu vực hiển thị ảnh và nhập giá trị */
 .image-section {
-    flex: 1;
-    max-width: 40%;
-    background: #fff;
-    border-right: 2px solid #eee;
+    grid-column: 1 / 2;
+    grid-row: 1 / 3; /* Trải dài cả chiều cao */
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 10px;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
 }
 
 #image-container {
-    width: 80%;
-    height: 300px;
+    width: 100%;
+    height: 620px;
     border: 2px dashed #ccc;
     display: flex;
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
+    border-radius: 10px;
+    background: #f9f9f9;
     position: relative;
 }
 
@@ -38,60 +55,80 @@ body {
     max-width: 100%;
     max-height: 100%;
     display: none;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 #image-error {
-    color: #888;
+    color: #ff5c5c;
     font-size: 14px;
     text-align: center;
     display: none;
+    font-style: italic;
 }
 
 #transaction-input {
-    width: 80%;
-    padding: 10px;
+    width: 95%;
+    padding: 12px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    font-size: 16px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+#transaction-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0px 4px 8px rgba(0, 123, 255, 0.2);
 }
 
 button {
-    padding: 10px 20px;
+    padding: 12px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 16px;
     margin-top: 10px;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
 }
 
 #add-transaction-btn {
-    background: #007bff;
+    background: linear-gradient(90deg, #007bff, #0056b3);
     color: white;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    width: 100%;
 }
 
 #add-transaction-btn:hover {
-    background: #0056b3;
+    background: linear-gradient(90deg, #0056b3, #003f7f);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .action-button {
-    background-color: #007bff;
+    background: linear-gradient(90deg, #28a745, #218838);
     color: white;
-    display: inline-block;
-    margin: 10px;
+    width: 100%;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: all 0.3s;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .action-button:hover {
-    background-color: #0056b3;
+    background: linear-gradient(90deg, #218838, #1e7e34);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Div 2: Total Section */
+/* Div 2: Khu vực tổng giao dịch */
 .total-section {
-    flex: 1;
-    max-width: 30%;
-    background: #f8f9fa;
-    border-bottom: 2px solid #eee;
-    padding: 20px;
-    display: flex;
+    height: 10vh;
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -100,19 +137,24 @@ button {
 .total-section h3 {
     font-size: 20px;
     color: #333;
+    margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
 #total-value {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     color: #007bff;
+    margin-top: 10px;
 }
 
-/* Div 3: History Section */
+/* Div 3: Khu vực lịch sử giao dịch */
 .history-section {
-    flex: 1;
-    max-width: 30%;
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
     background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
     padding: 20px;
     overflow-y: auto;
 }
@@ -120,11 +162,19 @@ button {
 .history-section h3 {
     font-size: 20px;
     color: #333;
+    margin-top: auto;
+    text-align: center;
+    text-transform: uppercase;
 }
 
 #transaction-history {
-    list-style: none;
-    padding: 0;
+    max-height: 550px; /* Giới hạn chiều cao của danh sách */
+    overflow-y: auto; /* Thêm thanh cuộn dọc nếu nội dung vượt quá */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 #transaction-history li {
@@ -132,4 +182,7 @@ button {
     margin-bottom: 10px;
     background: #f1f1f1;
     border-radius: 5px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 16px;
+    font-weight: 500;
 }
