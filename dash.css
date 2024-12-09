@@ -1,5 +1,6 @@
 /* Reset mặc định */
 * {
+    text-align: end;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -399,19 +400,19 @@ button:hover {
     }
     #backButton {
         display: block;
-        position: fixed; /* Đặt cố định ở góc màn hình */
-        top: 10px;
-        left: 10px;
-        z-index: 100; /* Luôn hiển thị trên các thành phần khác */
-        background-color: #0099FF; /* Màu nền */
-        color: white; /* Màu chữ */
-        padding: 10px 15px; /* Khoảng cách trong nút */
-        border: none; /* Loại bỏ viền */
-        border-radius: 5px; /* Bo góc nút */
-        font-size: 14px; /* Kích thước chữ */
-        cursor: pointer; /* Thêm con trỏ chỉ tay */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng */
-        transition: background-color 0.3s ease; /* Hiệu ứng khi rê chuột */
+        position: fixed;
+        top: 0.5%;
+        left: 0.5%;
+        z-index: 100;
+        background-color: #da5b55;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
     }
 
     #backButton:hover {
