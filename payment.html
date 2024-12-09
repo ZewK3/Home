@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transaction Tracker</title>
-    <link rel="stylesheet" href="pm.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <!-- Div 1: Hiển thị ảnh và nhập giá trị -->
         <div class="image-section">
             <div id="image-container">
-                <img id="display-image" src="" alt="Image Preview">
-                <p id="image-error">Không tìm thấy ảnh</p>
+                <!-- Mã QR hiển thị mặc định ngay khi trang được tải -->
+				<img id="dimage" src="https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=0&addInfo=Zalo%200344018881" alt="QR Code">
+                <img id="display-image" src="https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=0&addInfo=Zalo%200344018881" alt="QR Code">
+                <p id="image-error" style="display: none;">Không tìm thấy ảnh</p>
             </div>
             <input type="text" id="transaction-input" placeholder="Nhập giá trị giao dịch">
             <button id="add-transaction-btn">Add Transaction</button>
@@ -31,6 +33,6 @@
         </div>
     </div>
 
-    <script src="pm.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
