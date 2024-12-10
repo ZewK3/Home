@@ -45,21 +45,16 @@ async function fetchTodayTransactions() {
     const apiUrl = 'https://zewk.tocotoco.workers.dev?action=getTransaction';
     const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
 
-    // Chuẩn bị dữ liệu body để gửi tới API
-    const body = {
-        status: "all",  // Thay đổi nếu cần lấy giao dịch theo trạng thái khác, ví dụ "success"
-        startDate: today,
-        endDate: today
-    };
+    // Chuẩn bị tham số truy vấn
+    const url = `${apiUrl}&startDate=${today}&endDate=${today}`;
 
     try {
-        // Gọi API với dữ liệu body
-        const response = await fetch(apiUrl, {
-            method: 'GET', // Sử dụng POST nếu bạn cần gửi dữ liệu
+        // Gọi API với tham số trong URL
+        const response = await fetch(url, {
+            method: 'GET', // Sử dụng GET vì không có body
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body) // Chuyển body thành chuỗi JSON
+            }
         });
 
         if (!response.ok) throw new Error("Lỗi khi gọi API");
@@ -94,7 +89,6 @@ async function fetchTodayTransactions() {
         alert("Lỗi khi lấy dữ liệu giao dịch");
     }
 }
-
 
 // Hàm thiết lập các nút sau khi nhấn Add Transaction
 const setupConfirmationButtons = () => {
@@ -210,42 +204,37 @@ confirmBtn.addEventListener("click", async () => {
 
 // Xử lý khi nhấn "Quay lại"
 backBtn.addEventListener("click", async () => {
-    const transactionValue = transactionInput.value.trim();
+     const transactionValue = transactionInput.value.trim();
     const transactionAmount = parseFloat(transactionValue);
 
-    if (!isNaN(transactionAmount)) {
-        // Trạng thái 'fail' khi người dùng nhấn 'Quay lại'
-        const transactionData = {
-            id: sto,
-            amount: transactionAmount,
-            status: "fail",  // Đặt trạng thái là 'fail'
-            date: new Date().toISOString(),  // Lấy thời gian hiện tại theo định dạng ISO
-            origin: window.location.origin // Gửi origin (hoặc có thể dùng một giá trị cố định)
-        };
-
-        // Gửi dữ liệu lên backend
-        try {
-            const response = await fetch('https://your-backend-api.com/save-transaction', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(transactionData),
-            });
-
-            if (response.ok) {
-                // Thêm giao dịch vào lịch sử
-                const listItem = document.createElement("li");
-                listItem.textContent = `Mã: ${sto} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: fail`;
-                transactionHistory.appendChild(listItem);
-            } else {
-                alert('Gửi dữ liệu thất bại!');
-            }
-        } catch (error) {
-            console.error("Error saving transaction:", error);
-            alert('Có lỗi xảy ra khi lưu giao dịch!');
-        }
+    if (!transactionValue || isNaN(transactionAmount)) {
+        alert("Giá trị giao dịch không hợp lệ!");
+        return;
     }
+
+    const transactionData = {
+        id: `ID${sto}`, // Định dạng ID
+        amount: transactionValue,
+        status: "fail",
+        date: new Date().toISOString() // Lấy ngày giờ hiện tại ở định dạng ISO 8601
+    };
+
+    try {
+    // Gửi yêu cầu POST đến backend
+    const response = await fetch('https://zewk.tocotoco.workers.dev?action=saveTransaction', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transactionData),
+    });
+
+    // Kiểm tra nếu mã trạng thái HTTP không phải 200 (OK)
+    if (!response.ok) {
+        const errorDetails = await response.json(); // Trích xuất thông tin lỗi từ response
+        throw new Error(errorDetails.message || 'Lỗi khi lưu dữ liệu giao dịch lên backend');
+    }
+
 
     resetInterface();
 });
