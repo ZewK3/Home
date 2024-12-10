@@ -62,7 +62,7 @@ const dateParts = formattedDate.split(",")[0].split("/"); // Tách phần ngày
 const formattedDateISO = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Lấy ngày hiện tại (YYYY-MM-DD)
 
     // Chuẩn bị tham số truy vấn
-    const url = `${apiUrl}&startDate=${tformattedDateISO}`;
+    const url = `${apiUrl}&startDate=${formattedDateISO}`;
 
     try {
         // Gọi API với tham số trong URL
