@@ -242,11 +242,10 @@ backBtn.addEventListener("click", async () => {
     } catch (error) {
         // Thông báo lỗi khi không thể lưu giao dịch
         alert('Không thể lưu giao dịch lên backend: ' + error.message);
-    }
+    } // Đảm bảo có catch sau try
 
     // Làm mới giao diện sau khi xử lý
     resetInterface();
 });
-
 // Gọi API khi trang tải
 window.onload = fetchTodayTransactions;
