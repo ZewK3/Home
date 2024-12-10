@@ -128,7 +128,12 @@ addTransactionBtn.addEventListener("click", () => {
     // Cập nhật URL mã QR với số tiền đã nhập
     const qrUrl = `https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=${transactionValue}&addInfo=ID${sto}`;
     displayImage.src = qrUrl;
-
+    // Mở tab mới và hiển thị ảnh
+    const newTab = window.open(qrUrl, "_blank");
+    if (!newTab) {
+        // Nếu trình duyệt chặn pop-up
+        showNotification("Không thể mở tab mới, vui lòng kiểm tra cài đặt trình duyệt", "error", 3000);
+    }
     displayImage.onload = () => {
         displayImage.style.display = "block";
         imageError.style.display = "none";
