@@ -12,7 +12,7 @@ body {
 }
 
 .container {
-	height: 700px;
+    height: auto;
     width: 90%;
     max-width: 1200px;
     background: #fff;
