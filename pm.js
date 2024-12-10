@@ -40,6 +40,46 @@ const formatCurrency = (amount) => {
         .replace("₫", " VNĐ");
 };
 
+// Hàm lấy dữ liệu giao dịch từ API
+async function fetchTodayTransactions() {
+    const apiUrl = 'https://zewk.tocotoco.workers.dev?action=getPayment';
+    const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
+    
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Lỗi khi gọi API");
+        
+        const data = await response.json();
+
+        // Lọc giao dịch trong ngày (dựa trên trường 'date')
+        const todayTransactions = data.filter(transaction => 
+            transaction.date.startsWith(today) // Kiểm tra ngày giao dịch
+        );
+
+        // Tính tổng số tiền chỉ với trạng thái 'success' (dựa trên trường 'amount' và 'status')
+        const totalAmount = todayTransactions.reduce((sum, transaction) => {
+            if (transaction.status === "success") {
+                return sum + transaction.amount; // Cộng dồn chỉ khi trạng thái là 'success'
+            }
+            return sum;
+        }, 0);
+
+        // Hiển thị tổng số tiền
+        totalValue.textContent = formatCurrency(totalAmount);
+
+        // Cập nhật lịch sử giao dịch
+        transactionHistory.innerHTML = ''; // Làm sạch lịch sử trước khi cập nhật
+        todayTransactions.forEach(transaction => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `Mã: ${transaction.id} - Giao dịch: ${formatCurrency(transaction.amount)} - Trạng thái: ${transaction.status} `;
+            transactionHistory.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu giao dịch:", error);
+        alert("Lỗi khi lấy dữ liệu giao dịch");
+    }
+}
+
 // Hàm thiết lập các nút sau khi nhấn Add Transaction
 const setupConfirmationButtons = () => {
     confirmBtn.textContent = "Xác nhận giao dịch";
@@ -99,24 +139,94 @@ addTransactionBtn.addEventListener("click", () => {
 });
 
 // Xử lý khi nhấn "Xác nhận"
-confirmBtn.addEventListener("click", () => {
+confirmBtn.addEventListener("click", async () => {
+    const transactionValue = transactionInput.value.trim();
+    const transactionAmount = parseFloat(transactionValue);
+
+    if (!transactionValue || isNaN(transactionAmount)) {
+        alert("Giá trị giao dịch không hợp lệ!");
+        return;
+    }
+
+    const transactionData = {
+        id: `ID${sto}`, // Định dạng ID
+        amount: transactionValue,
+        status: "success",
+        date: new Date().toISOString() // Lấy ngày giờ hiện tại ở định dạng ISO 8601
+    };
+
+    try {
+        // Gửi yêu cầu POST đến backend
+        const response = await fetch('https://zewk.tocotoco.workers.dev?action=saveTransaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(transactionData),
+        });
+
+        if (!response.ok) {
+            throw new Error('Lỗi khi lưu dữ liệu giao dịch lên backend');
+        }
+
+        alert('Giao dịch đã được lưu thành công!');
+
+        // Cập nhật giao diện
+        total += transactionAmount;
+        totalValue.textContent = formatCurrency(total);
+
+        const listItem = document.createElement("li");
+        listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} `;
+        transactionHistory.appendChild(listItem);
+
+        resetInterface();
+    } catch (error) {
+        console.error("Lỗi:", error);
+        alert('Không thể lưu giao dịch lên backend.');
+    }
+});
+
+
+// Xử lý khi nhấn "Quay lại"
+backBtn.addEventListener("click", async () => {
     const transactionValue = transactionInput.value.trim();
     const transactionAmount = parseFloat(transactionValue);
 
     if (!isNaN(transactionAmount)) {
-        total += transactionAmount;
-        totalValue.textContent = formatCurrency(total);
-       
-        // Thêm giao dịch vào lịch sử
-        const listItem = document.createElement("li");
-        listItem.textContent = `Mã: ${sto} - Giao dịch: ${formatCurrency(transactionAmount)} `;
-        transactionHistory.appendChild(listItem);
-    } else {
-        alert("Giá trị giao dịch không hợp lệ!");
+        // Trạng thái 'fail' khi người dùng nhấn 'Quay lại'
+        const transactionData = {
+            id: sto,
+            amount: transactionAmount,
+            status: "fail",  // Đặt trạng thái là 'fail'
+            date: new Date().toISOString(),  // Lấy thời gian hiện tại theo định dạng ISO
+            origin: window.location.origin // Gửi origin (hoặc có thể dùng một giá trị cố định)
+        };
+
+        // Gửi dữ liệu lên backend
+        try {
+            const response = await fetch('https://your-backend-api.com/save-transaction', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transactionData),
+            });
+
+            if (response.ok) {
+                // Thêm giao dịch vào lịch sử
+                const listItem = document.createElement("li");
+                listItem.textContent = `Mã: ${sto} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: fail`;
+                transactionHistory.appendChild(listItem);
+            } else {
+                alert('Gửi dữ liệu thất bại!');
+            }
+        } catch (error) {
+            console.error("Error saving transaction:", error);
+            alert('Có lỗi xảy ra khi lưu giao dịch!');
+        }
     }
 
     resetInterface();
 });
-
-// Xử lý khi nhấn "Quay lại"
-backBtn.addEventListener("click", resetInterface);
+// Gọi API khi trang tải
+window.onload = fetchTodayTransactions;
