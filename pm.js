@@ -129,10 +129,45 @@ addTransactionBtn.addEventListener("click", () => {
     const qrUrl = `https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=${transactionValue}&addInfo=ID${sto}`;
     displayImage.src = qrUrl;
     // Mở tab mới và hiển thị ảnh
-    const newTab = window.open(qrUrl, "_blank");
-    if (!newTab) {
-        // Nếu trình duyệt chặn pop-up
-        showNotification("Không thể mở tab mới, vui lòng kiểm tra cài đặt trình duyệt", "error", 3000);
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>QR Code</title>
+            <style>
+                body {
+                    margin: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    background-color: #f9f9f9;
+                }
+                img {
+                    max-width: 90%;
+                    max-height: 90%;
+                    object-fit: contain;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                }
+            </style>
+        </head>
+        <body>
+            <img src="${qrUrl}" alt="QR Code">
+        </body>
+        </html>
+    `;
+
+    // Mở tab mới và ghi nội dung HTML vào đó
+    const newTab = window.open("", "_blank");
+    if (newTab) {
+        newTab.document.open();
+        newTab.document.write(htmlContent);
+        newTab.document.close();
+    } else {
+        showNotification("Không thể mở tab mới, vui lòng kiểm tra cài đặt trình duyệt", "error", 5000);
     }
     displayImage.onload = () => {
         displayImage.style.display = "block";
