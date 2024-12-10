@@ -146,7 +146,7 @@ addTransactionBtn.addEventListener("click", () => {
 confirmBtn.addEventListener("click", async () => {
     const transactionValue = transactionInput.value.trim();
     const transactionAmount = parseFloat(transactionValue);
-
+   const nday =  new Date().toISOString().split('T')[0];
     if (!transactionValue || isNaN(transactionAmount)) {
         alert("Giá trị giao dịch không hợp lệ!");
         return;
@@ -156,7 +156,7 @@ confirmBtn.addEventListener("click", async () => {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
         status: "success",
-        date: new Date().toISOString().split('T')[0]// Lấy ngày giờ hiện tại ở định dạng ISO 8601
+        date: nday,// Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
     try {
@@ -206,12 +206,12 @@ backBtn.addEventListener("click", async () => {
         alert("Giá trị giao dịch không hợp lệ!");
         return;
     }
-
+    const nday =  new Date().toISOString().split('T')[0];
     const transactionData = {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
         status: "fail", // Trạng thái là "fail"
-        date: new Date().toISOString().split('T')[0] // Lấy ngày giờ hiện tại ở định dạng ISO 8601
+        date: nday, // Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
     try {
