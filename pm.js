@@ -130,63 +130,45 @@ addTransactionBtn.addEventListener("click", () => {
     displayImage.src = qrUrl;
     // Mở tab mới và hiển thị ảnh
     // Tạo nội dung HTML để kiểm soát tỉ lệ trang in
-    const htmlContent = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>QR Code</title>
-            <style>
-                @media print {
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        height: 100vh;
-                        background-color: #fff;
-                    }
-                    img {
-                        max-width: 100%;
-                        max-height: 100%;
-                        width: 100mm; /* Đặt chiều rộng cụ thể */
-                        height: auto; /* Đảm bảo giữ tỷ lệ hình ảnh */
-                        margin: auto;
-                        display: block;
-                    }
-                }
-                body {
-                    margin: 0;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    background-color: #fff;
-                }
-                img {
-                    max-width: 100%;
-                    max-height: 100%;
-                    object-fit: contain;
-                }
-            </style>
-        </head>
-        <body>
-            <img src="${qrUrl}" alt="QR Code" onload="window.print();">
-        </body>
-        </html>
-    `;
+    function createResizedImage(url, width, height, callback) {
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // Cho phép tải ảnh từ domain khác
 
-    // Mở tab mới và ghi nội dung HTML vào đó
-    const newTab = window.open("", "_blank");
+    img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Chuyển đổi canvas thành URL ảnh
+        const resizedImageUrl = canvas.toDataURL("image/jpeg");
+        callback(resizedImageUrl);
+    };
+
+    img.onerror = () => {
+        console.error("Không thể tải ảnh từ URL:", url);
+        alert("Không thể tải ảnh, vui lòng kiểm tra lại URL.");
+    };
+
+    img.src = url;
+}
+
+createResizedImage(qrUrl, 300, 300, (resizedImageUrl) => {
+    // Hiển thị ảnh tạo lại
+    const imgElement = document.createElement("img");
+    imgElement.src = resizedImageUrl;
+    document.body.appendChild(imgElement);
+
+    // Mở ảnh trong tab mới nếu cần
+    const newTab = window.open("");
     if (newTab) {
-        newTab.document.open();
-        newTab.document.write(htmlContent);
+        newTab.document.write(`<img src="${resizedImageUrl}" alt="Resized QR Code">`);
         newTab.document.close();
-    } else {
-        showNotification("Không thể mở tab mới, vui lòng kiểm tra cài đặt trình duyệt", "error", 5000);
     }
+});
+
     displayImage.onload = () => {
         displayImage.style.display = "block";
         imageError.style.display = "none";
