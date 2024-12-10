@@ -64,7 +64,7 @@ async function fetchTodayTransactions() {
         transactionHistory.innerHTML = ''; // Làm sạch lịch sử trước khi cập nhật
         data.results.forEach(transaction => { // Duyệt qua toàn bộ kết quả giao dịch
             const listItem = document.createElement("li");
-            listItem.textContent = `Mã: ${transaction.id} - Giao dịch: ${formatCurrency(transaction.amount)} - Trạng thái: ${transaction.status} - Ngày: ${transaction.date}`;
+            listItem.textContent = `Mã: ${transaction.id} - Giao dịch: ${formatCurrency(transaction.amount)} - Trạng thái: ${transaction.status}`;
             transactionHistory.appendChild(listItem);
         });
 
@@ -183,7 +183,7 @@ confirmBtn.addEventListener("click", async () => {
 
     // Thêm giao dịch vào lịch sử giao dịch
     const listItem = document.createElement("li");
-    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - status: "success"`;
+    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: "success"`;
     transactionHistory.appendChild(listItem);
 
     resetInterface(); // Làm mới giao diện sau khi lưu giao dịch
@@ -240,7 +240,7 @@ backBtn.addEventListener("click", async () => {
     // Làm mới giao diện sau khi xử lý
     // Thêm giao dịch vào lịch sử giao dịch
     const listItem = document.createElement("li");
-    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - status: "fail"`;
+    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: "fail"`;
     transactionHistory.appendChild(listItem);
     resetInterface();
 });
