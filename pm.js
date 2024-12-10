@@ -64,7 +64,7 @@ async function fetchTodayTransactions() {
         transactionHistory.innerHTML = ''; // Làm sạch lịch sử trước khi cập nhật
         data.results.forEach(transaction => { // Duyệt qua toàn bộ kết quả giao dịch
             const listItem = document.createElement("li");
-            listItem.textContent = `Mã: ${transaction.id} - Giao dịch: ${formatCurrency(transaction.amount)} - Trạng thái: ${transaction.status}`;
+            listItem.textContent = `Mã: ${transaction.id} - GĐ: ${formatCurrency(transaction.amount)} - TT: ${transaction.status}`;
             transactionHistory.appendChild(listItem);
         });
 
@@ -184,7 +184,7 @@ confirmBtn.addEventListener("click", async () => {
 
     // Thêm giao dịch vào lịch sử giao dịch
     const listItem = document.createElement("li");
-    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: "success"`;
+    listItem.textContent = `Mã: ${transactionData.id} - GĐ: ${formatCurrency(transactionAmount)} - TT: success`;
     transactionHistory.appendChild(listItem);
 
     resetInterface(); // Làm mới giao diện sau khi lưu giao dịch
@@ -210,7 +210,7 @@ backBtn.addEventListener("click", async () => {
     const transactionData = {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
-        status: "fail", // Trạng thái là "fail"
+        status: "failed", // Trạng thái là "fail"
         date: nday, // Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
@@ -241,7 +241,7 @@ backBtn.addEventListener("click", async () => {
     // Làm mới giao diện sau khi xử lý
     // Thêm giao dịch vào lịch sử giao dịch
     const listItem = document.createElement("li");
-    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: "failed"`;
+    listItem.textContent = `Mã: ${transactionData.id} - GĐ: ${formatCurrency(transactionAmount)} - TT: failed`;
     transactionHistory.appendChild(listItem);
     resetInterface();
 });
