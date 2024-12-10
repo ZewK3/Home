@@ -129,7 +129,8 @@ addTransactionBtn.addEventListener("click", () => {
     const qrUrl = `https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=${transactionValue}&addInfo=ID${sto}`;
     displayImage.src = qrUrl;
     // Mở tab mới và hiển thị ảnh
-        const htmlContent = `
+    // Tạo nội dung HTML để kiểm soát tỉ lệ trang in
+    const htmlContent = `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -140,6 +141,7 @@ addTransactionBtn.addEventListener("click", () => {
                 @media print {
                     body {
                         margin: 0;
+                        padding: 0;
                         display: flex;
                         justify-content: center;
                         align-items: center;
@@ -147,10 +149,12 @@ addTransactionBtn.addEventListener("click", () => {
                         background-color: #fff;
                     }
                     img {
-                        width: 80mm; /* Đặt chiều rộng hình ảnh cho in */
-                        height: auto; /* Giữ tỷ lệ hình ảnh */
+                        max-width: 100%;
+                        max-height: 100%;
+                        width: 100mm; /* Đặt chiều rộng cụ thể */
+                        height: auto; /* Đảm bảo giữ tỷ lệ hình ảnh */
+                        margin: auto;
                         display: block;
-                        margin: 0 auto;
                     }
                 }
                 body {
