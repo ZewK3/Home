@@ -42,10 +42,27 @@ const formatCurrency = (amount) => {
 
 async function fetchTodayTransactions() {
     const apiUrl = 'https://zewk.tocotoco.workers.dev?action=getTransaction';
-    const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
+    const today = new Date();
+    const options = {
+      timeZone: "Asia/Ho_Chi_Minh", // Múi giờ Việt Nam
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false, // Định dạng 24 giờ
+    };
+
+const formatter = new Intl.DateTimeFormat("en-GB", options);
+const formattedDate = formatter.format(today);
+
+// Chuyển đổi ngày thành định dạng yyyy-mm-dd
+const dateParts = formattedDate.split(",")[0].split("/"); // Tách phần ngày
+const formattedDateISO = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`; // Lấy ngày hiện tại (YYYY-MM-DD)
 
     // Chuẩn bị tham số truy vấn
-    const url = `${apiUrl}&startDate=${today}`;
+    const url = `${apiUrl}&startDate=${tformattedDateISO}`;
 
     try {
         // Gọi API với tham số trong URL
@@ -182,7 +199,24 @@ createResizedImage(qrUrl, 300, 300, (resizedImageUrl) => {
 confirmBtn.addEventListener("click", async () => {
     const transactionValue = transactionInput.value.trim();
     const transactionAmount = parseFloat(transactionValue);
-   const nday =  new Date().toISOString().split('T')[0];
+   const today = new Date();
+   const options = {
+     timeZone: "Asia/Ho_Chi_Minh", // Múi giờ Việt Nam
+     year: "numeric",
+     month: "2-digit",
+     day: "2-digit",
+     hour: "2-digit",
+     minute: "2-digit",
+     second: "2-digit",
+     hour12: false, // Định dạng 24 giờ
+   };
+
+const formatter = new Intl.DateTimeFormat("en-GB", options);
+const formattedDate = formatter.format(today);
+
+// Chuyển đổi ngày thành định dạng yyyy-mm-dd
+const dateParts = formattedDate.split(",")[0].split("/"); // Tách phần ngày
+const nday = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
     if (!transactionValue || isNaN(transactionAmount)) {
         showNotification("Giá trị không hợp lệ", "warning", 3000);
         return;
@@ -242,7 +276,24 @@ backBtn.addEventListener("click", async () => {
         showNotification("Giá trị không hợp lệ", "warning", 3000);
         return;
     }
-    const nday =  new Date().toISOString().split('T')[0];
+    const today = new Date();
+       const options = {
+         timeZone: "Asia/Ho_Chi_Minh", // Múi giờ Việt Nam
+         year: "numeric",
+         month: "2-digit",
+         day: "2-digit",
+         hour: "2-digit",
+         minute: "2-digit",
+         second: "2-digit",
+         hour12: false, // Định dạng 24 giờ
+       };
+
+    const formatter = new Intl.DateTimeFormat("en-GB", options);
+    const formattedDate = formatter.format(today);
+
+    // Chuyển đổi ngày thành định dạng yyyy-mm-dd
+    const dateParts = formattedDate.split(",")[0].split("/"); // Tách phần ngày
+    const nday = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
     const transactionData = {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
