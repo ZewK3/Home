@@ -190,7 +190,7 @@ confirmBtn.addEventListener("click", async () => {
 
     // Thêm giao dịch vào lịch sử giao dịch
     const listItem = document.createElement("li");
-    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} `;
+    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - status: "success"`;
     transactionHistory.appendChild(listItem);
 
     resetInterface(); // Làm mới giao diện sau khi lưu giao dịch
@@ -245,6 +245,10 @@ backBtn.addEventListener("click", async () => {
     } // Đảm bảo có catch sau try
 
     // Làm mới giao diện sau khi xử lý
+    // Thêm giao dịch vào lịch sử giao dịch
+    const listItem = document.createElement("li");
+    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - status: "fail"`;
+    transactionHistory.appendChild(listItem);
     resetInterface();
 });
 // Gọi API khi trang tải
