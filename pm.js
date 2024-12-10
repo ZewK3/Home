@@ -172,34 +172,39 @@ confirmBtn.addEventListener("click", async () => {
     };
 
     try {
-        // Gửi yêu cầu POST đến backend
-        const response = await fetch('https://zewk.tocotoco.workers.dev?action=saveTransaction', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(transactionData),
-        });
+    // Gửi yêu cầu POST đến backend
+    const response = await fetch('https://zewk.tocotoco.workers.dev?action=saveTransaction', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transactionData),
+    });
 
-        if (!response.ok) {
-            throw new Error('Lỗi khi lưu dữ liệu giao dịch lên backend');
-        }
-
-        alert('Giao dịch đã được lưu thành công!');
-
-        // Cập nhật giao diện
-        total += transactionAmount;
-        totalValue.textContent = formatCurrency(total);
-
-        const listItem = document.createElement("li");
-        listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} `;
-        transactionHistory.appendChild(listItem);
-
-        resetInterface();
-    } catch (error) {
-        console.error("Lỗi:", error);
-        alert('Không thể lưu giao dịch lên backend.');
+    // Kiểm tra nếu mã trạng thái HTTP không phải 200 (OK)
+    if (!response.ok) {
+        const errorDetails = await response.json(); // Trích xuất thông tin lỗi từ response
+        throw new Error(errorDetails.message || 'Lỗi khi lưu dữ liệu giao dịch lên backend');
     }
+
+    // Nếu giao dịch thành công
+    alert('Giao dịch đã được lưu thành công!');
+
+    // Cập nhật giao diện
+    total += transactionAmount; // Cập nhật tổng số tiền
+    totalValue.textContent = formatCurrency(total);
+
+    // Thêm giao dịch vào lịch sử giao dịch
+    const listItem = document.createElement("li");
+    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} `;
+    transactionHistory.appendChild(listItem);
+
+    resetInterface(); // Làm mới giao diện sau khi lưu giao dịch
+} catch (error) {
+    console.error("Lỗi:", error);
+    alert('Không thể lưu giao dịch lên backend: ' + error.message);
+}
+
 });
 
 
