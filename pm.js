@@ -60,24 +60,23 @@ async function fetchTodayTransactions() {
 
         const data = await response.json();    
 
-        // Tính tổng số tiền chỉ với trạng thái 'success' (dựa trên trường 'amount' và 'status')
-        const totalAmount = todayTransactions.reduce((sum, transaction) => {
+        // Cập nhật lịch sử giao dịch
+        transactionHistory.innerHTML = ''; // Làm sạch lịch sử trước khi cập nhật
+        data.results.forEach(transaction => { // Duyệt qua toàn bộ kết quả giao dịch
+            const listItem = document.createElement("li");
+            listItem.textContent = `Mã: ${transaction.id} - Giao dịch: ${formatCurrency(transaction.amount)} - Trạng thái: ${transaction.status} - Ngày: ${transaction.date}`;
+            transactionHistory.appendChild(listItem);
+        });
+
+        // Tính tổng số tiền cho các giao dịch
+        const totalAmount = data.results.reduce((sum, transaction) => {
             if (transaction.status === "success") {
                 return sum + transaction.amount; // Cộng dồn chỉ khi trạng thái là 'success'
             }
             return sum;
         }, 0);
-
         // Hiển thị tổng số tiền
         totalValue.textContent = formatCurrency(totalAmount);
-
-        // Cập nhật lịch sử giao dịch
-        transactionHistory.innerHTML = ''; // Làm sạch lịch sử trước khi cập nhật
-        todayTransactions.forEach(transaction => {
-            const listItem = document.createElement("li");
-            listItem.textContent = `Mã: ${transaction.id} - Giao dịch: ${formatCurrency(transaction.amount)} - Trạng thái: ${transaction.status} `;
-            transactionHistory.appendChild(listItem);
-        });
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu giao dịch:", error);
         alert("Lỗi khi lấy dữ liệu giao dịch");
