@@ -58,7 +58,7 @@ async function fetchTodayTransactions() {
 
         if (!response.ok) throw new Error("Lỗi khi gọi API");
 
-        const data = await response.json();
+        const data = await response.json();    
 
         // Tính tổng số tiền chỉ với trạng thái 'success' (dựa trên trường 'amount' và 'status')
         const totalAmount = todayTransactions.reduce((sum, transaction) => {
@@ -211,7 +211,7 @@ backBtn.addEventListener("click", async () => {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
         status: "fail", // Trạng thái là "fail"
-        date: new Date().toISOString().split('T')[0]; // Lấy ngày giờ hiện tại ở định dạng ISO 8601
+        date: new Date().toISOString().split('T')[0] // Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
     try {
