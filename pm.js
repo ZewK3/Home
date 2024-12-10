@@ -77,7 +77,7 @@ async function fetchTodayTransactions() {
         }, 0);
         // Hiển thị tổng số tiền
         totalValue.textContent = formatCurrency(totalAmount);
-	total = transaction.amount;
+	total = totalAmount;
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu giao dịch:", error);
         alert("Lỗi khi lấy dữ liệu giao dịch");
