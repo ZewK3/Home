@@ -44,31 +44,21 @@ async function fetchTodayTransactions() {
     const apiUrl = 'https://zewk.tocotoco.workers.dev?action=getTransaction';
     const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
 
-    // Chuẩn bị dữ liệu body để gửi tới API
-    const body = {
-        status: "all",  // Thay đổi nếu cần lấy giao dịch theo trạng thái khác, ví dụ "success"
-        startDate: today,
-        endDate: today
-    };
+    // Chuẩn bị tham số truy vấn
+    const url = `${apiUrl}&startDate=${today}`;
 
     try {
-        // Gọi API với dữ liệu body
-        const response = await fetch(apiUrl, {
-            method: 'POST', // Sử dụng POST nếu bạn cần gửi dữ liệu
+        // Gọi API với tham số trong URL
+        const response = await fetch(url, {
+            method: 'GET', // Sử dụng GET vì không có body
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body) // Chuyển body thành chuỗi JSON
+            }
         });
 
         if (!response.ok) throw new Error("Lỗi khi gọi API");
 
         const data = await response.json();
-
-        // Lọc giao dịch trong ngày (dựa trên trường 'date')
-        const todayTransactions = data.filter(transaction => 
-            transaction.date.startsWith(today) // Kiểm tra ngày giao dịch
-        );
 
         // Tính tổng số tiền chỉ với trạng thái 'success' (dựa trên trường 'amount' và 'status')
         const totalAmount = todayTransactions.reduce((sum, transaction) => {
@@ -221,7 +211,7 @@ backBtn.addEventListener("click", async () => {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
         status: "fail", // Trạng thái là "fail"
-        date: new Date().toISOString() // Lấy ngày giờ hiện tại ở định dạng ISO 8601
+        date: new Date().toISOString().split('T')[0]; // Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
     try {
