@@ -46,7 +46,7 @@ async function fetchTodayTransactions() {
     const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
 
     // Chuẩn bị tham số truy vấn
-    const url = `${apiUrl}&status=all&startDate=${today}&endDate=${today}`;
+    const url = `${apiUrl}&startDate=${today}&endDate=${today}`;
 
     try {
         // Gọi API với tham số trong URL
