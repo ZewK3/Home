@@ -240,7 +240,7 @@ backBtn.addEventListener("click", async () => {
     // Làm mới giao diện sau khi xử lý
     // Thêm giao dịch vào lịch sử giao dịch
     const listItem = document.createElement("li");
-    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: "fail"`;
+    listItem.textContent = `Mã: ${transactionData.id} - Giao dịch: ${formatCurrency(transactionAmount)} - Trạng thái: "failed"`;
     transactionHistory.appendChild(listItem);
     resetInterface();
 });
