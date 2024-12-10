@@ -156,10 +156,6 @@ addTransactionBtn.addEventListener("click", () => {
 }
 
 createResizedImage(qrUrl, 300, 300, (resizedImageUrl) => {
-    // Hiển thị ảnh tạo lại
-    const imgElement = document.createElement("img");
-    imgElement.src = resizedImageUrl;
-    document.body.appendChild(imgElement);
 
     // Mở ảnh trong tab mới nếu cần
     const newTab = window.open("");
