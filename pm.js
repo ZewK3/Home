@@ -156,7 +156,7 @@ confirmBtn.addEventListener("click", async () => {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
         status: "success",
-        date: new Date().toISOString() // Lấy ngày giờ hiện tại ở định dạng ISO 8601
+        date: new Date().toISOString().split('T')[0]// Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
     try {
