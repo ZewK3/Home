@@ -80,7 +80,7 @@ async function fetchTodayTransactions() {
 	total = totalAmount;
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu giao dịch:", error);
-        alert("Lỗi khi lấy dữ liệu giao dịch");
+        showNotification("Không lấy được dữ liệu", "warning", 3000);
     }
 }
 
@@ -121,7 +121,7 @@ addTransactionBtn.addEventListener("click", () => {
     sto = formatDateTime(); // Cập nhật giá trị cho 'sto'
     dImage.style.display = "none";
     if (!transactionValue) {
-        alert("Vui lòng nhập giá trị giao dịch!");
+        showNotification("Chưa nhập giá trị giao dịch", "warning", 3000);
         return;
     }
 
@@ -148,7 +148,7 @@ confirmBtn.addEventListener("click", async () => {
     const transactionAmount = parseFloat(transactionValue);
    const nday =  new Date().toISOString().split('T')[0];
     if (!transactionValue || isNaN(transactionAmount)) {
-        alert("Giá trị giao dịch không hợp lệ!");
+        showNotification("Giá trị không hợp lệ", "warning", 3000);
         return;
     }
 
@@ -176,7 +176,7 @@ confirmBtn.addEventListener("click", async () => {
     }
 
     // Nếu giao dịch thành công
-    alert('Giao dịch đã được lưu thành công!');
+    showNotification("Giao dịch thành công", "success", 3000);
 
     // Cập nhật giao diện
     total += transactionAmount; // Cập nhật tổng số tiền
@@ -190,7 +190,7 @@ confirmBtn.addEventListener("click", async () => {
     resetInterface(); // Làm mới giao diện sau khi lưu giao dịch
 } catch (error) {
     console.error("Lỗi:", error);
-    alert('Không thể lưu giao dịch lên backend: ' + error.message);
+    showNotification("Không thể lưu lên server!", "error", 3000);
 }
 
 });
@@ -203,7 +203,7 @@ backBtn.addEventListener("click", async () => {
 
     // Kiểm tra giá trị giao dịch hợp lệ
     if (!transactionValue || isNaN(transactionAmount)) {
-        alert("Giá trị giao dịch không hợp lệ!");
+        showNotification("Giá trị không hợp lệ", "warning", 3000);
         return;
     }
     const nday =  new Date().toISOString().split('T')[0];
@@ -231,11 +231,11 @@ backBtn.addEventListener("click", async () => {
         }
 
         // Thông báo khi giao dịch thành công
-        alert('Giao dịch đã được lưu thành công!');
+        showNotification("Giao dịch thất bại", "error", 3000);
 
     } catch (error) {
         // Thông báo lỗi khi không thể lưu giao dịch
-        alert('Không thể lưu giao dịch lên backend: ' + error.message);
+        showNotification("Không thể lưu lên server!", "error", 3000);
     } // Đảm bảo có catch sau try
 
     // Làm mới giao diện sau khi xử lý
@@ -245,5 +245,34 @@ backBtn.addEventListener("click", async () => {
     transactionHistory.appendChild(listItem);
     resetInterface();
 });
+
+function showNotification(message, type = "success", duration = 3000) {
+    const notification = document.getElementById("notification");
+
+    if (!notification) {
+        console.warn("Không tìm thấy phần tử thông báo!");
+        return;
+    }
+
+    // Thêm lớp CSS tương ứng với loại thông báo
+    notification.classList.add(type);
+    notification.classList.remove("hidden");  // Đảm bảo thông báo được hiển thị
+
+    // Cập nhật nội dung thông báo
+    notification.innerText = message;
+
+    // Thêm hiệu ứng hiển thị
+    notification.style.display = "block";
+    notification.style.opacity = "1";
+
+    // Ẩn thông báo sau một thời gian
+    setTimeout(() => {
+        notification.style.opacity = "0";
+        setTimeout(() => {
+            notification.style.display = "none";
+            notification.classList.remove(type);  // Xoá lớp kiểu thông báo
+        }, 500); // Thời gian animation
+    }, duration);
+}
 // Gọi API khi trang tải
 window.onload = fetchTodayTransactions;
