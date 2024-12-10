@@ -137,25 +137,39 @@ addTransactionBtn.addEventListener("click", () => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>QR Code</title>
             <style>
+                @media print {
+                    body {
+                        margin: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        background-color: #fff;
+                    }
+                    img {
+                        width: 80mm; /* Đặt chiều rộng hình ảnh cho in */
+                        height: auto; /* Giữ tỷ lệ hình ảnh */
+                        display: block;
+                        margin: 0 auto;
+                    }
+                }
                 body {
                     margin: 0;
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     height: 100vh;
-                    background-color: #f9f9f9;
+                    background-color: #fff;
                 }
                 img {
-                    max-width: 90%;
-                    max-height: 90%;
+                    max-width: 100%;
+                    max-height: 100%;
                     object-fit: contain;
-                    border: 1px solid #ddd;
-                    border-radius: 10px;
                 }
             </style>
         </head>
         <body>
-            <img src="${qrUrl}" alt="QR Code">
+            <img src="${qrUrl}" alt="QR Code" onload="window.print();">
         </body>
         </html>
     `;
