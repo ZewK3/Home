@@ -233,6 +233,7 @@ backBtn.addEventListener("click", async () => {
     if (!response.ok) {
         const errorDetails = await response.json(); // Trích xuất thông tin lỗi từ response
         throw new Error(errorDetails.message || 'Lỗi khi lưu dữ liệu giao dịch lên backend');
+    }
     }catch (error) {
     alert('Không thể lưu giao dịch lên backend: ' + error.message);
     }
