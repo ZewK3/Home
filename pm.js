@@ -204,9 +204,10 @@ confirmBtn.addEventListener("click", async () => {
 
 // Xử lý khi nhấn "Quay lại"
 backBtn.addEventListener("click", async () => {
-     const transactionValue = transactionInput.value.trim();
+    const transactionValue = transactionInput.value.trim();
     const transactionAmount = parseFloat(transactionValue);
 
+    // Kiểm tra giá trị giao dịch hợp lệ
     if (!transactionValue || isNaN(transactionAmount)) {
         alert("Giá trị giao dịch không hợp lệ!");
         return;
@@ -215,31 +216,37 @@ backBtn.addEventListener("click", async () => {
     const transactionData = {
         id: `ID${sto}`, // Định dạng ID
         amount: transactionValue,
-        status: "fail",
+        status: "fail", // Trạng thái là "fail"
         date: new Date().toISOString() // Lấy ngày giờ hiện tại ở định dạng ISO 8601
     };
 
     try {
-    // Gửi yêu cầu POST đến backend
-    const response = await fetch('https://zewk.tocotoco.workers.dev?action=saveTransaction', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transactionData),
-    });
+        // Gửi yêu cầu POST đến backend
+        const response = await fetch('https://zewk.tocotoco.workers.dev?action=saveTransaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(transactionData), // Chuyển dữ liệu thành chuỗi JSON
+        });
 
-    // Kiểm tra nếu mã trạng thái HTTP không phải 200 (OK)
-    if (!response.ok) {
-        const errorDetails = await response.json(); // Trích xuất thông tin lỗi từ response
-        throw new Error(errorDetails.message || 'Lỗi khi lưu dữ liệu giao dịch lên backend');
+        // Kiểm tra nếu mã trạng thái HTTP không phải 200 (OK)
+        if (!response.ok) {
+            const errorDetails = await response.json(); // Trích xuất thông tin lỗi từ response
+            throw new Error(errorDetails.message || 'Lỗi khi lưu dữ liệu giao dịch lên backend');
+        }
+
+        // Thông báo khi giao dịch thành công
+        alert('Giao dịch đã được lưu thành công!');
+
+    } catch (error) {
+        // Thông báo lỗi khi không thể lưu giao dịch
+        alert('Không thể lưu giao dịch lên backend: ' + error.message);
     }
-    }catch (error) {
-    alert('Không thể lưu giao dịch lên backend: ' + error.message);
-    }
 
-
+    // Làm mới giao diện sau khi xử lý
     resetInterface();
 });
+
 // Gọi API khi trang tải
 window.onload = fetchTodayTransactions;
