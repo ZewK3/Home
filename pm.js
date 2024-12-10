@@ -42,13 +42,28 @@ const formatCurrency = (amount) => {
 
 // Hàm lấy dữ liệu giao dịch từ API
 async function fetchTodayTransactions() {
-    const apiUrl = 'https://zewk.tocotoco.workers.dev?action=getPayment';
+    const apiUrl = 'https://zewk.tocotoco.workers.dev?action=getTransaction';
     const today = new Date().toISOString().split('T')[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
-    
+
+    // Chuẩn bị dữ liệu body để gửi tới API
+    const body = {
+        status: "all",  // Thay đổi nếu cần lấy giao dịch theo trạng thái khác, ví dụ "success"
+        startDate: today,
+        endDate: today
+    };
+
     try {
-        const response = await fetch(apiUrl);
+        // Gọi API với dữ liệu body
+        const response = await fetch(apiUrl, {
+            method: 'GET', // Sử dụng POST nếu bạn cần gửi dữ liệu
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body) // Chuyển body thành chuỗi JSON
+        });
+
         if (!response.ok) throw new Error("Lỗi khi gọi API");
-        
+
         const data = await response.json();
 
         // Lọc giao dịch trong ngày (dựa trên trường 'date')
@@ -79,6 +94,7 @@ async function fetchTodayTransactions() {
         alert("Lỗi khi lấy dữ liệu giao dịch");
     }
 }
+
 
 // Hàm thiết lập các nút sau khi nhấn Add Transaction
 const setupConfirmationButtons = () => {
