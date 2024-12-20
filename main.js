@@ -5,6 +5,7 @@ const menuList = document.getElementById("menuList");
 menuList.style.display = 'none';
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
+    const token = getAuthToken();
     const employeeId = loggedInUser.loginEmployeeId;
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
@@ -12,6 +13,7 @@ if (loggedInUser) {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,  // Thêm Authorization header
             },
         });
         if (response.ok) {
@@ -394,6 +396,16 @@ function updateSidebarAndMainColor() {
     } else {
         // Ẩn tuyết nếu không phải mùa lễ
     }
+}
+function getAuthToken() {
+    const cookies = document.cookie.split('; ');
+    for (let i = 0; i < cookies.length; i++) {
+        const [key, value] = cookies[i].split('=');
+        if (key === 'authToken') {
+            return value;
+        }
+    }
+    return null; // Nếu không tìm thấy authToken
 }
 
 // Gọi hàm ngay khi tải trang
