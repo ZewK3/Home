@@ -13,7 +13,7 @@ if (loggedInUser) {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,  // Thêm Authorization header
+                "token": `Bearer ${token}`,  // Thêm Authorization header
             },
         });
         if (response.ok) {
