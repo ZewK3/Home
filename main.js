@@ -3,17 +3,16 @@ const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 let user;
 const menuList = document.getElementById("menuList");
 menuList.style.display = 'none';
+const token = getAuthToken();
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
-    const token = getAuthToken();
     const employeeId = loggedInUser.loginEmployeeId;
     try {
         // Gửi yêu cầu GET để lấy thông tin người dùng
-        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}`, {
+        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}&token=${token}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "token": `Bearer ${token}`,  // Thêm Authorization header
             },
         });
         if (response.ok) {
@@ -91,7 +90,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         mainContent.classList.remove("hidden");
     }
     try {
-    const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}`, {
+    const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}&token=${token}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -249,7 +248,7 @@ if (backButton) {
 
         if (isValid) {
             try {
-                const response = await fetch("https://zewk.tocotoco.workers.dev?action=savedk", {
+                const response = await fetch('https://zewk.tocotoco.workers.dev?action=savedk&token=${token}', {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
