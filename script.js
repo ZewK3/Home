@@ -129,10 +129,12 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
     const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
     const loginPassword = document.getElementById("loginPassword").value.trim();
-    const data = {loginEmployeeId,loginPassword};
+    const rememberMe = document.getElementById("rememberMe").checked; // Giả định checkbox "Remember Me" có id là rememberMe
+    const data = { loginEmployeeId, loginPassword };
+
     try {
         // Gửi yêu cầu login với phương thức POST
-        const loginResponse = await fetch("https://zewk.tocotoco.workers.dev?action=login" ,{
+        const loginResponse = await fetch("https://zewk.tocotoco.workers.dev?action=login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -143,13 +145,20 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         if (loginResponse.ok) {
             const result = await loginResponse.json();
             const now = new Date().getTime();
+
+            // Lưu token vào cookie nếu được trả về
+            if (result.token) {
+                document.cookie = `authToken=${result.token}; HttpOnly; Secure; Path=/; SameSite=Strict;`;
+            }
+
             showNotification("Đăng nhập thành công!", "success", 3000);
             document.getElementById("loginFormContainer").style.display = "none";
+
             // Lưu thông tin người dùng và chuyển hướng
             localStorage.setItem("loggedInUser", JSON.stringify(data));
             localStorage.setItem("lastActivity", now);
 
-            // If "Remember Me" is checked, save the employeeId and password
+            // Nếu "Remember Me" được chọn, lưu employeeId và password
             if (rememberMe) {
                 localStorage.setItem("rememberedEmployeeId", loginEmployeeId);
                 localStorage.setItem("rememberedPassword", loginPassword);
@@ -157,6 +166,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
                 localStorage.removeItem("rememberedEmployeeId");
                 localStorage.removeItem("rememberedPassword");
             }
+
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 3000);
@@ -164,7 +174,6 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             showNotification("Mật khẩu không đúng!", "error", 3000);
         } else if (loginResponse.status === 404) {
             showNotification("Mã nhân viên không tồn tại!", "warning", 3000);
-
         } else {
             showNotification("Đăng nhập thất bại! Vui lòng thử lại.", "error", 3000);
         }
@@ -173,6 +182,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
         showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại.", "error", 3000);
     }
 });
+
 window.addEventListener('DOMContentLoaded', () => {
     const rememberedEmployeeId = localStorage.getItem("rememberedEmployeeId");
     const rememberedPassword = localStorage.getItem("rememberedPassword");
