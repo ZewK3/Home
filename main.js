@@ -1,4 +1,3 @@
-const LOGOUT_TIME = 10 * 60 * 1000; // Thời gian không hoạt động tối đa: 10 phút (ms)
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 let user;
 const menuList = document.getElementById("menuList");
@@ -20,21 +19,7 @@ if (loggedInUser) {
             // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
-            menuList.style.display = 'block';
-            // Kiểm tra thời gian hoạt động
-            const lastActivity = localStorage.getItem("lastActivity");
-            if (lastActivity) {
-                const now = new Date().getTime();
-                // Nếu chênh lệch thời gian lớn hơn LOGOUT_TIME, xóa thông tin và reload trang
-                if (now - lastActivity > LOGOUT_TIME) {
-                    localStorage.removeItem("lastActivity");
-                    showNotification("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
-                    window.location.href = "index.html";
-                } else {
-                    // Nếu chưa hết hạn, cập nhật lại thời gian hoạt động cuối
-                    localStorage.setItem("lastActivity", now);
-                }
-            }
+            menuList.style.display = 'block';       
         } else {
             showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
         }
@@ -45,20 +30,9 @@ if (loggedInUser) {
     showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
 }
 
-// Cập nhật thời gian hoạt động cuối cùng mỗi khi người dùng thực hiện hành động
-const updateLastActivity = () => {
-    localStorage.setItem("lastActivity", new Date().getTime());
-};
-
-// Lắng nghe sự kiện hoạt động của người dùng (di chuột, nhấn phím, cuộn)
-window.addEventListener("mousemove", updateLastActivity);
-window.addEventListener("keydown", updateLastActivity);
-window.addEventListener("scroll", updateLastActivity);
-
 // Xử lý logout
 document.getElementById("logout").addEventListener("click", function () {
     localStorage.removeItem("loggedInUser");
-    localStorage.removeItem("lastActivity");
     window.location.href = "index.html";
 });
 
@@ -396,6 +370,9 @@ function updateSidebarAndMainColor() {
         // Ẩn tuyết nếu không phải mùa lễ
     }
 }
+// Gọi hàm ngay khi tải trang
+updateSidebarAndMainColor();
+
 function getAuthToken() {
     const cookies = document.cookie.split('; ');
     for (let i = 0; i < cookies.length; i++) {
@@ -407,8 +384,29 @@ function getAuthToken() {
     return null; // Nếu không tìm thấy authToken
 }
 
-// Gọi hàm ngay khi tải trang
-updateSidebarAndMainColor();
+const timeout = 10 * 60 * 1000; 
 
-// Đặt lịch kiểm tra mỗi ngày để tự động thay đổi nếu cần
-setInterval(updateSidebarAndMainColor, 60000 * 60 * 24); // Kiểm tra mỗi 24 giờ
+let timeoutId;
+
+// Reset thời gian chờ khi có sự tương tác
+const resetTimer = () => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+        location.reload(); // Reload trang sau thời gian chờ
+        }, timeout);
+};
+
+// Lắng nghe các sự kiện tương tác
+const setupInteractionListeners = () => {
+        document.addEventListener('mousemove', resetTimer);
+        document.addEventListener('keydown', resetTimer);
+        document.addEventListener('scroll', resetTimer);
+        document.addEventListener('click', resetTimer);
+        document.addEventListener('touchstart', resetTimer); // Dành cho thiết bị cảm ứng
+};
+
+// Bắt đầu khi trang được tải
+window.onload = () => {
+        resetTimer(); // Khởi tạo bộ đếm thời gian
+        setupInteractionListeners(); // Lắng nghe các sự kiện tương tác
+};
