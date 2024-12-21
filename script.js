@@ -144,21 +144,14 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
         if (loginResponse.ok) {
             const result = await loginResponse.json();
-            const now = new Date().getTime();
-
             // Lưu token vào cookie nếu được trả về
             if (result.token) {
-                document.cookie = `authToken=${result.token}; HttpOnly; Secure; Path=/; SameSite=Strict;`;
                 localStorage.setItem("authToken",result.token);
             }
-
             showNotification("Đăng nhập thành công!", "success", 3000);
             document.getElementById("loginFormContainer").style.display = "none";
-
             // Lưu thông tin người dùng và chuyển hướng
             localStorage.setItem("loggedInUser", JSON.stringify(data));
-            localStorage.setItem("lastActivity", now);
-
             // Nếu "Remember Me" được chọn, lưu employeeId và password
             if (rememberMe) {
                 localStorage.setItem("rememberedEmployeeId", loginEmployeeId);
