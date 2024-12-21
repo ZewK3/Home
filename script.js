@@ -149,6 +149,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             // Lưu token vào cookie nếu được trả về
             if (result.token) {
                 document.cookie = `authToken=${result.token}; HttpOnly; Secure; Path=/; SameSite=Strict;`;
+                localStorage.setItem("authToken",result.token);
             }
 
             showNotification("Đăng nhập thành công!", "success", 3000);
