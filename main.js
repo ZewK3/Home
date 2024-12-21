@@ -3,7 +3,7 @@ const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 let user;
 const menuList = document.getElementById("menuList");
 menuList.style.display = 'none';
-const token = getAuthToken();
+const token = localStorage.getItem("authToken");
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
