@@ -28,6 +28,7 @@ if (loggedInUser) {
     }
 } else {
     showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
+    window.location.href = "index.html";
 }
 
 // Xử lý logout
@@ -384,29 +385,31 @@ function getAuthToken() {
     return null; // Nếu không tìm thấy authToken
 }
 
-const timeout = 10 * 60 * 1000; 
+const timeout = 10 * 60 * 1000;
 
-let timeoutId;
+  let hiddenStartTime = null;
+  let timeoutId = null;
 
-// Reset thời gian chờ khi có sự tương tác
-const resetTimer = () => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-        location.reload(); // Reload trang sau thời gian chờ
-        }, timeout);
-};
+  // Theo dõi sự kiện thay đổi trạng thái hiển thị của trang
+  document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+    // Người dùng rời khỏi trang
+    hiddenStartTime = Date.now();
+    // Thiết lập bộ đếm để reload sau 10 phút
+    timeoutId = setTimeout(() => {
+        location.reload();
+    }, timeout);
+      } else {
+    // Người dùng quay lại trang
+    if (hiddenStartTime) {
+        const elapsed = Date.now() - hiddenStartTime;
 
-// Lắng nghe các sự kiện tương tác
-const setupInteractionListeners = () => {
-        document.addEventListener('mousemove', resetTimer);
-        document.addEventListener('keydown', resetTimer);
-        document.addEventListener('scroll', resetTimer);
-        document.addEventListener('click', resetTimer);
-        document.addEventListener('touchstart', resetTimer); // Dành cho thiết bị cảm ứng
-};
-
-// Bắt đầu khi trang được tải
-window.onload = () => {
-        resetTimer(); // Khởi tạo bộ đếm thời gian
-        setupInteractionListeners(); // Lắng nghe các sự kiện tương tác
-};
+        if (elapsed >= timeout) {
+      location.reload(); // Reload ngay nếu thời gian rời khỏi đủ lâu
+        } else {
+      clearTimeout(timeoutId); // Hủy bộ đếm nếu quay lại trước 10 phút
+        }
+    }
+    hiddenStartTime = null; // Reset trạng thái
+      }
+  });
