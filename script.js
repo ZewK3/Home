@@ -94,7 +94,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
                 showNotification("Email đã tồn tại!", "warning", 3000);
             }else if (registerResponse.status === 200) {
                 const result = await registerResponse.json();
-                showNotification(result.message, "success");
+                showNotification(result.message, "success", 3000);
                 document.getElementById("registerFormContainer").style.display = "none";
                 document.getElementById("loginFormContainer").style.display = "block";
             }
