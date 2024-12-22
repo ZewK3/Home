@@ -75,26 +75,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email };
     try {
-        // Kiểm tra mã nhân viên tồn tại
-       const checkResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev?action=checkId&employeeId=${employeeId}`,
-            {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            }
-        );
-
-        if (!checkResponse.ok) {
-            const existingUser = await checkResponse.json();
-            showNotification("Mã nhân viên đã tồn tại!", "warning", 3000);
-            return;
-        }
-
-        if (checkResponse.status === 200) {
-            // Đăng ký nếu mã nhân viên chưa tồn tại
-            const registerResponse = await fetch(
+        const registerResponse = await fetch(
                 "https://zewk.tocotoco.workers.dev?action=register",
                 {
                     method: "POST",
@@ -104,7 +85,14 @@ document.getElementById("registerForm").addEventListener("submit", async functio
                     body: JSON.stringify(data),
                 }
             );
-
+           
+            if(registerResponse.status === 209){
+                showNotification("Tài khoản đã tồn tại!", "error", 3000);
+            }else if(registerResponse.status === 210){
+                showNotification("Số điện thoại đã tồn tại!", "error", 3000);
+            }else if(registerResponse.status === 211){
+                showNotification("Email đã tồn tại!", "error", 3000);
+            }
             if (registerResponse.ok) {
                 const result = await registerResponse.json();
                 showNotification(result.message, "success");
@@ -112,9 +100,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
                 document.getElementById("loginFormContainer").style.display = "block";
             } else {
                 showNotification("Đăng ký thất bại! Vui lòng thử lại", "error", 3000);
-            }
-        } else {
-            showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
+            }ification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
         }
     } catch (error) {
     // Xử lý lỗi
