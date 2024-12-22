@@ -78,7 +78,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     try {
         // Kiểm tra mã nhân viên tồn tại
         const checkResponse = await fetch(
-            "https://zewk.tocotoco.workers.dev?action=getUser&employeeId=${employeeId}",
+            "https://zewk.tocotoco.workers.dev?action=checkId&employeeId=${employeeId}",
             {
                 method: "GET",
                 headers: {
@@ -87,13 +87,13 @@ document.getElementById("registerForm").addEventListener("submit", async functio
             }
         );
 
-        if (checkResponse.ok) {
+        if (!checkResponse.ok) {
             const existingUser = await checkResponse.json();
             showNotification("Mã nhân viên đã tồn tại!", "warning", 3000);
             return;
         }
 
-        if (checkResponse.status === 404) {
+        if (checkResponse.status === 200) {
             // Đăng ký nếu mã nhân viên chưa tồn tại
             const registerResponse = await fetch(
                 "https://zewk.tocotoco.workers.dev?action=register",
