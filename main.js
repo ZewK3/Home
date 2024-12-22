@@ -78,7 +78,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
 
     const checkResult = await checkResponse.json();
 
-    if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
+if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
     // Nếu nhân viên đã đăng ký lịch làm
     const schedule = checkResult.shifts || [];
     mainContent.innerHTML = `
@@ -123,9 +123,9 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } else if(checkResponse.status === 202){
-        // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
-        mainContent.innerHTML = `
+} else if (checkResponse.status === 202) {
+    // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
+    mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Đăng ký lịch làm</h1>
         <form id="scheduleForm">
@@ -160,7 +160,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    }
+}
 } catch (error) {
     console.error("Lỗi kiểm tra trạng thái lịch làm:", error);
     showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
