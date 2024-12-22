@@ -27,7 +27,6 @@ if (loggedInUser) {
         showNotification("Lỗi khi gửi yêu cầu:", "error", 3000);
     }
 } else {
-    showNotification("Chưa có thông tin người dùng đăng nhập", "warning", 3000);
     window.location.href = "index.html";
 }
 
@@ -37,13 +36,14 @@ document.getElementById("logout").addEventListener("click", function () {
     window.location.href = "index.html";
 });
 
-
 // Hàm tạo danh sách giờ
-function createHourOptions(start, end) {
-    let options = '<option value="">Chọn giờ</option>';
+function createHourOptions(start, end, selectedTime = "") {
+    let options = '<option value="">Chọn giờ</option>'; // Tuỳ chọn mặc định
     for (let hour = start; hour <= end; hour++) {
         const formattedHour = hour < 10 ? `0${hour}` : `${hour}`; // Định dạng giờ
-        options += `<option value="${formattedHour}">${formattedHour}:00</option>`;
+        const value = `${formattedHour}:00`;
+        const selected = value === selectedTime ? "selected" : ""; // Đánh dấu giờ được chọn
+        options += `<option value="${value}" ${selected}>${value}</option>`;
     }
     return options;
 }
@@ -79,31 +79,43 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     const checkResult = await checkResponse.json();
 
     if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
-        // Nếu nhân viên đã đăng ký lịch làm
-        const schedule = checkResult.shifts || [];
-        mainContent.innerHTML = ` ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+    // Nếu nhân viên đã đăng ký lịch làm
+    const schedule = checkResult.shifts || [];
+    mainContent.innerHTML = `
+        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Lịch đã đăng ký</h1>
         <form id="scheduleForm">
             <table class="schedule-table">
                 <thead>
                     <tr>
                        <th>Ngày</th>
-                       <th>Ca làm</th>
-                       <th>Chỉnh sửa</th>
+                       <th>Giờ vào</th>
+                       <th>Giờ ra</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${schedule.map(daySchedule => {
-                    const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
-                    const time = daySchedule.time || "--:--";  // Dữ liệu đã định dạng sẵn
-                    return `
-                        <tr>
-                            <td>${dayName}</td>
-                            <td>${time}</td> <!-- Gộp giờ vào và giờ ra thành một cột -->
-                            <td><button class="edit-schedule-btn" data-day="${daySchedule.day}">Chỉnh sửa</button></td>
-                        </tr>
-                    `;
-                }).join('')}
+                        const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
+                        
+                        // Tách dữ liệu "08:00-12:00" thành giờ vào và giờ ra
+                        const [startTime, endTime] = (daySchedule.time || "--:-- - --:--").split("-");
+                        
+                        return `
+                            <tr>
+                                <td>${dayName}</td>
+                                <td>
+                                    <select name="${daySchedule.day}-start" class="time-select start-select" data-day="${daySchedule.day}">
+                                        ${createHourOptions(8, 19, startTime.trim())}
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="${daySchedule.day}-end" class="time-select end-select" data-day="${daySchedule.day}">
+                                        ${createHourOptions(12, 23, endTime.trim())}
+                                    </select>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('')}
                 </tbody>
             </table>
             <div class="button-container">
@@ -111,7 +123,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             </div>
         </form>
     `;
-    } else if(checkResponse.status === 400){
+    } else if(checkResponse.status === 202){
         // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
         mainContent.innerHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
@@ -154,10 +166,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
     showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
     return;
 }
-
-
     // Cập nhật nội dung của main
-
 const backButton = document.getElementById("backButton");
 if (backButton) {
     backButton.addEventListener("click", function () {
@@ -220,10 +229,9 @@ if (backButton) {
                 });
             }
         });
-
         if (isValid) {
             try {
-                const response = await fetch('https://zewk.tocotoco.workers.dev?action=savedk&token=${token}', {
+                const response = await fetch(`https://zewk.tocotoco.workers.dev?action=savedk&token=${token}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -245,7 +253,6 @@ if (backButton) {
 });
 
 
-
 document.addEventListener("DOMContentLoaded", () => {
     const sidebar = document.querySelector(".sidebar");
     const main = document.querySelector(".main");
@@ -261,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
             main.classList.remove("hidden");
         }
     };
-
     // Gắn sự kiện click vào các mục trong sidebar
     listItems.forEach(item => {
         item.addEventListener("click", (e) => {
@@ -273,7 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
     // Gắn sự kiện click vào nút quay lại
     backButton.addEventListener("click", () => {
         if (isMobile()) {
@@ -281,13 +286,10 @@ document.addEventListener("DOMContentLoaded", () => {
             sidebar.classList.remove("hidden"); // Hiện sidebar
         }
     });
-
     // Xử lý khi thay đổi kích thước cửa sổ
     window.addEventListener("resize", handleResize);
-
     // Gọi kiểm tra kích thước ngay khi tải trang
-    handleResize();
-    
+    handleResize();   
 });
 
 
@@ -387,12 +389,12 @@ function getAuthToken() {
 
 const timeout = 10 * 60 * 1000;
 
-  let hiddenStartTime = null;
-  let timeoutId = null;
+let hiddenStartTime = null;
+let timeoutId = null;
 
   // Theo dõi sự kiện thay đổi trạng thái hiển thị của trang
-  document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
     // Người dùng rời khỏi trang
     hiddenStartTime = Date.now();
     // Thiết lập bộ đếm để reload sau 10 phút
@@ -411,5 +413,18 @@ const timeout = 10 * 60 * 1000;
         }
     }
     hiddenStartTime = null; // Reset trạng thái
-      }
-  });
+    }
+});
+
+
+document.addEventListener('keydown', function(e) {
+    // Chặn F12 hoặc Ctrl + Shift + I
+    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+    }
+});
+
+// Chặn click chuột phải
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
