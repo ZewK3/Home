@@ -87,24 +87,21 @@ document.getElementById("registerForm").addEventListener("submit", async functio
             );
            
             if(registerResponse.status === 209){
-                showNotification("Tài khoản đã tồn tại!", "error", 3000);
+                showNotification("Tài khoản đã tồn tại!", "warning", 3000);
             }else if(registerResponse.status === 210){
-                showNotification("Số điện thoại đã tồn tại!", "error", 3000);
+                showNotification("Số điện thoại đã tồn tại!", "warning", 3000);
             }else if(registerResponse.status === 211){
-                showNotification("Email đã tồn tại!", "error", 3000);
-            }
-            if (registerResponse.status === 200) {
+                showNotification("Email đã tồn tại!", "warning", 3000);
+            }else if (registerResponse.status === 200) {
                 const result = await registerResponse.json();
                 showNotification(result.message, "success");
                 document.getElementById("registerFormContainer").style.display = "none";
                 document.getElementById("loginFormContainer").style.display = "block";
-            } else {
-                showNotification("Đăng ký thất bại! Vui lòng thử lại", "error", 3000);
             }
     } catch (error) {
         // Xử lý lỗi
         console.error("Lỗi xảy ra:", error.message);
-	}
+    }
 });
 
 // Xử lý đăng nhập
