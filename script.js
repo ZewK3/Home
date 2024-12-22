@@ -106,7 +106,6 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     } catch (error) {
     // Xử lý lỗi
     console.error("Lỗi xảy ra:", error.message);
-}
 });
 
 // Xử lý đăng nhập
