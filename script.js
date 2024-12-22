@@ -101,11 +101,10 @@ document.getElementById("registerForm").addEventListener("submit", async functio
             } else {
                 showNotification("Đăng ký thất bại! Vui lòng thử lại", "error", 3000);
             }
-            showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
-        }
     } catch (error) {
-    // Xử lý lỗi
-    console.error("Lỗi xảy ra:", error.message);
+        // Xử lý lỗi
+        console.error("Lỗi xảy ra:", error.message);
+	}
 });
 
 // Xử lý đăng nhập
