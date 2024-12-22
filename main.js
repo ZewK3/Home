@@ -36,19 +36,6 @@ document.getElementById("logout").addEventListener("click", function () {
     window.location.href = "index.html";
 });
 
-// Hàm tạo danh sách giờ
-function createHourOptions(start, end, selectedTime = "") {
-    let options = '<option value="">Chọn giờ</option>'; // Tuỳ chọn mặc định
-    for (let hour = start; hour <= end; hour++) {
-        const formattedHour = hour < 10 ? `0${hour}` : `${hour}`; // Định dạng giờ
-        const value = `${formattedHour}:00`;
-        const selected = value === selectedTime ? "selected" : ""; // Đánh dấu giờ được chọn
-        options += `<option value="${value}" ${selected}>${value}</option>`;
-    }
-    return options;
-}
-
-
 // Mở giao diện đăng ký lịch làm
 document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
@@ -64,108 +51,121 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         sidebar.classList.add("hidden");
         mainContent.classList.remove("hidden");
     }
-    try {
+try {
     const checkResponse = await fetch(`https://zewk.tocotoco.workers.dev?action=checkdk&employeeId=${employeeId}&token=${token}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-    
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
     if (checkResponse.status === 500) {
         throw new Error("Lỗi khi gửi yêu cầu kiểm tra trạng thái lịch làm!");
     }
 
     const checkResult = await checkResponse.json();
 
-if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
-    // Nếu nhân viên đã đăng ký lịch làm
-    const schedule = checkResult.shifts || [];
-    mainContent.innerHTML = `
-        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1>Lịch đã đăng ký</h1>
-        <form id="scheduleForm">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                       <th>Ngày</th>
-                       <th>Giờ vào</th>
-                       <th>Giờ ra</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${schedule.map(daySchedule => {
-                        const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
-                        
-                        // Tách dữ liệu "08:00-12:00" thành giờ vào và giờ ra
-                        const [startTime, endTime] = (daySchedule.time || "--:-- - --:--").split("-");
-                        
-                        return `
+    if (checkResponse.status === 200 && checkResult.message === "Nhân viên đã đăng ký lịch làm!") {
+        // Nếu nhân viên đã đăng ký lịch làm
+        const schedule = checkResult.shifts || [];
+        mainContent.innerHTML = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            <h1>Lịch đã đăng ký</h1>
+            <form id="scheduleForm">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                           <th>Ngày</th>
+                           <th>Giờ vào</th>
+                           <th>Giờ ra</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${schedule.map(daySchedule => {
+                            const dayName = daySchedule.day === "CN" ? "Chủ Nhật" : `Thứ ${daySchedule.day.slice(1)}`;
+                            // Tách dữ liệu "08:00-12:00" thành giờ vào và giờ ra
+                            const [startTime, endTime] = (daySchedule.time || "--:-- - --:--")
+                                .split("-")
+                                .map(t => t.trim() || "--:--");
+
+                            return `
+                                <tr>
+                                    <td>${dayName}</td>
+                                    <td>
+                                        <select name="${daySchedule.day}-start" class="time-select start-select" data-day="${daySchedule.day}">
+                                            ${createHourOptions(8, 19, startTime)}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select name="${daySchedule.day}-end" class="time-select end-select" data-day="${daySchedule.day}">
+                                            ${createHourOptions(12, 23, endTime)}
+                                        </select>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button type="submit" class="btn">Gửi</button>
+                </div>
+            </form>
+        `;
+    } else if (checkResponse.status === 202) {
+        // Nếu nhân viên chưa đăng ký lịch làm
+        mainContent.innerHTML = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            <h1>Đăng ký lịch làm</h1>
+            <form id="scheduleForm">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Giờ vào</th>
+                            <th>Giờ ra</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
                             <tr>
-                                <td>${dayName}</td>
+                                <td>${day}</td>
                                 <td>
-                                    <select name="${daySchedule.day}-start" class="time-select start-select" data-day="${daySchedule.day}">
-                                        ${createHourOptions(8, 19, startTime.trim())}
+                                    <select name="${day}-start" class="time-select start-select" data-day="${day}">
+                                        ${createHourOptions(8, 19)}
                                     </select>
                                 </td>
                                 <td>
-                                    <select name="${daySchedule.day}-end" class="time-select end-select" data-day="${daySchedule.day}">
-                                        ${createHourOptions(12, 23, endTime.trim())}
+                                    <select name="${day}-end" class="time-select end-select" data-day="${day}">
+                                        ${createHourOptions(12, 23)}
                                     </select>
                                 </td>
                             </tr>
-                        `;
-                    }).join('')}
-                </tbody>
-            </table>
-            <div class="button-container">
-                <button type="submit" class="btn">Gửi</button>
-            </div>
-        </form>
-    `;
-} else if (checkResponse.status === 202) {
-    // Nếu nhân viên chưa đăng ký lịch làm, tiếp tục cho phép thực hiện đăng ký
-    mainContent.innerHTML = `
-        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-        <h1>Đăng ký lịch làm</h1>
-        <form id="scheduleForm">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th>Ngày</th>
-                        <th>Giờ vào</th>
-                        <th>Giờ ra</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map(day => `
-                        <tr>
-                            <td>${day}</td>
-                            <td>
-                                <select name="${day}-start" class="time-select start-select" data-day="${day}">
-                                    ${createHourOptions(8, 19)}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="${day}-end" class="time-select end-select" data-day="${day}">
-                                    ${createHourOptions(12, 23)}
-                                </select>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            <div class="button-container">
-                <button type="submit" class="btn">Gửi</button>
-            </div>
-        </form>
-    `;
-}
+                        `).join('')}
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button type="submit" class="btn">Gửi</button>
+                </div>
+            </form>
+        `;
+    }
 } catch (error) {
     console.error("Lỗi kiểm tra trạng thái lịch làm:", error);
     showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
     return;
 }
+
+// Hàm tạo danh sách giờ
+function createHourOptions(start, end, selectedValue = "") {
+    let options = '<option value="">Chọn giờ</option>';
+    for (let hour = start; hour <= end; hour++) {
+        const formattedHour = hour < 10 ? `0${hour}:00` : `${hour}:00`;
+        const isSelected = formattedHour === selectedValue ? 'selected' : '';
+        options += `<option value="${formattedHour}" ${isSelected}>${formattedHour}</option>`;
+    }
+    return options;
+}
+
     // Cập nhật nội dung của main
 const backButton = document.getElementById("backButton");
 if (backButton) {
