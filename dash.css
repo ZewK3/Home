@@ -1,6 +1,6 @@
 /* Reset mặc định */
 * {
-    text-align: end;
+    text-align: center;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -73,6 +73,9 @@ html, body {
     left: 0;
     top: 0;
     z-index: 1;
+}
+div#userInfo {
+    text-align: end;
 }
 /* Sidebar */
 .sidebar {
