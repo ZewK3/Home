@@ -417,14 +417,14 @@ document.addEventListener('visibilitychange', () => {
 });
 
 
-document.addEventListener('keydown', function(e) {
-    // Chặn F12 hoặc Ctrl + Shift + I
-    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-        e.preventDefault();
-    }
-});
+// document.addEventListener('keydown', function(e) {
+//     // Chặn F12 hoặc Ctrl + Shift + I
+//     if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+//         e.preventDefault();
+//     }
+// });
 
-// Chặn click chuột phải
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-});
+// // Chặn click chuột phải
+// document.addEventListener('contextmenu', function(e) {
+//     e.preventDefault();
+// });
