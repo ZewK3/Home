@@ -76,8 +76,8 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email };
     try {
         // Kiểm tra mã nhân viên tồn tại
-        const checkResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev?action=checkReg&employeeId=${employeeId}&phone=${phone}&email=${email}`,
+       const checkResponse = await fetch(
+            `https://zewk.tocotoco.workers.dev?action=checkId&employeeId=${employeeId}`,
             {
                 method: "GET",
                 headers: {
@@ -86,14 +86,9 @@ document.getElementById("registerForm").addEventListener("submit", async functio
             }
         );
 
-        if (checkResponse.status === 400) {
+        if (!checkResponse.ok) {
+            const existingUser = await checkResponse.json();
             showNotification("Mã nhân viên đã tồn tại!", "warning", 3000);
-            return;
-        }else if(checkResponse.status === 401) {
-            showNotification("Số điện thoại đã tồn tại!", "warning", 3000);
-            return;
-        }else if(checkResponse.status === 402) {
-            showNotification("Email đã tồn tại!", "warning", 3000);
             return;
         }
 
