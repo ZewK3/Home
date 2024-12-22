@@ -74,17 +74,17 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     }
 
     const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email };
-    const id = {employeeId, phone, email};
+    const idReg = {employeeId, phone, email};
     try {
         // Kiểm tra mã nhân viên tồn tại
         const checkResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev?action=checkId`,
+            `https://zewk.tocotoco.workers.dev?action=checkReg`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(id),
+                body: JSON.stringify(idReg),
             }
         );
 
