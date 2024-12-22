@@ -100,7 +100,8 @@ document.getElementById("registerForm").addEventListener("submit", async functio
                 document.getElementById("loginFormContainer").style.display = "block";
             } else {
                 showNotification("Đăng ký thất bại! Vui lòng thử lại", "error", 3000);
-            }ification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
+            }
+            showNotification("Có lỗi xảy ra khi kiểm tra mã nhân viên", "error", 3000);
         }
     } catch (error) {
     // Xử lý lỗi
