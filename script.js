@@ -62,7 +62,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
     // Kiểm tra mã nhân viên hợp lệ
     if (!employeeId.includes("CHMN") && !employeeId.includes("VP")) {
-        showNotification("Mã nhân viên phải chứa 'CHMN' hoặc 'VP'!", "warning");
+        showNotification("Mã nhân viên phải chứa 'CHMN' 'VP'!", "warning");
         return;
     }
 
@@ -74,22 +74,28 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     }
 
     const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email };
-
+    const id = {employeeId, phone, email};
     try {
         // Kiểm tra mã nhân viên tồn tại
         const checkResponse = await fetch(
-            `https://zewk.tocotoco.workers.dev?action=checkId&employeeId=${employeeId}`,
+            `https://zewk.tocotoco.workers.dev?action=checkId`,
             {
-                method: "GET",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
+                body: JSON.stringify(id),
             }
         );
 
-        if (!checkResponse.ok) {
-            const existingUser = await checkResponse.json();
+        if (checkResponse.status === 400) {
             showNotification("Mã nhân viên đã tồn tại!", "warning", 3000);
+            return;
+        }else if(checkResponse.status === 401) {
+            showNotification("Số điện thoại đã tồn tại!", "warning", 3000);
+            return;
+        }else if(checkResponse.status === 402) {
+            showNotification("Email đã tồn tại!", "warning", 3000);
             return;
         }
 
