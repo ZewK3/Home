@@ -565,3 +565,108 @@ animation-delay: 3s, 1.5s;
     padding: 5px;
     box-sizing: border-box;
 }
+/*Đổi mật khẩu*/
+/* Styling the Change Password page */
+#changePasswordForm {
+    max-width: 350PX;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#changePasswordForm h1 {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+#changePasswordForm div {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+#changePasswordForm label {
+    /* display: block; */
+    font-weight: bold;
+    margin-bottom: 5px;
+    /* text-align: right; */
+    color: #333;
+}
+
+#changePasswordForm input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#changePasswordForm input[type="password"]:focus {
+    border-color: #999;
+    outline: none;
+}
+
+#changePasswordForm .button-container {
+    display: flex;
+    gap: 5px;
+    flex-direction: column;
+}
+
+#changePasswordForm .btn {
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: #f08080;
+    color: white;
+}
+
+#changePasswordForm .btn:hover {
+    background-color: #ea4c4b;
+}
+
+#changePasswordForm .btn:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+
+#changePasswordForm .btn.cancel {
+    background-color: #ccc;
+}
+
+#changePasswordForm .btn.cancel:hover {
+    background-color: #999;
+}
+
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+    #changePasswordForm {
+        width: 90%;
+        padding: 15px;
+    }
+
+    #changePasswordForm h1 {
+        font-size: 20px;
+    }
+
+    #changePasswordForm label {
+        font-size: 14px;
+    }
+
+    #changePasswordForm input[type="password"] {
+        font-size: 16px;
+    }
+
+    #changePasswordForm .btn {
+        width: 100%;
+        margin-bottom: 1px;
+    }
+}
