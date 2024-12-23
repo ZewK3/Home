@@ -37,15 +37,110 @@ document.getElementById("logout").addEventListener("click", function () {
 });
 
 // mở giao diện xếp lịch
-document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
-    e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
+document.getElementById("openPersonalInformation").addEventListener("click", async function (e) {
+    e.preventDefault();
+
     const role = user.position;
-    if (!(role === "AD" || role === "QL")) {
+    const allowedRoles = ["AD", "NV", "QL", "AM"];
+    if (!allowedRoles.includes(role)) {
         showNotification("Bạn Không Có Quyền Truy Cập", "error", 3000);
         return;
     }
-    
-}
+
+    const mainContent = document.querySelector(".main");
+    const sidebar = document.querySelector(".sidebar");
+    const isMobile = window.innerWidth <= 768;
+    const originalMainContentHTML = mainContent.innerHTML;
+
+    // Ẩn sidebar trên giao diện mobile
+    if (isMobile) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+    }
+
+    // Hiển thị thông tin cá nhân
+    mainContent.innerHTML = `
+        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+        <h1>Thông Tin Cá Nhân</h1>
+        <form id="personalInfoForm">
+            <table class="personal-info-table">
+                <tbody>
+                    <tr>
+                        <th>Mã Nhân Viên</th>
+                        <td>${user.employeeId || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Họ Tên</th>
+                        <td>${user.fullName || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>${user.email || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Số Điện Thoại</th>
+                        <td>${user.phone || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Vị Trí</th>
+                        <td>${user.position || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Cửa Hàng</th>
+                        <td>${user.store || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Ngày Tham Gia</th>
+                        <td>${user.joinDate || "N/A"}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="button-container">
+                <button type="button" id="editInfo" class="btn">Chỉnh sửa</button>
+                <button type="button" id="saveInfo" class="btn hidden">Lưu</button>
+            </div>
+        </form>
+    `;
+
+    // Xử lý sự kiện nút "Chỉnh sửa"
+    document.getElementById("editInfo").addEventListener("click", () => {
+        document.querySelectorAll(".personal-info-table td").forEach((cell, index) => {
+            if (index > 0) { // Bỏ qua tiêu đề
+                const value = cell.textContent;
+                cell.innerHTML = `<input type="text" value="${value}" class="edit-input">`;
+            }
+        });
+        document.getElementById("editInfo").classList.add("hidden");
+        document.getElementById("saveInfo").classList.remove("hidden");
+    });
+
+    // Xử lý sự kiện nút "Lưu"
+    document.getElementById("saveInfo").addEventListener("click", () => {
+        const updatedInfo = {};
+        document.querySelectorAll(".personal-info-table input.edit-input").forEach((input, index) => {
+            const key = ["employeeId", "fullName", "email", "phone", "position", "store", "joinDate"][index];
+            updatedInfo[key] = input.value;
+        });
+
+        // Cập nhật giao diện sau khi lưu
+        document.querySelectorAll(".personal-info-table td").forEach((cell, index) => {
+            if (index > 0) { // Bỏ qua tiêu đề
+                const input = cell.querySelector("input");
+                if (input) {
+                    cell.textContent = input.value;
+                }
+            }
+        });
+
+        // Ẩn nút "Lưu", hiển thị lại nút "Chỉnh sửa"
+        document.getElementById("editInfo").classList.remove("hidden");
+        document.getElementById("saveInfo").classList.add("hidden");
+
+        // Gửi thông tin cập nhật tới server (nếu cần)
+        console.log("Thông tin đã cập nhật:", updatedInfo);
+    });
+});
+
 
 // Mở giao diện đăng ký lịch làm
 document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
@@ -169,7 +264,7 @@ try {
     showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
     return;
 }
-
+}
 // Hàm tạo danh sách giờ
 function createHourOptions(start, end, selectedValue = "") {
     let options = '<option value="">Chọn giờ</option>';
