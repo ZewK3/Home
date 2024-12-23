@@ -24,7 +24,7 @@ if (loggedInUser) {
             showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
         }
     } catch (error) {
-        showNotification("Lỗi khi gửi yêu cầu:", "error", 3000);
+        showNotification("Lỗi khi gửi yêu cầu", "error", 3000);
     }
 } else {
     window.location.href = "index.html";
@@ -36,10 +36,25 @@ document.getElementById("logout").addEventListener("click", function () {
     window.location.href = "index.html";
 });
 
+// mở giao diện xếp lịch
+document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
+    e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
+    const role = user.position;
+    if (!(role === "AD" || role === "QL")) {
+        showNotification("Bạn Không Có Quyền Truy Cập", "error", 3000);
+        return;
+    }
+    
+}
+
 // Mở giao diện đăng ký lịch làm
 document.getElementById("openScheduleRegistration").addEventListener("click", async function (e) {
     e.preventDefault(); // Ngăn chặn hành vi mặc định của thẻ <a>
-    
+    const role = user.position;
+    if (!(role === "AD" || role === "NV" || role === "QL")) {
+        showNotification("Bạn Không Có Quyền Truy Cập", "error", 3000);
+        return;
+    }
     const employeeId = user.employeeId; // Lấy employeeId từ thông tin người dùng
     const mainContent = document.querySelector(".main");
     const sidebar = document.querySelector(".sidebar");
