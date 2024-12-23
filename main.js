@@ -3,6 +3,7 @@ let user;
 const menuList = document.getElementById("menuList");
 menuList.style.display = 'none';
 const token = localStorage.getItem("authToken");
+const mainHtml = document.querySelector(".main");
 // Kiểm tra xem người dùng có thông tin đăng nhập không
 if (loggedInUser) {
     const employeeId = loggedInUser.loginEmployeeId;
@@ -157,7 +158,19 @@ function openChangePasswordForm() {
             </div>
         </form>
     `;
-
+    const backButton = document.getElementById("backButton");
+   if (backButton) {
+       backButton.addEventListener("click", function () {
+           if (isMobile) {
+               // Nếu là thiết bị di động
+               mainContent.classList.add("hidden");
+               sidebar.classList.remove("hidden");
+           } else {
+               // Nếu không phải thiết bị di động
+               mainContent.innerHTML = originalMainContentHTML;
+           }
+       });
+   }
     // Xử lý sự kiện cho nút Hủy
     const cancelButton = document.getElementById("cancelChangePassword");
     cancelButton.addEventListener("click", function () {
