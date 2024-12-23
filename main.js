@@ -152,7 +152,7 @@ function openChangePasswordForm() {
     const cancelButton = document.getElementById("cancelChangePassword");
     cancelButton.addEventListener("click", function () {
         // Quay lại màn hình trước đó
-        const originalMainContentHTML = mainContent.innerHTML = `
+        const originalMainContentHTML = `
         ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
         <h1>Thông Tin Cá Nhân</h1>
         <form id="personalInfoForm">
@@ -193,6 +193,8 @@ function openChangePasswordForm() {
             </div>
         </form>
     `;
+        mainContent.innerHTML = originalMainContentHTML;
+    });
 
     // Xử lý sự kiện gửi form đổi mật khẩu
     const changePasswordForm = document.getElementById("changePasswordForm");
