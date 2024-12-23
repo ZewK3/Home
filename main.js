@@ -101,7 +101,19 @@ document.getElementById("openPersonalInformation").addEventListener("click", asy
             </div>
         </form>
     `;
-
+    const backButton = document.getElementById("backButton");
+    if (backButton) {
+        backButton.addEventListener("click", function () {
+            if (isMobile) {
+                // Nếu là thiết bị di động
+                mainContent.classList.add("hidden");
+                sidebar.classList.remove("hidden");
+            } else {
+                // Nếu không phải thiết bị di động
+                mainContent.innerHTML = originalMainContentHTML;
+            }
+        });
+    }
     // Xử lý sự kiện nút "Chỉnh sửa"
     document.getElementById("editInfo").addEventListener("click", () => {
         document.querySelectorAll(".personal-info-table td").forEach((cell, index) => {
@@ -269,7 +281,6 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
         showNotification("Lỗi khi kiểm tra trạng thái lịch làm! Vui lòng thử lại sau.", "error", 3000);
         return;
     }
-});
 
 // Hàm tạo danh sách giờ
 function createHourOptions(start, end, selectedValue = "") {
