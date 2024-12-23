@@ -152,28 +152,47 @@ function openChangePasswordForm() {
     const cancelButton = document.getElementById("cancelChangePassword");
     cancelButton.addEventListener("click", function () {
         // Quay lại màn hình trước đó
-        const originalMainContentHTML = `
-            <button id="backButton" class="btn">Quay lại</button>
-            <h1>Thông Tin Cá Nhân</h1>
-            <form id="personalInfoForm">
-                <table class="personal-info-table">
-                    <tbody>
-                        <tr><th>Mã Nhân Viên</th><td>${user.employeeId || "N/A"}</td></tr>
-                        <tr><th>Họ Tên</th><td>${user.fullName || "N/A"}</td></tr>
-                        <tr><th>Email</th><td>${user.email || "N/A"}</td></tr>
-                        <tr><th>Số Điện Thoại</th><td>${user.phone || "N/A"}</td></tr>
-                        <tr><th>Vị Trí</th><td>${user.position || "N/A"}</td></tr>
-                        <tr><th>Cửa Hàng</th><td>${user.storeName || "N/A"}</td></tr>
-                        <tr><th>Ngày Tham Gia</th><td>${user.joinDate || "N/A"}</td></tr>
-                    </tbody>
-                </table>
-                <div class="button-container">
-                    <button type="button" id="editPass" class="btn">Đổi Mật Khẩu</button>
-                </div>
-            </form>
-        `;
-        mainContent.innerHTML = originalMainContentHTML;
-    });
+        const originalMainContentHTML = mainContent.innerHTML = `
+        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+        <h1>Thông Tin Cá Nhân</h1>
+        <form id="personalInfoForm">
+            <table class="personal-info-table">
+                <tbody>
+                    <tr>
+                        <th>Mã Nhân Viên</th>
+                        <td>${user.employeeId || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Họ Tên</th>
+                        <td>${user.fullName || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>${user.email || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Số Điện Thoại</th>
+                        <td>${user.phone || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Vị Trí</th>
+                        <td>${user.position || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Cửa Hàng</th>
+                        <td>${user.storeName || "N/A"}</td>
+                    </tr>
+                    <tr>
+                        <th>Ngày Tham Gia</th>
+                        <td>${user.joinDate || "N/A"}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="button-container">
+                <button type="button" id="editPass" class="btn">Đổi Mật Khẩu</button>
+            </div>
+        </form>
+    `;
 
     // Xử lý sự kiện gửi form đổi mật khẩu
     const changePasswordForm = document.getElementById("changePasswordForm");
