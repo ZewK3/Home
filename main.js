@@ -36,7 +36,7 @@ document.getElementById("logout").addEventListener("click", function () {
     window.location.href = "index.html";
 });
 
-// mở giao diện xếp lịch
+// mở giao diện thông tin cá nhân
 document.getElementById("openPersonalInformation").addEventListener("click", async function (e) {
     e.preventDefault();
 
@@ -87,7 +87,7 @@ document.getElementById("openPersonalInformation").addEventListener("click", asy
                     </tr>
                     <tr>
                         <th>Cửa Hàng</th>
-                        <td>${user.store || "N/A"}</td>
+                        <td>${user.storeName || "N/A"}</td>
                     </tr>
                     <tr>
                         <th>Ngày Tham Gia</th>
@@ -96,11 +96,11 @@ document.getElementById("openPersonalInformation").addEventListener("click", asy
                 </tbody>
             </table>
             <div class="button-container">
-                <button type="button" id="editInfo" class="btn">Chỉnh sửa</button>
-                <button type="button" id="saveInfo" class="btn hidden">Lưu</button>
+                <button type="button" id="editPass" class="btn">Đổi Mật Khẩu</button>
             </div>
         </form>
     `;
+    
     const backButton = document.getElementById("backButton");
     if (backButton) {
         backButton.addEventListener("click", function () {
@@ -114,44 +114,108 @@ document.getElementById("openPersonalInformation").addEventListener("click", asy
             }
         });
     }
-    // Xử lý sự kiện nút "Chỉnh sửa"
-    document.getElementById("editInfo").addEventListener("click", () => {
-        document.querySelectorAll(".personal-info-table td").forEach((cell, index) => {
-            if (index > 0) { // Bỏ qua tiêu đề
-                const value = cell.textContent;
-                cell.innerHTML = `<input type="text" value="${value}" class="edit-input">`;
-            }
+
+    const editPassButton = document.getElementById("editPass");
+    if (editPassButton) {
+        editPassButton.addEventListener("click", function () {
+            // Mở form đổi mật khẩu
+            openChangePasswordForm();
         });
-        document.getElementById("editInfo").classList.add("hidden");
-        document.getElementById("saveInfo").classList.remove("hidden");
-    });
-
-    // Xử lý sự kiện nút "Lưu"
-    document.getElementById("saveInfo").addEventListener("click", () => {
-        const updatedInfo = {};
-        document.querySelectorAll(".personal-info-table input.edit-input").forEach((input, index) => {
-            const key = ["employeeId", "fullName", "email", "phone", "position", "store", "joinDate"][index];
-            updatedInfo[key] = input.value;
-        });
-
-        // Cập nhật giao diện sau khi lưu
-        document.querySelectorAll(".personal-info-table td").forEach((cell, index) => {
-            if (index > 0) { // Bỏ qua tiêu đề
-                const input = cell.querySelector("input");
-                if (input) {
-                    cell.textContent = input.value;
-                }
-            }
-        });
-
-        // Ẩn nút "Lưu", hiển thị lại nút "Chỉnh sửa"
-        document.getElementById("editInfo").classList.remove("hidden");
-        document.getElementById("saveInfo").classList.add("hidden");
-
-        // Gửi thông tin cập nhật tới server (nếu cần)
-        console.log("Thông tin đã cập nhật:", updatedInfo);
-    });
+    }
 });
+
+function openChangePasswordForm() {
+    const mainContent = document.querySelector(".main");
+    mainContent.innerHTML = `
+        <h1>Đổi Mật Khẩu</h1>
+        <form id="changePasswordForm">
+            <div>
+                <label for="currentPassword">Mật khẩu hiện tại:</label>
+                <input type="password" id="currentPassword" name="currentPassword" required />
+            </div>
+            <div>
+                <label for="newPassword">Mật khẩu mới:</label>
+                <input type="password" id="newPassword" name="newPassword" required />
+            </div>
+            <div>
+                <label for="confirmPassword">Xác nhận mật khẩu mới:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required />
+            </div>
+            <div class="button-container">
+                <button type="submit" class="btn">Lưu Mật Khẩu</button>
+                <button type="button" id="cancelChangePassword" class="btn">Hủy</button>
+            </div>
+        </form>
+    `;
+
+    // Xử lý sự kiện cho nút Hủy
+    const cancelButton = document.getElementById("cancelChangePassword");
+    cancelButton.addEventListener("click", function () {
+        // Quay lại màn hình trước đó
+        const originalMainContentHTML = `
+            <button id="backButton" class="btn">Quay lại</button>
+            <h1>Thông Tin Cá Nhân</h1>
+            <form id="personalInfoForm">
+                <table class="personal-info-table">
+                    <tbody>
+                        <tr><th>Mã Nhân Viên</th><td>${user.employeeId || "N/A"}</td></tr>
+                        <tr><th>Họ Tên</th><td>${user.fullName || "N/A"}</td></tr>
+                        <tr><th>Email</th><td>${user.email || "N/A"}</td></tr>
+                        <tr><th>Số Điện Thoại</th><td>${user.phone || "N/A"}</td></tr>
+                        <tr><th>Vị Trí</th><td>${user.position || "N/A"}</td></tr>
+                        <tr><th>Cửa Hàng</th><td>${user.storeName || "N/A"}</td></tr>
+                        <tr><th>Ngày Tham Gia</th><td>${user.joinDate || "N/A"}</td></tr>
+                    </tbody>
+                </table>
+                <div class="button-container">
+                    <button type="button" id="editPass" class="btn">Đổi Mật Khẩu</button>
+                </div>
+            </form>
+        `;
+        mainContent.innerHTML = originalMainContentHTML;
+    });
+
+    // Xử lý sự kiện gửi form đổi mật khẩu
+    const changePasswordForm = document.getElementById("changePasswordForm");
+    changePasswordForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const currentPassword = document.getElementById("currentPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+            showNotification("Mật khẩu xác nhận không trùng khớp", "error", 3000);
+            return;
+        }
+
+        // Gọi hàm đổi mật khẩu (có thể sử dụng API hoặc logic kiểm tra mật khẩu cũ)
+        changePassword(currentPassword, newPassword);
+    });
+}
+
+function changePassword(currentPassword, newPassword) {
+    // Logic để thay đổi mật khẩu, có thể là gọi API hoặc xử lý trực tiếp
+    // Ví dụ gọi API để thay đổi mật khẩu
+    fetch("/api/change-password", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification("Đổi mật khẩu thành công", "success", 3000);
+        } else {
+            showNotification(data.message || "Có lỗi xảy ra", "error", 3000);
+        }
+    })
+    .catch(error => {
+        showNotification("Có lỗi xảy ra, vui lòng thử lại", "error", 3000);
+    });
+}
+
 
 
 // Mở giao diện đăng ký lịch làm
