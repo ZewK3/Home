@@ -65,10 +65,11 @@ html, body {
     width: 100%;
     background-color: #ea4c4b;
     color: white;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    height: 5vh;
+    /* display: flex
+; */
+    /* flex-direction: column; */
+    padding: 10px;
+    height: 5%;
     position: fixed;
     left: 0;
     top: 0;
@@ -85,11 +86,12 @@ div#userInfo {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    height: 95vh;
+    height: 95%;
     position: fixed;
     left: 0;
-    top: 5.4vh;
+    top: 5.4%;
     z-index: 1;
+    overflow-y: auto;
 }
 /* Tiêu đề trong Sidebar */
 .sidebar h2 {
@@ -141,11 +143,11 @@ div#userInfo {
 }
 /* Main content */
 .main {
-   top: 5.4vh;
+   top: 5.4%;
     padding: 10px;
     position: fixed;
     margin-left: 20%;
-    height: 95vh;
+    height: 95%;
     overflow-y: auto;
     background: linear-gradient(to bottom, #f4f0ef, #f6f2ef);
     width: 80%;
