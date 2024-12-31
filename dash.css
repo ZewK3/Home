@@ -424,7 +424,9 @@ button:hover {
         background-color: #0056b3; /* Màu khi rê chuột */
     }
 }
-
+.snowflakes.hidden {
+    display: none;
+}
 /*Hiệu ứng tuyết rơi*/
 .snowflake {
 color: #b2e2ff;
