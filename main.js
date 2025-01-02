@@ -265,7 +265,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
             const schedule = checkResult.shifts || [];
             mainContent.innerHTML = `
                 ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
-                <h1>Lịch đã đăng ký</h1>
+                <h1>Bạn đã đăng ký Lịch Làm</h1>
                 <form id="scheduleForm">
                     <table class="schedule-table">
                         <thead>
@@ -301,7 +301,7 @@ document.getElementById("openScheduleRegistration").addEventListener("click", as
                         </tbody>
                     </table>
                     <div class="button-container">
-                        <button type="submit" class="btn">Gửi</button>
+                        <button type="submit" class="btn">Gửi Lại</button>
                     </div>
                 </form>
             `;
