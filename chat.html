@@ -117,13 +117,17 @@
             if (!message) return;
 
             try {
-                const response = await fetch(`https://tocotoco.pages.dev?action=sendMessage`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ employeeId: "123", fullName: "John Doe", message }),
-                });
+const response = await fetch('https://tocotoco.pages.dev/?action=sendMessage', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    employeeId: '123',
+    fullName: 'John Doe',
+    message: message, // Sử dụng trực tiếp biến `message`
+  }),
+});
+
+
 
                 if (response.ok) {
                     addMessage({ message, timestamp: Date.now() });
