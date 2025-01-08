@@ -111,55 +111,32 @@
             }
         });
 
-const loadMessages = async () => {
-  if (loading) return;
-  loading = true;
+        // Gửi tin nhắn
+        const sendMessage = async () => {
+            const message = messageInput.value.trim();
+            const fullName = "Le Dai Loi";
+            const employeeId = "CHMN4634";
+            if (!message) return;
 
-  try {
-    const response = await fetch(`${apiUrl}?action=getMessages&offset=${offset}&limit=${limit}`);
-    const responseText = await response.text(); // Lấy phản hồi dạng text để debug
-    console.log("Server response (GET):", responseText);
+            try {
+                const response = await fetch(`${apiUrl}?action=sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ employeeId, fullName, message }),
+                });
 
-    if (response.ok) {
-      const messages = JSON.parse(responseText);
-      messages.reverse().forEach((msg) => addMessage(msg, true));
-      offset += messages.length;
-    } else {
-      console.error("Lỗi tải tin nhắn:", responseText);
-    }
-  } catch (error) {
-    console.error("Lỗi tải tin nhắn:", error);
-  } finally {
-    loading = false;
-  }
-};
-
-const sendMessage = async () => {
-  const message = input.value.trim();
-  if (!message) return;
-
-  try {
-    const response = await fetch(`${apiUrl}?action=sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ employeeId: "123", fullName: "John Doe", message }),
-    });
-
-    const responseText = await response.text(); // Debug phản hồi
-    console.log("Server response (POST):", responseText);
-
-    if (response.ok) {
-      const result = JSON.parse(responseText);
-      console.log("Tin nhắn đã gửi:", result);
-      input.value = "";
-      loadMessages(); // Tải lại tin nhắn
-    } else {
-      console.error("Lỗi gửi tin nhắn:", responseText);
-    }
-  } catch (error) {
-    console.error("Lỗi gửi tin nhắn:", error);
-  }
-};
+                if (response.ok) {
+                    addMessage({ message, timestamp: Date.now() });
+                    messageInput.value = '';
+                } else {
+                    console.error('Lỗi gửi tin nhắn:', await response.json());
+                }
+            } catch (error) {
+                console.error('Lỗi gửi tin nhắn:', error);
+            }
+        };
 
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', (event) => {
@@ -180,6 +157,41 @@ const sendMessage = async () => {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         };
+
+// Tải tin nhắn từ máy chủ với phương thức GET
+const loadMessages = async () => {
+    if (loading) return; // Ngăn việc tải lại khi đang xử lý
+    loading = true;
+
+    try {
+        // Gọi API với phương thức GET
+        const url = new URL(apiUrl);
+        url.searchParams.append('action', 'getMessages');
+        url.searchParams.append('offset', offset);
+        url.searchParams.append('limit', limit);
+
+        const response = await fetch(url.toString(), {
+            method: 'GET', // Xác định phương thức là GET
+            headers: {
+                'Content-Type': 'application/json', // Đảm bảo header phù hợp
+            },
+        });
+
+        if (response.ok) {
+            // Phân tích dữ liệu trả về và thêm tin nhắn vào khung chat
+            const messages = await response.json();
+            messages.reverse().forEach((msg) => addMessage(msg, true)); // Đảo ngược tin nhắn
+            offset += messages.length; // Cập nhật offset để tải tiếp lần sau
+        } else {
+            console.error('Lỗi tải tin nhắn:', await response.json());
+        }
+    } catch (error) {
+        console.error('Lỗi tải tin nhắn:', error);
+    } finally {
+        loading = false; // Đặt lại trạng thái tải
+    }
+};
+
 
         // Xử lý cuộn lên để tải thêm tin nhắn
         chatMessages.addEventListener('scroll', () => {
