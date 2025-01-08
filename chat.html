@@ -111,7 +111,7 @@
             }
         });
 
-        const loadMessages = async () => {
+const loadMessages = async () => {
   if (loading) return;
   loading = true;
 
@@ -160,7 +160,6 @@ const sendMessage = async () => {
     console.error("Lỗi gửi tin nhắn:", error);
   }
 };
-
 
         sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keydown', (event) => {
