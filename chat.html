@@ -117,7 +117,7 @@
             if (!message) return;
 
             try {
-                const response = await fetch(`${apiUrl}?action=sendMessage`, {
+                const response = await fetch(`https://tocotoco.pages.dev?action=sendMessage`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -163,12 +163,11 @@ const loadMessages = async () => {
 
     try {
         // Gọi API với phương thức GET
-        const url = new URL(apiUrl);
         url.searchParams.append('action', 'getMessages');
         url.searchParams.append('offset', offset);
         url.searchParams.append('limit', limit);
 
-        const response = await fetch(url.toString(), {
+        const response = await fetch(`https://tocotoco.pages.dev?action=getMessages&offset=${offset}&limit=${limit}`, {
             method: 'GET', // Xác định phương thức là GET
             headers: {
                 'Content-Type': 'application/json', // Đảm bảo header phù hợp
