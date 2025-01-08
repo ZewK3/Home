@@ -114,6 +114,8 @@
         // Gửi tin nhắn
         const sendMessage = async () => {
             const message = messageInput.value.trim();
+            const fullName = "Le Dai Loi";
+            const employeeId = "CHMN4634";
             if (!message) return;
 
             try {
@@ -122,7 +124,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message }),
+                    body: JSON.stringify({ employeeId, fullName, message }),
                 });
 
                 if (response.ok) {
