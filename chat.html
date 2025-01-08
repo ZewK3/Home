@@ -9,7 +9,6 @@
             font-family: Arial, sans-serif;
         }
 
-        /* Nút mở popup */
         #openChatButton {
             position: fixed;
             bottom: 20px;
@@ -28,7 +27,6 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        /* Popup */
         #chatPopup {
             position: fixed;
             bottom: 90px;
@@ -80,10 +78,8 @@
     </style>
 </head>
 <body>
-    <!-- Nút mở popup -->
     <button id="openChatButton">💬</button>
 
-    <!-- Popup chat -->
     <div id="chatPopup">
         <div id="chatHeader">Chat Room</div>
         <div id="chatMessages"></div>
@@ -100,34 +96,43 @@
         const chatMessages = document.getElementById('chatMessages');
         const sendButton = document.getElementById('sendButton');
 
-        // Kết nối WebSocket
-        const socket = new WebSocket('wss://chat-room.tocotoco.workers.dev');
+        const apiUrl = 'https://chat-room.tocotoco.workers.dev/'; // Thay bằng URL API của bạn
+        let offset = 0;
+        const limit = 50;
+        let loading = false;
 
-        socket.onopen = () => {
-            console.log('Đã kết nối với WebSocket');
-        };
-
-        socket.onmessage = (event) => {
-            const messageElement = document.createElement('p');
-            messageElement.textContent = event.data;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        };
-
-        socket.onerror = (error) => {
-            console.error('Lỗi WebSocket:', error);
-        };
-
-        socket.onclose = () => {
-            console.log('WebSocket đã đóng.');
-        };
+        // Mở và đóng popup
+        openChatButton.addEventListener('click', () => {
+            if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
+                chatPopup.style.display = 'flex';
+                loadMessages();
+            } else {
+                chatPopup.style.display = 'none';
+            }
+        });
 
         // Gửi tin nhắn
-        const sendMessage = () => {
+        const sendMessage = async () => {
             const message = messageInput.value.trim();
-            if (message) {
-                socket.send(message);
-                messageInput.value = '';
+            if (!message) return;
+
+            try {
+                const response = await fetch(`${apiUrl}?action=sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message }),
+                });
+
+                if (response.ok) {
+                    addMessage({ message, timestamp: Date.now() });
+                    messageInput.value = '';
+                } else {
+                    console.error('Lỗi gửi tin nhắn:', await response.json());
+                }
+            } catch (error) {
+                console.error('Lỗi gửi tin nhắn:', error);
             }
         };
 
@@ -138,15 +143,46 @@
             }
         });
 
-        // Mở và đóng popup
-        openChatButton.addEventListener('click', () => {
-            if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
-                chatPopup.style.display = 'flex';
+        // Hiển thị tin nhắn trong khung chat
+        const addMessage = (msg, prepend = false) => {
+            const messageElement = document.createElement('p');
+            const timestamp = new Date(msg.timestamp).toLocaleString();
+            messageElement.textContent = `[${timestamp}] ${msg.message}`;
+            if (prepend) {
+                chatMessages.prepend(messageElement);
             } else {
-                chatPopup.style.display = 'none';
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        };
+
+        // Tải tin nhắn từ máy chủ
+        const loadMessages = async () => {
+            if (loading) return;
+            loading = true;
+
+            try {
+                const response = await fetch(`${apiUrl}?action=getMessages&offset=${offset}&limit=${limit}`);
+                if (response.ok) {
+                    const messages = await response.json();
+                    messages.reverse().forEach((msg) => addMessage(msg, true));
+                    offset += messages.length;
+                } else {
+                    console.error('Lỗi tải tin nhắn:', await response.json());
+                }
+            } catch (error) {
+                console.error('Lỗi tải tin nhắn:', error);
+            } finally {
+                loading = false;
+            }
+        };
+
+        // Xử lý cuộn lên để tải thêm tin nhắn
+        chatMessages.addEventListener('scroll', () => {
+            if (chatMessages.scrollTop === 0 && !loading) {
+                loadMessages();
             }
         });
     </script>
 </body>
 </html>
-
