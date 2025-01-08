@@ -115,16 +115,14 @@
         const sendMessage = async () => {
             const message = messageInput.value.trim();
             if (!message) return;
-
+             const employeeId = "CHMN4634";
+            const fullName = "Le Dai Loi";
+            const data = {employeeId,fullName,message};
             try {
-const response = await fetch('https://tocotoco.pages.dev/?action=sendMessage', {
+const response = await fetch('https://tocotoco.pages.dev?action=sendMessage', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    employeeId: '123',
-    fullName: 'John Doe',
-    message: message, // Sử dụng trực tiếp biến `message`
-  }),
+  body: JSON.stringify(data),
 });
 
             } catch (error) {
