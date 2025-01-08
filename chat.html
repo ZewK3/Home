@@ -156,26 +156,40 @@
             }
         };
 
-        // Tải tin nhắn từ máy chủ
-        const loadMessages = async () => {
-            if (loading) return;
-            loading = true;
+// Tải tin nhắn từ máy chủ với phương thức GET
+const loadMessages = async () => {
+    if (loading) return; // Ngăn việc tải lại khi đang xử lý
+    loading = true;
 
-            try {
-                const response = await fetch(`${apiUrl}?action=getMessages&offset=${offset}&limit=${limit}`);
-                if (response.ok) {
-                    const messages = await response.json();
-                    messages.reverse().forEach((msg) => addMessage(msg, true));
-                    offset += messages.length;
-                } else {
-                    console.error('Lỗi tải tin nhắn:', await response.json());
-                }
-            } catch (error) {
-                console.error('Lỗi tải tin nhắn:', error);
-            } finally {
-                loading = false;
-            }
-        };
+    try {
+        // Gọi API với phương thức GET
+        const url = new URL(apiUrl);
+        url.searchParams.append('action', 'getMessages');
+        url.searchParams.append('offset', offset);
+        url.searchParams.append('limit', limit);
+
+        const response = await fetch(url.toString(), {
+            method: 'GET', // Xác định phương thức là GET
+            headers: {
+                'Content-Type': 'application/json', // Đảm bảo header phù hợp
+            },
+        });
+
+        if (response.ok) {
+            // Phân tích dữ liệu trả về và thêm tin nhắn vào khung chat
+            const messages = await response.json();
+            messages.reverse().forEach((msg) => addMessage(msg, true)); // Đảo ngược tin nhắn
+            offset += messages.length; // Cập nhật offset để tải tiếp lần sau
+        } else {
+            console.error('Lỗi tải tin nhắn:', await response.json());
+        }
+    } catch (error) {
+        console.error('Lỗi tải tin nhắn:', error);
+    } finally {
+        loading = false; // Đặt lại trạng thái tải
+    }
+};
+
 
         // Xử lý cuộn lên để tải thêm tin nhắn
         chatMessages.addEventListener('scroll', () => {
