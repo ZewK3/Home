@@ -167,9 +167,7 @@ const loadMessages = async () => {
 
         if (response.ok) {
             // Phân tích dữ liệu trả về và thêm tin nhắn vào khung chat
-            const messages = await response.json();
-            messages.reverse().forEach((msg) => addMessage(msg, true)); // Đảo ngược tin nhắn
-            offset += messages.length; // Cập nhật offset để tải tiếp lần sau
+            
         } else {
             console.error('Lỗi tải tin nhắn:', await response.json());
         }
