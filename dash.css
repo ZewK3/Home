@@ -12,7 +12,101 @@ html, body {
     background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
+/* Nút mở chat */
+        #openChatButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366; /* Màu giống Messenger */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
+        /* Popup chat */
+        #chatPopup {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header của chat */
+        #chatHeader {
+            background-color: #25d366; /* Màu xanh giống Messenger */
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        /* Khung tin nhắn */
+        #chatMessages {
+            font-size: 14px;
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-top: 1px solid #ddd;
+        }
+
+        #chatMessages p {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        /* Tin nhắn của người dùng */
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-radius: 8px;
+        }
+
+        /* Tin nhắn của bot */
+        .bot-message {
+            background-color: #ffffff;
+            align-self: flex-start;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        /* Khung nhập tin nhắn */
+        #chatInput {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            outline: none;
+        }
+
+        #sendButton {
+            background-color: #25d366;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
 #backButton.hidden {
     display: none;
 }
