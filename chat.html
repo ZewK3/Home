@@ -50,6 +50,7 @@
         }
 
         #chatMessages {
+            font-size: 12px;
             flex: 1;
             padding: 10px;
             overflow-y: auto;
@@ -152,7 +153,7 @@ const addMessage = (msg, prepend = false) => {
     const messageElement = document.createElement('p');
 
     // Xử lý thông tin từ dữ liệu trả về
-    const sender = `from ${msg.employeeId}-${msg.fullName}`;
+    const sender = `${msg.employeeId}-${msg.fullName}`;
     const messageContent = msg.message;
 
     // Hiển thị tin nhắn với định dạng yêu cầu
@@ -168,44 +169,44 @@ const addMessage = (msg, prepend = false) => {
 
 
 // Tải tin nhắn từ máy chủ với phương thức GET
-const loadMessages = async () => {
-    if (loading) return; // Ngăn việc tải lại khi đang xử lý
-    loading = true;
+// const loadMessages = async () => {
+//     if (loading) return; // Ngăn việc tải lại khi đang xử lý
+//     loading = true;
 
-    try {
-        // Gọi API với phương thức GET
-        const url = new URL(apiUrl);
-        url.searchParams.append('action', 'getMessages');
-        url.searchParams.append('offset', offset);
-        url.searchParams.append('limit', limit);
+//     try {
+//         // Gọi API với phương thức GET
+//         const url = new URL(apiUrl);
+//         url.searchParams.append('action', 'getMessages');
+//         url.searchParams.append('offset', offset);
+//         url.searchParams.append('limit', limit);
 
-        const response = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+//         const response = await fetch(url.toString(), {
+//             method: 'GET',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
 
-        if (response.ok) {
-            // Phân tích dữ liệu trả về
-            const messages = await response.json();
+//         if (response.ok) {
+//             // Phân tích dữ liệu trả về
+//             const messages = await response.json();
 
-            // Sắp xếp tin nhắn theo id tăng dần
-            messages.sort((a, b) => a.id - b.id);
+//             // Sắp xếp tin nhắn theo id tăng dần
+//             messages.sort((a, b) => a.id - b.id);
 
-            // Thêm từng tin nhắn vào khung chat
-            messages.forEach((msg) => addMessage(msg, true));
+//             // Thêm từng tin nhắn vào khung chat
+//             messages.forEach((msg) => addMessage(msg, true));
 
-            offset += messages.length; // Cập nhật offset
-        } else {
-            console.error('Lỗi tải tin nhắn:', await response.json());
-        }
-    } catch (error) {
-        console.error('Lỗi tải tin nhắn:', error);
-    } finally {
-        loading = false; // Đặt lại trạng thái tải
-    }
-};
+//             offset += messages.length; // Cập nhật offset
+//         } else {
+//             console.error('Lỗi tải tin nhắn:', await response.json());
+//         }
+//     } catch (error) {
+//         console.error('Lỗi tải tin nhắn:', error);
+//     } finally {
+//         loading = false; // Đặt lại trạng thái tải
+//     }
+// };
 
 
     // Tự động tải tin nhắn mới mỗi 5 giây
