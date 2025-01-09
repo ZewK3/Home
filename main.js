@@ -681,23 +681,31 @@ document.addEventListener('contextmenu', function(e) {
         });
 
         // Hiển thị tin nhắn trong khung chat
-        const addMessage = (msg, prepend = false) => {
-            const messageElement = document.createElement('p');
-            const sender = `${msg.employeeId}-${msg.fullName}`;
-            const messageContent = msg.message;
+const addMessage = (msg, prepend = false) => {
+    const messageElement = document.createElement('p');
+    const messageContent = msg.message;
 
-            messageElement.textContent = `${sender}: ${messageContent}`;
+    // Kiểm tra xem tin nhắn có phải của người dùng hay không
+    if (msg.employeeId === user.employeeId) {
+        // Nếu là người dùng, chỉ hiển thị nội dung tin nhắn
+        messageElement.textContent = messageContent;
+        messageElement.classList.add('user-message');
+    } else {
+        // Nếu là người khác, hiển thị tên người gửi cùng nội dung tin nhắn
+        const sender = `${msg.employeeId}-${msg.fullName}`;
+        messageElement.textContent = `${sender}: ${messageContent}`;
+        messageElement.classList.add('bot-message');
+    }
 
-            // Gán class cho tin nhắn của người dùng hoặc bot
-            messageElement.classList.add(msg.employeeId === user.employeeId ? 'user-message' : 'bot-message');
-            
-            if (prepend) {
-                chatMessages.prepend(messageElement); // Thêm tin nhắn lên đầu
-            } else {
-                chatMessages.appendChild(messageElement); // Thêm tin nhắn xuống cuối
-                chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
-            }
-        };
+    // Thêm tin nhắn vào khung chat
+    if (prepend) {
+        chatMessages.prepend(messageElement); // Thêm tin nhắn lên đầu
+    } else {
+        chatMessages.appendChild(messageElement); // Thêm tin nhắn xuống cuối
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
+    }
+};
+
 
         // Tải tin nhắn từ máy chủ
         const loadMessages = async () => {
