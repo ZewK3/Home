@@ -7,19 +7,23 @@
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
         }
 
+        /* Nút mở chat */
         #openChatButton {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #007bff;
+            background-color: #25d366; /* Màu giống Messenger */
             color: white;
             border: none;
             border-radius: 50%;
             width: 60px;
             height: 60px;
-            font-size: 24px;
+            font-size: 30px;
             cursor: pointer;
             display: flex;
             justify-content: center;
@@ -27,6 +31,7 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
 
+        /* Popup chat */
         #chatPopup {
             position: fixed;
             bottom: 90px;
@@ -41,22 +46,48 @@
             overflow: hidden;
         }
 
+        /* Header của chat */
         #chatHeader {
-            background-color: #007bff;
+            background-color: #25d366; /* Màu xanh giống Messenger */
             color: white;
             padding: 10px;
             text-align: center;
             font-size: 18px;
         }
 
+        /* Khung tin nhắn */
         #chatMessages {
-            font-size: 12px;
+            font-size: 14px;
             flex: 1;
             padding: 10px;
             overflow-y: auto;
             border-top: 1px solid #ddd;
         }
 
+        #chatMessages p {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        /* Tin nhắn của người dùng */
+        .user-message {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-radius: 8px;
+        }
+
+        /* Tin nhắn của bot */
+        .bot-message {
+            background-color: #ffffff;
+            align-self: flex-start;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        /* Khung nhập tin nhắn */
         #chatInput {
             display: flex;
             border-top: 1px solid #ddd;
@@ -70,7 +101,7 @@
         }
 
         #sendButton {
-            background-color: #007bff;
+            background-color: #25d366;
             color: white;
             border: none;
             padding: 10px;
@@ -79,168 +110,160 @@
     </style>
 </head>
 <body>
-    <button id="openChatButton">💬</button>
+    <div id="openChatButton">
+        <span>💬</span> <!-- Biểu tượng nút chat -->
+    </div>
 
     <div id="chatPopup">
-        <div id="chatHeader">Chat Room</div>
-        <div id="chatMessages"></div>
+        <div id="chatHeader">
+            Chat with Support
+        </div>
+
+        <div id="chatMessages">
+            <!-- Các tin nhắn sẽ được chèn vào đây -->
+        </div>
+
         <div id="chatInput">
-            <input type="text" id="messageInput" placeholder="Nhập tin nhắn...">
-            <button id="sendButton">Gửi</button>
+            <input id="messageInput" type="text" placeholder="Type a message..." />
+            <button id="sendButton">Send</button>
         </div>
     </div>
 
-   <script>
-    const openChatButton = document.getElementById('openChatButton');
-    const chatPopup = document.getElementById('chatPopup');
-    const messageInput = document.getElementById('messageInput');
-    const chatMessages = document.getElementById('chatMessages');
-    const sendButton = document.getElementById('sendButton');
+    <script>
+        const openChatButton = document.getElementById('openChatButton');
+        const chatPopup = document.getElementById('chatPopup');
+        const messageInput = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        const sendButton = document.getElementById('sendButton');
 
-    const apiUrl = 'https://zewk.tocotoco.workers.dev/';
-    let offset = 0;
-    const limit = 50;
-    let lastTimestamp = 0; // Lưu timestamp của tin nhắn mới nhất
-    let loading = false;
+        const apiUrl = 'https://zewk.tocotoco.workers.dev/';
+        let offset = 0;
+        const limit = 50;
+        let lastTimestamp = 0; // Lưu timestamp của tin nhắn mới nhất
+        let loading = false;
 
-    // Mở và đóng popup
-    openChatButton.addEventListener('click', () => {
-        if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
-            chatPopup.style.display = 'flex';
-            loadMessages(); // Tải tin nhắn khi mở popup
-        } else {
-            chatPopup.style.display = 'none';
-        }
-    });
-
-    // Gửi tin nhắn
-    const sendMessage = async () => {
-        const message = messageInput.value.trim();
-        const fullName = "Le Dai Loi";
-        const employeeId = "CHMN4634";
-        if (!message) return;
-
-        try {
-            const response = await fetch(`${apiUrl}?action=sendMessage`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ employeeId, fullName, message }),
-            });
-
-            if (response.ok) {
-                const newMessage = { message, timestamp: Date.now() };
-                addMessage(newMessage);
-                messageInput.value = '';
+        // Mở và đóng popup
+        openChatButton.addEventListener('click', () => {
+            if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
+                chatPopup.style.display = 'flex';
+                loadMessages(); // Tải tin nhắn khi mở popup
             } else {
-                console.error('Lỗi gửi tin nhắn:', await response.json());
+                chatPopup.style.display = 'none';
             }
-        } catch (error) {
-            console.error('Lỗi gửi tin nhắn:', error);
-        }
-    };
+        });
 
-    sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
-    });
+        // Gửi tin nhắn
+        const sendMessage = async () => {
+            const message = messageInput.value.trim();
+            const fullName = "Le Dai Loi";
+            const employeeId = "CHMN4634";
+            if (!message) return;
 
-   // Hiển thị tin nhắn trong khung chat
-const addMessage = (msg, prepend = false) => {
-    const messageElement = document.createElement('p');
-
-    // Xử lý thông tin từ dữ liệu trả về
-    const sender = `${msg.employeeId}-${msg.fullName}`;
-    const messageContent = msg.message;
-
-    // Hiển thị tin nhắn với định dạng yêu cầu
-    messageElement.textContent = `${sender}: ${messageContent}`;
-    
-    if (prepend) {
-        chatMessages.prepend(messageElement); // Thêm tin nhắn lên đầu
-    } else {
-        chatMessages.appendChild(messageElement); // Thêm tin nhắn xuống cuối
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
-    }
-};
-
-
-// Tải tin nhắn từ máy chủ với phương thức GET
-// const loadMessages = async () => {
-//     if (loading) return; // Ngăn việc tải lại khi đang xử lý
-//     loading = true;
-
-//     try {
-//         // Gọi API với phương thức GET
-//         const url = new URL(apiUrl);
-//         url.searchParams.append('action', 'getMessages');
-//         url.searchParams.append('offset', offset);
-//         url.searchParams.append('limit', limit);
-
-//         const response = await fetch(url.toString(), {
-//             method: 'GET',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//         });
-
-//         if (response.ok) {
-//             // Phân tích dữ liệu trả về
-//             const messages = await response.json();
-
-//             // Sắp xếp tin nhắn theo id tăng dần
-//             messages.sort((a, b) => a.id - b.id);
-
-//             // Thêm từng tin nhắn vào khung chat
-//             messages.forEach((msg) => addMessage(msg, true));
-
-//             offset += messages.length; // Cập nhật offset
-//         } else {
-//             console.error('Lỗi tải tin nhắn:', await response.json());
-//         }
-//     } catch (error) {
-//         console.error('Lỗi tải tin nhắn:', error);
-//     } finally {
-//         loading = false; // Đặt lại trạng thái tải
-//     }
-// };
-
-
-    // Tự động tải tin nhắn mới mỗi 5 giây
-    setInterval(async () => {
-        try {
-            const url = new URL(apiUrl);
-            url.searchParams.append('action', 'getMessages');
-            url.searchParams.append('lastTimestamp', lastTimestamp); // Chỉ lấy tin nhắn mới hơn
-
-            const response = await fetch(url.toString(), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                const newMessages = await response.json();
-                newMessages.forEach((msg) => {
-                    addMessage(msg);
-                    lastTimestamp = Math.max(lastTimestamp, msg.timestamp); // Cập nhật timestamp mới nhất
+            try {
+                const response = await fetch(`${apiUrl}?action=sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ employeeId, fullName, message }),
                 });
-            }
-        } catch (error) {
-            console.error('Lỗi tải tin nhắn mới:', error);
-        }
-    }, 5000); // 5000ms = 5 giây
 
-    // Xử lý cuộn lên để tải thêm tin nhắn
-    chatMessages.addEventListener('scroll', () => {
-        if (chatMessages.scrollTop === 0 && !loading) {
-            loadMessages();
-        }
-    });
-</script>
+                if (response.ok) {
+                    const newMessage = { employeeId, fullName, message, timestamp: Date.now() };
+                    addMessage(newMessage); // Thêm tin nhắn vào khung chat
+                    messageInput.value = '';
+                } else {
+                    console.error('Lỗi gửi tin nhắn:', await response.json());
+                }
+            } catch (error) {
+                console.error('Lỗi gửi tin nhắn:', error);
+            }
+        };
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Hiển thị tin nhắn trong khung chat
+        const addMessage = (msg, prepend = false) => {
+            const messageElement = document.createElement('p');
+            const sender = `${msg.employeeId}-${msg.fullName}`;
+            const messageContent = msg.message;
+
+            messageElement.textContent = `${sender}: ${messageContent}`;
+
+            // Gán class cho tin nhắn của người dùng hoặc bot
+            messageElement.classList.add(msg.employeeId === 'CHMN4634' ? 'user-message' : 'bot-message');
+            
+            if (prepend) {
+                chatMessages.prepend(messageElement); // Thêm tin nhắn lên đầu
+            } else {
+                chatMessages.appendChild(messageElement); // Thêm tin nhắn xuống cuối
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
+            }
+        };
+
+        // Tải tin nhắn từ máy chủ
+        const loadMessages = async () => {
+            if (loading) return; // Ngăn việc tải lại khi đang xử lý
+            loading = true;
+
+            try {
+                const url = new URL(apiUrl);
+                url.searchParams.append('action', 'getMessages');
+                url.searchParams.append('offset', offset);
+                url.searchParams.append('limit', limit);
+
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const messages = await response.json();
+                    messages.forEach((msg) => addMessage(msg, true)); // Thêm tin nhắn mới lên đầu
+
+                    offset += messages.length; // Cập nhật offset
+                } else {
+                    console.error('Lỗi tải tin nhắn:', await response.json());
+                }
+            } catch (error) {
+                console.error('Lỗi tải tin nhắn:', error);
+            } finally {
+                loading = false; // Đặt lại trạng thái tải
+            }
+        };
+
+        // Tự động tải tin nhắn mới mỗi 5 giây
+        setInterval(async () => {
+            try {
+                const url = new URL(apiUrl);
+                url.searchParams.append('action', 'getMessages');
+                url.searchParams.append('lastTimestamp', lastTimestamp); // Chỉ lấy tin nhắn mới hơn
+
+                const response = await fetch(url.toString(), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const newMessages = await response.json();
+                    newMessages.forEach((msg) => {
+                        addMessage(msg);
+                        lastTimestamp = Math.max(lastTimestamp, msg.timestamp); // Cập nhật timestamp mới nhất
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi tải tin nhắn mới:', error);
+            }
+        }, 5000); // 5000ms = 5 giây
+    </script>
 </body>
 </html>
