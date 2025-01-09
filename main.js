@@ -21,7 +21,6 @@ if (loggedInUser) {
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
             menuList.style.display = 'block';     
-            loadMessages(); 
         } else {
             showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
         }
@@ -662,8 +661,6 @@ document.addEventListener('contextmenu', function(e) {
                 });
 
                 if (response.ok) {
-                    const newMessage = { employeeId, fullName, message, timestamp: Date.now() };
-                    addMessage(newMessage); // Thêm tin nhắn vào khung chat
                     messageInput.value = '';
                 } else {
                     console.error('Lỗi gửi tin nhắn:', await response.json());
