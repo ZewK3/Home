@@ -68,7 +68,7 @@ html, body {
         }
 
         #chatMessages p {
-            margin-bottom: 5px 0;
+            margin-bottom: 5px;
             padding: 8px;
             border-radius: 8px;
             max-width: 80%;
