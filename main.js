@@ -680,29 +680,41 @@ document.addEventListener('contextmenu', function(e) {
 
         // Hiển thị tin nhắn trong khung chat
 const addMessage = (msg, prepend = false) => {
-    const messageElement = document.createElement('p');
-    const messageContent = msg.message;
+    const messageWrapper = document.createElement('div');
+    messageWrapper.classList.add('message-wrapper');
 
-    // Kiểm tra xem tin nhắn có phải của người dùng hay không
-    if (msg.employeeId === user.employeeId) {
-        // Nếu là người dùng, chỉ hiển thị nội dung tin nhắn
-        messageElement.textContent = messageContent;
-        messageElement.classList.add('user-message');
-    } else {
-        // Nếu là người khác, hiển thị tên người gửi cùng nội dung tin nhắn
-        const sender = `${msg.employeeId}-${msg.fullName}`;
-        messageElement.textContent = `${sender}: ${messageContent}`;
-        messageElement.classList.add('bot-message');
+    // Phần tử chứa họ tên (chỉ hiển thị nếu không phải người dùng)
+    if (msg.employeeId !== user.employeeId) {
+        const senderElement = document.createElement('p');
+        senderElement.textContent = `${msg.employeeId}-${msg.fullName}`;
+        senderElement.classList.add('message-sender');
+        messageWrapper.appendChild(senderElement);
     }
+
+    // Phần tử chứa nội dung tin nhắn
+    const messageContentElement = document.createElement('p');
+    messageContentElement.textContent = msg.message;
+    messageContentElement.classList.add(
+        msg.employeeId === user.employeeId ? 'user-message' : 'bot-message'
+    );
+    messageWrapper.appendChild(messageContentElement);
+
+    // Phần tử chứa thời gian tin nhắn
+    const timeElement = document.createElement('p');
+    const time = new Date(msg.time).toLocaleString(); // Sử dụng msg.time
+    timeElement.textContent = time;
+    timeElement.classList.add('message-time');
+    messageWrapper.appendChild(timeElement);
 
     // Thêm tin nhắn vào khung chat
     if (prepend) {
-        chatMessages.prepend(messageElement); // Thêm tin nhắn lên đầu
+        chatMessages.prepend(messageWrapper); // Thêm tin nhắn lên đầu
     } else {
-        chatMessages.appendChild(messageElement); // Thêm tin nhắn xuống cuối
+        chatMessages.appendChild(messageWrapper); // Thêm tin nhắn xuống cuối
         chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
     }
 };
+
 
 
         // Tải tin nhắn từ máy chủ
