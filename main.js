@@ -741,27 +741,30 @@ const addMessage = (msg, prepend = false) => {
         };
 
         // Tự động tải tin nhắn mới mỗi 5 giây
-        setInterval(async () => {
-            try {
-                const url = new URL(apiUrl);
-                url.searchParams.append('action', 'getMessages');
-                url.searchParams.append('lastTimestamp', lastTimestamp); // Chỉ lấy tin nhắn mới hơn
+let lastId = 0; // Lưu ID của tin nhắn mới nhất
 
-                const response = await fetch(url.toString(), {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
+setInterval(async () => {
+    try {
+        const url = new URL(apiUrl);
+        url.searchParams.append('action', 'getMessages');
+        url.searchParams.append('lastId', lastId); // Chỉ lấy tin nhắn mới hơn
 
-                if (response.ok) {
-                    const newMessages = await response.json();
-                    newMessages.forEach((msg) => {
-                        addMessage(msg);
-                        lastTimestamp = Math.max(lastTimestamp, msg.timestamp); // Cập nhật timestamp mới nhất
-                    });
-                }
-            } catch (error) {
-                console.error('Lỗi tải tin nhắn mới:', error);
-            }
-        }, 5000); // 5000ms = 5 giây
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            const newMessages = await response.json();
+            newMessages.forEach((msg) => {
+                addMessage(msg);
+                lastId = Math.max(lastId, msg.id); // Cập nhật ID mới nhất
+            });
+        }
+    } catch (error) {
+        console.error('Lỗi tải tin nhắn mới:', error);
+    }
+}, 5000); // 5000ms = 5 giây
+
