@@ -17,11 +17,11 @@ if (loggedInUser) {
         });
         if (response.ok) {
             user = await response.json();  // Lưu dữ liệu trả về vào biến user
-            loadMessages(); 
             // Hiển thị thông tin người dùng
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
-            menuList.style.display = 'block';       
+            menuList.style.display = 'block';     
+            loadMessages(); 
         } else {
             showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
         }
