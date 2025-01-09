@@ -75,14 +75,18 @@ html, body {
         }
 
         /* Tin nhắn của người dùng */
-        .user-message {
-            background-color: #dcf8c6;
-            align-self: flex-end;
-            border-radius: 8px;
-        }
+.user-message {
+    text-align: left;
+    margin-left: auto;
+    background-color: #dcf8c6;
+    /* align-self: flex-end; */
+    border-radius: 8px;
+}
 
         /* Tin nhắn của bot */
         .bot-message {
+	    text-align: left;
+            margin-right: auto;
             background-color: #ffffff;
             align-self: flex-start;
             border: 1px solid #ddd;
