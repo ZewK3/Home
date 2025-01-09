@@ -147,18 +147,25 @@
         }
     });
 
-    // Hiển thị tin nhắn trong khung chat
-    const addMessage = (msg, prepend = false) => {
-        const messageElement = document.createElement('p');
-        const timestamp = new Date(msg.timestamp).toLocaleString();
-        messageElement.textContent = `[${timestamp}] ${msg.message}`;
-        if (prepend) {
-            chatMessages.prepend(messageElement);
-        } else {
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    };
+   // Hiển thị tin nhắn trong khung chat
+const addMessage = (msg, prepend = false) => {
+    const messageElement = document.createElement('p');
+
+    // Xử lý thông tin từ dữ liệu trả về
+    const sender = `from ${msg.employeeId}-${msg.fullName}`;
+    const messageContent = msg.message;
+
+    // Hiển thị tin nhắn với định dạng yêu cầu
+    messageElement.textContent = `${sender}: ${messageContent}`;
+    
+    if (prepend) {
+        chatMessages.prepend(messageElement); // Thêm tin nhắn lên đầu
+    } else {
+        chatMessages.appendChild(messageElement); // Thêm tin nhắn xuống cuối
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
+    }
+};
+
 
     // Tải tin nhắn từ máy chủ
     const loadMessages = async () => {
