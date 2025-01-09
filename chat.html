@@ -167,45 +167,46 @@ const addMessage = (msg, prepend = false) => {
 };
 
 
-    // Tải tin nhắn từ máy chủ
-    const loadMessages = async () => {
-        if (loading) return; // Ngăn việc tải lại khi đang xử lý
-        loading = true;
+// Tải tin nhắn từ máy chủ với phương thức GET
+const loadMessages = async () => {
+    if (loading) return; // Ngăn việc tải lại khi đang xử lý
+    loading = true;
 
-        try {
-            const url = new URL(apiUrl);
-            url.searchParams.append('action', 'getMessages');
-            url.searchParams.append('offset', offset);
-            url.searchParams.append('limit', limit);
+    try {
+        // Gọi API với phương thức GET
+        const url = new URL(apiUrl);
+        url.searchParams.append('action', 'getMessages');
+        url.searchParams.append('offset', offset);
+        url.searchParams.append('limit', limit);
 
-            const response = await fetch(url.toString(), {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-            if (response.ok) {
-                const messages = await response.json();
+        if (response.ok) {
+            // Phân tích dữ liệu trả về
+            const messages = await response.json();
 
-                if (messages.length > 0) {
-                    messages.reverse().forEach((msg) => {
-                        addMessage(msg, true);
-                        lastTimestamp = Math.max(lastTimestamp, msg.timestamp); // Cập nhật timestamp mới nhất
-                    });
-                    offset += messages.length; // Cập nhật offset
-                } else {
-                    console.log("Không còn tin nhắn nào để tải.");
-                }
-            } else {
-                console.error('Lỗi tải tin nhắn:', await response.json());
-            }
-        } catch (error) {
-            console.error('Lỗi tải tin nhắn:', error);
-        } finally {
-            loading = false; // Đặt lại trạng thái tải
+            // Sắp xếp tin nhắn theo id tăng dần
+            messages.sort((a, b) => a.id - b.id);
+
+            // Thêm từng tin nhắn vào khung chat
+            messages.forEach((msg) => addMessage(msg, true));
+
+            offset += messages.length; // Cập nhật offset
+        } else {
+            console.error('Lỗi tải tin nhắn:', await response.json());
         }
-    };
+    } catch (error) {
+        console.error('Lỗi tải tin nhắn:', error);
+    } finally {
+        loading = false; // Đặt lại trạng thái tải
+    }
+};
+
 
     // Tự động tải tin nhắn mới mỗi 5 giây
     setInterval(async () => {
