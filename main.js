@@ -21,13 +21,13 @@ if (loggedInUser) {
             document.getElementById("userInfo").innerText = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
             menuList.style.display = 'block';     
+            loadMessages(); 
         } else {
             showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
         }
     } catch (error) {
         showNotification("Lỗi khi gửi yêu cầu", "error", 3000);
     }
-    loadMessages(); 
 } else {
     window.location.href = "index.html";
 }
