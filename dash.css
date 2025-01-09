@@ -74,7 +74,22 @@ html, body {
             max-width: 80%;
             word-wrap: break-word;
         }
+.message-wrapper {
+    margin-bottom: 10px;
+}
 
+.message-sender {
+    font-weight: bold;
+    color: #555;
+    margin: 0;
+    font-size: 12px;
+}
+.message-time {
+    font-size: 10px;
+    color: #999;
+    margin: 0;
+    text-align: right;
+}
         /* Tin nhắn của người dùng */
 .user-message {
     text-align: left;
