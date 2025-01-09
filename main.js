@@ -762,7 +762,7 @@ setInterval(async () => {
             });
         }
     } catch (error) {
-        console.error('Lỗi tải tin nhắn mới:', error);
+        
     }
 }, 5000); // 5000ms = 5 giây
 
