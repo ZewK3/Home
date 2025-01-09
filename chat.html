@@ -89,116 +89,149 @@
         </div>
     </div>
 
-    <script>
-        const openChatButton = document.getElementById('openChatButton');
-        const chatPopup = document.getElementById('chatPopup');
-        const messageInput = document.getElementById('messageInput');
-        const chatMessages = document.getElementById('chatMessages');
-        const sendButton = document.getElementById('sendButton');
+   <script>
+    const openChatButton = document.getElementById('openChatButton');
+    const chatPopup = document.getElementById('chatPopup');
+    const messageInput = document.getElementById('messageInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const sendButton = document.getElementById('sendButton');
 
-        const apiUrl = 'https://zewk.tocotoco.workers.dev/'; // Thay bằng URL API của bạn
-        let offset = 0;
-        const limit = 50;
-        let loading = false;
+    const apiUrl = 'https://zewk.tocotoco.workers.dev/';
+    let offset = 0;
+    const limit = 50;
+    let lastTimestamp = 0; // Lưu timestamp của tin nhắn mới nhất
+    let loading = false;
 
-        // Mở và đóng popup
-        openChatButton.addEventListener('click', () => {
-            if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
-                chatPopup.style.display = 'flex';
-                loadMessages();
-            } else {
-                chatPopup.style.display = 'none';
-            }
-        });
-
-        // Gửi tin nhắn
-        const sendMessage = async () => {
-            const message = messageInput.value.trim();
-            const fullName = "Le Dai Loi";
-            const employeeId = "CHMN4634";
-            if (!message) return;
-
-            try {
-                const response = await fetch(`${apiUrl}?action=sendMessage`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ employeeId, fullName, message }),
-                });
-
-                if (response.ok) {
-                    addMessage({ message, timestamp: Date.now() });
-                    messageInput.value = '';
-                } else {
-                    console.error('Lỗi gửi tin nhắn:', await response.json());
-                }
-            } catch (error) {
-                console.error('Lỗi gửi tin nhắn:', error);
-            }
-        };
-
-        sendButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // Hiển thị tin nhắn trong khung chat
-        const addMessage = (msg, prepend = false) => {
-            const messageElement = document.createElement('p');
-            const timestamp = new Date(msg.timestamp).toLocaleString();
-            messageElement.textContent = `[${timestamp}] ${msg.message}`;
-            if (prepend) {
-                chatMessages.prepend(messageElement);
-            } else {
-                chatMessages.appendChild(messageElement);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        };
-
-// Tải tin nhắn từ máy chủ với phương thức GET
-const loadMessages = async () => {
-    if (loading) return; // Ngăn việc tải lại khi đang xử lý
-    loading = true;
-
-    try {
-        // Gọi API với phương thức GET
-        const url = new URL(apiUrl);
-        url.searchParams.append('action', 'getMessages');
-        url.searchParams.append('offset', offset);
-        url.searchParams.append('limit', limit);
-
-        const response = await fetch(url.toString(), {
-            method: 'GET', // Xác định phương thức là GET
-            headers: {
-                'Content-Type': 'application/json', // Đảm bảo header phù hợp
-            },
-        });
-
-        if (response.ok) {
-            // Phân tích dữ liệu trả về và thêm tin nhắn vào khung chat
-            const messages = await response.json();
-            messages.reverse().forEach((msg) => addMessage(msg, true)); // Đảo ngược tin nhắn
-            offset += messages.length; // Cập nhật offset để tải tiếp lần sau
+    // Mở và đóng popup
+    openChatButton.addEventListener('click', () => {
+        if (chatPopup.style.display === 'none' || chatPopup.style.display === '') {
+            chatPopup.style.display = 'flex';
+            loadMessages(); // Tải tin nhắn khi mở popup
         } else {
-            console.error('Lỗi tải tin nhắn:', await response.json());
+            chatPopup.style.display = 'none';
         }
-    } catch (error) {
-        console.error('Lỗi tải tin nhắn:', error);
-    } finally {
-        loading = false; // Đặt lại trạng thái tải
-    }
-};
+    });
 
+    // Gửi tin nhắn
+    const sendMessage = async () => {
+        const message = messageInput.value.trim();
+        const fullName = "Le Dai Loi";
+        const employeeId = "CHMN4634";
+        if (!message) return;
 
-        // Xử lý cuộn lên để tải thêm tin nhắn
-        chatMessages.addEventListener('scroll', () => {
-            if (chatMessages.scrollTop === 0 && !loading) {
-                loadMessages();
+        try {
+            const response = await fetch(`${apiUrl}?action=sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ employeeId, fullName, message }),
+            });
+
+            if (response.ok) {
+                const newMessage = { message, timestamp: Date.now() };
+                addMessage(newMessage);
+                messageInput.value = '';
+            } else {
+                console.error('Lỗi gửi tin nhắn:', await response.json());
             }
-        });
-    </script>
+        } catch (error) {
+            console.error('Lỗi gửi tin nhắn:', error);
+        }
+    };
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Hiển thị tin nhắn trong khung chat
+    const addMessage = (msg, prepend = false) => {
+        const messageElement = document.createElement('p');
+        const timestamp = new Date(msg.timestamp).toLocaleString();
+        messageElement.textContent = `[${timestamp}] ${msg.message}`;
+        if (prepend) {
+            chatMessages.prepend(messageElement);
+        } else {
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    };
+
+    // Tải tin nhắn từ máy chủ
+    const loadMessages = async () => {
+        if (loading) return; // Ngăn việc tải lại khi đang xử lý
+        loading = true;
+
+        try {
+            const url = new URL(apiUrl);
+            url.searchParams.append('action', 'getMessages');
+            url.searchParams.append('offset', offset);
+            url.searchParams.append('limit', limit);
+
+            const response = await fetch(url.toString(), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const messages = await response.json();
+
+                if (messages.length > 0) {
+                    messages.reverse().forEach((msg) => {
+                        addMessage(msg, true);
+                        lastTimestamp = Math.max(lastTimestamp, msg.timestamp); // Cập nhật timestamp mới nhất
+                    });
+                    offset += messages.length; // Cập nhật offset
+                } else {
+                    console.log("Không còn tin nhắn nào để tải.");
+                }
+            } else {
+                console.error('Lỗi tải tin nhắn:', await response.json());
+            }
+        } catch (error) {
+            console.error('Lỗi tải tin nhắn:', error);
+        } finally {
+            loading = false; // Đặt lại trạng thái tải
+        }
+    };
+
+    // Tự động tải tin nhắn mới mỗi 5 giây
+    setInterval(async () => {
+        try {
+            const url = new URL(apiUrl);
+            url.searchParams.append('action', 'getMessages');
+            url.searchParams.append('lastTimestamp', lastTimestamp); // Chỉ lấy tin nhắn mới hơn
+
+            const response = await fetch(url.toString(), {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const newMessages = await response.json();
+                newMessages.forEach((msg) => {
+                    addMessage(msg);
+                    lastTimestamp = Math.max(lastTimestamp, msg.timestamp); // Cập nhật timestamp mới nhất
+                });
+            }
+        } catch (error) {
+            console.error('Lỗi tải tin nhắn mới:', error);
+        }
+    }, 5000); // 5000ms = 5 giây
+
+    // Xử lý cuộn lên để tải thêm tin nhắn
+    chatMessages.addEventListener('scroll', () => {
+        if (chatMessages.scrollTop === 0 && !loading) {
+            loadMessages();
+        }
+    });
+</script>
 </body>
 </html>
