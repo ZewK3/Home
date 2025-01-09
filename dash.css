@@ -13,49 +13,50 @@ html, body {
     flex-direction: row;
 }
 /* Nút mở chat */
-        #openChatButton {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #25d366; /* Màu giống Messenger */
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 30px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-	    z-index: 1;
-        }
+#openChatButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ea4c4b;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+    cursor: pointer;
+    display: flex
+;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
 
         /* Popup chat */
-        #chatPopup {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 300px;
-            height: 400px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-	    z-index: 1;
-        }
+#chatPopup {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 300px;
+    height: 400px;
+    background: #efb9b5;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1;
+}
 
         /* Header của chat */
-        #chatHeader {
-            background-color: #25d366; /* Màu xanh giống Messenger */
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-size: 18px;
-        }
+#chatHeader {
+    background-color: #ea4c4b;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 18px;
+}
 
         /* Khung tin nhắn */
         #chatMessages {
@@ -67,7 +68,7 @@ html, body {
         }
 
         #chatMessages p {
-            margin: 5px 0;
+            margin-bottom: 5px 0;
             padding: 8px;
             border-radius: 8px;
             max-width: 80%;
@@ -78,20 +79,21 @@ html, body {
 .user-message {
     text-align: left;
     margin-left: auto;
-    background-color: #dcf8c6;
+    background-color: #f4f3f3;
     /* align-self: flex-end; */
     border-radius: 8px;
+    border: 1px solid #000000;
 }
 
         /* Tin nhắn của bot */
-        .bot-message {
-	    text-align: left;
-            margin-right: auto;
-            background-color: #ffffff;
-            align-self: flex-start;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
+.bot-message {
+    text-align: left;
+    margin-right: auto;
+    background-color: #ff877e;
+    align-self: flex-start;
+    border: 1px solid #000000;
+    border-radius: 8px;
+}
 
         /* Khung nhập tin nhắn */
         #chatInput {
@@ -106,13 +108,13 @@ html, body {
             outline: none;
         }
 
-        #sendButton {
-            background-color: #25d366;
-            color: white;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-        }
+#sendButton {
+    background-color: #ea4c4b;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
 #backButton.hidden {
     display: none;
 }
@@ -450,6 +452,19 @@ button:hover {
 }
 
 @media (max-width: 768px) {
+    #openChatButton {
+    bottom: 1%;
+    right: 1%;
+    z-index: 9999;
+   }
+   #chatPopup {
+    top: 2%;
+    right: 2.5%;
+    left: 2.5%;
+    width: 95%;
+    height: 88%;
+    z-index: 9999;
+   }
     /* Sidebar chiếm toàn bộ màn hình */
     .sidebar {
         width: 100%;
