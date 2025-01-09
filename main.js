@@ -22,7 +22,8 @@ if (loggedInUser) {
             updateMenuByRole(user.position);
             menuList.style.display = 'block';     
         } else {
-            showNotification("Không tìm thấy người dùng với mã nhân viên này", "warning", 3000);
+            showNotification("Phiên hết hạn vui lòng đăng nhập lại", "warning", 3000);
+            window.location.href = "index.html";
         }
     } catch (error) {
         showNotification("Lỗi khi gửi yêu cầu", "error", 3000);
