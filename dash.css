@@ -38,8 +38,8 @@ html, body {
     position: fixed;
     bottom: 90px;
     right: 20px;
-    width: 300px;
-    height: 400px;
+    width: 400px;
+    height: 550px;
     background: #efb9b5;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
@@ -59,26 +59,24 @@ html, body {
 }
 
         /* Khung tin nhắn */
-        #chatMessages {
-            font-size: 14px;
-            flex: 1;
-            padding: 10px;
-            overflow-y: auto;
-            border-top: 1px solid #ddd;
-        }
+#chatMessages {
+    font-size: 14px;
+    flex: 9999;
+    padding: 5px;
+    overflow-y: auto;
+    border-top: 1px solid #ddd;
+}
 
-        #chatMessages p {
-            margin-bottom: 5px;
-            padding: 8px;
-            border-radius: 8px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
+#chatMessages p {         
+   border-radius: 8px;     
+   word-wrap: break-word;
+}
 .message-wrapper {
     margin-bottom: 10px;
 }
 
 .message-sender {
+    text-align: start;
     font-weight: bold;
     color: #555;
     margin: 0;
@@ -88,26 +86,28 @@ html, body {
     font-size: 10px;
     color: #999;
     margin: 0;
-    text-align: right;
+    text-align: center;
 }
         /* Tin nhắn của người dùng */
 .user-message {
-    text-align: left;
+    max-width: 70%;
+    width: fit-content;
+    text-align: start;
     margin-left: auto;
     background-color: #f4f3f3;
-    /* align-self: flex-end; */
-    border-radius: 8px;
+    padding: 5px;
     border: 1px solid #000000;
 }
 
         /* Tin nhắn của bot */
 .bot-message {
+    padding: 5px;
+    width: fit-content;
+    max-width: 70%;
     text-align: left;
     margin-right: auto;
     background-color: #ff877e;
-    align-self: flex-start;
     border: 1px solid #000000;
-    border-radius: 8px;
 }
 
         /* Khung nhập tin nhắn */
