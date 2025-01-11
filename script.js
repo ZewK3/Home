@@ -61,7 +61,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
 
     // Kiểm tra mã nhân viên hợp lệ
-    if (!employeeId.includes("CHMN") && !employeeId.includes("VP" && !employeeId.includes("ADMIN"))) {
+    if (!employeeId.includes("CHMN") && !employeeId.includes("VP") && !employeeId.includes("ADMIN")) {
         showNotification("Mã nhân viên không hợp lệ", "warning");
         return;
     }
