@@ -61,8 +61,8 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 
 
     // Kiểm tra mã nhân viên hợp lệ
-    if (!employeeId.includes("CHMN") && !employeeId.includes("VP")) {
-        showNotification("Mã nhân viên phải chứa 'CHMN' 'VP'!", "warning");
+    if (!employeeId.includes("CHMN") && !employeeId.includes("VP" && !employeeId.includes("ADMIN"))) {
+        showNotification("Mã nhân viên không hợp lệ", "warning");
         return;
     }
 
@@ -129,7 +129,7 @@ document.getElementById("loginForm").addEventListener("submit", async function (
             if (result.token) {
                 localStorage.setItem("authToken",result.token);
             }
-            showNotification("Đăng nhập thành công!", "success", 3000);
+            showNotification("Đăng nhập thành công", "success", 3000);
             document.getElementById("loginFormContainer").style.display = "none";
             // Lưu thông tin người dùng và chuyển hướng
             localStorage.setItem("loggedInUser", JSON.stringify(data));
@@ -146,15 +146,15 @@ document.getElementById("loginForm").addEventListener("submit", async function (
                 window.location.href = "dashboard.html";
             }, 3000);
         } else if (loginResponse.status === 401) {
-            showNotification("Mật khẩu không đúng!", "error", 3000);
+            showNotification("Mật khẩu không đúng", "error", 3000);
         } else if (loginResponse.status === 404) {
-            showNotification("Mã nhân viên không tồn tại!", "warning", 3000);
+            showNotification("Mã nhân viên không tồn tại", "warning", 3000);
         } else {
-            showNotification("Đăng nhập thất bại! Vui lòng thử lại.", "error", 3000);
+            showNotification("Đăng nhập thất bại! Vui lòng thử lại", "error", 3000);
         }
     } catch (error) {
         console.error("Lỗi xảy ra:", error.message);
-        showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại.", "error", 3000);
+        showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error", 3000);
     }
 });
 
