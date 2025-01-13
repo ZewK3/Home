@@ -701,7 +701,7 @@ const addMessage = (msg, prepend = false) => {
 
     // Phần tử chứa thời gian tin nhắn
     const timeElement = document.createElement('p');
-    const timestamp = msg.time;
+    timeElement.textContent = msg.time;
     timeElement.classList.add('message-time');
     messageWrapper.appendChild(timeElement);
 
