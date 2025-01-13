@@ -701,10 +701,25 @@ const addMessage = (msg, prepend = false) => {
 
     // Phần tử chứa thời gian tin nhắn
     const timeElement = document.createElement('p');
-    const time = new Date(msg.time).toLocaleString(); // Sử dụng msg.time
-    timeElement.textContent = time;
-    timeElement.classList.add('message-time');
-    messageWrapper.appendChild(timeElement);
+const timestamp = new Date(msg.time);
+
+// Định dạng thời gian thành "dd-MM-yyyy HH:mm"
+const formattedTime = `${timestamp
+  .getDate()
+  .toString()
+  .padStart(2, "0")}-${(timestamp.getMonth() + 1)
+  .toString()
+  .padStart(2, "0")}-${timestamp.getFullYear()} ${timestamp
+  .getHours()
+  .toString()
+  .padStart(2, "0")}:${timestamp
+  .getMinutes()
+  .toString()
+  .padStart(2, "0")}`;
+
+timeElement.textContent = formattedTime; // Gán chuỗi định dạng vào phần tử
+timeElement.classList.add('message-time');
+messageWrapper.appendChild(timeElement);
 
     // Thêm tin nhắn vào khung chat
     if (prepend) {
