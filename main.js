@@ -682,10 +682,9 @@ document.addEventListener('contextmenu', function(e) {
 const addMessage = (msg, prepend = false) => {
     const messageWrapper = document.createElement('div');
     messageWrapper.classList.add('message-wrapper');
-
+    const senderElement = document.createElement('p');
     // Phần tử chứa họ tên (chỉ hiển thị nếu không phải người dùng)
     if (msg.employeeId !== user.employeeId) {
-        const senderElement = document.createElement('p');
         senderElement.textContent = `${msg.employeeId}-${msg.fullName}`;
         senderElement.classList.add('message-sender');
         messageWrapper.appendChild(senderElement);
@@ -753,15 +752,12 @@ const addMessage = (msg, prepend = false) => {
     messageWrapper.appendChild(timeElement);
 
 if (msg.employeeId !== user.employeeId) {
-    const senderElement = document.createElement('p');
-    senderElement.textContent = `${msg.employeeId} - ${msg.fullName}`;
-    senderElement.classList.add('message-sender');
     
     // Gắn sự kiện click vào senderElement
     senderElement.addEventListener('click', async () => {
         try {
             // Gọi API để lấy thông tin bot
-            const response = await fetch(`${apiUrl}?action=getBotInfo&employeeId=${msg.employeeId}`, {
+            const response = await fetch(`${apiUrl}?action=getUser&employeeId=${msg.employeeId}&token=${token}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
