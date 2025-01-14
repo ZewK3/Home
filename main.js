@@ -706,52 +706,51 @@ const addMessage = (msg, prepend = false) => {
     messageWrapper.appendChild(timeElement);
 
     if (msg.employeeId === user.employeeId) {
-        // Chuyển đổi msg.time từ chuỗi định dạng "dd-MM-yyyy HH:mm" thành đối tượng Date
-        const [day, month, year, hour, minute] = msg.time
-            .match(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})/)
-            .slice(1)
-            .map(Number);
-        const messageTime = new Date(year, month - 1, day, hour, minute);
-        const currentTime = new Date();
-        const timeDifference = (currentTime - messageTime) / (1000 * 60); // Chênh lệch thời gian tính bằng phút
 
-        if (timeDifference <= 20) {
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Xóa';
-            deleteButton.classList.add('delete-button');
-            deleteButton.style.display = 'none'; // Ẩn nút mặc định
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Xóa';
+        deleteButton.classList.add('delete-button');
+        deleteButton.style.display = 'none'; // Ẩn nút mặc định
 
             // Hiển thị nút khi di chuột qua tin nhắn
-            messageWrapper.addEventListener('mouseover', () => {
-                deleteButton.style.display = 'block';
-            });
+        messageWrapper.addEventListener('mouseover', () => {
+            deleteButton.style.display = 'block';
+        });
             messageWrapper.addEventListener('mouseout', () => {
-                deleteButton.style.display = 'none';
-            });
-
+            deleteButton.style.display = 'none';
+        });
+        
             // Xử lý sự kiện xóa tin nhắn
             deleteButton.addEventListener('click', async () => {
-                try {
-                    const response = await fetch(`${apiUrl}?action=deleteMessage`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ messageId: msg.id }),
-                    });
-
-                    if (response.ok) {
-                        messageWrapper.remove(); // Xóa tin nhắn khỏi giao diện
-                    } else {
-                        console.error('Lỗi xóa tin nhắn:', await response.json());
-                    }
-                } catch (error) {
-                    console.error('Lỗi xóa tin nhắn:', error);
+                const [day, month, year, hour, minute] = msg.time
+                    .match(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})/)
+                    .slice(1)
+                    .map(Number);
+                const messageTime = new Date(year, month - 1, day, hour, minute);
+                const currentTime = new Date();
+                const timeDifference = (currentTime - messageTime) / (1000 * 60);
+                if (timeDifference <= 20) {
+                       try {
+                           const response = await fetch(`${apiUrl}?action=deleteMessage`, {
+                               method: 'POST',
+                               headers: {
+                                   'Content-Type': 'application/json',
+                               },
+                               body: JSON.stringify({ messageId: msg.id }),
+                           });
+       
+                           if (response.ok) {
+                              messageWrapper.remove(); // Xóa tin nhắn khỏi giao diện
+                           } else {
+                               console.error('Lỗi xóa tin nhắn:', await response.json());
+                           }
+                       } catch (error) {
+                           console.error('Lỗi xóa tin nhắn:', error);
+                       }
                 }
             });
 
-            messageWrapper.appendChild(deleteButton);
-        }
+         messageWrapper.appendChild(deleteButton);
     }
 
      // Hiển thị thông tin bot khi di chuột qua tin nhắn không phải của người dùng
