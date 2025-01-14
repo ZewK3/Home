@@ -753,15 +753,12 @@ const addMessage = (msg, prepend = false) => {
     messageWrapper.appendChild(timeElement);
 
 if (msg.employeeId !== user.employeeId) {
-    const senderElement = document.createElement('p');
-    senderElement.textContent = `${msg.employeeId} - ${msg.fullName}`;
-    senderElement.classList.add('message-sender');
     
     // Gắn sự kiện click vào senderElement
     senderElement.addEventListener('click', async () => {
         try {
             // Gọi API để lấy thông tin bot
-            const response = await fetch(`${apiUrl}?action=getUser&employeeId=${msg.employeeId}&token=${token}`, {
+            const response = await fetch(`${apiUrl}?action=getBotInfo&employeeId=${msg.employeeId}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -771,9 +768,15 @@ if (msg.employeeId !== user.employeeId) {
             if (response.ok) {
                 const botInfo = await response.json();
 
-                // Tạo div chứa thông tin bot
-                const botInfoDiv = document.createElement('div');
-                botInfoDiv.classList.add('bot-info-div');
+                // Tạo hoặc cập nhật div chứa thông tin bot
+                let botInfoDiv = document.getElementById('botInfoDiv');
+                if (!botInfoDiv) {
+                    botInfoDiv = document.createElement('div');
+                    botInfoDiv.id = 'botInfoDiv';
+                    botInfoDiv.classList.add('bot-info-div');
+                    document.body.appendChild(botInfoDiv); // Thêm div vào body
+                }
+
                 botInfoDiv.innerHTML = `
                     <table class="bot-info-table">
                         <tr>
@@ -799,14 +802,20 @@ if (msg.employeeId !== user.employeeId) {
                     </table>
                 `;
 
-                // Xóa thông tin cũ (nếu có) và thêm vào chatMessages
-                const existingBotInfoDiv = document.querySelector('.bot-info-div');
-                if (existingBotInfoDiv) {
-                    existingBotInfoDiv.remove();
-                }
+                // Hiển thị botInfoDiv
+                botInfoDiv.style.display = 'block';
 
-                const chatMessages = document.getElementById('chatMessages');
-                chatMessages.appendChild(botInfoDiv);
+                // Đảm bảo sự kiện ẩn div khi click bên ngoài
+                const handleOutsideClick = (event) => {
+                    if (!botInfoDiv.contains(event.target)) {
+                        botInfoDiv.style.display = 'none';
+                        document.removeEventListener('click', handleOutsideClick); // Hủy sự kiện
+                    }
+                };
+
+                setTimeout(() => {
+                    document.addEventListener('click', handleOutsideClick);
+                }, 0); // Thêm trễ để tránh sự kiện click hiện tại bị xử lý
             } else {
                 console.error('Lỗi lấy thông tin bot:', await response.text());
             }
@@ -818,7 +827,6 @@ if (msg.employeeId !== user.employeeId) {
     messageWrapper.appendChild(senderElement);
 }
 
-    
     // Thêm tin nhắn vào khung chat
     if (prepend) {
         chatMessages.prepend(messageWrapper); // Thêm tin nhắn lên đầu
