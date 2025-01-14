@@ -708,7 +708,12 @@ const addMessage = (msg, prepend = false) => {
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Xóa';
         deleteButton.classList.add('delete-button');
-
+        messageWrapper.addEventListener('mouseover', () => {
+            deleteButton.style.display = 'block';
+        });
+        messageWrapper.addEventListener('mouseout', () => {
+            deleteButton.style.display = 'none';
+       });
         // Gắn sự kiện xóa tin nhắn
         deleteButton.addEventListener('click', () => {
             const confirmDelete = confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?');
@@ -746,6 +751,25 @@ const addMessage = (msg, prepend = false) => {
     timeElement.classList.add('message-time');
     messageWrapper.appendChild(timeElement);
 
+    if (msg.employeeId !== user.employeeId) {
+        const tooltip = document.createElement('div');
+        tooltip.classList.add('tooltip');
+        tooltip.textContent = `Thông tin bot: 
+        - Tên: ${msg.fullName} 
+        - ID: ${msg.employeeId}`;
+        tooltip.style.display = 'none'; // Ẩn mặc định
+
+        // Hiển thị tooltip khi di chuột qua
+        messageWrapper.addEventListener('mouseover', () => {
+            tooltip.style.display = 'block';
+        });
+        messageWrapper.addEventListener('mouseout', () => {
+            tooltip.style.display = 'none';
+        });
+
+        messageWrapper.appendChild(tooltip);
+    }
+    
     // Thêm tin nhắn vào khung chat
     if (prepend) {
         chatMessages.prepend(messageWrapper); // Thêm tin nhắn lên đầu
