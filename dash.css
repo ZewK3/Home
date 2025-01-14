@@ -57,7 +57,38 @@ html, body {
     text-align: center;
     font-size: 18px;
 }
+.message-wrapper {
+    position: relative;
+}
+.delete-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
 
+.message-wrapper:hover .tooltip {
+    opacity: 1;
+}
         /* Khung tin nhắn */
 #chatMessages {
     font-size: 14px;
