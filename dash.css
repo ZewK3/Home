@@ -81,19 +81,35 @@ button.delete-button.hidden {
 .message-wrapper {
     position: relative;
 }
-.tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    background-color: #333;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.2s;
+#botInfoDiv {
+    position: fixed;
+    top: 20%;
+    right: 10%;
+    max-width: 300px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none; /* Ẩn mặc định, chỉ hiển thị khi có dữ liệu */
+}
+
+.bot-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bot-info-table th,
+.bot-info-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.bot-info-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
 }
 
 .message-wrapper:hover .tooltip {
