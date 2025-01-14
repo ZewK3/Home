@@ -752,24 +752,37 @@ const addMessage = (msg, prepend = false) => {
     timeElement.classList.add('message-time');
     messageWrapper.appendChild(timeElement);
 
-    if (msg.employeeId !== user.employeeId) {
-        const tooltip = document.createElement('div');
-        tooltip.classList.add('tooltip');
-        tooltip.textContent = `Thông tin bot: 
-        - Tên: ${msg.fullName} 
-        - ID: ${msg.employeeId}`;
-        tooltip.style.display = 'none'; // Ẩn mặc định
+if (msg.employeeId !== user.employeeId) {
+    const tooltip = document.createElement('div');
+    tooltip.classList.add('tooltip');
+    tooltip.textContent = `Thông tin bot: 
+    - Tên: ${msg.fullName} 
+    - ID: ${msg.employeeId}`;
+    tooltip.style.display = 'none'; // Ẩn mặc định
 
-        // Hiển thị tooltip khi di chuột qua
-        messageWrapper.addEventListener('mouseover', () => {
-            tooltip.style.display = 'block';
-        });
-        messageWrapper.addEventListener('mouseout', () => {
-            tooltip.style.display = 'none';
-        });
+    // Tham chiếu đến phần tử chứa tin nhắn (giả sử id là 'chatMessages')
+    const chatMessages = document.getElementById('chatMessages');
 
-        messageWrapper.appendChild(tooltip);
-    }
+    // Hiển thị tooltip khi di chuột qua
+    messageWrapper.addEventListener('mouseover', () => {
+        tooltip.style.display = 'block';
+
+        // Căn giữa tooltip trong `chatMessages`
+        const rect = chatMessages.getBoundingClientRect();
+        tooltip.style.position = 'absolute';
+        tooltip.style.left = `${rect.left + chatMessages.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
+        tooltip.style.top = `${rect.top + 10}px`; // Đặt cách cạnh trên 10px
+    });
+
+    // Ẩn tooltip khi rời chuột khỏi tin nhắn
+    messageWrapper.addEventListener('mouseout', () => {
+        tooltip.style.display = 'none';
+    });
+
+    // Thêm tooltip vào `chatMessages`
+    chatMessages.appendChild(tooltip);
+}
+
     
     // Thêm tin nhắn vào khung chat
     if (prepend) {
