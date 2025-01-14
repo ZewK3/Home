@@ -83,16 +83,16 @@ button.delete-button.hidden {
 }
 #botInfoDiv {
     position: fixed;
-    top: 20%;
-    right: 10%;
+    top: 45%;
+    right: 5%;
     max-width: 300px;
     padding: 10px;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    display: none; /* Ẩn mặc định, chỉ hiển thị khi có dữ liệu */
+    z-index: 9999;
+    display: none;
 }
 
 .bot-info-table {
@@ -839,6 +839,10 @@ animation-delay: 3s, 1.5s;
 
 /* Mobile view adjustments */
 @media (max-width: 768px) {
+  #botInfoDiv {
+    top: 25%;
+    right: 22%;
+  }
     #changePasswordForm {
         width: 90%;
         padding: 15px;
