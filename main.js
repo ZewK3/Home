@@ -691,87 +691,60 @@ const addMessage = (msg, prepend = false) => {
         messageWrapper.appendChild(senderElement);
     }
 
+    // Tạo container chứa nội dung tin nhắn và nút xóa
+    const messageContainer = document.createElement('div');
+    messageContainer.classList.add('message-container');
+
     // Phần tử chứa nội dung tin nhắn
     const messageContentElement = document.createElement('p');
     messageContentElement.textContent = msg.message;
     messageContentElement.classList.add(
         msg.employeeId === user.employeeId ? 'user-message' : 'bot-message'
     );
-    messageWrapper.appendChild(messageContentElement);
+    messageContainer.appendChild(messageContentElement);
 
-    // Phần tử chứa thời gian tin nhắn
-    const timeElement = document.createElement('p');
-    timeElement.textContent = msg.time;
-    timeElement.classList.add('message-time');
-    messageWrapper.appendChild(timeElement);
-
+    // Nút xóa chỉ hiển thị với tin nhắn của người dùng
     if (msg.employeeId === user.employeeId) {
-
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Xóa';
         deleteButton.classList.add('delete-button');
-        deleteButton.style.display = 'none'; // Ẩn nút mặc định
 
-            // Hiển thị nút khi di chuột qua tin nhắn
-        messageWrapper.addEventListener('mouseover', () => {
-            deleteButton.style.display = 'block';
+        // Gắn sự kiện xóa tin nhắn
+        deleteButton.addEventListener('click', () => {
+            const confirmDelete = confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?');
+            if (confirmDelete) {
+                // Gửi yêu cầu xóa tin nhắn lên server
+                fetch(`${apiUrl}?action=deleteMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ messageId: msg.id }), // Gửi id tin nhắn
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                            messageWrapper.remove(); // Xóa tin nhắn khỏi giao diện
+                        } else {
+                            console.error('Lỗi xóa tin nhắn:', response.statusText);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Lỗi xóa tin nhắn:', error);
+                    });
+            }
         });
-            messageWrapper.addEventListener('mouseout', () => {
-            deleteButton.style.display = 'none';
-        });
-        
-            // Xử lý sự kiện xóa tin nhắn
-            deleteButton.addEventListener('click', async () => {
-                const [day, month, year, hour, minute] = msg.time
-                    .match(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})/)
-                    .slice(1)
-                    .map(Number);
-                const messageTime = new Date(year, month - 1, day, hour, minute);
-                const currentTime = new Date();
-                const timeDifference = (currentTime - messageTime) / (1000 * 60);
-                if (timeDifference <= 20) {
-                       try {
-                           const response = await fetch(`${apiUrl}?action=deleteMessage`, {
-                               method: 'POST',
-                               headers: {
-                                   'Content-Type': 'application/json',
-                               },
-                               body: JSON.stringify({ messageId: msg.id }),
-                           });
-       
-                           if (response.ok) {
-                              messageWrapper.remove(); // Xóa tin nhắn khỏi giao diện
-                           } else {
-                               console.error('Lỗi xóa tin nhắn:', await response.json());
-                           }
-                       } catch (error) {
-                           console.error('Lỗi xóa tin nhắn:', error);
-                       }
-                }
-            });
 
-         messageWrapper.appendChild(deleteButton);
+        messageContainer.appendChild(deleteButton);
     }
 
-     // Hiển thị thông tin bot khi di chuột qua tin nhắn không phải của người dùng
-    if (msg.employeeId !== user.employeeId) {
-        const tooltip = document.createElement('div');
-        tooltip.classList.add('tooltip');
-        tooltip.textContent = `Thông tin: 
-        - Tên: ${msg.fullName} 
-        - ID: ${msg.employeeId}`;
-        tooltip.style.display = 'none'; // Ẩn mặc định
+    messageWrapper.appendChild(messageContainer);
 
-        // Hiển thị tooltip khi di chuột qua
-        messageWrapper.addEventListener('mouseover', () => {
-            tooltip.style.display = 'block';
-        });
-        messageWrapper.addEventListener('mouseout', () => {
-            tooltip.style.display = 'none';
-        });
-
-        messageWrapper.appendChild(tooltip);
-    }
+    // Phần tử chứa thời gian tin nhắn
+    const timeElement = document.createElement('p');
+    const time = msg.time; // Hiển thị thời gian trực tiếp
+    timeElement.textContent = time;
+    timeElement.classList.add('message-time');
+    messageWrapper.appendChild(timeElement);
 
     // Thêm tin nhắn vào khung chat
     if (prepend) {
@@ -781,6 +754,7 @@ const addMessage = (msg, prepend = false) => {
         chatMessages.scrollTop = chatMessages.scrollHeight; // Cuộn xuống cuối
     }
 };
+
 
 
 
