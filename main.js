@@ -708,6 +708,7 @@ const addMessage = (msg, prepend = false) => {
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Xóa';
         deleteButton.classList.add('delete-button');
+        deleteButton.style.display = 'none';
         messageWrapper.addEventListener('mouseover', () => {
             deleteButton.style.display = 'block';
         });
