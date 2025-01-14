@@ -705,6 +705,75 @@ const addMessage = (msg, prepend = false) => {
     timeElement.classList.add('message-time');
     messageWrapper.appendChild(timeElement);
 
+    if (msg.employeeId === user.employeeId) {
+        // Chuyển đổi msg.time từ chuỗi định dạng "dd-MM-yyyy HH:mm" thành đối tượng Date
+        const [day, month, year, hour, minute] = msg.time
+            .match(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2})/)
+            .slice(1)
+            .map(Number);
+        const messageTime = new Date(year, month - 1, day, hour, minute);
+        const currentTime = new Date();
+        const timeDifference = (currentTime - messageTime) / (1000 * 60); // Chênh lệch thời gian tính bằng phút
+
+        if (timeDifference <= 20) {
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Xóa';
+            deleteButton.classList.add('delete-button');
+            deleteButton.style.display = 'none'; // Ẩn nút mặc định
+
+            // Hiển thị nút khi di chuột qua tin nhắn
+            messageWrapper.addEventListener('mouseover', () => {
+                deleteButton.style.display = 'block';
+            });
+            messageWrapper.addEventListener('mouseout', () => {
+                deleteButton.style.display = 'none';
+            });
+
+            // Xử lý sự kiện xóa tin nhắn
+            deleteButton.addEventListener('click', async () => {
+                try {
+                    const response = await fetch(`${apiUrl}?action=deleteMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ messageId: msg.id }),
+                    });
+
+                    if (response.ok) {
+                        messageWrapper.remove(); // Xóa tin nhắn khỏi giao diện
+                    } else {
+                        console.error('Lỗi xóa tin nhắn:', await response.json());
+                    }
+                } catch (error) {
+                    console.error('Lỗi xóa tin nhắn:', error);
+                }
+            });
+
+            messageWrapper.appendChild(deleteButton);
+        }
+    }
+
+     // Hiển thị thông tin bot khi di chuột qua tin nhắn không phải của người dùng
+    if (msg.employeeId !== user.employeeId) {
+        const tooltip = document.createElement('div');
+        tooltip.classList.add('tooltip');
+        tooltip.textContent = `Thông tin: 
+        - Tên: ${msg.fullName} 
+        - ID: ${msg.employeeId}`;
+        tooltip.style.display = 'none'; // Ẩn mặc định
+
+        // Hiển thị tooltip khi di chuột qua
+        messageWrapper.addEventListener('mouseover', () => {
+            tooltip.style.display = 'block';
+        });
+        messageWrapper.addEventListener('mouseout', () => {
+            tooltip.style.display = 'none';
+        });
+
+        messageWrapper.appendChild(tooltip);
+    }
+
     // Thêm tin nhắn vào khung chat
     if (prepend) {
         chatMessages.prepend(messageWrapper); // Thêm tin nhắn lên đầu
