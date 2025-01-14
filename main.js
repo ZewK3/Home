@@ -753,34 +753,69 @@ const addMessage = (msg, prepend = false) => {
     messageWrapper.appendChild(timeElement);
 
 if (msg.employeeId !== user.employeeId) {
-    const tooltip = document.createElement('div');
-    tooltip.classList.add('tooltip');
-    tooltip.textContent = `Thông tin bot: 
-    - Tên: ${msg.fullName} 
-    - ID: ${msg.employeeId}`;
-    tooltip.style.display = 'none'; // Ẩn mặc định
+    const senderElement = document.createElement('p');
+    senderElement.textContent = `${msg.employeeId} - ${msg.fullName}`;
+    senderElement.classList.add('message-sender');
+    
+    // Gắn sự kiện click vào senderElement
+    senderElement.addEventListener('click', async () => {
+        try {
+            // Gọi API để lấy thông tin bot
+            const response = await fetch(`${apiUrl}?action=getUser&employeeId=${msg.employeeId}&token=${token}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-    // Tham chiếu đến phần tử chứa tin nhắn (giả sử id là 'chatMessages')
-    const chatMessages = document.getElementById('chatMessages');
+            if (response.ok) {
+                const botInfo = await response.json();
 
-    // Hiển thị tooltip khi di chuột qua
-    messageWrapper.addEventListener('mouseover', () => {
-        tooltip.style.display = 'block';
+                // Tạo div chứa thông tin bot
+                const botInfoDiv = document.createElement('div');
+                botInfoDiv.classList.add('bot-info-div');
+                botInfoDiv.innerHTML = `
+                    <table class="bot-info-table">
+                        <tr>
+                            <th>Tên</th>
+                            <td>${botInfo.fullName}</td>
+                        </tr>
+                        <tr>
+                            <th>ID</th>
+                            <td>${botInfo.employeeId}</td>
+                        </tr>
+                        <tr>
+                            <th>Chức vụ</th>
+                            <td>${botInfo.position}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>${botInfo.email}</td>
+                        </tr>
+                        <tr>
+                            <th>Số điện thoại</th>
+                            <td>${botInfo.phone}</td>
+                        </tr>
+                    </table>
+                `;
 
-        // Căn giữa tooltip trong `chatMessages`
-        const rect = chatMessages.getBoundingClientRect();
-        tooltip.style.position = 'absolute';
-        tooltip.style.left = `${rect.left + chatMessages.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
-        tooltip.style.top = `${rect.top + 10}px`; // Đặt cách cạnh trên 10px
+                // Xóa thông tin cũ (nếu có) và thêm vào chatMessages
+                const existingBotInfoDiv = document.querySelector('.bot-info-div');
+                if (existingBotInfoDiv) {
+                    existingBotInfoDiv.remove();
+                }
+
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.appendChild(botInfoDiv);
+            } else {
+                console.error('Lỗi lấy thông tin bot:', await response.text());
+            }
+        } catch (error) {
+            console.error('Lỗi lấy thông tin bot:', error);
+        }
     });
 
-    // Ẩn tooltip khi rời chuột khỏi tin nhắn
-    messageWrapper.addEventListener('mouseout', () => {
-        tooltip.style.display = 'none';
-    });
-
-    // Thêm tooltip vào `chatMessages`
-    chatMessages.appendChild(tooltip);
+    messageWrapper.appendChild(senderElement);
 }
 
     
