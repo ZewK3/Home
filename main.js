@@ -753,6 +753,9 @@ const addMessage = (msg, prepend = false) => {
     messageWrapper.appendChild(timeElement);
 
 if (msg.employeeId !== user.employeeId) {
+    const senderElement = document.createElement('p');
+    senderElement.textContent = `${msg.employeeId} - ${msg.fullName}`;
+    senderElement.classList.add('message-sender');
     
     // Gắn sự kiện click vào senderElement
     senderElement.addEventListener('click', async () => {
