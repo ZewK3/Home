@@ -682,9 +682,10 @@ document.addEventListener('contextmenu', function(e) {
 const addMessage = (msg, prepend = false) => {
     const messageWrapper = document.createElement('div');
     messageWrapper.classList.add('message-wrapper');
-    const senderElement = document.createElement('p');
+    let senderElement;
     // Phần tử chứa họ tên (chỉ hiển thị nếu không phải người dùng)
     if (msg.employeeId !== user.employeeId) {
+        senderElement = document.createElement('p');
         senderElement.textContent = `${msg.employeeId}-${msg.fullName}`;
         senderElement.classList.add('message-sender');
         messageWrapper.appendChild(senderElement);
