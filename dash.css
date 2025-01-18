@@ -84,8 +84,8 @@ button.delete-button.hidden {
 #botInfoDiv {
     position: fixed;
     top: 45%;
-    right: 5%;
-    max-width: 300px;
+    right: 55px;
+    width: 325px;
     padding: 10px;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
@@ -839,10 +839,12 @@ animation-delay: 3s, 1.5s;
 
 /* Mobile view adjustments */
 @media (max-width: 768px) {
-  #botInfoDiv {
-    top: 25%;
-    right: 22%;
-  }
+    #botInfoDiv {
+        top: 25%;
+        right: 5%;
+        width: -webkit-fill-available;
+        left: 5%;
+    }
     #changePasswordForm {
         width: 90%;
         padding: 15px;
