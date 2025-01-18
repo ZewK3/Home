@@ -12,6 +12,17 @@ html, body {
     background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
+.search-bar {
+    height: 5%;
+    width: 100%;
+}
+input#searchInput {
+    margin-top: 10px;
+    size: 15px;
+    height: -webkit-fill-available;
+    width: -webkit-fill-available;
+    border: 1px solid black;
+}
 /* Nút mở chat */
 #openChatButton {
     position: fixed;
