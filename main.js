@@ -893,5 +893,116 @@ setInterval(async () => {
     } catch (error) {
         
     }
-}, 5000); // 5000ms = 5 giây
+}, 4000); // 5000ms = 5 giây
 
+document.getElementById("openGrantAccess").addEventListener("click", async function (e) {
+    e.preventDefault();
+
+    const role = user.position;
+    const allowedRoles = ["AD"]; // Chỉ Admin mới có quyền truy cập
+    if (!allowedRoles.includes(role)) {
+        showNotification("Bạn Không Có Quyền Truy Cập", "error", 3000);
+        return;
+    }
+
+    const mainContent = document.querySelector(".main");
+    const sidebar = document.querySelector(".sidebar");
+    const isMobile = window.innerWidth <= 768;
+    const originalMainContentHTML = mainContent.innerHTML;
+
+    // Ẩn sidebar trên giao diện mobile
+    if (isMobile) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.remove("hidden");
+    }
+
+    // Giao diện Phân quyền
+    mainContent.innerHTML = `
+        ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+        <h1>Phân Quyền Người Dùng</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên hoặc mã nhân viên..." />
+        </div>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Mã Nhân Viên</th>
+                    <th>Họ Tên</th>
+                    <th>Quyền Hiện Tại</th>
+                    <th>Hành Động</th>
+                </tr>
+            </thead>
+            <tbody id="userList">
+                <tr><td colspan="4">Đang tải danh sách người dùng...</td></tr>
+            </tbody>
+        </table>
+    `;
+
+    // Lấy danh sách người dùng từ server
+    try {
+        const response = await fetch("/api/users"); // Thay URL bằng endpoint thực tế
+        if (!response.ok) throw new Error("Failed to fetch users");
+
+        const users = await response.json();
+        renderUserList(users); // Hiển thị danh sách người dùng
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        document.getElementById("userList").innerHTML = `
+            <tr><td colspan="4">Không thể tải danh sách người dùng. Vui lòng thử lại sau.</td></tr>
+        `;
+    }
+
+    // Nút quay lại
+    const backButton = document.getElementById("backButton");
+    if (backButton) {
+        backButton.addEventListener("click", function () {
+            if (isMobile) {
+                // Nếu là thiết bị di động
+                mainContent.classList.add("hidden");
+                sidebar.classList.remove("hidden");
+            } else {
+                // Nếu không phải thiết bị di động
+                mainContent.innerHTML = originalMainContentHTML;
+            }
+        });
+    }
+
+    // Hàm hiển thị danh sách người dùng
+    function renderUserList(users) {
+        const userList = document.getElementById("userList");
+        userList.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.employeeId}</td>
+                <td>${user.fullName}</td>
+                <td>${user.role}</td>
+                <td>
+                    <button class="btn" data-id="${user.employeeId}" onclick="changeRole('${user.employeeId}')">
+                        Thay Đổi Quyền
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Hàm thay đổi quyền người dùng
+    window.changeRole = async function (employeeId) {
+        const newRole = prompt("Nhập quyền mới cho nhân viên:");
+        if (!newRole) return;
+
+        try {
+            const response = await fetch(`/api/users/${employeeId}/role`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role: newRole }),
+            });
+            if (!response.ok) throw new Error("Failed to update role");
+
+            showNotification("Cập nhật quyền thành công!", "success", 3000);
+            location.reload(); // Tải lại danh sách sau khi cập nhật
+        } catch (error) {
+            console.error("Error updating role:", error);
+            showNotification("Không thể cập nhật quyền. Vui lòng thử lại sau.", "error", 3000);
+        }
+    };
+});
