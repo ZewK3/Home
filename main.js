@@ -649,6 +649,7 @@ document.addEventListener('contextmenu', function(e) {
         const sendMessage = async () => {
             const message = messageInput.value.trim();
             const fullName = user.fullName;
+            const position = user.position;
             const employeeId = user.employeeId;
             if (!message) return;
 
@@ -658,7 +659,7 @@ document.addEventListener('contextmenu', function(e) {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ employeeId, fullName, message }),
+                    body: JSON.stringify({ employeeId, fullName, position, message }),
                 });
 
                 if (response.ok) {
