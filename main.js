@@ -664,7 +664,7 @@ class GrantAccessManager {
 
     async loadUsers() {
       try {
-        const response = await fetch(`${this.apiUrl}?action=getUsers&token=${token}`, {
+        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUsers&token=${token}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
         });
