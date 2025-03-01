@@ -758,7 +758,7 @@ const updateMenuByRole = (userRole) => {
     }
 })();
 
-unction updateSidebarAndMainColor() {
+function updateSidebarAndMainColor() {
     const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
 
     // Lấy các phần tử cần thay đổi
