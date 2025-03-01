@@ -594,7 +594,7 @@ class ChatManager {
             } catch (error) {
                 
             }
-        }, 2000);
+        }, 3000);
     }
 }
 
