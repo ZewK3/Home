@@ -692,7 +692,7 @@ class GrantAccessManager {
             <tr>
                 <td>${user.employeeId}</td>
                 <td>${user.fullName}</td>
-                <td>${user.role}</td>
+                <td>${user.position}</td>
                 <td>
                     <button class="btn" data-id="${user.employeeId}" onclick="grantAccessManager.changeRole('${user.employeeId}')">
                         Thay Đổi Quyền
