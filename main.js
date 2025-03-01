@@ -332,3 +332,388 @@ const updateMenuByRole = (userRole) => {
         renderScheduleRegistration(user);
     }
 })();
+
+// Security features
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+    }
+});
+
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+});
+
+// Chat functionality
+class ChatManager {
+    constructor() {
+        this.apiUrl = 'https://zewk.tocotoco.workers.dev/';
+        this.offset = 0;
+        this.limit = 50;
+        this.lastId = 0;
+        this.loading = false;
+
+        // DOM elements
+        this.openChatButton = document.getElementById('openChatButton');
+        this.chatPopup = document.getElementById('chatPopup');
+        this.messageInput = document.getElementById('messageInput');
+        this.chatMessages = document.getElementById('chatMessages');
+        this.sendButton = document.getElementById('sendButton');
+
+        this.initialize();
+    }
+
+    initialize() {
+        this.setupEventListeners();
+        this.startMessagePolling();
+    }
+
+    setupEventListeners() {
+        this.openChatButton.addEventListener('click', () => {
+            this.toggleChatPopup();
+        });
+
+        this.sendButton.addEventListener('click', () => this.sendMessage());
+        this.messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+    }
+
+    toggleChatPopup() {
+        const isHidden = this.chatPopup.style.display === 'none' || this.chatPopup.style.display === '';
+        this.chatPopup.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) this.loadInitialMessages();
+    }
+
+    async sendMessage() {
+        const message = this.messageInput.value.trim();
+        if (!message) return;
+
+        const payload = {
+            employeeId: user.employeeId,
+            fullName: user.fullName,
+            position: user.position,
+            message
+        };
+
+        try {
+            const response = await fetch(`${this.apiUrl}?action=sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                this.messageInput.value = '';
+            } else {
+                throw new Error('Failed to send message');
+            }
+        } catch (error) {
+            console.error('Send message error:', error);
+            showNotification('Không thể gửi tin nhắn', 'error', 3000);
+        }
+    }
+
+    createMessageElement(msg, prepend = false) {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('message-wrapper');
+
+        if (msg.employeeId !== user.employeeId) {
+            const sender = document.createElement('p');
+            sender.textContent = `${msg.position}-${msg.fullName}`;
+            sender.classList.add('message-sender');
+            this.addSenderClickHandler(sender, msg.employeeId);
+            wrapper.appendChild(sender);
+        }
+
+        const container = document.createElement('div');
+        container.classList.add('message-container');
+
+        const content = document.createElement('p');
+        content.textContent = msg.message;
+        content.classList.add(msg.employeeId === user.employeeId ? 'user-message' : 'bot-message');
+        container.appendChild(content);
+
+        if (msg.employeeId === user.employeeId) {
+            const deleteBtn = this.createDeleteButton(msg.id, wrapper);
+            container.appendChild(deleteBtn);
+            this.addHoverEffects(wrapper, deleteBtn);
+        }
+
+        wrapper.appendChild(container);
+
+        const time = document.createElement('p');
+        time.textContent = msg.time;
+        time.classList.add('message-time');
+        wrapper.appendChild(time);
+
+        this.chatMessages[prepend ? 'prepend' : 'appendChild'](wrapper);
+        if (!prepend) this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
+    createDeleteButton(messageId, wrapper) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Xóa';
+        deleteBtn.classList.add('delete-button');
+        deleteBtn.style.display = 'none';
+
+        deleteBtn.addEventListener('click', async () => {
+            if (!confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?')) return;
+
+            try {
+                const response = await fetch(`${this.apiUrl}?action=deleteMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messageId })
+                });
+
+                if (response.ok) {
+                    wrapper.remove();
+                } else {
+                    throw new Error('Delete failed');
+                }
+            } catch (error) {
+                console.error('Delete message error:', error);
+                showNotification('Không thể xóa tin nhắn', 'error', 3000);
+            }
+        });
+
+        return deleteBtn;
+    }
+
+    addHoverEffects(wrapper, deleteBtn) {
+        wrapper.addEventListener('mouseover', () => deleteBtn.style.display = 'block');
+        wrapper.addEventListener('mouseout', () => deleteBtn.style.display = 'none');
+    }
+
+    async addSenderClickHandler(sender, employeeId) {
+        sender.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${this.apiUrl}?action=getUser&employeeId=${employeeId}&token=${token}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch user info');
+                const userInfo = await response.json();
+                this.showUserInfoPopup(userInfo);
+            } catch (error) {
+                console.error('Fetch user info error:', error);
+                showNotification('Không thể tải thông tin người dùng', 'error', 3000);
+            }
+        });
+    }
+
+    showUserInfoPopup(userInfo) {
+        let infoDiv = document.getElementById('botInfoDiv');
+        if (!infoDiv) {
+            infoDiv = document.createElement('div');
+            infoDiv.id = 'botInfoDiv';
+            infoDiv.classList.add('bot-info-div');
+            document.body.appendChild(infoDiv);
+        }
+
+        infoDiv.innerHTML = `
+            <table class="bot-info-table">
+                ${['Tên:fullName', 'ID:employeeId', 'Chức vụ:position', 'Email:email', 'Số điện thoại:phone']
+                    .map(field => {
+                        const [label, key] = field.split(':');
+                        return `<tr><th>${label}</th><td>${userInfo[key] || 'N/A'}</td></tr>`;
+                    }).join('')}
+            </table>
+        `;
+
+        infoDiv.style.display = 'block';
+
+        const hidePopup = (e) => {
+            if (!infoDiv.contains(e.target)) {
+                infoDiv.style.display = 'none';
+                document.removeEventListener('click', hidePopup);
+            }
+        };
+
+        setTimeout(() => document.addEventListener('click', hidePopup), 0);
+    }
+
+    async loadInitialMessages() {
+        if (this.loading) return;
+        this.loading = true;
+
+        try {
+            const url = new URL(this.apiUrl);
+            url.searchParams.append('action', 'getMessages');
+            url.searchParams.append('offset', this.offset);
+            url.searchParams.append('limit', this.limit);
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                const messages = await response.json();
+                messages.forEach(msg => this.createMessageElement(msg, true));
+                this.offset += messages.length;
+            }
+        } catch (error) {
+            console.error('Load messages error:', error);
+            showNotification('Không thể tải tin nhắn', 'error', 3000);
+        } finally {
+            this.loading = false;
+        }
+    }
+
+    startMessagePolling() {
+        setInterval(async () => {
+            try {
+                const url = new URL(this.apiUrl);
+                url.searchParams.append('action', 'getMessages');
+                url.searchParams.append('lastId', this.lastId);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    const newMessages = await response.json();
+                    newMessages.forEach(msg => {
+                        this.createMessageElement(msg);
+                        this.lastId = Math.max(this.lastId, msg.id);
+                    });
+                }
+            } catch (error) {
+                console.error('Polling error:', error);
+            }
+        }, 4000);
+    }
+}
+
+// Grant Access functionality
+class GrantAccessManager {
+    constructor() {
+        this.setupEventListener();
+    }
+
+    setupEventListener() {
+        document.getElementById('openGrantAccess').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.renderGrantAccess();
+        });
+    }
+
+    async renderGrantAccess() {
+        if (!['AD'].includes(user.position)) {
+            showNotification('Bạn không có quyền truy cập', 'error', 3000);
+            return;
+        }
+
+        const mainContent = document.querySelector('.main');
+        const sidebar = document.querySelector('.sidebar');
+        const isMobile = window.innerWidth <= 768;
+        const originalContent = mainContent.innerHTML;
+
+        if (isMobile) {
+            sidebar.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+        }
+
+        mainContent.innerHTML = `
+            ${isMobile ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            <h1>Phân Quyền Người Dùng</h1>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên hoặc mã nhân viên..." />
+            </div>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Mã Nhân Viên</th>
+                        <th>Họ Tên</th>
+                        <th>Quyền Hiện Tại</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="userList">
+                    <tr><td colspan="4">Đang tải danh sách người dùng...</td></tr>
+                </tbody>
+            </table>
+        `;
+
+        this.setupBackButton(mainContent, sidebar, isMobile, originalContent);
+        await this.loadUsers();
+    }
+
+    setupBackButton(mainContent, sidebar, isMobile, originalContent) {
+        const backButton = document.getElementById('backButton');
+        if (backButton) {
+            backButton.addEventListener('click', () => {
+                if (isMobile) {
+                    mainContent.classList.add('hidden');
+                    sidebar.classList.remove('hidden');
+                } else {
+                    mainContent.innerHTML = originalContent;
+                }
+            });
+        }
+    }
+
+    async loadUsers() {
+        try {
+            const response = await fetch('/api/users');
+            if (!response.ok) throw new Error('Failed to fetch users');
+            
+            const users = await response.json();
+            this.renderUserList(users);
+        } catch (error) {
+            console.error('Fetch users error:', error);
+            document.getElementById('userList').innerHTML = `
+                <tr><td colspan="4">Không thể tải danh sách người dùng</td></tr>
+            `;
+            showNotification('Lỗi tải danh sách người dùng', 'error', 3000);
+        }
+    }
+
+    renderUserList(users) {
+        const userList = document.getElementById('userList');
+        userList.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.employeeId}</td>
+                <td>${user.fullName}</td>
+                <td>${user.role}</td>
+                <td>
+                    <button class="btn" data-id="${user.employeeId}" onclick="grantAccessManager.changeRole('${user.employeeId}')">
+                        Thay Đổi Quyền
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async changeRole(employeeId) {
+        const newRole = prompt('Nhập quyền mới cho nhân viên:');
+        if (!newRole) return;
+
+        try {
+            const response = await fetch(`/api/users/${employeeId}/role`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (response.ok) {
+                showNotification('Cập nhật quyền thành công!', 'success', 3000);
+                location.reload();
+            } else {
+                throw new Error('Update failed');
+            }
+        } catch (error) {
+            console.error('Update role error:', error);
+            showNotification('Không thể cập nhật quyền', 'error', 3000);
+        }
+    }
+}
+
+// Initialize managers
+const chatManager = new ChatManager();
+const grantAccessManager = new GrantAccessManager();
+window.grantAccessManager = grantAccessManager; // Expose for onclick handler
