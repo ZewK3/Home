@@ -664,9 +664,9 @@ class GrantAccessManager {
 
     async loadUsers() {
       try {
-        const response = await fetch(`${this.apiUrl}?action=getUsers&token=${token}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        const response = await fetch(`${this.apiUrl}?action=getUsers&employeeId=${employeeId}&token=${token}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
         });
     
         const contentType = response.headers.get('Content-Type');
