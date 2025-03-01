@@ -544,33 +544,33 @@ class ChatManager {
         setTimeout(() => document.addEventListener('click', hidePopup), 0);
     }
 
-    async loadInitialMessages() {
-        if (this.loading) return;
-        this.loading = true;
+    // async loadInitialMessages() {
+    //     if (this.loading) return;
+    //     this.loading = true;
 
-        try {
-            const url = new URL(this.apiUrl);
-            url.searchParams.append('action', 'getMessages');
-            url.searchParams.append('offset', this.offset);
-            url.searchParams.append('limit', this.limit);
+    //     try {
+    //         const url = new URL(this.apiUrl);
+    //         url.searchParams.append('action', 'getMessages');
+    //         url.searchParams.append('offset', this.offset);
+    //         url.searchParams.append('limit', this.limit);
 
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
+    //         const response = await fetch(url, {
+    //             method: 'GET',
+    //             headers: { 'Content-Type': 'application/json' }
+    //         });
 
-            if (response.ok) {
-                const messages = await response.json();
-                messages.forEach(msg => this.createMessageElement(msg, true));
-                this.offset += messages.length;
-            }
-        } catch (error) {
-            console.error('Load messages error:', error);
-            showNotification('Không thể tải tin nhắn', 'error', 3000);
-        } finally {
-            this.loading = false;
-        }
-    }
+    //         if (response.ok) {
+    //             const messages = await response.json();
+    //             messages.forEach(msg => this.createMessageElement(msg, true));
+    //             this.offset += messages.length;
+    //         }
+    //     } catch (error) {
+    //         console.error('Load messages error:', error);
+    //         showNotification('Không thể tải tin nhắn', 'error', 3000);
+    //     } finally {
+    //         this.loading = false;
+    //     }
+    // }
 
     startMessagePolling() {
         setInterval(async () => {
@@ -664,7 +664,7 @@ class GrantAccessManager {
 
     async loadUsers() {
       try {
-        const response = await fetch(`${this.apiUrl}?action=getUsers&employeeId=${employeeId}&token=${token}`, {
+        const response = await fetch(`${this.apiUrl}?action=getUsers&token=${token}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
         });
