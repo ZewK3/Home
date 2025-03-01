@@ -1,34 +1,42 @@
 /* Reset mặc định */
 * {
-    text-align: center;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-html, body {
-    overflow: hidden;
-    height: 100vh;
     font-family: Arial, sans-serif;
-    background: linear-gradient(to bottom, #fff, #fff);
+}
+
+html, body {
+    height: 100vh;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    display: flex;
     flex-direction: row;
 }
-.search-bar {
-    height: 5%;
-    width: 100%;
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
-input#searchInput {
-    margin-top: 10px;
-    size: 15px;
-    height: -webkit-fill-available;
-    width: -webkit-fill-available;
-    border: 1px solid black;
+
+@keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
-/* Nút mở chat */
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Chat Button */
 #openChatButton {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: #ea4c4b;
+    background: linear-gradient(45deg, #ff6b6b, #ea4c4b);
     color: white;
     border: none;
     border-radius: 50%;
@@ -36,845 +44,346 @@ input#searchInput {
     height: 60px;
     font-size: 30px;
     cursor: pointer;
-    display: flex
-;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1;
-}
-.message-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(234, 76, 75, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1000;
 }
 
-.delete-button {
-    margin-left: 2px;
-    background-color: #F44336;
-    border-radius: 4px;
-    padding: 5px;
-    cursor: pointer;
-    font-size: 10px;
-    transition: background-color 0.3s;
-}
-button.delete-button.hidden {
-    display: none;
-}
-.delete-button:hover {
-    background-color: darkred;
+#openChatButton:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(234, 76, 75, 0.5);
 }
 
-        /* Popup chat */
+/* Chat Popup */
 #chatPopup {
     position: fixed;
     bottom: 90px;
     right: 20px;
     width: 400px;
     height: 550px;
-    background: #efb9b5;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
     display: none;
     flex-direction: column;
     overflow: hidden;
-    z-index: 1;
+    animation: slideIn 0.3s ease;
+    z-index: 999;
 }
 
-        /* Header của chat */
 #chatHeader {
-    background-color: #ea4c4b;
+    background: linear-gradient(45deg, #ea4c4b, #ff6b6b);
     color: white;
-    padding: 10px;
-    text-align: center;
+    padding: 12px;
     font-size: 18px;
-}
-.message-wrapper {
-    position: relative;
-}
-#botInfoDiv {
-    position: fixed;
-    top: 45%;
-    right: 55px;
-    width: 325px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 9999;
-    display: none;
+    font-weight: 600;
+    text-align: center;
 }
 
-.bot-info-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.bot-info-table th,
-.bot-info-table td {
-    padding: 8px 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.bot-info-table th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-}
-
-.message-wrapper:hover .tooltip {
-    opacity: 1;
-}
-        /* Khung tin nhắn */
 #chatMessages {
-    font-size: 14px;
-    flex: 9999;
-    padding: 5px;
+    flex: 1;
+    padding: 15px;
     overflow-y: auto;
-    border-top: 1px solid #ddd;
+    background: #f9f9f9;
 }
 
-#chatMessages p {         
-   border-radius: 8px;     
-   word-wrap: break-word;
-}
 .message-wrapper {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease;
 }
 
 .message-sender {
-    text-align: start;
-    font-weight: bold;
-    color: #555;
-    margin: 0;
+    font-weight: 600;
+    color: #444;
     font-size: 12px;
+    margin-bottom: 5px;
 }
+
+.user-message, .bot-message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    margin: 5px 0;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.user-message {
+    background: #ea4c4b;
+    color: white;
+    margin-left: auto;
+}
+
+.bot-message {
+    background: #f0f0f0;
+    color: #333;
+    margin-right: auto;
+}
+
 .message-time {
     font-size: 10px;
-    color: #999;
-    margin: 0;
-    text-align: center;
-}
-        /* Tin nhắn của người dùng */
-.user-message {
-    max-width: 70%;
-    width: fit-content;
-    text-align: start;
-    margin-left: auto;
-    background-color: #f4f3f3;
-    padding: 5px;
-    border: 1px solid #000000;
+    color: #888;
+    text-align: right;
 }
 
-        /* Tin nhắn của bot */
-.bot-message {
-    padding: 5px;
-    width: fit-content;
-    max-width: 70%;
-    text-align: left;
-    margin-right: auto;
-    background-color: #ff877e;
-    border: 1px solid #000000;
-}
-
-        /* Khung nhập tin nhắn */
-        #chatInput {
-            display: flex;
-            border-top: 1px solid #ddd;
-        }
-
-        #messageInput {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            outline: none;
-        }
-
-#sendButton {
-    background-color: #ea4c4b;
+.delete-button {
+    background: #ff4444;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 5px 10px;
+    border-radius: 12px;
+    margin-left: 10px;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
-#backButton.hidden {
-    display: none;
-}
-/* Màn hình loading */
-@keyframes fadeInUp {
-    0% {
-        opacity: 0;
-        transform: translateY(20px); /* Đưa tiêu đề xuống dưới */
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0); /* Tiêu đề trở lại vị trí ban đầu */
-    }
-}
-@keyframes waveColorChange {
-    0% {
-        color: #007bff; /* Màu xanh dương ban đầu */
-    }
-    25% {
-        color: #28a745; /* Màu xanh lá */
-    }
-    50% {
-        color: #ffc107; /* Màu vàng */
-    }
-    75% {
-        color: #dc3545; /* Màu đỏ */
-    }
-    100% {
-        color: #007bff; /* Quay lại màu xanh dương ban đầu */
-    }
-}
-// css hàm Main
 
-.main.christmas {
-    background: linear-gradient(to bottom, #e9eaec, #e9eaec);
+.delete-button:hover {
+    background: #cc0000;
 }
-.showUser.christmas {
-   background-color: #2ca677;
-}
-.sidebar.christmas {
-    background-color: #b1d6c5;
-}
-/* Đảm bảo tiêu đề có độ mượt mà */
-.sidebar h2 {
-    font-size: 30px;
-    font-weight: bold;
-    transition: color 0.3s ease; /* Mượt mà khi đổi màu */
-}
-.showUser {
-    width: 100%;
-    background-color: #ea4c4b;
-    color: white;
-    /* display: flex
-; */
-    /* flex-direction: column; */
+
+#chatInput {
+    display: flex;
+    border-top: 1px solid #eee;
     padding: 10px;
-    height: 5%;
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 1;
+    background: #fff;
 }
-div#userInfo {
-    text-align: end;
+
+#messageInput {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    background: #f0f0f0;
+    outline: none;
 }
+
+#sendButton {
+    background: #ea4c4b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-left: 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+#sendButton:hover {
+    background: #ff6b6b;
+}
+
 /* Sidebar */
 .sidebar {
-    width: 19.6%;
-    background-color: #efb9b5;
-    color: white;
-    display: flex;
-    flex-direction: column;
+    width: 20%;
+    background: linear-gradient(180deg, #ffffff 0%, #f8e1e1 100%);
     padding: 20px;
     height: 95%;
     position: fixed;
+    top: 5%;
     left: 0;
-    top: 5.4%;
-    z-index: 1;
-    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
 }
-/* Tiêu đề trong Sidebar */
+
 .sidebar h2 {
-    text-align: center; /* Căn giữa tiêu đề */
-    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
-    animation: fadeInUp 2s ease-in-out, waveColorChange 10s ease-in-out infinite; /* Hiệu ứng động cho tiêu đề */
-	
+    font-size: 28px;
+    color: #ea4c4b;
+    text-align: center;
+    margin-bottom: 20px;
+    animation: fadeIn 1s ease;
 }
 
-/* Danh sách các item */
-.sidebar ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-/* Các item trong sidebar */
-.sidebar ul li {
-    margin: 10px 0; /* Tạo khoảng cách giữa các item */
-    border-radius: 5px; /* Bo góc */
-    overflow: hidden; /* Đảm bảo không có phần thừa */
-}
-
-/* Liên kết trong các item */
 .sidebar ul li a {
-    text-decoration: none;
-    color: #333; /* Màu chữ đen */
-    font-size: 16px;
-    padding: 12px 20px;
     display: block;
-    transition: all 0.3s ease; /* Hiệu ứng chuyển động khi hover */
-    border-radius: 5px;
-    text-align: center; /* Canh giữa chữ */
-    background-color: white; /* Nền trắng */
-    border: 2px solid #000; /* Viền đen */
+    padding: 15px;
+    margin: 10px 0;
+    background: #ffffff;
+    color: #333;
+    text-decoration: none;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
-/* Màu nền khi hover */
 .sidebar ul li a:hover {
-    background-color: #f4f4f4; /* Màu nền sáng khi hover */
-    color: #333; /* Đảm bảo màu chữ không thay đổi */
-    transform: translateX(10px); /* Di chuyển nút sang phải */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
+    background: #ea4c4b;
+    color: white;
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(234, 76, 75, 0.3);
 }
 
-/* Thêm hiệu ứng phóng to khi hover */
-.sidebar ul li a:active {
-    transform: scale(1.05); /* Phóng to nút khi nhấn */
-}
-/* Main content */
+/* Main Content */
 .main {
-   top: 5.4%;
-    padding: 10px;
-    position: fixed;
     margin-left: 20%;
-    height: 95%;
-    overflow-y: auto;
-    background: linear-gradient(to bottom, #f4f0ef, #f6f2ef);
     width: 80%;
+    padding: 20px;
+    height: 95%;
+    position: fixed;
+    top: 5%;
+    overflow-y: auto;
+    background: #ffffff;
+    transition: transform 0.3s ease;
 }
 
 .main h1 {
-    text-align: center; /* Căn giữa tiêu đề */
-    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */	
-    animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
-    font-size: 28px; /* Kích thước chữ */
-    color: #F08080; /* Màu chữ */
-    margin: 0; /* Loại bỏ margin mặc định */
+    color: #ea4c4b;
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    animation: slideIn 0.5s ease;
 }
 
-/* Thông báo */
+/* Notification */
 #notification {
     position: fixed;
-    top: 7%;
+    top: 20px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 400px;
-    width: 90%;
-    padding: 15px;
-    border-radius: 5px;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 25px;
     color: white;
-    font-size: 16px;
-    text-align: center;
+    font-weight: 500;
     z-index: 9999;
-    display: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
 }
 
-#notification.success {
-    background-color: #28a745;
-}
+#notification.success { background: #28a745; }
+#notification.error { background: #dc3545; }
+#notification.warning { background: #ffc107; color: #333; }
 
-#notification.error {
-    background-color: #dc3545;
-}
-
-#notification.warning {
-    background-color: #ffc107;
-    color: #333;
-}
-/* Style cho nút Đăng xuất */
-.logout-btn {
-    background-color: #dc3545;
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 16px;
-    transition: background-color 0.3s;
-    margin-top: auto;
-    align-self: center;
-    border: 2px solid white;
-}
-
-.logout-btn:hover {
-    background-color: #b02a37;
-}
-form {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 10px;
-    background-color: #fff;
-    border: 2px solid #000;
-    border-radius: 5px;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-}
-
-th, td {
-    padding: 10px;
-    border: 2px solid #ddd;
-    text-align: center;
-}
-
-th {
-    background-color: #f4f4f4;
-    font-weight: bold;
-}
-
-select {
-    padding: 5px;
-    font-size: 16px;
-    width: 100%;
-}
-
-button {
-    padding: 5px;
-    font-size: 12px;
-    background-color: #f08080;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #b02a37;
-}
-/* Nút */
-.button-container {
-    text-align: center;
-    margin-top: 20px;
-}
-
+/* Buttons */
 .btn {
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #f08080;
+    padding: 12px 25px;
+    background: #ea4c4b;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 25px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .btn:hover {
-    background-color: #b02a37;
-}
-.time-select {
-    padding: 8px;
-    font-size: 16px;
-    border: 1px solid #000;
-    border-radius: 4px;
-}
-.schedule-table th {
-    background-color: #da5b55;
-    color: white;
-}
-@media (max-width: 768px) {
-    html, body {
-        flex-direction: column;  /* Đổi từ row sang column cho giao diện mobile */
-    }
-
-    .sidebar {
-        width: 100%;  /* Sidebar chiếm toàn bộ chiều rộng */
-        height: auto;  /* Giảm chiều cao sidebar cho thiết bị di động */
-        position: relative;  /* Đặt sidebar không cố định */
-    }
-
-    .sidebar h2 {
-        font-size: 24px; /* Giảm kích thước font tiêu đề */
-    }
-
-    .sidebar ul li a {
-        font-size: 16px; /* Giảm kích thước font của các item */
-        padding: 10px 15px;  /* Giảm khoảng cách padding cho phù hợp */
-    }
-
-    .main {
-        margin-left: 0;  /* Đẩy phần nội dung lên ngay dưới thanh điều hướng */
-        padding: 10px;
-    }
-
-    .logout-btn {
-        font-size: 14px;  /* Giảm kích thước chữ của nút Đăng xuất */
-        padding: 8px;  /* Giảm khoảng cách cho nút */
-    }
-
-    table th, table td {
-        padding: 8px; /* Giảm padding trong bảng */
-    }
-
-    .button-container {
-        text-align: center;
-        margin-top: 15px;
-    }
-
-    .btn {
-        font-size: 14px;  /* Giảm kích thước font cho nút */
-        padding: 8px 15px; /* Giảm padding */
-    }
-}
-.sidebar, .main {
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    background: #ff6b6b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(234, 76, 75, 0.3);
 }
 
-.sidebar.hidden {
-    transform: translateX(-100%); /* Đẩy sidebar ra khỏi màn hình */
-    opacity: 0;
-}
-
-.main.hidden {
-    transform: translateX(100%); /* Đẩy main ra khỏi màn hình */
-    opacity: 0;
-}
-
-@media (max-width: 768px) {
-    #openChatButton {
-    bottom: 1%;
-    right: 1%;
-    z-index: 9999;
-   }
-   #chatPopup {
-    top: 2%;
-    right: 2.5%;
-    left: 2.5%;
-    width: 95%;
-    height: 88%;
-    z-index: 9999;
-   }
-    /* Sidebar chiếm toàn bộ màn hình */
-    .sidebar {
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        z-index: 10;
-        top: 0;
-        left: 0;
-    }
-    /* Main chiếm toàn bộ màn hình */
-    .main {
-        width: 100%;
-        height: 100%;
-        position: fixed;
-        top: 5%;
-        left: 0;
-        background-color: #f4f4f4;
-        z-index: 5;
-    }
-    .main h1 {
-        text-align: center; /* Căn giữa tiêu đề */
-        margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
-        animation: fadeInUp 1s ease-in-out; /* Hiệu ứng động cho tiêu đề */
-        font-size: 20px; /* Kích thước chữ */
-        color: #F08080; /* Màu chữ */
-        margin: 0; /* Loại bỏ margin mặc định */
-    }
-    form {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 10px;
-        background-color: #fff;
-        border: 2px solid #ddd;
-        border-radius: 5px;
-    }
-    /* Sidebar ẩn khi có lớp hidden */
-    .sidebar.hidden {
-        display: none;
-    }
-    table td{
-      font-size: 15px;
-    }
-    .time-select {
-        padding: 8px;
-        font-size: 12px;
-        border: 1px solid #000;
-        border-radius: 4px;
-        text-align: center;
-    }
-    /* Main ẩn khi có lớp hidden */
-    .main.hidden {
-        display: none;
-    }
-    #backButton {
-        display: block;
-        position: fixed;
-        top: 0.5%;
-        left: 0.5%;
-        z-index: 100;
-        background-color: #da5b55;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 5px;
-        font-size: 14px;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: background-color 0.3s ease;
-    }
-
-    #backButton:hover {
-        background-color: #0056b3; /* Màu khi rê chuột */
-    }
-}
-.snowflakes.hidden {
-    display: none;
-}
-/*Hiệu ứng tuyết rơi*/
-.snowflake {
-color: #b2e2ff;
-}
-@-webkit-keyframes snowflakes-fall {
-0% {
-top: -10%;
-}
-100% {
-top: 100%;
-}
-}
-@-webkit-keyframes snowflakes-shake {
-0% {
--webkit-transform: translateX(0px);
-transform: translateX(0px);
-}
-50% {
--webkit-transform: translateX(80px);
-transform: translateX(80px);
-}
-100% {
--webkit-transform: translateX(0px);
-transform: translateX(0px);
-}
-}
-@keyframes snowflakes-fall {
-0% {
-top: -10%;
-}
-100% {
-top: 100%;
-}
-}
-@keyframes snowflakes-shake {
-0% {
-transform: translateX(0px);
-}
-50% {
-transform: translateX(80px);
-}
-100% {
-transform: translateX(0px);
-}
-}
-.snowflake {
-position: fixed;
-top: -10%;
-z-index: 9999;
--webkit-user-select: none;
--moz-user-select: none;
--ms-user-select: none;
-user-select: none;
-cursor: default;
--webkit-animation-name: snowflakes-fall, snowflakes-shake;
--webkit-animation-duration: 10s, 3s;
--webkit-animation-timing-function: linear, ease-in-out;
--webkit-animation-iteration-count: infinite, infinite;
--webkit-animation-play-state: running, running;
-animation-name: snowflakes-fall, snowflakes-shake;
-animation-duration: 10s, 3s;
-animation-timing-function: linear, ease-in-out;
-animation-iteration-count: infinite, infinite;
-animation-play-state: running, running;
-}
-.snowflake:nth-of-type(0) {
-left: 1%;
--webkit-animation-delay: 0s, 0s;
-animation-delay: 0s, 0s;
-}
-.snowflake:nth-of-type(1) {
-left: 10%;
--webkit-animation-delay: 1s, 1s;
-animation-delay: 1s, 1s;
-}
-.snowflake:nth-of-type(2) {
-left: 20%;
--webkit-animation-delay: 6s, 0.5s;
-animation-delay: 6s, 0.5s;
-}
-.snowflake:nth-of-type(3) {
-left: 30%;
--webkit-animation-delay: 4s, 2s;
-animation-delay: 4s, 2s;
-}
-.snowflake:nth-of-type(4) {
-left: 40%;
--webkit-animation-delay: 2s, 2s;
-animation-delay: 2s, 2s;
-}
-.snowflake:nth-of-type(5) {
-left: 50%;
--webkit-animation-delay: 8s, 3s;
-animation-delay: 8s, 3s;
-}
-.snowflake:nth-of-type(6) {
-left: 60%;
--webkit-animation-delay: 6s, 2s;
-animation-delay: 6s, 2s;
-}
-.snowflake:nth-of-type(7) {
-left: 70%;
--webkit-animation-delay: 2.5s, 1s;
-animation-delay: 2.5s, 1s;
-}
-.snowflake:nth-of-type(8) {
-left: 80%;
--webkit-animation-delay: 1s, 0s;
-animation-delay: 1s, 0s;
-}
-.snowflake:nth-of-type(9) {
-left: 90%;
--webkit-animation-delay: 3s, 1.5s;
-animation-delay: 3s, 1.5s;
-} 
-
-/*loading */
-.personal-info-table {
+/* Tables */
+table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.personal-info-table th,
-.personal-info-table td {
-    padding: 10px 15px;
-    text-align: left;
-    border: 1px solid #ddd;
+th, td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+th {
+    background: #ea4c4b;
+    color: white;
+    font-weight: 600;
 }
 
 .personal-info-table th {
-    background-color: #f4f4f9;
+    background: #f8e1e1;
     color: #333;
 }
 
-.personal-info-table input.edit-input {
-    width: 100%;
-    padding: 5px;
-    box-sizing: border-box;
-}
-/*Đổi mật khẩu*/
-/* Styling the Change Password page */
-#changePasswordForm {
-    max-width: 350PX;
-    margin: 0 auto;
+/* Forms */
+form {
+    background: #fff;
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#changePasswordForm h1 {
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-#changePasswordForm div {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-#changePasswordForm label {
-    /* display: block; */
-    font-weight: bold;
-    margin-bottom: 5px;
-    /* text-align: right; */
-    color: #333;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 20px auto;
 }
 
 #changePasswordForm input[type="password"] {
     width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    transition: border-color 0.3s ease;
 }
 
 #changePasswordForm input[type="password"]:focus {
-    border-color: #999;
+    border-color: #ea4c4b;
     outline: none;
 }
 
-#changePasswordForm .button-container {
-    display: flex;
-    gap: 5px;
-    flex-direction: column;
-}
-
-#changePasswordForm .btn {
-    padding: 10px 15px;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    background-color: #f08080;
-    color: white;
-}
-
-#changePasswordForm .btn:hover {
-    background-color: #ea4c4b;
-}
-
-#changePasswordForm .btn:disabled {
-    background-color: #ddd;
-    cursor: not-allowed;
-}
-
-#changePasswordForm .btn.cancel {
-    background-color: #ccc;
-}
-
-#changePasswordForm .btn.cancel:hover {
-    background-color: #999;
-}
-
-/* Mobile view adjustments */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-    #botInfoDiv {
-        top: 25%;
-        right: 5%;
-        width: -webkit-fill-available;
-        left: 5%;
-    }
-    #changePasswordForm {
-        width: 90%;
-        padding: 15px;
-    }
-
-    #changePasswordForm h1 {
-        font-size: 20px;
-    }
-
-    #changePasswordForm label {
-        font-size: 14px;
-    }
-
-    #changePasswordForm input[type="password"] {
-        font-size: 16px;
-    }
-
-    #changePasswordForm .btn {
+    .sidebar {
         width: 100%;
-        margin-bottom: 1px;
+        height: 100%;
+        top: 0;
+        z-index: 20;
     }
+
+    .main {
+        width: 100%;
+        margin-left: 0;
+        top: 0;
+        z-index: 10;
+    }
+
+    .sidebar.hidden {
+        transform: translateX(-100%);
+    }
+
+    .main.hidden {
+        transform: translateX(100%);
+    }
+
+    #chatPopup {
+        width: 90%;
+        height: 80%;
+        left: 5%;
+        right: 5%;
+        bottom: 10px;
+    }
+
+    #backButton {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: #ea4c4b;
+        padding: 10px 20px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Snowflake Effect */
+.snowflake {
+    color: #fff;
+    position: fixed;
+    z-index: 9999;
+    animation: snowflakes-fall 10s linear infinite, snowflakes-shake 3s ease-in-out infinite;
+}
+
+@keyframes snowflakes-fall {
+    0% { top: -10%; }
+    100% { top: 100%; }
+}
+
+@keyframes snowflakes-shake {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(50px); }
+    100% { transform: translateX(0); }
 }
