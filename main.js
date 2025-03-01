@@ -592,9 +592,9 @@ class ChatManager {
                     });
                 }
             } catch (error) {
-                console.error('Polling error:', error);
+                
             }
-        }, 4000);
+        }, 2000);
     }
 }
 
@@ -663,19 +663,27 @@ class GrantAccessManager {
     }
 
     async loadUsers() {
-        try {
-            const response = await fetch('/api/users');
-            if (!response.ok) throw new Error('Failed to fetch users');
-            
-            const users = await response.json();
-            this.renderUserList(users);
-        } catch (error) {
-            console.error('Fetch users error:', error);
-            document.getElementById('userList').innerHTML = `
-                <tr><td colspan="4">Không thể tải danh sách người dùng</td></tr>
-            `;
-            showNotification('Lỗi tải danh sách người dùng', 'error', 3000);
+      try {
+        const response = await fetch(`${this.apiUrl}?action=getUsers&token=${token}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+        });
+    
+        const contentType = response.headers.get('Content-Type');
+        if (!contentType?.includes('application/json')) {
+          const text = await response.text();
+          throw new Error(`Expected JSON, got ${contentType}: ${text.slice(0, 100)}...`);
         }
+
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    
+        const users = await response.json();
+        this.renderUserList(users);
+      } catch (error) {
+        console.error('Fetch users error:', error);
+        document.getElementById('userList').innerHTML = `<tr><td colspan="4">Lỗi: ${error.message}</td></tr>`;
+        showNotification(`Lỗi tải danh sách người dùng: ${error.message}`, 'error', 3000);
+      }
     }
 
     renderUserList(users) {
