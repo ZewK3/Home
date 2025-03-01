@@ -12,17 +12,6 @@ html, body {
     background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
-.search-bar {
-    height: 5%;
-    width: 100%;
-}
-input#searchInput {
-    margin-top: 10px;
-    size: 15px;
-    height: -webkit-fill-available;
-    width: -webkit-fill-available;
-    border: 1px solid black;
-}
 /* Nút mở chat */
 #openChatButton {
     position: fixed;
@@ -95,8 +84,8 @@ button.delete-button.hidden {
 #botInfoDiv {
     position: fixed;
     top: 45%;
-    right: 55px;
-    width: 325px;
+    right: 5%;
+    max-width: 300px;
     padding: 10px;
     background-color: #f9f9f9;
     border: 1px solid #ccc;
@@ -302,26 +291,25 @@ div#userInfo {
 
 /* Liên kết trong các item */
 .sidebar ul li a {
-    display: block;
-    padding: 15px;
-    margin: 10px 0;
-    background: #ffffff;
-    color: #333;
     text-decoration: none;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3sease;
+    color: #333; /* Màu chữ đen */
+    font-size: 16px;
+    padding: 12px 20px;
+    display: block;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển động khi hover */
+    border-radius: 5px;
+    text-align: center; /* Canh giữa chữ */
+    background-color: white; /* Nền trắng */
+    border: 2px solid #000; /* Viền đen */
 }
 
 /* Màu nền khi hover */
 .sidebar ul li a:hover {
-    background: #ea4c4b;
-    color: white;
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(234, 76, 75, 0.3);
+    background-color: #f4f4f4; /* Màu nền sáng khi hover */
+    color: #333; /* Đảm bảo màu chữ không thay đổi */
+    transform: translateX(10px); /* Di chuyển nút sang phải */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Thêm bóng đổ nhẹ */
 }
-
 
 /* Thêm hiệu ứng phóng to khi hover */
 .sidebar ul li a:active {
@@ -851,12 +839,10 @@ animation-delay: 3s, 1.5s;
 
 /* Mobile view adjustments */
 @media (max-width: 768px) {
-    #botInfoDiv {
-        top: 25%;
-        right: 5%;
-        width: -webkit-fill-available;
-        left: 5%;
-    }
+  #botInfoDiv {
+    top: 25%;
+    right: 22%;
+  }
     #changePasswordForm {
         width: 90%;
         padding: 15px;
