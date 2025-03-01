@@ -757,3 +757,42 @@ const updateMenuByRole = (userRole) => {
         window.grantAccessManager = grantAccessManager; // Expose for onclick handler
     }
 })();
+
+unction updateSidebarAndMainColor() {
+    const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
+
+    // Lấy các phần tử cần thay đổi
+    const audioPlayer = document.getElementById('audioPlayer');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main');
+    const showUser = document.querySelector('.showUser');
+    const snowflakes = document.querySelector('.snowflakes');
+    snowflakes?.classList.add('hidden');
+    // Xóa tất cả các lớp trước khi thêm mới
+    sidebar?.classList.remove('christmas', 'newyear');
+    mainContent?.classList.remove('christmas', 'newyear');
+    showUser?.classList.remove('christmas', 'newyear');
+
+    // Xử lý các mùa lễ
+    if (currentMonth === 11 ) { // Tháng 12 và tháng 1
+        sidebar?.classList.add('christmas');
+        mainContent?.classList.add('christmas');
+        showUser?.classList.add('christmas');
+        snowflakes?.classList.remove('hidden');
+        
+        audioPlayer.querySelector('source').src = 'Music/songmc.mp3'; // Đổi nguồn nhạc
+        audioPlayer.load(); // Tải lại nhạc mới
+        audioPlayer.play(); // Phát nhạc mới
+    } else if (currentMonth >= 0 && currentMonth <= 2) { // Tháng 1 đến tháng 3
+        sidebar?.classList.add('newyear');
+        mainContent?.classList.add('newyear');
+        showUser?.classList.add('newyear');
+        audioPlayer.querySelector('source').src = 'Music/songny.mp3'; // Đổi nguồn nhạc
+        audioPlayer.load(); // Tải lại nhạc mới
+        audioPlayer.play(); // Phát nhạc mới
+    } else {
+        // Ẩn tuyết nếu không phải mùa lễ
+    }
+}
+// Gọi hàm ngay khi tải trang
+updateSidebarAndMainColor();
