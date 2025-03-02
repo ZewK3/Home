@@ -1,33 +1,46 @@
-/* Cấu hình cơ bản cho body và html */
+/* Variables */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --error-color: #dc3545;
+    --warning-color: #ffc107;
+    --text-color: #333;
+    --background-gradient: linear-gradient(120deg, #00b4d8, #0077b6, #90e0ef);
+    --button-hover-transform: translateY(-2px);
+    --transition-default: 0.3s ease;
+}
+
+/* Basic configuration for body and html */
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Ngăn cuộn trang */
+    overflow: hidden; /* Prevent page scrolling */
     font-family: 'Arial', sans-serif;
-    color: #333;
-    background: linear-gradient(120deg, #00b4d8, #0077b6, #90e0ef);
+    color: var(--text-color);
+    background: var(--background-gradient);
     background-size: 400% 400%;
     animation: gradientAnimation 10s ease infinite;
 }
+
 body {
-    display: flex; /* Để hỗ trợ căn giữa nội dung nếu cần */
+    display: flex; /* Support centering content if needed */
     justify-content: center;
     align-items: center;
 }
 
-/* Giao diện container chính */
+/* Main container */
 .form-container {
     max-width: 500px;
-    margin: 0 auto; /* Canh giữa trên màn hình */
+    margin: 0 auto; /* Center on screen */
     padding: 20px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-
-/* Animation vào trang */
+/* Animation for page entry */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -39,38 +52,36 @@ body {
     }
 }
 
-/* Các trường nhập liệu */
+/* Input fields */
 .form-group {
     margin-bottom: 10px;
 }
 
 .form-control {
-    width: 100%; /* Chiều rộng toàn bộ vùng cha */
-    padding: 12px; /* Khoảng cách bên trong */
-    border: 1px solid #ddd; /* Viền */
-    border-radius: 5px; /* Bo tròn viền */
-    font-size: 16px; /* Kích thước chữ */
-    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng khi focus */
-    box-sizing: border-box; /* Đảm bảo padding và border không làm tăng kích thước */
-    margin-top: 1px; /* Khoảng cách giữa các trường */
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color var(--transition-default), box-shadow var(--transition-default);
+    box-sizing: border-box;
+    margin-top: 1px;
 }
 
-
-/* Hiệu ứng focus cho trường nhập liệu */
 .form-control:focus {
-    border-color: #007bff;
+    border-color: var(--primary-color);
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
     outline: none;
 }
 
-/* Thông báo lỗi */
+/* Error message */
 .form-text {
     font-size: 13px;
     color: red;
     margin-top: 5px;
 }
 
-/* Nút */
+/* Button styles */
 .btn {
     display: block;
     width: 100%;
@@ -82,33 +93,30 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
+    transition: background-color var(--transition-default), transform 0.2s;
 }
 
-/* Nút chính */
 .btn-primary {
-    background-color: #007bff;
+    background-color: var(--primary-color);
 }
 
 .btn-primary:hover {
     background-color: #0056b3;
-    transform: translateY(-2px);
+    transform: var(--button-hover-transform);
 }
 
-/* Nút phụ */
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: var(--secondary-color);
 }
 
 .btn-secondary:hover {
     background-color: #5a6268;
-    transform: translateY(-2px);
+    transform: var(--button-hover-transform);
 }
 
-/* Nút cho liên kết */
 .link-button {
     background: none;
-    color: #007bff;
+    color: var(--primary-color);
     border: none;
     font: inherit;
     text-decoration: underline;
@@ -120,7 +128,7 @@ body {
     text-decoration: none;
 }
 
-/* Thông báo */
+/* Notification */
 #notification {
     position: fixed;
     top: 50%;
@@ -139,19 +147,19 @@ body {
 }
 
 #notification.success {
-    background-color: #28a745;
+    background-color: var(--success-color);
 }
 
 #notification.error {
-    background-color: #dc3545;
+    background-color: var(--error-color);
 }
 
 #notification.warning {
-    background-color: #ffc107;
-    color: #333;
+    background-color: var(--warning-color);
+    color: var(--text-color);
 }
 
-/* Responsive cho thiết bị nhỏ */
+/* Responsive design for small devices */
 @media (max-width: 768px) {
     .form-container {
         padding: 15px;
@@ -199,7 +207,7 @@ body {
     color: #bbdefb;
 }
 
-/* Nền động */
+/* Dynamic background */
 .welcome-container::before {
     content: '';
     position: absolute;
@@ -224,7 +232,7 @@ body {
     }
 }
 
-/* Animation cho nền */
+/* Background animation */
 @keyframes gradientAnimation {
     0% {
         background-position: 0% 50%;
@@ -236,28 +244,27 @@ body {
         background-position: 0% 50%;
     }
 }
-/* Khối chứa tiêu đề */
+
+/* Title container */
 .title-container {
-    text-align: center; /* Căn giữa tiêu đề */
-    margin-bottom: 10px; /* Khoảng cách dưới tiêu đề */
-    animation: fadeInUp 2s ease-in-out; /* Hiệu ứng động cho tiêu đề */
+    text-align: center;
+    margin-bottom: 10px;
+    animation: fadeInUp 2s ease-in-out;
 }
 
-/* Tiêu đề */
 .title-container h2 {
-    font-size: 28px; /* Kích thước chữ */
-    color: #007bff; /* Màu chữ */
-    margin: 0; /* Loại bỏ margin mặc định */
+    font-size: 28px;
+    color: var(--primary-color);
+    margin: 0;
 }
 
-/* Hiệu ứng động fadeInUp */
 @keyframes fadeInUp {
     0% {
         opacity: 0;
-        transform: translateY(20px); /* Đưa tiêu đề xuống dưới */
+        transform: translateY(20px);
     }
     100% {
         opacity: 1;
-        transform: translateY(0); /* Tiêu đề trở lại vị trí ban đầu */
+        transform: translateY(0);
     }
 }
