@@ -1,16 +1,13 @@
-// Constants
 const API_URL = "https://zewk.tocotoco.workers.dev";
 const SUCCESS_STATUS = 200;
 const ACCOUNT_EXISTS_STATUS = 209;
 const PHONE_EXISTS_STATUS = 210;
 const EMAIL_EXISTS_STATUS = 211;
 
-// UI Elements
 const loginFormContainer = document.getElementById("loginFormContainer");
 const registerFormContainer = document.getElementById("registerFormContainer");
 const notification = document.getElementById("notification");
 
-// Event Listeners
 document.getElementById("goToRegister").addEventListener("click", showRegisterForm);
 document.getElementById("backToLogin").addEventListener("click", showLoginForm);
 document.getElementById("registerForm").addEventListener("submit", handleRegister);
@@ -22,6 +19,7 @@ document.addEventListener('contextmenu', disableRightClick);
 function showRegisterForm() {
     loginFormContainer.style.display = "none";
     registerFormContainer.style.display = "block";
+    loadStoreNames(); // Tải danh sách storeName từ server
 }
 
 function showLoginForm() {
@@ -30,25 +28,57 @@ function showLoginForm() {
 }
 
 function showNotification(message, type = "success", duration = 3000) {
-    notification.className = `notification ${type}`;
+    notification.className = `notification ${type} show`;
     notification.innerText = message;
     notification.style.display = "block";
-    notification.style.opacity = "1";
     setTimeout(() => {
-        notification.style.opacity = "0";
+        notification.classList.remove("show");
         setTimeout(() => {
             notification.style.display = "none";
         }, 500);
     }, duration);
 }
 
+async function loadStoreNames() {
+    const spinner = document.getElementById("loadingSpinner");
+    spinner.style.display = "block";
+
+    try {
+        const response = await fetch(`${API_URL}?action=getStores`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (response.ok) {
+            const stores = await response.json();
+            const storeSelect = document.getElementById("storeName");
+            storeSelect.innerHTML = '<option value="" disabled selected>Chọn cửa hàng</option>'; // Reset dropdown
+            stores.forEach(store => {
+                const option = document.createElement("option");
+                option.value = store.storeId; // Giả sử server trả về storeId
+                option.text = store.storeName; // Giả sử server trả về storeName
+                storeSelect.appendChild(option);
+            });
+        } else {
+            showNotification("Không thể tải danh sách cửa hàng!", "error");
+        }
+    } catch (error) {
+        console.error("Lỗi khi tải danh sách cửa hàng:", error.message);
+        showNotification("Có lỗi khi tải danh sách cửa hàng!", "error");
+    } finally {
+        spinner.style.display = "none";
+    }
+}
+
 async function handleRegister(event) {
     event.preventDefault();
+    const spinner = document.getElementById("loadingSpinner");
+    spinner.style.display = "block";
 
     const employeeId = document.getElementById("employeeId").value.trim();
     const password = document.getElementById("password").value.trim();
     const fullName = document.getElementById("fullName").value.trim();
-    const storeName = document.getElementById("storeName").value;
+    const storeName = document.getElementById("storeName").value; // Lấy giá trị đã chọn
     const position = "NV";
     const joinDate = document.getElementById("joinDate").value;
     const phone = document.getElementById("phone").value.trim();
@@ -56,14 +86,17 @@ async function handleRegister(event) {
 
     if (!isValidName(fullName)) {
         showNotification("Tên nhân viên không chứa ký tự đặc biệt và không dài quá 30 ký tự", "warning");
+        spinner.style.display = "none";
         return;
     }
     if (!isValidEmployeeId(employeeId)) {
         showNotification("Mã nhân viên không hợp lệ", "warning");
+        spinner.style.display = "none";
         return;
     }
     if (!isValidPassword(password)) {
         showNotification("Mật khẩu phải có ít nhất 6 ký tự và chứa chữ cái in hoa", "warning");
+        spinner.style.display = "none";
         return;
     }
 
@@ -71,9 +104,7 @@ async function handleRegister(event) {
     try {
         const registerResponse = await fetch(`${API_URL}?action=register`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
 
@@ -98,11 +129,15 @@ async function handleRegister(event) {
     } catch (error) {
         console.error("Lỗi xảy ra:", error.message);
         showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error");
+    } finally {
+        spinner.style.display = "none";
     }
 }
 
 async function handleLogin(event) {
     event.preventDefault();
+    const spinner = document.getElementById("loadingSpinner");
+    spinner.style.display = "block";
 
     const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
     const loginPassword = document.getElementById("loginPassword").value.trim();
@@ -112,9 +147,7 @@ async function handleLogin(event) {
     try {
         const loginResponse = await fetch(`${API_URL}?action=login`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
 
@@ -141,6 +174,8 @@ async function handleLogin(event) {
     } catch (error) {
         console.error("Lỗi xảy ra:", error.message);
         showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error");
+    } finally {
+        spinner.style.display = "none";
     }
 }
 
@@ -178,7 +213,6 @@ function disableRightClick(e) {
     e.preventDefault();
 }
 
-// Validation functions
 function isValidName(name) {
     const trimmedName = name.trim();
     const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/g;
