@@ -58,7 +58,6 @@ async function loadStoreNames() {
       const storeSelect = document.getElementById("storeName");
       storeSelect.innerHTML = '<option value="" disabled selected>Chọn cửa hàng</option>';
 
-      // Thêm các option
       stores.forEach(store => {
         const option = document.createElement("option");
         option.value = store.storeId;
@@ -73,10 +72,19 @@ async function loadStoreNames() {
           allowClear: true,
           width: "100%",
         });
-        storeSelect.setAttribute("data-select2-initialized", "true"); // Đánh dấu đã khởi tạo
+        storeSelect.setAttribute("data-select2-initialized", "true");
       } else {
-        $(storeSelect).trigger("change"); // Cập nhật nếu đã khởi tạo
+        $(storeSelect).trigger("change");
       }
+
+      // Đảm bảo nhãn được cập nhật khi Select2 thay đổi
+      storeSelect.addEventListener("change", () => {
+        if (storeSelect.value) {
+          storeSelect.classList.add("not-empty");
+        } else {
+          storeSelect.classList.remove("not-empty");
+        }
+      });
     } else {
       showNotification("Không thể tải danh sách cửa hàng!", "error");
     }
