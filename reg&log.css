@@ -27,7 +27,35 @@ body {
     justify-content: center;
     align-items: center;
 }
+/* ... (giữ nguyên các định nghĩa cũ) */
 
+/* Đảm bảo Select2 hợp nhất với form-control */
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: all var(--transition-default);
+    box-sizing: border-box;
+    margin-top: 1px;
+}
+
+/* Tùy chỉnh Select2 */
+.select2-container .select2-selection--single {
+    height: 46px; /* Cân với form-control */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 46px;
+    padding-left: 12px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 46px;
+}
 .form-container {
     max-width: 500px;
     margin: 0 auto;
