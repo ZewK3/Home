@@ -27,12 +27,14 @@ body {
     justify-content: center;
     align-items: center;
 }
+
 /* Thêm vào styles.css */
 select.form-control.not-empty + label {
     top: 5px;
     font-size: 12px;
     color: var(--primary-color);
 }
+
 /* Điều chỉnh form-group cho Select2 */
 .form-group {
     position: relative;
@@ -49,7 +51,7 @@ select.form-control.not-empty + label {
     font-size: 16px;
     pointer-events: none;
     transition: all var(--transition-default);
-    z-index: 1; /* Đảm bảo nhãn nằm trên Select2 */
+    z-index: 1; /* Đảm bảo nhãn nằm dưới Select2 */
 }
 
 /* Điều chỉnh khi input/select được focus hoặc có giá trị */
@@ -70,6 +72,8 @@ select.form-control.not-empty + label {
     background: #fff;
     box-sizing: border-box;
     width: 100% !important; /* Đảm bảo chiều rộng đúng */
+    position: relative; /* Đảm bảo Select2 nằm trên nhãn */
+    z-index: 2; /* Đặt trên nhãn */
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
@@ -94,7 +98,19 @@ select.form-control.not-empty + label {
 #storeName {
     position: relative;
     z-index: 2; /* Đặt trên nhãn */
+    opacity: 0; /* Ẩn select gốc để tránh giao diện bị lỗi */
 }
+
+.select2-container {
+    z-index: 2; /* Đảm bảo container Select2 nằm trên nhãn */
+}
+
+/* Ẩn select gốc và để Select2 thay thế */
+#storeName + label {
+    z-index: 1; /* Nhãn nằm dưới Select2 */
+}
+
+/* Đảm bảo form-container không gây xung đột */
 .form-container {
     max-width: 500px;
     margin: 0 auto;
@@ -130,24 +146,7 @@ select.form-control.not-empty + label {
     font-size: 16px;
     transition: all var(--transition-default);
     box-sizing: border-box;
-}
-
-.form-group label {
-    position: absolute;
-    top: 50%;
-    left: 12px;
-    transform: translateY(-50%);
-    color: #888;
-    font-size: 16px;
-    pointer-events: none;
-    transition: all var(--transition-default);
-}
-
-.form-control:focus + label,
-.form-control:not(:placeholder-shown) + label {
-    top: 5px;
-    font-size: 12px;
-    color: var(--primary-color);
+    appearance: none; /* Loại bỏ kiểu mặc định của trình duyệt */
 }
 
 .form-control:focus {
@@ -242,7 +241,6 @@ select.form-control.not-empty + label {
 .spinner {
     display: none;
     position: absolute;
-
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
