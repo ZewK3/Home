@@ -12,195 +12,61 @@ html, body {
     background: linear-gradient(to bottom, #fff, #fff);
     flex-direction: row;
 }
-/* ... (giữ nguyên các định nghĩa cũ) */
-
-/* Styling cho Task Processing */
-.task-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.task-tab {
-    padding: 10px 20px;
-    background: #f0f0f0;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background var(--transition-default);
-}
-
-.task-tab.active {
-    background: var(--primary-color);
-    color: white;
-}
-
-.task-content {
-    padding: 20px;
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.tab-panel {
-    display: none;
-}
-
-.tab-panel.active {
-    display: block;
-}
-
-.button-container {
-    margin-top: 20px;
-    text-align: center;
-}
-
-.personal-info-table,
-.schedule-table,
-.user-table,
-.bot-info-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.personal-info-table th,
-.schedule-table th,
-.user-table th,
-.bot-info-table th {
-    background: #f0f0f0;
-    padding: 10px;
-    text-align: left;
-}
-
-.personal-info-table td,
-.schedule-table td,
-.user-table td,
-.bot-info-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-
-.time-select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.search-bar {
-    margin-bottom: 20px;
-}
-
-.search-bar input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.bot-info-div {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 10000;
-    display: none;
-}
-
-.bot-info-table {
-    margin-top: 0;
-}
-
-.message-wrapper {
-    margin: 10px 0;
-}
-
-.message-container {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-}
-
-.user-message {
-    background: #007bff;
-    color: white;
-    padding: 10px;
-    border-radius: 5px 5px 0 5px;
-    max-width: 70%;
-}
-
-.bot-message {
-    background: #e9ecef;
-    padding: 10px;
-    border-radius: 5px 5px 5px 0;
-    max-width: 70%;
-}
-
-.message-time {
-    font-size: 12px;
-    color: #6c757d;
-    margin-left: 10px;
-}
-
-.message-sender {
-    font-weight: bold;
-    cursor: pointer;
-    color: var(--primary-color);
-}
-
+/* Nút mở chat */
 .message-sender:hover {
     text-decoration: underline;
 }
+/* ... (giữ nguyên các định nghĩa cũ) */
 
-.delete-button {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-#chatPopup {
-    display: none;
-    flex-direction: column;
+/* Nút mở chat với hiệu ứng */
+#openChatButton {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 300px;
-    height: 400px;
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-}
-
-#chatMessages {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 10px;
-}
-
-#messageInput {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-top: 1px solid #ddd;
-}
-
-#sendButton {
-    padding: 10px;
-    background: var(--primary-color);
+    background-color: #ea4c4b;
     color: white;
     border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt mà */
+    animation: pulse 2s infinite; /* Hiệu ứng nhịp đập */
 }
-/* Nút mở chat */
+
+/* Hiệu ứng khi hover */
+#openChatButton:hover {
+    background-color: #d43f3e; /* Màu tối hơn khi hover */
+    box-shadow: 0 6px 12px rgba(234, 76, 75, 0.3); /* Bóng đổ lớn hơn */
+    transform: scale(1.1); /* Phóng to nhẹ */
+}
+
+/* Hiệu ứng khi nhấn (active) */
+#openChatButton:active {
+    transform: scale(0.95); /* Thu nhỏ khi nhấn */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Hiệu ứng nhịp đập */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ... (giữ nguyên các định nghĩa khác) */
 #openChatButton {
     position: fixed;
     bottom: 20px;
