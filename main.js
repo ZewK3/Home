@@ -5,7 +5,7 @@ const token = localStorage.getItem("authToken");
 const mainContent = document.querySelector(".main");
 const sidebar = document.querySelector(".sidebar");
 
-menuList.style.display = 'none';
+menuList.style.display = "none";
 
 // Utility Functions
 const showNotification = (message, type = "success", duration = 3000) => {
@@ -30,13 +30,13 @@ const isMobile = () => window.innerWidth <= 768;
 
 // Security Features
 const setupSecurity = () => {
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
             e.preventDefault();
         }
     });
 
-    document.addEventListener('contextmenu', (e) => {
+    document.addEventListener("contextmenu", (e) => {
         e.preventDefault();
     });
 };
@@ -60,7 +60,7 @@ class AuthManager {
             const user = await response.json();
             document.getElementById("userInfo").textContent = `Chào ${user.fullName} - ${user.employeeId}`;
             updateMenuByRole(user.position);
-            menuList.style.display = 'block';
+            menuList.style.display = "block";
             return user;
         } catch (error) {
             showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning", 3000);
@@ -98,17 +98,17 @@ class PersonalInfoManager {
             }
 
             mainContent.innerHTML = `
-                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
                 <h1>Thông Tin Cá Nhân</h1>
                 <form id="personalInfoForm">
                     <table class="personal-info-table">
                         <tbody>
-                            ${["Mã Nhân Viên:employeeId", "Họ Tên:fullName", "Email:email", 
-                               "Số Điện Thoại:phone", "Vị Trí:position", "Cửa Hàng:storeName", 
+                            ${["Mã Nhân Viên:employeeId", "Họ Tên:fullName", "Email:email",
+                               "Số Điện Thoại:phone", "Vị Trí:position", "Cửa Hàng:storeName",
                                "Ngày Tham Gia:joinDate"].map(field => {
                                 const [label, key] = field.split(":");
                                 return `<tr><th>${label}</th><td>${this.user[key] || "N/A"}</td></tr>`;
-                            }).join('')}
+                            }).join("")}
                         </tbody>
                     </table>
                     <div class="button-container">
@@ -118,7 +118,7 @@ class PersonalInfoManager {
             `;
 
             this.setupBackButton(originalContent);
-            document.getElementById("editPass").addEventListener("click", () => 
+            document.getElementById("editPass").addEventListener("click", () =>
                 this.renderPasswordForm(originalContent));
         });
     }
@@ -130,7 +130,7 @@ class PersonalInfoManager {
         }
 
         mainContent.innerHTML = `
-            ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
             <h1>Đổi Mật Khẩu</h1>
             <form id="changePasswordForm">
                 <div><label>Mật khẩu hiện tại:</label><input type="password" id="currentPassword" required /></div>
@@ -164,7 +164,7 @@ class PersonalInfoManager {
                     body: JSON.stringify({ currentPassword: current, newPassword: newPass })
                 });
                 const data = await response.json();
-                showNotification(data.success ? "Đổi mật khẩu thành công" : (data.message || "Có lỗi xảy ra"), 
+                showNotification(data.success ? "Đổi mật khẩu thành công" : (data.message || "Có lỗi xảy ra"),
                     data.success ? "success" : "error", 3000);
             } catch (error) {
                 showNotification("Có lỗi xảy ra, vui lòng thử lại", "error", 3000);
@@ -195,12 +195,12 @@ class ScheduleManager {
     }
 
     createHourOptions(start, end, selected = "") {
-        return `<option value="">Chọn giờ</option>` + 
+        return `<option value="">Chọn giờ</option>` +
             Array.from({ length: end - start + 1 }, (_, i) => start + i)
                 .map(h => {
                     const time = `${h < 10 ? "0" : ""}${h}:00`;
                     return `<option value="${time}" ${time === selected ? "selected" : ""}>${time}</option>`;
-                }).join('');
+                }).join("");
     }
 
     renderScheduleRegistration() {
@@ -241,7 +241,7 @@ class ScheduleManager {
                                 </select></td>
                             </tr>
                         `;
-                    }).join('');
+                    }).join("");
                 } else {
                     scheduleHtml = this.days.map(day => `
                         <tr>
@@ -253,11 +253,11 @@ class ScheduleManager {
                                 ${this.createHourOptions(12, 23)}
                             </select></td>
                         </tr>
-                    `).join('');
+                    `).join("");
                 }
 
                 mainContent.innerHTML = `
-                    ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+                    ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
                     <h1>${response.status === 200 ? "Bạn đã đăng ký Lịch Làm" : "Đăng ký lịch làm"}</h1>
                     <form id="scheduleForm">
                         <table class="schedule-table">
@@ -299,7 +299,7 @@ class ScheduleManager {
                 const endSelect = document.querySelector(`[name="${day}-end"]`);
                 const startValue = parseInt(this.value);
                 endSelect.innerHTML = this.createHourOptions(
-                    isNaN(startValue) ? 12 : Math.max(startValue + 4, 12), 
+                    isNaN(startValue) ? 12 : Math.max(startValue + 4, 12),
                     23
                 );
             }.bind(this));
@@ -360,17 +360,17 @@ class ScheduleManager {
 class ChatManager {
     constructor(user) {
         this.user = user;
-        this.apiUrl = 'https://zewk.tocotoco.workers.dev/';
+        this.apiUrl = "https://zewk.tocotoco.workers.dev/";
         this.offset = 0;
         this.limit = 50;
         this.lastId = 0;
         this.loading = false;
 
-        this.openChatButton = document.getElementById('openChatButton');
-        this.chatPopup = document.getElementById('chatPopup');
-        this.messageInput = document.getElementById('messageInput');
-        this.chatMessages = document.getElementById('chatMessages');
-        this.sendButton = document.getElementById('sendButton');
+        this.openChatButton = document.getElementById("openChatButton");
+        this.chatPopup = document.getElementById("chatPopup");
+        this.messageInput = document.getElementById("messageInput");
+        this.chatMessages = document.getElementById("chatMessages");
+        this.sendButton = document.getElementById("sendButton");
 
         this.initialize();
     }
@@ -381,16 +381,16 @@ class ChatManager {
     }
 
     setupEventListeners() {
-        this.openChatButton.addEventListener('click', () => this.toggleChatPopup());
-        this.sendButton.addEventListener('click', () => this.sendMessage());
-        this.messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.sendMessage();
+        this.openChatButton.addEventListener("click", () => this.toggleChatPopup());
+        this.sendButton.addEventListener("click", () => this.sendMessage());
+        this.messageInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") this.sendMessage();
         });
     }
 
     toggleChatPopup() {
-        const isHidden = this.chatPopup.style.display === 'none' || this.chatPopup.style.display === '';
-        this.chatPopup.style.display = isHidden ? 'flex' : 'none';
+        const isHidden = this.chatPopup.style.display === "none" || this.chatPopup.style.display === "";
+        this.chatPopup.style.display = isHidden ? "flex" : "none";
         if (isHidden) this.loadInitialMessages();
     }
 
@@ -407,40 +407,40 @@ class ChatManager {
 
         try {
             const response = await fetch(`${this.apiUrl}?action=sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
 
             if (response.ok) {
-                this.messageInput.value = '';
+                this.messageInput.value = "";
             } else {
-                throw new Error('Failed to send message');
+                throw new Error("Failed to send message");
             }
         } catch (error) {
-            console.error('Send message error:', error);
-            showNotification('Không thể gửi tin nhắn', 'error', 3000);
+            console.error("Send message error:", error);
+            showNotification("Không thể gửi tin nhắn", "error", 3000);
         }
     }
 
     createMessageElement(msg, prepend = false) {
-        const wrapper = document.createElement('div');
-        wrapper.classList.add('message-wrapper');
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("message-wrapper");
 
         if (msg.employeeId !== this.user.employeeId) {
-            const sender = document.createElement('p');
+            const sender = document.createElement("p");
             sender.textContent = `${msg.position}-${msg.fullName}`;
-            sender.classList.add('message-sender');
+            sender.classList.add("message-sender");
             this.addSenderClickHandler(sender, msg.employeeId);
             wrapper.appendChild(sender);
         }
 
-        const container = document.createElement('div');
-        container.classList.add('message-container');
+        const container = document.createElement("div");
+        container.classList.add("message-container");
 
-        const content = document.createElement('p');
+        const content = document.createElement("p");
         content.textContent = msg.message;
-        content.classList.add(msg.employeeId === this.user.employeeId ? 'user-message' : 'bot-message');
+        content.classList.add(msg.employeeId === this.user.employeeId ? "user-message" : "bot-message");
         container.appendChild(content);
 
         if (msg.employeeId === this.user.employeeId) {
@@ -451,39 +451,39 @@ class ChatManager {
 
         wrapper.appendChild(container);
 
-        const time = document.createElement('p');
+        const time = document.createElement("p");
         time.textContent = msg.time;
-        time.classList.add('message-time');
+        time.classList.add("message-time");
         wrapper.appendChild(time);
 
-        this.chatMessages[prepend ? 'prepend' : 'appendChild'](wrapper);
+        this.chatMessages[prepend ? "prepend" : "appendChild"](wrapper);
         if (!prepend) this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
     createDeleteButton(messageId, wrapper) {
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Xóa';
-        deleteBtn.classList.add('delete-button');
-        deleteBtn.style.display = 'none';
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Xóa";
+        deleteBtn.classList.add("delete-button");
+        deleteBtn.style.display = "none";
 
-        deleteBtn.addEventListener('click', async () => {
-            if (!confirm('Bạn có chắc chắn muốn xóa tin nhắn này không?')) return;
+        deleteBtn.addEventListener("click", async () => {
+            if (!confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?")) return;
 
             try {
                 const response = await fetch(`${this.apiUrl}?action=deleteMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ messageId })
                 });
 
                 if (response.ok) {
                     wrapper.remove();
                 } else {
-                    throw new Error('Delete failed');
+                    throw new Error("Delete failed");
                 }
             } catch (error) {
-                console.error('Delete message error:', error);
-                showNotification('Không thể xóa tin nhắn', 'error', 3000);
+                console.error("Delete message error:", error);
+                showNotification("Không thể xóa tin nhắn", "error", 3000);
             }
         });
 
@@ -491,97 +491,100 @@ class ChatManager {
     }
 
     addHoverEffects(wrapper, deleteBtn) {
-        wrapper.addEventListener('mouseover', () => deleteBtn.style.display = 'block');
-        wrapper.addEventListener('mouseout', () => deleteBtn.style.display = 'none');
+        wrapper.addEventListener("mouseover", () => (deleteBtn.style.display = "block"));
+        wrapper.addEventListener("mouseout", () => (deleteBtn.style.display = "none"));
     }
 
     async addSenderClickHandler(sender, employeeId) {
-        sender.addEventListener('click', async () => {
+        sender.addEventListener("click", async () => {
             try {
-                const response = await fetch(`${this.apiUrl}?action=getUser&employeeId=${employeeId}&token=${token}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                const response = await fetch(
+                    `${this.apiUrl}?action=getUser&employeeId=${employeeId}&token=${token}`,
+                    {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    }
+                );
 
-                if (!response.ok) throw new Error('Failed to fetch user info');
+                if (!response.ok) throw new Error("Failed to fetch user info");
                 const userInfo = await response.json();
                 this.showUserInfoPopup(userInfo);
             } catch (error) {
-                console.error('Fetch user info error:', error);
-                showNotification('Không thể tải thông tin người dùng', 'error', 3000);
+                console.error("Fetch user info error:", error);
+                showNotification("Không thể tải thông tin người dùng", "error", 3000);
             }
         });
     }
 
     showUserInfoPopup(userInfo) {
-        let infoDiv = document.getElementById('botInfoDiv');
+        let infoDiv = document.getElementById("botInfoDiv");
         if (!infoDiv) {
-            infoDiv = document.createElement('div');
-            infoDiv.id = 'botInfoDiv';
-            infoDiv.classList.add('bot-info-div');
+            infoDiv = document.createElement("div");
+            infoDiv.id = "botInfoDiv";
+            infoDiv.classList.add("bot-info-div");
             document.body.appendChild(infoDiv);
         }
 
         infoDiv.innerHTML = `
             <table class="bot-info-table">
-                ${['Tên:fullName', 'ID:employeeId', 'Chức vụ:position', 'Email:email', 'Số điện thoại:phone']
+                ${["Tên:fullName", "ID:employeeId", "Chức vụ:position", "Email:email", "Số điện thoại:phone"]
                     .map(field => {
-                        const [label, key] = field.split(':');
-                        return `<tr><th>${label}</th><td>${userInfo[key] || 'N/A'}</td></tr>`;
-                    }).join('')}
+                        const [label, key] = field.split(":");
+                        return `<tr><th>${label}</th><td>${userInfo[key] || "N/A"}</td></tr>`;
+                    }).join("")}
             </table>
         `;
 
-        infoDiv.style.display = 'block';
+        infoDiv.style.display = "block";
 
         const hidePopup = (e) => {
             if (!infoDiv.contains(e.target)) {
-                infoDiv.style.display = 'none';
-                document.removeEventListener('click', hidePopup);
+                infoDiv.style.display = "none";
+                document.removeEventListener("click", hidePopup);
             }
         };
 
-        setTimeout(() => document.addEventListener('click', hidePopup), 0);
+        setTimeout(() => document.addEventListener("click", hidePopup), 0);
     }
 
-    // async loadInitialMessages() {
-    //     if (this.loading) return;
-    //     this.loading = true;
+    async loadInitialMessages() {
+        if (this.loading) return;
+        this.loading = true;
 
-    //     try {
-    //         const url = new URL(this.apiUrl);
-    //         url.searchParams.append('action', 'getMessages');
-    //         url.searchParams.append('offset', this.offset);
-    //         url.searchParams.append('limit', this.limit);
+        try {
+            const url = new URL(this.apiUrl);
+            url.searchParams.append("action", "getMessages");
+            url.searchParams.append("offset", this.offset);
+            url.searchParams.append("limit", this.limit);
 
-    //         const response = await fetch(url, {
-    //             method: 'GET',
-    //             headers: { 'Content-Type': 'application/json' }
-    //         });
+            const response = await fetch(url, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
 
-    //         if (response.ok) {
-    //             const messages = await response.json();
-    //             messages.forEach(msg => this.createMessageElement(msg, true));
-    //             this.offset += messages.length;
-    //         }
-    //     } catch (error) {
-    //         console.error('Load messages error:', error);
-    //         showNotification('Không thể tải tin nhắn', 'error', 3000);
-    //     } finally {
-    //         this.loading = false;
-    //     }
-    // }
+            if (response.ok) {
+                const messages = await response.json();
+                messages.forEach(msg => this.createMessageElement(msg, true));
+                this.offset += messages.length;
+            }
+        } catch (error) {
+            console.error("Load messages error:", error);
+            showNotification("Không thể tải tin nhắn", "error", 3000);
+        } finally {
+            this.loading = false;
+        }
+    }
 
     startMessagePolling() {
         setInterval(async () => {
             try {
                 const url = new URL(this.apiUrl);
-                url.searchParams.append('action', 'getMessages');
-                url.searchParams.append('lastId', this.lastId);
+                url.searchParams.append("action", "getMessages");
+                url.searchParams.append("lastId", this.lastId);
 
                 const response = await fetch(url, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" }
                 });
 
                 if (response.ok) {
@@ -592,7 +595,7 @@ class ChatManager {
                     });
                 }
             } catch (error) {
-                
+                console.error("Polling error:", error);
             }
         }, 3000);
     }
@@ -605,26 +608,26 @@ class GrantAccessManager {
     }
 
     setupEventListener() {
-        document.getElementById('openGrantAccess').addEventListener('click', (e) => {
+        document.getElementById("openGrantAccess").addEventListener("click", (e) => {
             e.preventDefault();
             this.renderGrantAccess();
         });
     }
 
     async renderGrantAccess() {
-        if (!['AD'].includes(this.user.position)) {
-            showNotification('Bạn không có quyền truy cập', 'error', 3000);
+        if (!["AD"].includes(this.user.position)) {
+            showNotification("Bạn không có quyền truy cập", "error", 3000);
             return;
         }
 
         const originalContent = mainContent.innerHTML;
         if (isMobile()) {
-            sidebar.classList.add('hidden');
-            mainContent.classList.remove('hidden');
+            sidebar.classList.add("hidden");
+            mainContent.classList.remove("hidden");
         }
 
         mainContent.innerHTML = `
-            ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ''}
+            ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
             <h1>Phân Quyền Người Dùng</h1>
             <div class="search-bar">
                 <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên hoặc mã nhân viên..." />
@@ -649,12 +652,12 @@ class GrantAccessManager {
     }
 
     setupBackButton(originalContent) {
-        const backButton = document.getElementById('backButton');
+        const backButton = document.getElementById("backButton");
         if (backButton) {
-            backButton.addEventListener('click', () => {
+            backButton.addEventListener("click", () => {
                 if (isMobile()) {
-                    mainContent.classList.add('hidden');
-                    sidebar.classList.remove('hidden');
+                    mainContent.classList.add("hidden");
+                    sidebar.classList.remove("hidden");
                 } else {
                     mainContent.innerHTML = originalContent;
                 }
@@ -663,31 +666,31 @@ class GrantAccessManager {
     }
 
     async loadUsers() {
-      try {
-        const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUsers&token=${token}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
-        });
-    
-        const contentType = response.headers.get('Content-Type');
-        if (!contentType?.includes('application/json')) {
-          const text = await response.text();
-          throw new Error(`Expected JSON, got ${contentType}: ${text.slice(0, 100)}...`);
-        }
+        try {
+            const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getUsers&token=${token}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
 
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-    
-        const users = await response.json();
-        this.renderUserList(users);
-      } catch (error) {
-        console.error('Fetch users error:', error);
-        document.getElementById('userList').innerHTML = `<tr><td colspan="4">Lỗi: ${error.message}</td></tr>`;
-        showNotification(`Lỗi tải danh sách người dùng: ${error.message}`, 'error', 3000);
-      }
+            const contentType = response.headers.get("Content-Type");
+            if (!contentType?.includes("application/json")) {
+                const text = await response.text();
+                throw new Error(`Expected JSON, got ${contentType}: ${text.slice(0, 100)}...`);
+            }
+
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+            const users = await response.json();
+            this.renderUserList(users);
+        } catch (error) {
+            console.error("Fetch users error:", error);
+            document.getElementById("userList").innerHTML = `<tr><td colspan="4">Lỗi: ${error.message}</td></tr>`;
+            showNotification(`Lỗi tải danh sách người dùng: ${error.message}`, "error", 3000);
+        }
     }
 
     renderUserList(users) {
-        const userList = document.getElementById('userList');
+        const userList = document.getElementById("userList");
         userList.innerHTML = users.map(user => `
             <tr>
                 <td>${user.employeeId}</td>
@@ -699,30 +702,110 @@ class GrantAccessManager {
                     </button>
                 </td>
             </tr>
-        `).join('');
+        `).join("");
     }
 
     async changeRole(employeeId) {
-        const newRole = prompt('Nhập quyền mới cho nhân viên:');
+        const newRole = prompt("Nhập quyền mới cho nhân viên:");
         if (!newRole) return;
 
         try {
             const response = await fetch(`/api/users/${employeeId}/role`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ role: newRole })
             });
 
             if (response.ok) {
-                showNotification('Cập nhật quyền thành công!', 'success', 3000);
+                showNotification("Cập nhật quyền thành công!", "success", 3000);
                 location.reload();
             } else {
-                throw new Error('Update failed');
+                throw new Error("Update failed");
             }
         } catch (error) {
-            console.error('Update role error:', error);
-            showNotification('Không thể cập nhật quyền', 'error', 3000);
+            console.error("Update role error:", error);
+            showNotification("Không thể cập nhật quyền", "error", 3000);
         }
+    }
+}
+
+// Task Processing Manager
+class TaskProcessingManager {
+    constructor(user) {
+        this.user = user;
+        this.allowedRoles = ["AD"];
+    }
+
+    renderTaskProcessing() {
+        document.getElementById("openTaskProcessing").addEventListener("click", (e) => {
+            e.preventDefault();
+            if (!this.allowedRoles.includes(this.user.position)) {
+                return showNotification("Bạn không có quyền truy cập", "error", 3000);
+            }
+
+            const originalContent = mainContent.innerHTML;
+            if (isMobile()) {
+                sidebar.classList.add("hidden");
+                mainContent.classList.remove("hidden");
+            }
+
+            mainContent.innerHTML = `
+                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
+                <h1>Xử Lý Công Việc</h1>
+                <div class="task-tabs">
+                    <button class="task-tab active" data-tab="nhan-su">Nhân Sự</button>
+                    <button class="task-tab" data-tab="cua-hang">Cửa Hàng</button>
+                    <button class="task-tab" data-tab="tai-chinh">Tài Chính</button>
+                    <button class="task-tab" data-tab="xet-duyet">Xét Duyệt</button>
+                </div>
+                <div class="task-content">
+                    <div class="tab-panel active" id="nhan-su-panel">
+                        <h2>Quản lý Nhân Sự</h2>
+                        <p>Chức năng quản lý thông tin nhân viên, phân quyền, và lịch làm việc.</p>
+                    </div>
+                    <div class="tab-panel" id="cua-hang-panel">
+                        <h2>Quản lý Cửa Hàng</h2>
+                        <p>Chức năng quản lý thông tin cửa hàng, doanh thu, và tồn kho.</p>
+                    </div>
+                    <div class="tab-panel" id="tai-chinh-panel">
+                        <h2>Quản lý Tài Chính</h2>
+                        <p>Chức năng theo dõi giao dịch, báo cáo tài chính, và chi phí.</p>
+                    </div>
+                    <div class="tab-panel" id="xet-duyet-panel">
+                        <h2>Xét Duyệt</h2>
+                        <p>Chức năng phê duyệt lịch làm việc, yêu cầu tài chính, và báo cáo.</p>
+                    </div>
+                </div>
+            `;
+
+            this.setupBackButton(originalContent);
+            this.setupTabNavigation();
+        });
+    }
+
+    setupBackButton(originalContent) {
+        const backButton = document.getElementById("backButton");
+        if (backButton) {
+            backButton.addEventListener("click", () => {
+                if (isMobile()) {
+                    mainContent.classList.add("hidden");
+                    sidebar.classList.remove("hidden");
+                } else {
+                    mainContent.innerHTML = originalContent;
+                }
+            });
+        }
+    }
+
+    setupTabNavigation() {
+        document.querySelectorAll(".task-tab").forEach(tab => {
+            tab.addEventListener("click", () => {
+                document.querySelectorAll(".task-tab").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+                tab.classList.add("active");
+                document.getElementById(`${tab.getAttribute("data-tab")}-panel`).classList.add("active");
+            });
+        });
     }
 }
 
@@ -737,23 +820,27 @@ const updateMenuByRole = (userRole) => {
 // Initialization
 (async () => {
     setupSecurity();
-    
+
     const authManager = new AuthManager();
     const user = await authManager.checkAuthentication();
-    
+
     if (user) {
         authManager.setupLogout();
-        
+
         const personalInfoManager = new PersonalInfoManager(user);
         personalInfoManager.renderPersonalInfo();
-        
+
         const scheduleManager = new ScheduleManager(user);
         scheduleManager.renderScheduleRegistration();
-        
+
         const chatManager = new ChatManager(user);
-        
+
         const grantAccessManager = new GrantAccessManager(user);
         grantAccessManager.setupEventListener();
+
+        const taskProcessingManager = new TaskProcessingManager(user);
+        taskProcessingManager.renderTaskProcessing();
+
         window.grantAccessManager = grantAccessManager; // Expose for onclick handler
     }
 })();
@@ -762,32 +849,32 @@ function updateSidebarAndMainColor() {
     const currentMonth = new Date().getMonth(); // Lấy tháng hiện tại (0 = tháng 1, 11 = tháng 12)
 
     // Lấy các phần tử cần thay đổi
-    const audioPlayer = document.getElementById('audioPlayer');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main');
-    const showUser = document.querySelector('.showUser');
-    const snowflakes = document.querySelector('.snowflakes');
-    snowflakes?.classList.add('hidden');
+    const audioPlayer = document.getElementById("audioPlayer");
+    const sidebar = document.querySelector(".sidebar");
+    const mainContent = document.querySelector(".main");
+    const showUser = document.querySelector(".showUser");
+    const snowflakes = document.querySelector(".snowflakes");
+    snowflakes?.classList.add("hidden");
     // Xóa tất cả các lớp trước khi thêm mới
-    sidebar?.classList.remove('christmas', 'newyear');
-    mainContent?.classList.remove('christmas', 'newyear');
-    showUser?.classList.remove('christmas', 'newyear');
+    sidebar?.classList.remove("christmas", "newyear");
+    mainContent?.classList.remove("christmas", "newyear");
+    showUser?.classList.remove("christmas", "newyear");
 
     // Xử lý các mùa lễ
-    if (currentMonth === 11 ) { // Tháng 12 và tháng 1
-        sidebar?.classList.add('christmas');
-        mainContent?.classList.add('christmas');
-        showUser?.classList.add('christmas');
-        snowflakes?.classList.remove('hidden');
-        
-        audioPlayer.querySelector('source').src = 'Music/songmc.mp3'; // Đổi nguồn nhạc
+    if (currentMonth === 11) { // Tháng 12
+        sidebar?.classList.add("christmas");
+        mainContent?.classList.add("christmas");
+        showUser?.classList.add("christmas");
+        snowflakes?.classList.remove("hidden");
+
+        audioPlayer.querySelector("source").src = "Music/songmc.mp3"; // Đổi nguồn nhạc
         audioPlayer.load(); // Tải lại nhạc mới
         audioPlayer.play(); // Phát nhạc mới
     } else if (currentMonth >= 0 && currentMonth <= 2) { // Tháng 1 đến tháng 3
-        sidebar?.classList.add('newyear');
-        mainContent?.classList.add('newyear');
-        showUser?.classList.add('newyear');
-        audioPlayer.querySelector('source').src = 'Music/songny.mp3'; // Đổi nguồn nhạc
+        sidebar?.classList.add("newyear");
+        mainContent?.classList.add("newyear");
+        showUser?.classList.add("newyear");
+        audioPlayer.querySelector("source").src = "Music/songny.mp3"; // Đổi nguồn nhạc
         audioPlayer.load(); // Tải lại nhạc mới
         audioPlayer.play(); // Phát nhạc mới
     } else {
