@@ -3,88 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="favicon-32x32.png" sizes="32x32">
-    <title>Đăng Ký và Đăng Nhập</title>
-    <link rel="stylesheet" href="reg&log.css"> <!-- Liên kết tới file CSS -->
+    <title>Đăng nhập & Đăng ký</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<!-- Thông báo toàn cục -->
-<div id="notification" class="hidden"></div>
-<div class="login-icon"></div>
-    <!-- Giao diện Đăng Nhập -->
-    <div class="form-container" id="loginFormContainer">
+    <div id="loadingSpinner" class="spinner"></div>
+    <div id="loginFormContainer" class="form-container">
         <div class="title-container">
-            <h2>Đăng Nhập</h2>
+            <h2>Đăng nhập</h2>
         </div>
         <form id="loginForm">
             <div class="form-group">
-                <label for="loginEmployeeId">Mã Nhân Viên</label>
-                <input type="text" class="form-control" id="loginEmployeeId" placeholder="Mã nhân viên" required>
+                <input type="text" id="loginEmployeeId" class="form-control" placeholder=" " required>
+                <label for="loginEmployeeId">Mã nhân viên</label>
             </div>
             <div class="form-group">
-                <label for="loginPassword">Mật Khẩu</label>
-                <input type="password" class="form-control" id="loginPassword" placeholder="Mật khẩu" required>
+                <input type="password" id="loginPassword" class="form-control" placeholder=" " required>
+                <label for="loginPassword">Mật khẩu</label>
             </div>
             <div class="form-group">
-                <label>
-                    <input type="checkbox" id="rememberMe"> Nhớ đăng nhập
-                </label>
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe" style="position: static; font-size: 14px;">Ghi nhớ tôi</label>
             </div>
-            <button type="submit" class="btn btn-primary">Đăng Nhập</button>
+            <button type="submit" class="btn btn-primary">Đăng nhập</button>
+            <button type="button" id="goToRegister" class="link-button">Đăng ký tài khoản mới</button>
         </form>
-        <p>Chưa có tài khoản? <button type="button" id="goToRegister" class="link-button">Đăng ký</button></p>
     </div>
 
-    <!-- Giao diện Đăng Ký -->
-    <div class="form-container" id="registerFormContainer" style="display:none;">
+    <div id="registerFormContainer" class="form-container" style="display: none;">
         <div class="title-container">
-            <h2>Đăng Ký</h2>
+            <h2>Đăng ký</h2>
         </div>
         <form id="registerForm">
             <div class="form-group">
-                <label for="employeeId">Mã Nhân Viên</label>
-                <input type="text" class="form-control" id="employeeId" placeholder="Mã nhân viên" required>
+                <input type="text" id="employeeId" class="form-control" placeholder=" " required>
+                <label for="employeeId">Mã nhân viên</label>
             </div>
             <div class="form-group">
-                <label for="password">Mật Khẩu</label>
-                <input type="password" class="form-control" id="password" placeholder="Mật khẩu" required>
+                <input type="password" id="password" class="form-control" placeholder=" " required>
+                <label for="password">Mật khẩu</label>
             </div>
             <div class="form-group">
-                <label for="fullName">Tên Nhân Viên</label>
-                <input type="text" class="form-control" id="fullName" placeholder="Tên nhân viên" required>
+                <input type="text" id="fullName" class="form-control" placeholder=" " required>
+                <label for="fullName">Họ và tên</label>
             </div>
             <div class="form-group">
-                <label for="storeName">Tên Cửa Hàng</label>
-                <select class="form-control" id="storeName" required>
-                    <option value="" disabled selected>Chọn cửa hàng</option>
-                    <option value="202004">Nguyễn Thái Học</option>                    
-                    <option value="202020">478 Luỹ Bán Bích</option>
-                    <option value="202048">29 Trường Sơn</option> 
-                    <option value="202079">970 Lạc Long Quân</option>
-                    <option value="202110">1 Nguyễn Đình Chính</option>
-                    <option value="202126">488 Cách Mạng Tháng 8</option>
-                    <option value="202129">152 Nguyễn Phúc Nguyên</option>
-                    <option value="202145">156 Âu Cơ</option>
+                <select id="storeName" class="form-control" required>
+                   <option value="" disabled selected>Chọn cửa hàng</option>
                 </select>
+                <label for="storeName">Tên cửa hàng</label>
             </div>
             <div class="form-group">
-                <label for="joinDate">Ngày Vào Làm</label>
-                <input type="date" class="form-control" id="joinDate" required>
+                <input type="date" id="joinDate" class="form-control" required>
+                <label for="joinDate">Ngày tham gia</label>
             </div>
             <div class="form-group">
-                <label for="phone">Số Điện Thoại</label>
-                <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại" required>
+                <input type="tel" id="phone" class="form-control" placeholder=" " required>
+                <label for="phone">Số điện thoại</label>
             </div>
             <div class="form-group">
+                <input type="email" id="email" class="form-control" placeholder=" " required>
                 <label for="email">Email</label>
-                <input type="email" class="form-control" id="email" placeholder="Email" required>
             </div>
-            <button type="submit" class="btn btn-primary">Đăng Ký</button>
-            <button type="button" class="btn btn-secondary" id="backToLogin">Quay lại</button>
+            <button type="submit" class="btn btn-primary">Đăng ký</button>
+            <button type="button" id="backToLogin" class="link-button">Quay lại đăng nhập</button>
         </form>
-</div>
+    </div>
 
-    <!-- Liên kết file JavaScript -->
-<script src="script.js"></script>
+    <div id="notification" class="notification"></div>
+    <script src="script.js"></script>
 </body>
 </html>
