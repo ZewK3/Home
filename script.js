@@ -68,7 +68,7 @@ async function loadStoreNames() {
       // Khởi tạo Select2 sau khi điền dữ liệu
       if (!storeSelect.hasAttribute("data-select2-initialized")) {
         $(storeSelect).select2({
-          placeholder: "Tìm kiếm cửa hàng...",
+          placeholder: "Nhập Cửa Hàng",
           allowClear: true,
           width: "100%",
         });
