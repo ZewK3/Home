@@ -27,11 +27,12 @@ body {
     justify-content: center;
     align-items: center;
 }
-/* ... (giữ nguyên các định nghĩa cũ) */
-
-/* Đảm bảo Select2 hợp nhất với form-control */
-/* ... (giữ nguyên các định nghĩa gốc) */
-
+/* Thêm vào styles.css */
+select.form-control.not-empty + label {
+    top: 5px;
+    font-size: 12px;
+    color: var(--primary-color);
+}
 /* Điều chỉnh form-group cho Select2 */
 .form-group {
     position: relative;
