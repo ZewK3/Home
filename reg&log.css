@@ -30,15 +30,35 @@ body {
 /* ... (giữ nguyên các định nghĩa cũ) */
 
 /* Đảm bảo Select2 hợp nhất với form-control */
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+/* ... (giữ nguyên các định nghĩa gốc) */
+
+/* Điều chỉnh form-group cho Select2 */
+.form-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+/* Định vị nhãn */
+.form-group label {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    color: #888;
     font-size: 16px;
+    pointer-events: none;
     transition: all var(--transition-default);
-    box-sizing: border-box;
-    margin-top: 1px;
+    z-index: 1; /* Đảm bảo nhãn nằm trên Select2 */
+}
+
+/* Điều chỉnh khi input/select được focus hoặc có giá trị */
+.form-control:focus + label,
+.form-control:not(:placeholder-shown) + label,
+.select2-container--focus + label,
+.select2-selection--single:not(:empty) + label {
+    top: 5px;
+    font-size: 12px;
+    color: var(--primary-color);
 }
 
 /* Tùy chỉnh Select2 */
@@ -46,15 +66,33 @@ body {
     height: 46px; /* Cân với form-control */
     border: 1px solid #ddd;
     border-radius: 5px;
+    background: #fff;
+    box-sizing: border-box;
+    width: 100% !important; /* Đảm bảo chiều rộng đúng */
 }
 
 .select2-container--default .select2-selection--single .select2-selection__rendered {
     line-height: 46px;
     padding-left: 12px;
+    padding-right: 30px; /* Tạo khoảng cách cho mũi tên */
+    color: #333;
 }
 
 .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 46px;
+    width: 30px;
+    top: 0;
+    right: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #888;
+}
+
+/* Đảm bảo Select2 không bị nhãn che khuất */
+#storeName {
+    position: relative;
+    z-index: 2; /* Đặt trên nhãn */
 }
 .form-container {
     max-width: 500px;
