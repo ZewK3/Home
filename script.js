@@ -40,34 +40,50 @@ function showNotification(message, type = "success", duration = 3000) {
 }
 
 async function loadStoreNames() {
-    const spinner = document.getElementById("loadingSpinner");
-    spinner.style.display = "block";
+  const spinner = document.getElementById("loadingSpinner");
+  spinner.style.display = "block";
 
-    try {
-        const response = await fetch(`${API_URL}?action=getStores`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
+  try {
+    const response = await fetch(`${API_URL}?action=getStores`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
 
-        if (response.ok) {
-            const stores = await response.json();
-            const storeSelect = document.getElementById("storeName");
-            storeSelect.innerHTML = '<option value="" disabled selected>Chọn cửa hàng</option>'; // Reset dropdown
-            stores.forEach(store => {
-                const option = document.createElement("option");
-                option.value = store.storeId; // Giả sử server trả về storeId
-                option.text = store.storeName; // Giả sử server trả về storeName
-                storeSelect.appendChild(option);
-            });
-        } else {
-            showNotification("Không thể tải danh sách cửa hàng!", "error");
-        }
-    } catch (error) {
-        console.error("Lỗi khi tải danh sách cửa hàng:", error.message);
-        showNotification("Có lỗi khi tải danh sách cửa hàng!", "error");
-    } finally {
-        spinner.style.display = "none";
+    if (response.ok) {
+      const stores = await response.json();
+      const storeSelect = document.getElementById("storeName");
+      storeSelect.innerHTML = '<option value="" disabled selected>Chọn cửa hàng</option>';
+
+      // Thêm các option
+      stores.forEach(store => {
+        const option = document.createElement("option");
+        option.value = store.storeId;
+        option.text = store.storeName;
+        storeSelect.appendChild(option);
+      });
+
+      // Khởi tạo Select2
+      $(storeSelect).select2({
+        placeholder: "Tìm kiếm cửa hàng...",
+        allowClear: true,
+        width: '100%'
+      });
+    } else {
+      showNotification("Không thể tải danh sách cửa hàng!", "error");
     }
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách cửa hàng:", error.message);
+    showNotification("Có lỗi khi tải danh sách cửa hàng!", "error");
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+// Gọi hàm khi chuyển sang form đăng ký
+function showRegisterForm() {
+  loginFormContainer.style.display = "none";
+  registerFormContainer.style.display = "block";
+  loadStoreNames(); // Tải danh sách và khởi tạo Select2
 }
 
 async function handleRegister(event) {
