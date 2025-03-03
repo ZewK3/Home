@@ -357,6 +357,8 @@ class ScheduleManager {
 }
 
 // Chat Manager
+// ... (giữ nguyên các phần khác của mã)
+
 class ChatManager {
     constructor(user) {
         this.user = user;
@@ -444,9 +446,9 @@ class ChatManager {
         container.appendChild(content);
 
         if (msg.employeeId === this.user.employeeId) {
-            const deleteBtn = this.createDeleteButton(msg.id, wrapper);
+            const deleteBtn = this.createDeleteButton(msg.id, wrapper, msg.time);
             container.appendChild(deleteBtn);
-            this.addHoverEffects(wrapper, deleteBtn);
+            this.addHoverEffects(wrapper, deleteBtn, msg.time);
         }
 
         wrapper.appendChild(container);
@@ -460,7 +462,7 @@ class ChatManager {
         if (!prepend) this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
-    createDeleteButton(messageId, wrapper) {
+    createDeleteButton(messageId, wrapper, messageTime) {
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Xóa";
         deleteBtn.classList.add("delete-button");
@@ -490,9 +492,22 @@ class ChatManager {
         return deleteBtn;
     }
 
-    addHoverEffects(wrapper, deleteBtn) {
-        wrapper.addEventListener("mouseover", () => (deleteBtn.style.display = "block"));
-        wrapper.addEventListener("mouseout", () => (deleteBtn.style.display = "none"));
+    addHoverEffects(wrapper, deleteBtn, messageTime) {
+        wrapper.addEventListener("mouseover", () => {
+            const currentTime = new Date();
+            const messageDate = new Date(messageTime); // Giả định messageTime là chuỗi dạng "dd-mm-yyyy hh:mm"
+            const timeDiff = (currentTime - messageDate) / 1000; // Chuyển sang giây
+
+            if (timeDiff <= 600) { // 10 phút = 600 giây
+                deleteBtn.style.display = "block";
+            } else {
+                deleteBtn.style.display = "none";
+            }
+        });
+
+        wrapper.addEventListener("mouseout", () => {
+            deleteBtn.style.display = "none";
+        });
     }
 
     async addSenderClickHandler(sender, employeeId) {
@@ -547,33 +562,33 @@ class ChatManager {
         setTimeout(() => document.addEventListener("click", hidePopup), 0);
     }
 
-    async loadInitialMessages() {
-        if (this.loading) return;
-        this.loading = true;
+    // async loadInitialMessages() {
+    //     if (this.loading) return;
+    //     this.loading = true;
 
-        try {
-            const url = new URL(this.apiUrl);
-            url.searchParams.append("action", "getMessages");
-            url.searchParams.append("offset", this.offset);
-            url.searchParams.append("limit", this.limit);
+    //     try {
+    //         const url = new URL(this.apiUrl);
+    //         url.searchParams.append("action", "getMessages");
+    //         url.searchParams.append("offset", this.offset);
+    //         url.searchParams.append("limit", this.limit);
 
-            const response = await fetch(url, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
+    //         const response = await fetch(url, {
+    //             method: "GET",
+    //             headers: { "Content-Type": "application/json" }
+    //         });
 
-            if (response.ok) {
-                const messages = await response.json();
-                messages.forEach(msg => this.createMessageElement(msg, true));
-                this.offset += messages.length;
-            }
-        } catch (error) {
-            console.error("Load messages error:", error);
-            showNotification("Không thể tải tin nhắn", "error", 3000);
-        } finally {
-            this.loading = false;
-        }
-    }
+    //         if (response.ok) {
+    //             const messages = await response.json();
+    //             messages.forEach(msg => this.createMessageElement(msg, true));
+    //             this.offset += messages.length;
+    //         }
+    //     } catch (error) {
+    //         console.error("Load messages error:", error);
+    //         showNotification("Không thể tải tin nhắn", "error", 3000);
+    //     } finally {
+    //         this.loading = false;
+    //     }
+    // }
 
     startMessagePolling() {
         setInterval(async () => {
@@ -595,11 +610,13 @@ class ChatManager {
                     });
                 }
             } catch (error) {
-                console.error("Polling error:", error);
+                
             }
         }, 3000);
     }
 }
+
+// ... (giữ nguyên các class khác: GrantAccessManager, TaskProcessingManager, v.v.)
 
 // Grant Access Manager
 class GrantAccessManager {
