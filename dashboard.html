@@ -9,29 +9,25 @@
 </head>
 <body>
     <div id="openChatButton">
-        <span>💬</span> <!-- Biểu tượng nút chat -->
+        <span>💬</span>
     </div>
 
     <div id="chatPopup">
-        <div id="chatHeader">
-            Chat with Support
-        </div>
-
-        <div id="chatMessages">
-            <!-- Các tin nhắn sẽ được chèn vào đây -->
-        </div>
-
+        <div id="chatHeader">Chat with Support</div>
+        <div id="chatMessages"></div>
         <div id="chatInput">
             <input id="messageInput" type="text" placeholder="Type a message..." />
             <button id="sendButton">Send</button>
         </div>
     </div>
-    <!-- nhạc -->
+
+    <!-- Nhạc -->
     <audio id="audioPlayer" loop>
         <source src="" type="audio/mpeg">
         Trình duyệt của bạn không hỗ trợ phát nhạc.
     </audio>
     <div id="notification" class="hidden"></div>
+
     <!-- Tuyết rơi -->
     <div class="snowflakes" aria-hidden="true">
         <div class="snowflake">❅</div>
@@ -45,23 +41,38 @@
         <div class="snowflake">❆</div>
         <div class="snowflake">❆</div>
     </div>
+
     <!-- User -->
     <div class="showUser">
         <div id="userInfo"></div>
     </div>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <h2>MENU ©𝕫𝕖𝕨𝕜</h2>
         <ul id="menuList">
-        <li class="menu-item" data-role="AD,QL,NV"><a href="#" id="openScheduleRegistration">Đăng Ký Lịch Làm</a></li>
-        <li class="menu-item" data-role="AD,QL"><a href="#" id="openScheduleWork">Xếp Lịch Làm</a></li>
-        <li class="menu-item" data-role="AD,QL,NV"><a href="#" id="openOfficialworkschedule">Lịch Làm Chính Thức</a></li>
-        <li class="menu-item" data-role="AD,AM,QL,NV"><a href="#" id="openReward">Thưởng/Phạt</a></li>
-        <li class="menu-item" data-role="AD,NV"><a href="#" id="openSubmitTask">Gửi Yêu Cầu</a></li>
-        <li class="menu-item" data-role="AD,QL"><a href="#" id="openTaskProcessing">Xử Lý Yêu Cầu</a></li>
-        <li class="menu-item" data-role="AD"><a href="#" id="openGrantAccess">Phân Quyền</a></li>
-        <li class="menu-item" data-role="AD,QL,AM,NV"><a href="#" id="openPersonalInformation">Thông Tin Cá Nhân</a></li>
-    </ul>
+            <li class="menu-item" data-role="AD,QL,NV">
+                <a href="#" id="openSchedule">Lịch Làm</a>
+                <ul class="submenu">
+                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openScheduleRegistration">Đăng Ký Lịch Làm</a></li>
+                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="openScheduleWork">Xếp Lịch</a></li>
+                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openOfficialworkschedule">Lịch Chính Thức</a></li>
+                </ul>
+            </li>
+            <li class="menu-item" data-role="AD,AM,QL,NV"><a href="#" id="openReward">Thưởng/Phạt</a></li>
+            <li class="menu-item" data-role="AD,NV"><a href="#" id="openSubmitTask">Gửi Yêu Cầu</a></li>
+            <li class="menu-item" data-role="AD,QL">
+                <a href="#" id="openTaskProcessing">Xử Lý Yêu Cầu</a>
+                <ul class="submenu">
+                    <li class="submenu-item" data-role="AD"><a href="#" id="taskPersonnel">Nhân Sự</a></li>
+                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskStore">Cửa Hàng</a></li>
+                    <li class="submenu-item" data-role="AD"><a href="#" id="taskFinance">Tài Chính</a></li>
+                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskApproval">Xét Duyệt</a></li>
+                </ul>
+            </li>
+            <li class="menu-item" data-role="AD"><a href="#" id="openGrantAccess">Phân Quyền</a></li>
+            <li class="menu-item" data-role="AD,QL,AM,NV"><a href="#" id="openPersonalInformation">Thông Tin Cá Nhân</a></li>
+        </ul>
         <button id="logout" class="logout-btn">Đăng xuất</button>
     </div>
 
@@ -70,8 +81,8 @@
         <div id="notification" class="hidden"></div>
         <button id="backButton" class="btn hidden">Quay lại</button>
         <div id="content">
-          <h1>Dashboard</h1>
-    </div>
+            <h1>Dashboard</h1>
+        </div>
     </div>
 
     <script type="module" src="main.js"></script>
