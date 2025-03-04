@@ -12,12 +12,12 @@
         <span>💬</span>
     </div>
 
-    <div id="chatPopup">
-        <div id="chatHeader">Chat with Support</div>
-        <div id="chatMessages"></div>
-        <div id="chatInput">
+    <div id="chatPopup" class="chat-popup">
+        <div id="chatHeader" class="chat-header">Chat with Support</div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div id="chatInput" class="chat-input">
             <input id="messageInput" type="text" placeholder="Type a message..." />
-            <button id="sendButton">Send</button>
+            <button id="sendButton" class="chat-send-btn">Send</button>
         </div>
     </div>
 
@@ -26,7 +26,7 @@
         <source src="" type="audio/mpeg">
         Trình duyệt của bạn không hỗ trợ phát nhạc.
     </audio>
-    <div id="notification" class="hidden"></div>
+    <div id="notification" class="notification hidden"></div>
 
     <!-- Tuyết rơi -->
     <div class="snowflakes" aria-hidden="true">
@@ -43,45 +43,45 @@
     </div>
 
     <!-- User -->
-    <div class="showUser">
-        <div id="userInfo"></div>
+    <div class="show-user">
+        <div id="userInfo" class="user-info"></div>
     </div>
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2>MENU ©𝕫𝕖𝕨𝕜</h2>
-        <ul id="menuList">
+        <h2 class="sidebar-title">MENU ©𝕫𝕖𝕨𝕜</h2>
+        <ul id="menuList" class="menu-list">
             <li class="menu-item" data-role="AD,QL,NV">
-                <a href="#" id="openSchedule">Lịch Làm</a>
+                <a href="#" id="openSchedule" class="menu-link">Lịch Làm</a>
                 <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openScheduleRegistration">Đăng Ký Lịch Làm</a></li>
-                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="openScheduleWork">Xếp Lịch</a></li>
-                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openOfficialworkschedule">Lịch Chính Thức</a></li>
+                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openScheduleRegistration" class="submenu-link">Đăng Ký Lịch Làm</a></li>
+                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="openScheduleWork" class="submenu-link">Xếp Lịch</a></li>
+                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openOfficialworkschedule" class="submenu-link">Lịch Chính Thức</a></li>
                 </ul>
             </li>
-            <li class="menu-item" data-role="AD,AM,QL,NV"><a href="#" id="openReward">Thưởng/Phạt</a></li>
-            <li class="menu-item" data-role="AD,NV"><a href="#" id="openSubmitTask">Gửi Yêu Cầu</a></li>
+            <li class="menu-item" data-role="AD,AM,QL,NV"><a href="#" id="openReward" class="menu-link">Thưởng/Phạt</a></li>
+            <li class="menu-item" data-role="AD,NV"><a href="#" id="openSubmitTask" class="menu-link">Gửi Yêu Cầu</a></li>
             <li class="menu-item" data-role="AD,QL">
-                <a href="#" id="openTaskProcessing">Xử Lý Yêu Cầu</a>
+                <a href="#" id="openTaskProcessing" class="menu-link">Xử Lý Yêu Cầu</a>
                 <ul class="submenu">
-                    <li class="submenu-item" data-role="AD"><a href="#" id="taskPersonnel">Nhân Sự</a></li>
-                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskStore">Cửa Hàng</a></li>
-                    <li class="submenu-item" data-role="AD"><a href="#" id="taskFinance">Tài Chính</a></li>
-                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskApproval">Xét Duyệt</a></li>
+                    <li class="submenu-item" data-role="AD"><a href="#" id="taskPersonnel" class="submenu-link">Nhân Sự</a></li>
+                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskStore" class="submenu-link">Cửa Hàng</a></li>
+                    <li class="submenu-item" data-role="AD"><a href="#" id="taskFinance" class="submenu-link">Tài Chính</a></li>
+                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskApproval" class="submenu-link">Xét Duyệt</a></li>
                 </ul>
             </li>
-            <li class="menu-item" data-role="AD"><a href="#" id="openGrantAccess">Phân Quyền</a></li>
-            <li class="menu-item" data-role="AD,QL,AM,NV"><a href="#" id="openPersonalInformation">Thông Tin Cá Nhân</a></li>
+            <li class="menu-item" data-role="AD"><a href="#" id="openGrantAccess" class="menu-link">Phân Quyền</a></li>
+            <li class="menu-item" data-role="AD,QL,AM,NV"><a href="#" id="openPersonalInformation" class="menu-link">Thông Tin Cá Nhân</a></li>
         </ul>
         <button id="logout" class="logout-btn">Đăng xuất</button>
     </div>
 
     <!-- Main Content -->
     <div class="main">
-        <div id="notification" class="hidden"></div>
-        <button id="backButton" class="btn hidden">Quay lại</button>
-        <div id="content">
-            <h1>Dashboard</h1>
+        <div id="notification" class="notification hidden"></div>
+        <button id="backButton" class="btn back-btn hidden">Quay lại</button>
+        <div id="content" class="content">
+            <h1 class="dashboard-title">Dashboard</h1>
         </div>
     </div>
 
