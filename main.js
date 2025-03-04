@@ -59,13 +59,47 @@ class AuthManager {
 
             const user = await response.json();
             document.getElementById("userInfo").textContent = `Chào ${user.fullName} - ${user.employeeId}`;
-            updateMenuByRole(user.position);
+            this.updateMenuByRole(user.position);
+            this.updateSubmenuByRole(user.position); // Kiểm tra submenu
             menuList.style.display = "block";
             return user;
         } catch (error) {
             showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning", 3000);
             window.location.href = "index.html";
             return null;
+        }
+    }
+
+    updateMenuByRole(userRole) {
+        document.querySelectorAll("#menuList .menu-item").forEach(item => {
+            const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+            item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
+        });
+    }
+
+    updateSubmenuByRole(userRole) {
+        // Kiểm tra submenu cho "Lịch Làm"
+        const scheduleItem = document.querySelector("#openSchedule").closest(".menu-item");
+        if (scheduleItem) {
+            const submenu = scheduleItem.querySelector(".submenu");
+            if (submenu) {
+                submenu.querySelectorAll(".submenu-item").forEach(item => {
+                    const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+                    item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
+                });
+            }
+        }
+
+        // Kiểm tra submenu cho "Xử Lý Yêu Cầu"
+        const taskProcessingItem = document.querySelector("#openTaskProcessing").closest(".menu-item");
+        if (taskProcessingItem) {
+            const submenu = taskProcessingItem.querySelector(".submenu");
+            if (submenu) {
+                submenu.querySelectorAll(".submenu-item").forEach(item => {
+                    const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+                    item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
+                });
+            }
         }
     }
 
@@ -858,7 +892,7 @@ const updateMenuByRole = (userRole) => {
         const taskProcessingManager = new TaskProcessingManager(user);
         taskProcessingManager.renderTaskProcessing();
 
-        window.grantAccessManager = grantAccessManager; // Expose for onclick handler
+        window.grantAccessManager = grantAccessManager;
     }
 })();
 
