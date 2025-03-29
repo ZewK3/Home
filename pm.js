@@ -66,7 +66,7 @@ class TransactionTracker {
             }).split('/').reverse().join('-');
             
             const response = await fetch(
-                `https://zewk.tocotoco.workers.dev?action=checkTransactionStatus&startDate=${today}`
+                `https://zewk.tocotoco.workers.dev?action=getTransaction&startDate=${today}`
             );
             
             if (!response.ok) throw new Error("Failed to fetch transactions");
@@ -143,7 +143,7 @@ class TransactionTracker {
     async checkTransactionStatus(transactionId) {
         try {
             const response = await fetch(
-                `https://zewk.tocotoco.workers.dev?action=getTransaction&transactionId=ID${transactionId}`
+                `https://zewk.tocotoco.workers.dev?action=checkTransaction&transactionId=ID${transactionId}`
             );
             if (!response.ok) return false;
 
