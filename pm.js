@@ -19,21 +19,21 @@ class TransactionTracker {
         this.state = {
             total: 0,
             baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
-            activeTransactions: new Map() // Lưu trữ các giao dịch đang chạy ngầm
+            activeTransactions: new Map()
         };
 
         this.initializeEventListeners();
         this.fetchTodayTransactions();
     }
-   speak(text) {
+
+    speak(text) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'vi-VN'; // Ngôn ngữ tiếng Việt
-            utterance.volume = 1.0; // Âm lượng (0.0 - 1.0)
-            utterance.rate = 1.0; // Tốc độ nói (0.1 - 10)
-            utterance.pitch = 1.0; // Độ cao (0 - 2)
+            utterance.lang = 'vi-VN';
+            utterance.volume = 1.0;
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
 
-            // Tìm giọng tiếng Việt nếu có
             const voices = window.speechSynthesis.getVoices();
             const vietnameseVoice = voices.find(voice => voice.lang === 'vi-VN');
             if (vietnameseVoice) {
@@ -45,6 +45,7 @@ class TransactionTracker {
             console.error("Trình duyệt không hỗ trợ Web Speech API");
         }
     }
+
     formatDateTime() {
         const date = new Date();
         return date.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
@@ -123,28 +124,26 @@ class TransactionTracker {
         return `${this.state.baseQRUrl}&amount=${amount}&addInfo=ID${transactionId}`;
     }
 
- startTransaction(amount, transactionId) {
+    startTransaction(amount, transactionId) {
         const transaction = {
             amount: Number(amount),
-            timeLeft: 300, // 5 phút
+            timeLeft: 300,
             countdownTimer: null,
             checkInterval: null,
             listItem: null
         };
 
         const li = document.createElement("li");
-        li.textContent = `Mã: ${transactionId} - GĐ: ${this.formatCurrency(amount)} - TT: pending - Còn: ${this.formatTime(transaction.timeLeft)}`;
+        li.textContent = `Mã: ID${transactionId} - GĐ: ${this.formatCurrency(amount)} - TT: pending - Còn: ${this.formatTime(transaction.timeLeft)}`;
         transaction.listItem = li;
         this.elements.transactionHistory.appendChild(li);
 
-        // Cập nhật countdown trong popup
         this.elements.countdown.textContent = this.formatTime(transaction.timeLeft);
 
         transaction.countdownTimer = setInterval(() => {
             transaction.timeLeft--;
             if (transaction.timeLeft >= 0) {
-                // Cập nhật cả lịch sử và popup
-                li.textContent = `Mã: ${transactionId} - GĐ: ${this.formatCurrency(amount)} - TT: pending - Còn: ${this.formatTime(transaction.timeLeft)}`;
+                li.textContent = `Mã: ID${transactionId} - GĐ: ${this.formatCurrency(amount)} - TT: pending - Còn: ${this.formatTime(transaction.timeLeft)}`;
                 this.elements.countdown.textContent = this.formatTime(transaction.timeLeft);
             }
             if (transaction.timeLeft <= 0) {
@@ -173,7 +172,7 @@ class TransactionTracker {
             }
 
             const data = await response.json();
-            console.log(`Check status for ${transactionId}:`, data); // Debug log
+            console.log(`Check status for ID${transactionId}:`, data);
             return data.success === true;
         } catch (error) {
             console.error("Error checking transaction:", error);
@@ -215,6 +214,9 @@ class TransactionTracker {
                 status === "success" ? "Giao dịch thành công" : "Giao dịch thất bại",
                 status === "success" ? "success" : "error"
             );
+            if (status === "success") {
+                this.speak("Giao dịch thành công"); // Phát giọng nói khi thành công
+            }
         } catch (error) {
             this.showNotification("Không thể lưu giao dịch", "error");
             console.error(error);
@@ -223,38 +225,15 @@ class TransactionTracker {
         clearInterval(transaction.countdownTimer);
         clearInterval(transaction.checkInterval);
         this.state.activeTransactions.delete(transactionId);
+        this.resetPopup();
     }
 
-   handleTransactionSuccess(transactionId) {
-        const transaction = this.state.activeTransactions.get(transactionId);
-        if (!transaction) {
-            console.log(`Transaction ${transactionId} not found in active transactions`);
-            return;
-        }
-
-        this.state.total += transaction.amount;
-        this.elements.totalValue.textContent = this.formatCurrency(this.state.total);
-        transaction.listItem.textContent = `Mã: ${transactionId} - GĐ: ${this.formatCurrency(transaction.amount)} - TT: success`;
-        this.showNotification("Giao dịch thành công", "success");
-        this.speak("Giao dịch thành công");
-
-        clearInterval(transaction.countdownTimer);
-        clearInterval(transaction.checkInterval);
-        this.state.activeTransactions.delete(transactionId);
-        this.resetPopup();
+    handleTransactionSuccess(transactionId) {
+        this.saveTransaction(transactionId, "success");
     }
 
     handleTransactionTimeout(transactionId) {
-        const transaction = this.state.activeTransactions.get(transactionId);
-        if (!transaction) return;
-
-        transaction.listItem.textContent = `Mã: ${transactionId} - GĐ: ${this.formatCurrency(transaction.amount)} - TT: failed`;
-        this.showNotification("Giao dịch thất bại", "error");
-
-        clearInterval(transaction.countdownTimer);
-        clearInterval(transaction.checkInterval);
-        this.state.activeTransactions.delete(transactionId);
-        this.resetPopup();
+        this.saveTransaction(transactionId, "failed");
     }
 
     resetPopup() {
