@@ -1,4 +1,16 @@
 class TransactionTracker {
+    // Security Features
+    const setupSecurity = () => {
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+                e.preventDefault();
+            }
+        });
+    
+        document.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+        });
+    };
     constructor() {
         this.elements = {
             transactionInput: document.getElementById("transaction-input"),
@@ -95,7 +107,7 @@ class TransactionTracker {
             this.updateTransactionHistory(data.results);
         } catch (error) {
             this.showNotification("Không thể tải dữ liệu giao dịch", "error");
-            console.error(error);
+            // console.error(error);
         }
     }
 
@@ -167,15 +179,15 @@ class TransactionTracker {
                 `https://zewk.tocotoco.workers.dev?action=checkTransaction&transactionId=ID${transactionId}`
             );
             if (!response.ok) {
-                console.error(`HTTP error! Status: ${response.status}`);
+                // console.error(`HTTP error! Status: ${response.status}`);
                 return false;
             }
 
             const data = await response.json();
-            console.log(`Check status for ID${transactionId}:`, data);
+            // console.log(`Check status for ID${transactionId}:`, data);
             return data.success === true;
         } catch (error) {
-            console.error("Error checking transaction:", error);
+            // console.error("Error checking transaction:", error);
             return false;
         }
     }
@@ -219,7 +231,7 @@ class TransactionTracker {
             }
         } catch (error) {
             this.showNotification("Không thể lưu giao dịch", "error");
-            console.error(error);
+            // console.error(error);
         }
 
         clearInterval(transaction.countdownTimer);
