@@ -363,3 +363,62 @@ function showNotification(message, type = "success", duration = 3000) {
 }
 // Gọi API khi trang tải
 window.onload = fetchTodayTransactions;
+document.addEventListener("DOMContentLoaded", function () {
+    const addTransactionBtn = document.getElementById("addTransaction");
+    const popup = document.getElementById("transactionPopup");
+    const qrCodeContainer = document.getElementById("qrCode");
+    const countdownTimer = document.getElementById("countdown");
+    const closePopupBtn = document.getElementById("closePopup");
+
+    let countdown;
+
+    addTransactionBtn.addEventListener("click", function () {
+        showPopup();
+    });
+
+    closePopupBtn.addEventListener("click", function () {
+        closePopup();
+    });
+
+    function showPopup() {
+        popup.style.display = "block";
+        generateQRCode(`https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=${transactionValue}&addInfo=ID${sto}`); // 🔹 Thay bằng dữ liệu thực tế
+        startCountdown(300); // 5 phút (300 giây)
+    }
+
+    function closePopup() {
+        popup.style.display = "none";
+        clearInterval(countdown);
+    }
+
+    function generateQRCode(data) {
+        qrCodeContainer.innerHTML = ""; // Xóa QR cũ nếu có
+        new QRCode(qrCodeContainer, {
+            text: data,
+            width: 128,
+            height: 128,
+        });
+    }
+
+    function startCountdown(seconds) {
+        let remainingTime = seconds;
+        countdownTimer.innerText = formatTime(remainingTime);
+
+        countdown = setInterval(() => {
+            remainingTime--;
+            countdownTimer.innerText = formatTime(remainingTime);
+
+            if (remainingTime <= 0) {
+                clearInterval(countdown);
+                alert("Giao dịch thất bại do hết thời gian!");
+                closePopup();
+            }
+        }, 1000);
+    }
+
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+    }
+});
