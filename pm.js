@@ -25,7 +25,26 @@ class TransactionTracker {
         this.initializeEventListeners();
         this.fetchTodayTransactions();
     }
+   speak(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'vi-VN'; // Ngôn ngữ tiếng Việt
+            utterance.volume = 1.0; // Âm lượng (0.0 - 1.0)
+            utterance.rate = 1.0; // Tốc độ nói (0.1 - 10)
+            utterance.pitch = 1.0; // Độ cao (0 - 2)
 
+            // Tìm giọng tiếng Việt nếu có
+            const voices = window.speechSynthesis.getVoices();
+            const vietnameseVoice = voices.find(voice => voice.lang === 'vi-VN');
+            if (vietnameseVoice) {
+                utterance.voice = vietnameseVoice;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.error("Trình duyệt không hỗ trợ Web Speech API");
+        }
+    }
     formatDateTime() {
         const date = new Date();
         return date.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
@@ -217,10 +236,12 @@ class TransactionTracker {
         this.elements.totalValue.textContent = this.formatCurrency(this.state.total);
         transaction.listItem.textContent = `Mã: ${transactionId} - GĐ: ${this.formatCurrency(transaction.amount)} - TT: success`;
         this.showNotification("Giao dịch thành công", "success");
+        this.speak("Giao dịch thành công");
 
         clearInterval(transaction.countdownTimer);
         clearInterval(transaction.checkInterval);
         this.state.activeTransactions.delete(transactionId);
+        this.resetPopup();
     }
 
     handleTransactionTimeout(transactionId) {
@@ -233,6 +254,7 @@ class TransactionTracker {
         clearInterval(transaction.countdownTimer);
         clearInterval(transaction.checkInterval);
         this.state.activeTransactions.delete(transactionId);
+        this.resetPopup();
     }
 
     resetPopup() {
