@@ -104,7 +104,7 @@ class TransactionTracker {
     async checkTransactionStatus(transactionId) {
         try {
             const response = await fetch(
-                `https://zewk.tocotoco.workers.dev?action=checkTransactionStatus&transactionId=ID${transactionId}`
+                `https://zewk.tocotoco.workers.dev?action=checkTransaction&transactionId=${transactionId}`
             );
             if (!response.ok) {
                 console.error(`HTTP error! Status: ${response.status}`);
