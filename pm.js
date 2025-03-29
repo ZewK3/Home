@@ -143,7 +143,7 @@ addTransactionBtn.addEventListener("click", () => {
     }
 
     // Cập nhật URL mã QR với số tiền đã nhập
-    const qrUrl = `https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=${transactionValue}&addInfo=ID${sto}`;
+    const qrUrl = `https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI&amount=${transactionValue}&addInfo=ID${sto}`;
     displayImage.src = qrUrl;
     // Mở tab mới và hiển thị ảnh
     // Tạo nội dung HTML để kiểm soát tỉ lệ trang in
