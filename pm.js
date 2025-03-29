@@ -11,15 +11,15 @@ class TransactionTracker {
             notification: document.getElementById("notification"),
             qrPopup: document.getElementById("qr-popup"),
             popupQrImage: document.getElementById("popup-qr-image"),
-            countdown: document.getElementById("countdown")
+            countdown: document.getElementById("countdown"),
+            pauseBtn: document.getElementById("pause-transaction"),
+            cancelBtn: document.getElementById("cancel-transaction")
         };
 
         this.state = {
             total: 0,
-            currentTransactionId: '',
-            baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
-            countdownTimer: null,
-            checkInterval: null
+            baseQRUrl: 'https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
+            activeTransactions: new Map() // Lưu trữ các giao dịch đang chạy ngầm
         };
 
         this.initializeEventListeners();
@@ -36,6 +36,12 @@ class TransactionTracker {
             style: "currency",
             currency: "VND"
         }).format(amount).replace("₫", " VNĐ");
+    }
+
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
     }
 
     showNotification(message, type = "success", duration = 3000) {
@@ -94,31 +100,50 @@ class TransactionTracker {
         totalValue.textContent = this.formatCurrency(totalAmount);
     }
 
-    generateQRCode(amount) {
-        this.state.currentTransactionId = this.formatDateTime();
-        return `${this.state.baseQRUrl}&amount=${amount}&addInfo=ID${this.state.currentTransactionId}`;
+    generateQRCode(amount, transactionId) {
+        return `${this.state.baseQRUrl}&amount=${amount}&addInfo=ID${transactionId}`;
     }
 
-    startCountdown() {
-        let timeLeft = 300; // 5 phút = 300 giây
-        this.elements.countdown.textContent = "5:00";
+    startTransaction(amount, transactionId) {
+        const transaction = {
+            amount: Number(amount),
+            timeLeft: 300, // 5 phút = 300 giây
+            countdownTimer: null,
+            checkInterval: null,
+            listItem: null
+        };
 
-        this.state.countdownTimer = setInterval(() => {
-            timeLeft--;
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            this.elements.countdown.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        // Thêm giao dịch vào lịch sử với trạng thái "pending"
+        const li = document.createElement("li");
+        li.textContent = `Mã: ID${transactionId} - GĐ: ${this.formatCurrency(amount)} - TT: pending - Còn: ${this.formatTime(transaction.timeLeft)}`;
+        transaction.listItem = li;
+        this.elements.transactionHistory.appendChild(li);
 
-            if (timeLeft <= 0) {
-                this.handleTransactionTimeout();
+        // Đếm ngược thời gian
+        transaction.countdownTimer = setInterval(() => {
+            transaction.timeLeft--;
+            li.textContent = `Mã: ID${transactionId} - GĐ: ${this.formatCurrency(amount)} - TT: pending - Còn: ${this.formatTime(transaction.timeLeft)}`;
+
+            if (transaction.timeLeft <= 0) {
+                this.handleTransactionTimeout(transactionId);
             }
         }, 1000);
+
+        // Kiểm tra trạng thái từ server
+        transaction.checkInterval = setInterval(async () => {
+            const isSuccess = await this.checkTransactionStatus(transactionId);
+            if (isSuccess) {
+                this.handleTransactionSuccess(transactionId);
+            }
+        }, 5000); // Kiểm tra mỗi 5 giây
+
+        this.state.activeTransactions.set(transactionId, transaction);
     }
 
-    async checkTransactionStatus() {
+    async checkTransactionStatus(transactionId) {
         try {
             const response = await fetch(
-                `https://zewk.tocotoco.workers.dev?action=getTransaction&transactionId=ID${this.state.currentTransactionId}`
+                `https://zewk.tocotoco.workers.dev?action=getTransaction&transactionId=ID${transactionId}`
             );
             if (!response.ok) return false;
 
@@ -130,24 +155,17 @@ class TransactionTracker {
         }
     }
 
-    startTransactionCheck() {
-        this.state.checkInterval = setInterval(async () => {
-            const isSuccess = await this.checkTransactionStatus();
-            if (isSuccess) {
-                this.handleTransactionSuccess();
-            }
-        }, 5000); // Kiểm tra mỗi 5 giây
-    }
+    async saveTransaction(transactionId, status) {
+        const transaction = this.state.activeTransactions.get(transactionId);
+        if (!transaction) return;
 
-    async saveTransaction(status) {
-        const amount = Number(this.elements.transactionInput.value);
         const today = new Date().toLocaleDateString('en-GB', {
             timeZone: "Asia/Ho_Chi_Minh"
         }).split('/').reverse().join('-');
 
         const transactionData = {
-            id: `ID${this.state.currentTransactionId}`,
-            amount: amount,
+            id: `ID${transactionId}`,
+            amount: transaction.amount,
             status: status,
             date: today
         };
@@ -162,14 +180,11 @@ class TransactionTracker {
             if (!response.ok) throw new Error("Failed to save transaction");
 
             if (status === "success") {
-                this.state.total += amount;
+                this.state.total += transaction.amount;
                 this.elements.totalValue.textContent = this.formatCurrency(this.state.total);
             }
 
-            const li = document.createElement("li");
-            li.textContent = `Mã: ${transactionData.id} - GĐ: ${this.formatCurrency(amount)} - TT: ${status}`;
-            this.elements.transactionHistory.appendChild(li);
-
+            transaction.listItem.textContent = `Mã: ID${transactionId} - GĐ: ${this.formatCurrency(transaction.amount)} - TT: ${status}`;
             this.showNotification(
                 status === "success" ? "Giao dịch thành công" : "Giao dịch thất bại",
                 status === "success" ? "success" : "error"
@@ -178,24 +193,26 @@ class TransactionTracker {
             this.showNotification("Không thể lưu giao dịch", "error");
             console.error(error);
         }
+
+        clearInterval(transaction.countdownTimer);
+        clearInterval(transaction.checkInterval);
+        this.state.activeTransactions.delete(transactionId);
     }
 
-    resetInterface() {
-        clearInterval(this.state.countdownTimer);
-        clearInterval(this.state.checkInterval);
+    handleTransactionSuccess(transactionId) {
+        this.saveTransaction(transactionId, "success");
+    }
+
+    handleTransactionTimeout(transactionId) {
+        this.saveTransaction(transactionId, "failed");
+    }
+
+    resetPopup() {
         this.elements.qrPopup.classList.add("hidden");
         this.elements.transactionInput.value = "";
         this.elements.displayImage.style.display = "none";
         this.elements.defaultImage.style.display = "block";
         this.elements.addTransactionBtn.disabled = false;
-    }
-
-    handleTransactionSuccess() {
-        this.saveTransaction("success").then(() => this.resetInterface());
-    }
-
-    handleTransactionTimeout() {
-        this.saveTransaction("failed").then(() => this.resetInterface());
     }
 
     initializeEventListeners() {
@@ -206,20 +223,33 @@ class TransactionTracker {
                 return;
             }
 
-            const qrUrl = this.generateQRCode(amount);
+            const transactionId = this.formatDateTime();
+            const qrUrl = this.generateQRCode(amount, transactionId);
             this.elements.popupQrImage.src = qrUrl;
             this.elements.qrPopup.classList.remove("hidden");
             this.elements.addTransactionBtn.disabled = true;
 
             this.elements.popupQrImage.onload = () => {
-                this.startCountdown();
-                this.startTransactionCheck();
+                this.startTransaction(amount, transactionId);
             };
 
             this.elements.popupQrImage.onerror = () => {
                 this.showNotification("Không thể tạo mã QR", "error");
-                this.resetInterface();
+                this.resetPopup();
             };
+        });
+
+        this.elements.pauseBtn.addEventListener("click", () => {
+            this.showNotification("Giao dịch đã được treo và tiếp tục chạy ngầm", "warning");
+            this.resetPopup();
+        });
+
+        this.elements.cancelBtn.addEventListener("click", () => {
+            const transactionId = this.elements.popupQrImage.src.match(/ID(\d+)/)?.[1];
+            if (transactionId && this.state.activeTransactions.has(transactionId)) {
+                this.handleTransactionTimeout(transactionId);
+            }
+            this.resetPopup();
         });
     }
 }
