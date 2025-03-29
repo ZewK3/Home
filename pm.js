@@ -18,7 +18,7 @@ class TransactionTracker {
 
         this.state = {
             total: 0,
-            baseQRUrl: 'https://api.vietqr.io/image/970407-MS00T04064919780688-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
+            baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
             activeTransactions: new Map() // Lưu trữ các giao dịch đang chạy ngầm
         };
 
