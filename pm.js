@@ -1,16 +1,5 @@
 class TransactionTracker {
     // Security Features
-    const setupSecurity = () => {
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-                e.preventDefault();
-            }
-        });
-    
-        document.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-        });
-    };
     constructor() {
         this.elements = {
             transactionInput: document.getElementById("transaction-input"),
@@ -294,5 +283,15 @@ class TransactionTracker {
         });
     }
 }
-
+    const setupSecurity = () => {
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+                e.preventDefault();
+            }
+        });
+    
+        document.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+        });
+    };
 document.addEventListener("DOMContentLoaded", () => new TransactionTracker());
