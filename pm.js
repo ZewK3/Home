@@ -1,5 +1,4 @@
 class TransactionTracker {
-    // Security Features
     constructor() {
         this.elements = {
             transactionInput: document.getElementById("transaction-input"),
@@ -25,6 +24,27 @@ class TransactionTracker {
 
         this.initializeEventListeners();
         this.fetchTodayTransactions();
+        this.preventDeveloperTools(); // Khởi tạo chặn F12 và chuột phải
+    }
+
+    // Hàm chặn F12 và chuột phải
+    preventDeveloperTools() {
+        // Chặn phím F12
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'F12') {
+                event.preventDefault();
+            }
+            // Chặn tổ hợp phím phổ biến để mở DevTools (Ctrl+Shift+I, Ctrl+Shift+J)
+            if ((event.ctrlKey && event.shiftKey && event.key === 'I') || 
+                (event.ctrlKey && event.shiftKey && event.key === 'J')) {
+                event.preventDefault();
+            }
+        });
+
+        // Chặn chuột phải
+        document.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
     }
 
     speak(text) {
@@ -33,12 +53,21 @@ class TransactionTracker {
             utterance.lang = 'vi-VN';
             utterance.volume = 1.0;
             utterance.rate = 1.0;
-            utterance.pitch = 1.0;
+            utterance.pitch = 1.5;
 
             const voices = window.speechSynthesis.getVoices();
-            const vietnameseVoice = voices.find(voice => voice.lang === 'vi-VN');
-            if (vietnameseVoice) {
-                utterance.voice = vietnameseVoice;
+            let selectedVoice = voices.find(voice => 
+                voice.lang === 'vi-VN' && 
+                (voice.name.toLowerCase().includes('female') || voice.name.includes('nữ') || voice.name.includes('Google'))
+            );
+            if (!selectedVoice) {
+                selectedVoice = voices.find(voice => voice.lang === 'vi-VN');
+            }
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                console.log(`Selected voice: ${selectedVoice.name}`);
+            } else {
+                console.warn("Không tìm thấy giọng tiếng Việt, dùng giọng mặc định");
             }
 
             window.speechSynthesis.speak(utterance);
@@ -96,7 +125,7 @@ class TransactionTracker {
             this.updateTransactionHistory(data.results);
         } catch (error) {
             this.showNotification("Không thể tải dữ liệu giao dịch", "error");
-            // console.error(error);
+            console.error(error);
         }
     }
 
@@ -153,9 +182,17 @@ class TransactionTracker {
         }, 1000);
 
         transaction.checkInterval = setInterval(async () => {
-            const isSuccess = await this.checkTransactionStatus(transactionId);
-            if (isSuccess && this.state.activeTransactions.has(transactionId)) {
-                this.handleTransactionSuccess(transactionId);
+            const serverData = await this.checkTransactionStatus(transactionId);
+            if (serverData && this.state.activeTransactions.has(transactionId)) {
+                const clientAmount = transaction.amount;
+                const serverAmount = Number(serverData.amount);
+                if (clientAmount === serverAmount) {
+                    this.handleTransactionSuccess(transactionId);
+                } else {
+                    console.error(`Amount mismatch for ID${transactionId}: Client=${clientAmount}, Server=${serverAmount}`);
+                    this.showNotification(`Số tiền không khớp: Client ${this.formatCurrency(clientAmount)} != Server ${this.formatCurrency(serverAmount)}`, "error");
+                    this.handleTransactionTimeout(transactionId);
+                }
             }
         }, 5000);
 
@@ -168,15 +205,15 @@ class TransactionTracker {
                 `https://zewk.tocotoco.workers.dev?action=checkTransaction&transactionId=ID${transactionId}`
             );
             if (!response.ok) {
-                // console.error(`HTTP error! Status: ${response.status}`);
+                console.error(`HTTP error! Status: ${response.status}`);
                 return false;
             }
 
             const data = await response.json();
-            // console.log(`Check status for ID${transactionId}:`, data);
-            return data.success === true;
+            console.log(`Check status for ID${transactionId}:`, data);
+            return data.success === true ? data : false;
         } catch (error) {
-            // console.error("Error checking transaction:", error);
+            console.error("Error checking transaction:", error);
             return false;
         }
     }
@@ -208,6 +245,7 @@ class TransactionTracker {
             if (status === "success") {
                 this.state.total += transaction.amount;
                 this.elements.totalValue.textContent = this.formatCurrency(this.state.total);
+                this.speak("Giao dịch thành công");
             }
 
             transaction.listItem.textContent = `Mã: ID${transactionId} - GĐ: ${this.formatCurrency(transaction.amount)} - TT: ${status}`;
@@ -215,12 +253,9 @@ class TransactionTracker {
                 status === "success" ? "Giao dịch thành công" : "Giao dịch thất bại",
                 status === "success" ? "success" : "error"
             );
-            if (status === "success") {
-                this.speak("Giao dịch thành công"); // Phát giọng nói khi thành công
-            }
         } catch (error) {
             this.showNotification("Không thể lưu giao dịch", "error");
-            // console.error(error);
+            console.error(error);
         }
 
         clearInterval(transaction.countdownTimer);
@@ -281,17 +316,11 @@ class TransactionTracker {
             }
             this.resetPopup();
         });
+
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log("Available voices:", window.speechSynthesis.getVoices());
+        };
     }
 }
-    const setupSecurity = () => {
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-                e.preventDefault();
-            }
-        });
-    
-        document.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-        });
-    };
+
 document.addEventListener("DOMContentLoaded", () => new TransactionTracker());
