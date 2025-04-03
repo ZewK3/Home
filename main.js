@@ -526,23 +526,31 @@ class ChatManager {
         return deleteBtn;
     }
 
-    addHoverEffects(wrapper, deleteBtn, messageTime) {
-        wrapper.addEventListener("mouseover", () => {
-            const currentTime = new Date();
-            const messageDate = new Date(messageTime); // Giả định messageTime là chuỗi dạng "dd-mm-yyyy hh:mm"
-            const timeDiff = (currentTime - messageDate) / 1000; // Chuyển sang giây
+   addHoverEffects(wrapper, deleteBtn, messageTime) {
+    wrapper.addEventListener("mouseover", () => {
+        // Lấy thời gian hiện tại dưới dạng đối tượng Date
+        const currentTime = new Date();
+        
+        // Nếu cần định dạng để hiển thị (dd-mm-yyyy)
+        const formattedCurrentTime = `${String(currentTime.getDate()).padStart(2, '0')}-${String(currentTime.getMonth() + 1).padStart(2, '0')}-${currentTime.getFullYear()}`;
+        
+        // Giả định messageTime có định dạng "dd-mm-yyyy"
+        const [day, month, year] = messageTime.split('-');
+        const messageDate = new Date(`${year}-${month}-${day}`); // Chuyển thành định dạng ISO để parse
+        
+        const timeDiff = (currentTime - messageDate) / 1000; // Chuyển sang giây
 
-            if (timeDiff <= 600) { // 10 phút = 600 giây
-                deleteBtn.style.display = "block";
-            } else {
-                deleteBtn.style.display = "none";
-            }
-        });
-
-        wrapper.addEventListener("mouseout", () => {
+        if (timeDiff <= 600) { // 10 phút = 600 giây
+            deleteBtn.style.display = "block";
+        } else {
             deleteBtn.style.display = "none";
-        });
-    }
+        }
+    });
+
+    wrapper.addEventListener("mouseout", () => {
+        deleteBtn.style.display = "none";
+    });
+}
 
     async addSenderClickHandler(sender, employeeId) {
         sender.addEventListener("click", async () => {
