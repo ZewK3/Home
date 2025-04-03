@@ -526,17 +526,19 @@ class ChatManager {
         return deleteBtn;
     }
 
-   addHoverEffects(wrapper, deleteBtn, messageTime) {
+addHoverEffects(wrapper, deleteBtn, messageTime) {
     wrapper.addEventListener("mouseover", () => {
         // Lấy thời gian hiện tại dưới dạng đối tượng Date
         const currentTime = new Date();
         
-        // Nếu cần định dạng để hiển thị (dd-mm-yyyy)
-        const formattedCurrentTime = `${String(currentTime.getDate()).padStart(2, '0')}-${String(currentTime.getMonth() + 1).padStart(2, '0')}-${currentTime.getFullYear()}`;
+        // Định dạng currentTime thành "dd-mm-yyyy hh:mm" nếu cần hiển thị
+        const formattedCurrentTime = `${String(currentTime.getDate()).padStart(2, '0')}-${String(currentTime.getMonth() + 1).padStart(2, '0')}-${currentTime.getFullYear()} ${String(currentTime.getHours()).padStart(2, '0')}:${String(currentTime.getMinutes()).padStart(2, '0')}`;
         
-        // Giả định messageTime có định dạng "dd-mm-yyyy"
-        const [day, month, year] = messageTime.split('-');
-        const messageDate = new Date(`${year}-${month}-${day}`); // Chuyển thành định dạng ISO để parse
+        // Parse messageTime từ định dạng "dd-mm-yyyy hh:mm"
+        const [datePart, timePart] = messageTime.split(' ');
+        const [day, month, year] = datePart.split('-');
+        const [hours, minutes] = timePart.split(':');
+        const messageDate = new Date(year, month - 1, day, hours, minutes); // month - 1 vì getMonth() đếm từ 0
         
         const timeDiff = (currentTime - messageDate) / 1000; // Chuyển sang giây
 
