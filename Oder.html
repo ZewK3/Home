@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đặt Hàng Trà Sữa - Trà Sữa Ngon</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f8e1e9, #f5c7d2);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(90deg, #ff6f61, #ff8a80);
+      color: white;
+      padding: 8px;
+      text-align: center;
+      width: 100%;
+      font-size: 1.1em;
+      font-weight: bold;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    .menu-toggle {
+      display: none;
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.3em;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    .container {
+      display: flex;
+      max-width: 1200px;
+      width: 100%;
+      height: calc(100vh - 36px);
+      margin: 10px auto;
+      gap: 15px;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 280px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      max-height: calc(100vh - 36px);
+      transition: transform 0.3s ease;
+    }
+    .sidebar h3 {
+      font-size: 1.4em;
+      color: #ff6f61;
+      margin: 0 0 15px;
+      text-align: center;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      flex-grow: 1;
+    }
+    .sidebar ul li {
+      padding: 12px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      font-size: 1.1em;
+    }
+    .sidebar ul li:hover {
+      background: #ff6f61;
+      color: white;
+      transform: translateX(5px);
+    }
+    .sidebar ul li.active {
+      background: #ff6f61;
+      color: white;
+    }
+    .cart {
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .cart:hover {
+      background: #ff6f61;
+      color: white;
+    }
+    .cart span {
+      font-weight: bold;
+      margin-left: 5px;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      overflow-y: auto;
+      max-height: 100%;
+      padding: 10px;
+    }
+    .product {
+      width: 200px;
+      background: #fff;
+      border-radius: 15px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 280px;
+      transition: all 0.3s ease;
+    }
+    .product:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    .product img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    .product h3 {
+      font-size: 1.2em;
+      margin: 10px 0;
+      color: #ff6f61;
+    }
+    .product p {
+      font-size: 1em;
+      color: #666;
+    }
+    .product button {
+      background: #ff6f61;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .product button:hover {
+      background: #e65b50;
+      transform: scale(1.05);
+    }
+    /* Popup Style */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      width: 350px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      animation: slideIn 0.3s ease;
+    }
+    .popup-content h3 {
+      font-size: 1.4em;
+      margin-bottom: 20px;
+      color: #ff6f61;
+    }
+    .popup-content p.product-name {
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .popup-content label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+    }
+    .popup-content select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 1em;
+    }
+    .popup-content button {
+      background: #ff6f61;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+    }
+    .popup-content button:hover {
+      background: #e65b50;
+    }
+    .popup-content .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ddd;
+      color: #333;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .popup-content .close-btn:hover {
+      background: #ff6f61;
+      color: white;
+    }
+    /* Cart Popup */
+    .cart-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .cart-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      width: 450px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideIn 0.3s ease;
+    }
+    .cart-content h3 {
+      margin-top: 0;
+      color: #ff6f61;
+    }
+    .cart-content ul {
+      list-style: none;
+      padding: 0;
+    }
+    .cart-content li {
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 1.1em;
+    }
+    .cart-content .total {
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #ff6f61;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @media (max-width: 768px) {
+      .header {
+        padding: 6px;
+        font-size: 1em;
+      }
+      .menu-toggle {
+        display: block;
+      }
+      .container {
+        flex-direction: column;
+        width: 95%;
+        height: auto;
+      }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 250px;
+        height: 100vh;
+        max-height: none;
+        z-index: 1000;
+        border-radius: 0 15px 15px 0;
+        padding: 10px;
+        background: #fff;
+      }
+      .sidebar.active {
+        left: 0;
+      }
+      .sidebar h3 {
+        font-size: 1.2em;
+        margin: 10px 0;
+      }
+      .sidebar ul li {
+        padding: 10px;
+        font-size: 1em;
+      }
+      .cart {
+        padding: 10px;
+        margin-top: 10px;
+      }
+      .content {
+        max-height: calc(100vh - 36px);
+        overflow-y: auto;
+        width: 100%;
+      }
+      .product {
+        width: 100%;
+        max-width: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <h1>Trà Sữa Ngon</h1>
+  </div>
+  <div class="container">
+    <div class="sidebar" id="sidebar">
+      <div>
+        <h3>Danh Mục</h3>
+        <ul id="category-list"></ul>
+      </div>
+      <div class="cart" onclick="viewCart()">
+        Giỏ hàng (<span id="cart-count">0</span>)
+      </div>
+    </div>
+    <div class="content" id="product-list"></div>
+  </div>
+
+  <!-- Popup chọn size và topping -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <button class="close-btn" onclick="closePopup()">×</button>
+      <h3>Chọn Size và Topping</h3>
+      <p class="product-name" id="popup-product-name"></p>
+      <label for="size">Size</label>
+      <select id="size">
+        <option value="">Chọn size</option>
+      </select>
+      <label for="topping">Topping</label>
+      <select id="topping">
+        <option value="">Chọn topping</option>
+      </select>
+      <button onclick="addToCart()">Thêm vào giỏ</button>
+    </div>
+  </div>
+
+  <!-- Popup giỏ hàng -->
+  <div class="cart-popup" id="cart-popup">
+    <div class="cart-content">
+      <button class="close-btn" onclick="closeCart()">×</button>
+      <h3>Giỏ hàng</h3>
+      <ul id="cart-items"></ul>
+      <div class="total" id="cart-total">Tổng cộng: 0 VNĐ</div>
+    </div>
+  </div>
+
+  <script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
+    let allData = [];
+    let toppings = [];
+    let currentProduct = {};
+    let cart = [];
+
+    // Hàm xử lý CSV
+    function csvToJson(csv) {
+      const lines = csv.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(h => h.trim());
+      const result = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
+        if (values.length < headers.length) continue;
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = values[index] || '';
+        });
+        if (obj['Tên món']) result.push(obj);
+      }
+      return result;
+    }
+
+    // Lấy dữ liệu từ Google Sheets
+    fetch(csvUrl)
+      .then(response => {
+        if (!response.ok) throw new Error('Không thể tải dữ liệu từ Google Sheets');
+        return response.text();
+      })
+      .then(csv => {
+        allData = csvToJson(csv);
+        toppings = allData.filter(item => item['Danh mục'] === 'Topping').map(item => ({
+          name: item['Tên món'],
+          price: Number(item['Giá tiền']) || 0
+        }));
+
+        const categoryList = document.getElementById('category-list');
+        const categories = [...new Set(allData.map(item => item['Danh mục']))].filter(cat => cat !== 'Topping');
+        categories.forEach(category => {
+          const li = document.createElement('li');
+          li.textContent = category;
+          li.onclick = () => {
+            filterProducts(category);
+            if (window.innerWidth <= 768) toggleMenu(); // Ẩn menu sau khi chọn danh mục trên mobile
+          };
+          categoryList.appendChild(li);
+        });
+        filterProducts(categories[0] || 'Trà Sữa');
+        categoryList.children[0].classList.add('active');
+      })
+      .catch(error => {
+        console.error('Lỗi:', error);
+        alert('Không thể tải menu. Vui lòng kiểm tra kết nối hoặc Google Sheets.');
+      });
+
+    // Lọc và hiển thị sản phẩm
+    function filterProducts(category) {
+      const productList = document.getElementById('product-list');
+      productList.innerHTML = '';
+      const filteredData = allData.filter(item => item['Danh mục'] === category);
+      filteredData.forEach(item => {
+        const productDiv = document.createElement('div');
+        productDiv.className = 'product';
+        productDiv.innerHTML = `
+          <img src="${item['URL hình ảnh'] || 'https://via.placeholder.com/180'}" alt="${item['Tên món']}">
+          <h3>${item['Tên món']}</h3>
+          <p>${Number(item['Giá tiền']).toLocaleString('vi-VN')} VNĐ</p>
+          <button onclick="openPopup('${item['Tên món']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']})">Thêm</button>
+        `;
+        productList.appendChild(productDiv);
+      });
+
+      const categoryItems = document.querySelectorAll('#category-list li');
+      categoryItems.forEach(item => item.classList.remove('active'));
+      const selectedCategory = Array.from(categoryItems).find(item => item.textContent === category);
+      if (selectedCategory) selectedCategory.classList.add('active');
+    }
+
+    // Mở popup chọn size/topping
+    function openPopup(name, sizeOptions, price) {
+      currentProduct = { name, size: '', topping: '', price: Number(price), toppingPrice: 0 };
+      document.getElementById('popup-product-name').textContent = name;
+
+      const sizeSelect = document.getElementById('size');
+      sizeSelect.innerHTML = '<option value="">Chọn size</option>';
+      sizeOptions.split(',').forEach(size => {
+        if (size.trim()) {
+          const option = document.createElement('option');
+          option.value = size.trim();
+          option.textContent = size.trim();
+          sizeSelect.appendChild(option);
+        }
+      });
+
+      const toppingSelect = document.getElementById('topping');
+      toppingSelect.innerHTML = '<option value="">Chọn topping</option>';
+      toppings.forEach(topping => {
+        const option = document.createElement('option');
+        option.value = topping.name;
+        option.textContent = `${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)`;
+        toppingSelect.appendChild(option);
+      });
+      toppingSelect.insertAdjacentHTML('beforeend', '<option value="Không">Không (+0 VNĐ)</option>');
+
+      document.getElementById('popup').style.display = 'flex';
+    }
+
+    // Đóng popup
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+    }
+
+    // Thêm vào giỏ hàng
+    function addToCart() {
+      const size = document.getElementById('size').value;
+      const topping = document.getElementById('topping').value;
+      if (!size) {
+        alert('Vui lòng chọn size!');
+        return;
+      }
+      currentProduct.size = size;
+      currentProduct.topping = topping || 'Không';
+      currentProduct.toppingPrice = topping === 'Không' ? 0 : toppings.find(t => t.name === topping)?.price || 0;
+      cart.push({ ...currentProduct });
+      updateCartCount();
+      closePopup();
+    }
+
+    // Cập nhật số lượng giỏ hàng
+    function updateCartCount() {
+      document.getElementById('cart-count').textContent = cart.length;
+    }
+
+    // Xem giỏ hàng
+    function viewCart() {
+      const cartPopup = document.getElementById('cart-popup');
+      const cartItems = document.getElementById('cart-items');
+      cartItems.innerHTML = '';
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<li>Giỏ hàng trống</li>';
+      } else {
+        cart.forEach((item, index) => {
+          const totalItemPrice = item.price + item.toppingPrice;
+          const li = document.createElement('li');
+          li.textContent = `${index + 1}. ${item.name} - Size: ${item.size}, Topping: ${item.topping} - ${totalItemPrice.toLocaleString('vi-VN')} VNĐ`;
+          cartItems.appendChild(li);
+        });
+      }
+      const total = cart.reduce((sum, item) => sum + item.price + item.toppingPrice, 0);
+      document.getElementById('cart-total').textContent = `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
+      cartPopup.style.display = 'flex';
+      
+      // Ẩn sidebar trên mobile khi mở giỏ hàng
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.remove('active');
+      }
+    }
+
+    // Đóng giỏ hàng
+    function closeCart() {
+      document.getElementById('cart-popup').style.display = 'none';
+    }
+
+    // Toggle menu trên điện thoại
+    function toggleMenu() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('active');
+    }
+  </script>
+</body>
+</html>
