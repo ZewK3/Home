@@ -21,10 +21,10 @@
     .header {
       background: linear-gradient(90deg, #ff6f61, #ff8a80);
       color: white;
-      padding: 8px;
+/*       padding: 8px; */
       text-align: center;
       width: 100%;
-      font-size: 1.1em;
+      font-size: 16px;
       font-weight: bold;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       position: relative;
@@ -119,16 +119,16 @@
       padding: 10px;
     }
     .product {
-      width: 200px;
+      width: 150px;
       background: #fff;
       border-radius: 15px;
-      padding: 15px;
+      padding: 5px;
       text-align: center;
       box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 280px;
+      height: 250px;
       transition: all 0.3s ease;
     }
     .product:hover {
@@ -137,17 +137,18 @@
     }
     .product img {
       width: 100%;
-      height: 140px;
+      height: 180px;
       object-fit: cover;
       border-radius: 10px;
     }
     .product h3 {
-      font-size: 1.2em;
+      font-size: 12px;
       margin: 10px 0;
       color: #ff6f61;
     }
     .product p {
-      font-size: 1em;
+      margin: 5px;
+      font-size: 12px;
       color: #666;
     }
     .product button {
@@ -162,6 +163,9 @@
     .product button:hover {
       background: #e65b50;
       transform: scale(1.05);
+    }
+    button {
+      width: -webkit-fill-available;
     }
     /* Popup Style */
     .popup {
@@ -180,6 +184,8 @@
       padding: 25px;
       border-radius: 15px;
       width: 350px;
+      max-height: 80vh;
+      overflow-y: auto;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       position: relative;
       animation: slideIn 0.3s ease;
@@ -198,13 +204,21 @@
       margin: 15px 0 5px;
       font-weight: bold;
     }
-    .popup-content select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      font-size: 1em;
+    .checkbox-group {
+      margin: 10px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+      margin: 0;
+    }
+    .checkbox-group input[type="checkbox"],
+    .checkbox-group input[type="radio"] {
+      margin-right: 5px;
     }
     .popup-content button {
       background: #ff6f61;
@@ -352,20 +366,25 @@
     <div class="content" id="product-list"></div>
   </div>
 
-  <!-- Popup chọn size và topping -->
+  <!-- Popup chọn size, topping, đường, đá -->
   <div class="popup" id="popup">
     <div class="popup-content">
       <button class="close-btn" onclick="closePopup()">×</button>
-      <h3>Chọn Size và Topping</h3>
+      <h3>Chọn tùy chọn</h3>
       <p class="product-name" id="popup-product-name"></p>
-      <label for="size">Size</label>
-      <select id="size">
-        <option value="">Chọn size</option>
-      </select>
-      <label for="topping">Topping</label>
-      <select id="topping">
-        <option value="">Chọn topping</option>
-      </select>
+      
+      <label>Size</label>
+      <div id="size-options" class="checkbox-group"></div>
+      
+      <label>Topping</label>
+      <div id="topping-options" class="checkbox-group"></div>
+      
+      <label>Mức đường</label>
+      <div id="sugar-options" class="checkbox-group"></div>
+      
+      <label>Mức đá</label>
+      <div id="ice-options" class="checkbox-group"></div>
+      
       <button onclick="addToCart()">Thêm vào giỏ</button>
     </div>
   </div>
@@ -424,7 +443,7 @@
           li.textContent = category;
           li.onclick = () => {
             filterProducts(category);
-            if (window.innerWidth <= 768) toggleMenu(); // Ẩn menu sau khi chọn danh mục trên mobile
+            if (window.innerWidth <= 768) toggleMenu();
           };
           categoryList.appendChild(li);
         });
@@ -448,7 +467,7 @@
           <img src="${item['URL hình ảnh'] || 'https://via.placeholder.com/180'}" alt="${item['Tên món']}">
           <h3>${item['Tên món']}</h3>
           <p>${Number(item['Giá tiền']).toLocaleString('vi-VN')} VNĐ</p>
-          <button onclick="openPopup('${item['Tên món']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']})">Thêm</button>
+          <button onclick="openPopup('${item['Tên món']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']}, '${item['Đường'] || '30%,50%,70%,100%'}', '${item['Đá'] || 'Không đá,Ít đá,Thường,Nhiều đá'}')">Thêm</button>
         `;
         productList.appendChild(productDiv);
       });
@@ -459,31 +478,67 @@
       if (selectedCategory) selectedCategory.classList.add('active');
     }
 
-    // Mở popup chọn size/topping
-    function openPopup(name, sizeOptions, price) {
-      currentProduct = { name, size: '', topping: '', price: Number(price), toppingPrice: 0 };
+    // Mở popup chọn size, topping, đường, đá
+    function openPopup(name, sizeOptions, price, sugarOptions = '30%,50%,70%,100%', iceOptions = 'Không đá,Ít đá,Thường,Nhiều đá') {
+      currentProduct = { name, size: '', toppings: [], sugar: '', ice: '', price: Number(price), toppingPrice: 0 };
       document.getElementById('popup-product-name').textContent = name;
 
-      const sizeSelect = document.getElementById('size');
-      sizeSelect.innerHTML = '<option value="">Chọn size</option>';
+      // Size (radio - chỉ chọn 1)
+      const sizeContainer = document.getElementById('size-options');
+      sizeContainer.innerHTML = '';
       sizeOptions.split(',').forEach(size => {
         if (size.trim()) {
-          const option = document.createElement('option');
-          option.value = size.trim();
-          option.textContent = size.trim();
-          sizeSelect.appendChild(option);
+          const sizeTrimmed = size.trim();
+          const label = document.createElement('label');
+          label.innerHTML = `
+            <input type="radio" name="size" value="${sizeTrimmed}"> ${sizeTrimmed}
+          `;
+          sizeContainer.appendChild(label);
         }
       });
 
-      const toppingSelect = document.getElementById('topping');
-      toppingSelect.innerHTML = '<option value="">Chọn topping</option>';
+      // Topping (checkbox - có thể chọn nhiều)
+      const toppingContainer = document.getElementById('topping-options');
+      toppingContainer.innerHTML = '';
       toppings.forEach(topping => {
-        const option = document.createElement('option');
-        option.value = topping.name;
-        option.textContent = `${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)`;
-        toppingSelect.appendChild(option);
+        const label = document.createElement('label');
+        label.innerHTML = `
+          <input type="checkbox" name="topping" value="${topping.name}" data-price="${topping.price}"> 
+          ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)
+        `;
+        toppingContainer.appendChild(label);
       });
-      toppingSelect.insertAdjacentHTML('beforeend', '<option value="Không">Không (+0 VNĐ)</option>');
+      const noToppingLabel = document.createElement('label');
+      noToppingLabel.innerHTML = `<input type="checkbox" name="topping" value="Không" data-price="0"> Không (+0 VNĐ)`;
+      toppingContainer.appendChild(noToppingLabel);
+
+      // Mức đường (radio - chỉ chọn 1)
+      const sugarContainer = document.getElementById('sugar-options');
+      sugarContainer.innerHTML = '';
+      sugarOptions.split(',').forEach(sugar => {
+        if (sugar.trim()) {
+          const sugarTrimmed = sugar.trim();
+          const label = document.createElement('label');
+          label.innerHTML = `
+            <input type="radio" name="sugar" value="${sugarTrimmed}"> ${sugarTrimmed}
+          `;
+          sugarContainer.appendChild(label);
+        }
+      });
+
+      // Mức đá (radio - chỉ chọn 1)
+      const iceContainer = document.getElementById('ice-options');
+      iceContainer.innerHTML = '';
+      iceOptions.split(',').forEach(ice => {
+        if (ice.trim()) {
+          const iceTrimmed = ice.trim();
+          const label = document.createElement('label');
+          label.innerHTML = `
+            <input type="radio" name="ice" value="${iceTrimmed}"> ${iceTrimmed}
+          `;
+          iceContainer.appendChild(label);
+        }
+      });
 
       document.getElementById('popup').style.display = 'flex';
     }
@@ -495,15 +550,38 @@
 
     // Thêm vào giỏ hàng
     function addToCart() {
-      const size = document.getElementById('size').value;
-      const topping = document.getElementById('topping').value;
+      const size = document.querySelector('input[name="size"]:checked');
+      const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
+      const sugar = document.querySelector('input[name="sugar"]:checked');
+      const ice = document.querySelector('input[name="ice"]:checked');
+
       if (!size) {
         alert('Vui lòng chọn size!');
         return;
       }
-      currentProduct.size = size;
-      currentProduct.topping = topping || 'Không';
-      currentProduct.toppingPrice = topping === 'Không' ? 0 : toppings.find(t => t.name === topping)?.price || 0;
+      if (!sugar) {
+        alert('Vui lòng chọn mức đường!');
+        return;
+      }
+      if (!ice) {
+        alert('Vui lòng chọn mức đá!');
+        return;
+      }
+
+      currentProduct.size = size.value;
+      currentProduct.toppings = Array.from(selectedToppings).map(topping => ({
+        name: topping.value,
+        price: Number(topping.dataset.price)
+      }));
+      currentProduct.sugar = sugar.value;
+      currentProduct.ice = ice.value;
+      currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
+
+      // Cộng thêm 5,000 VNĐ nếu chọn size L
+      if (currentProduct.size === 'L') {
+        currentProduct.price += 5000;
+      }
+
       cart.push({ ...currentProduct });
       updateCartCount();
       closePopup();
@@ -524,16 +602,16 @@
       } else {
         cart.forEach((item, index) => {
           const totalItemPrice = item.price + item.toppingPrice;
+          const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
           const li = document.createElement('li');
-          li.textContent = `${index + 1}. ${item.name} - Size: ${item.size}, Topping: ${item.topping} - ${totalItemPrice.toLocaleString('vi-VN')} VNĐ`;
+          li.textContent = `${index + 1}. ${item.name} - Size: ${item.size}, Topping: ${toppingNames}, Đường: ${item.sugar}, Đá: ${item.ice} - ${totalItemPrice.toLocaleString('vi-VN')} VNĐ`;
           cartItems.appendChild(li);
         });
       }
       const total = cart.reduce((sum, item) => sum + item.price + item.toppingPrice, 0);
       document.getElementById('cart-total').textContent = `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
       cartPopup.style.display = 'flex';
-      
-      // Ẩn sidebar trên mobile khi mở giỏ hàng
+
       if (window.innerWidth <= 768) {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.remove('active');
