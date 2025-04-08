@@ -191,8 +191,9 @@
       animation: slideIn 0.3s ease;
     }
     .popup-content h3 {
-      font-size: 1.4em;
-      margin-bottom: 20px;
+      font-size: 20px;
+      margin: 0;
+      text-align: center;
       color: #ff6f61;
     }
     .popup-content p.product-name {
@@ -292,6 +293,22 @@
       font-size: 1.2em;
       color: #ff6f61;
     }
+    .options-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 15px;
+  margin: 10px 0;
+  overflow-x: auto; /* Cuộn ngang nếu quá dài */
+}
+    .option-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 80px; /* Đảm bảo mỗi nhóm có chiều rộng tối thiểu */
+}
+.option-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
     @keyframes slideIn {
       from { transform: translateY(-50px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -373,17 +390,24 @@
       <h3>Chọn tùy chọn</h3>
       <p class="product-name" id="popup-product-name"></p>
       
-      <label>Size</label>
-      <div id="size-options" class="checkbox-group"></div>
-      
-      <label>Topping</label>
-      <div id="topping-options" class="checkbox-group"></div>
-      
-      <label>Mức đường</label>
-      <div id="sugar-options" class="checkbox-group"></div>
-      
-      <label>Mức đá</label>
-      <div id="ice-options" class="checkbox-group"></div>
+     <div class="options-row">
+  <div class="option-group">
+    <label>Size</label>
+    <div id="size-options" class="checkbox-group inline"></div>
+  </div>
+  <div class="option-group">
+    <label>Topping</label>
+    <div id="topping-options" class="checkbox-group"></div>
+  </div>
+  <div class="option-group">
+    <label>Mức đường</label>
+    <div id="sugar-options" class="checkbox-group inline"></div>
+  </div>
+  <div class="option-group">
+    <label>Mức đá</label>
+    <div id="ice-options" class="checkbox-group inline"></div>
+  </div>
+</div>
       
       <button onclick="addToCart()">Thêm vào giỏ</button>
     </div>
