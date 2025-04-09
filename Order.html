@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đặt Hàng Trà Sữa - Trà Sữa Ngon</title>
+  <title>Order ToCoToCo - Lạc Long Quân</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -164,6 +164,9 @@
       transform: scale(1.05);
     }
     button {
+/*       width: -webkit-fill-available; */
+    }
+    button#popup-action-btn {
       width: -webkit-fill-available;
     }
     /* Popup Style */
@@ -344,7 +347,7 @@
     .cart-content .detail-row {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 5px; /* Giảm khoảng cách giữa các dòng */
     }
     .cart-content .detail-row label {
       font-weight: bold;
@@ -353,21 +356,17 @@
       font-size: 14px;
     }
     .cart-content .detail-row span {
-      font-size: 12px;
+      font-size: 14px; /* Tăng kích thước chữ cho đồng bộ */
       font-weight: normal;
-      flex: 1;
     }
     .cart-content .detail-row.vertical {
-      flex-direction: column;
+      flex-direction: row; /* Đặt lại thành hàng ngang */
       align-items: flex-start;
       gap: 5px;
     }
-    .cart-content .edit-btn {
+    .cart-content .edit-btn, .cart-content .delete-btn {
       position: absolute;
       top: 15px;
-      right: 0;
-      background: #ff6f61;
-      color: white;
       border: none;
       padding: 5px 10px;
       border-radius: 15px;
@@ -375,8 +374,21 @@
       font-size: 12px;
       transition: all 0.3s ease;
     }
+    .cart-content .edit-btn {
+      right: 50px;
+      background: #ff6f61;
+      color: white;
+    }
     .cart-content .edit-btn:hover {
       background: #e65b50;
+    }
+    .cart-content .delete-btn {
+      right: 0;
+      background: #ff4444;
+      color: white;
+    }
+    .cart-content .delete-btn:hover {
+      background: #cc0000;
     }
     .cart-content .total {
       font-weight: bold;
@@ -467,15 +479,20 @@
         margin-bottom: 5px;
       }
       .cart-content .detail-row {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row; /* Đảm bảo trên mobile cũng hiển thị trên cùng một dòng */
+        align-items: center;
       }
       .cart-content .detail-row label {
         width: auto;
-        margin-bottom: 5px;
+        margin-right: 5px;
+      }
+      .cart-content .edit-btn, .cart-content .delete-btn {
+        top: 5px;
       }
       .cart-content .edit-btn {
-        top: 5px;
+        right: 50px;
+      }
+      .cart-content .delete-btn {
         right: 5px;
       }
     }
@@ -825,70 +842,63 @@
           };
           li.appendChild(editBtn);
 
+          // Thêm nút xóa
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'delete-btn';
+          deleteBtn.textContent = 'Xóa';
+          deleteBtn.onclick = () => {
+            cart = cart.filter(item => {
+              const key = `${item.name}-${item.size}-${item.sugar}-${item.ice}-${JSON.stringify(item.toppings)}-${item.note}`;
+              return key !== group.key;
+            });
+            updateCartCount();
+            viewCart(); // Cập nhật lại giao diện giỏ hàng
+          };
+          li.appendChild(deleteBtn);
+
           group.items.forEach(item => {
             const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
 
             // Size
             const sizeRow = document.createElement('div');
             sizeRow.className = 'detail-row';
-            sizeRow.innerHTML = `
-              <label>Size:</label>
-              <span>${item.size}</span>
-            `;
+            sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
             li.appendChild(sizeRow);
 
             // Topping
             const toppingRow = document.createElement('div');
             toppingRow.className = 'detail-row vertical';
-            toppingRow.innerHTML = `
-              <label>Topping:</label>
-              <span>${toppingNames}</span>
-            `;
+            toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
             li.appendChild(toppingRow);
 
             // Mức đường
             const sugarRow = document.createElement('div');
             sugarRow.className = 'detail-row';
-            sugarRow.innerHTML = `
-              <label>Mức đường:</label>
-              <span>${item.sugar}</span>
-            `;
+            sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
             li.appendChild(sugarRow);
 
             // Mức đá
             const iceRow = document.createElement('div');
             iceRow.className = 'detail-row';
-            iceRow.innerHTML = `
-              <label>Mức đá:</label>
-              <span>${item.ice}</span>
-            `;
+            iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
             li.appendChild(iceRow);
 
             // Số lượng
             const quantityRow = document.createElement('div');
             quantityRow.className = 'detail-row';
-            quantityRow.innerHTML = `
-              <label>Số lượng:</label>
-              <span>${item.quantity}</span>
-            `;
+            quantityRow.innerHTML = `<label>Số lượng:</label><span>${item.quantity}</span>`;
             li.appendChild(quantityRow);
 
             // Ghi chú
             const noteRow = document.createElement('div');
             noteRow.className = 'detail-row vertical';
-            noteRow.innerHTML = `
-              <label>Ghi chú:</label>
-              <span>${item.note || 'Không có'}</span>
-            `;
+            noteRow.innerHTML = `<label>Ghi chú:</label><span>${item.note || 'Không có'}</span>`;
             li.appendChild(noteRow);
 
             // Giá tiền
             const priceRow = document.createElement('div');
             priceRow.className = 'detail-row';
-            priceRow.innerHTML = `
-              <label>Giá tiền:</label>
-              <span>${group.totalPrice.toLocaleString('vi-VN')} VNĐ</span>
-            `;
+            priceRow.innerHTML = `<label>Giá tiền:</label><span>${group.totalPrice.toLocaleString('vi-VN')} VNĐ</span>`;
             li.appendChild(priceRow);
           });
 
@@ -961,6 +971,7 @@
       cart.push({ ...currentProduct });
       updateCartCount();
       closePopup();
+      viewCart(); // Mở lại giỏ hàng sau khi cập nhật
     }
 
     // Đóng giỏ hàng
