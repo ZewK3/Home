@@ -190,13 +190,13 @@
       animation: slideIn 0.3s ease;
     }
     .popup-content h3 {
-      font-size: 1.4em;
-      margin-bottom: 20px;
+      font-size: 20px;
+      text-align: center;
+      margin: 0;
       color: #ff6f61;
     }
     .popup-content p.product-name {
       font-weight: bold;
-      margin-bottom: 15px;
     }
     .option-row {
       display: flex;
@@ -205,15 +205,16 @@
     }
     .option-row label {
       font-weight: bold;
-      width: 100px; /* Đặt chiều rộng cố định cho label để căn chỉnh đều */
-      margin-right: 10px; /* Khoảng cách giữa label và tùy chọn */
-    }
+      width: max-content;
+      margin-right: 5px;
+      font-size: 14px;
+   }
     .checkbox-group {
-      display: flex;
-      flex-wrap: nowrap; /* Tùy chọn nằm ngang */
-      gap: 10px;
-      flex: 1; /* Chiếm toàn bộ không gian còn lại */
-    }
+    display: flex;
+    flex-wrap: wrap;
+    /* gap: 10px; */
+    flex: 1;
+   }
     .checkbox-group.vertical {
       flex-direction: column; /* Topping hiển thị dọc */
       gap: 5px;
@@ -222,8 +223,9 @@
       display: flex;
       align-items: center;
       font-weight: normal;
-      margin: 0;
-    }
+      margin: 2px;
+      font-size: 12px;
+   }
     .checkbox-group input[type="checkbox"],
     .checkbox-group input[type="radio"] {
       margin-right: 5px;
@@ -350,7 +352,7 @@
         width: 100%;
       }
       .product {
-        width: 100%;
+/*         width: 100%; */
         max-width: 280px;
       }
       .option-row {
