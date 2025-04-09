@@ -198,41 +198,31 @@
       font-weight: bold;
       margin-bottom: 15px;
     }
-    .options-row {
+    .option-row {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 15px;
-      margin: 10px 0;
-      overflow-x: auto; /* Cuộn ngang nếu quá dài */
-      align-items: flex-start; /* Căn các nhóm theo đỉnh */
-    }
-    .option-group {
-      display: flex;
-      flex-wrap: nowrap; /* Label và tùy chọn nằm ngang */
       align-items: center; /* Căn giữa theo chiều dọc */
-      gap: 5px; /* Khoảng cách giữa label và tùy chọn */
+      margin-bottom: 10px; /* Khoảng cách giữa các hàng */
     }
-    .option-group label {
+    .option-row label {
       font-weight: bold;
-      margin: 0; /* Loại bỏ margin mặc định */
-      white-space: nowrap; /* Giữ label trên một dòng */
+      width: 100px; /* Đặt chiều rộng cố định cho label để căn chỉnh đều */
+      margin-right: 10px; /* Khoảng cách giữa label và tùy chọn */
     }
     .checkbox-group {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* Tùy chọn nằm ngang */
       gap: 10px;
+      flex: 1; /* Chiếm toàn bộ không gian còn lại */
     }
-    .checkbox-group.inline {
-      display: inline-flex;
-      flex-wrap: nowrap; /* Tùy chọn nằm ngang, không xuống dòng */
-      gap: 10px;
+    .checkbox-group.vertical {
+      flex-direction: column; /* Topping hiển thị dọc */
+      gap: 5px;
     }
     .checkbox-group label {
       display: flex;
       align-items: center;
       font-weight: normal;
       margin: 0;
-      font-size: 10px;
     }
     .checkbox-group input[type="checkbox"],
     .checkbox-group input[type="radio"] {
@@ -321,7 +311,6 @@
       }
       .menu-toggle {
         display: block;
-        width: auto;
       }
       .container {
         flex-direction: column;
@@ -364,8 +353,13 @@
         width: 100%;
         max-width: 280px;
       }
-      .options-row {
-        flex-wrap: wrap; /* Cho phép xuống dòng trên mobile nếu quá dài */
+      .option-row {
+        flex-direction: column; /* Trên mobile, label và tùy chọn xếp dọc */
+        align-items: flex-start;
+      }
+      .option-row label {
+        width: auto; /* Trên mobile, label không cần chiều rộng cố định */
+        margin-bottom: 5px;
       }
     }
   </style>
@@ -395,23 +389,21 @@
       <h3>Chọn tùy chọn</h3>
       <p class="product-name" id="popup-product-name"></p>
       
-      <div class="options-row">
-        <div class="option-group">
-          <label>Size:</label>
-          <div id="size-options" class="checkbox-group inline"></div>
-        </div>
-        
-          <label>Topping:</label>
-          <div id="topping-options" class="checkbox-group"></div>
-        
-        <div class="option-group">
-          <label>Mức đường:</label>
-          <div id="sugar-options" class="checkbox-group inline"></div>
-        </div>
-        <div class="option-group">
-          <label>Mức đá:</label>
-          <div id="ice-options" class="checkbox-group inline"></div>
-        </div>
+      <div class="option-row">
+        <label>Size:</label>
+        <div id="size-options" class="checkbox-group"></div>
+      </div>
+      <div class="option-row">
+        <label>Topping:</label>
+        <div id="topping-options" class="checkbox-group vertical"></div>
+      </div>
+      <div class="option-row">
+        <label>Mức đường:</label>
+        <div id="sugar-options" class="checkbox-group"></div>
+      </div>
+      <div class="option-row">
+        <label>Mức đá:</label>
+        <div id="ice-options" class="checkbox-group"></div>
       </div>
       
       <button onclick="addToCart()">Thêm vào giỏ</button>
