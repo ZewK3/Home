@@ -142,7 +142,7 @@
     }
     .product h3 {
       font-size: 12px;
-      margin: 10px 0;
+      margin: 5px 0;
       color: #ff6f61;
     }
     .product p {
@@ -164,7 +164,7 @@
       transform: scale(1.05);
     }
     button {
-/*       width: -webkit-fill-available; */
+      /* width: -webkit-fill-available; */
     }
     button#popup-action-btn {
       width: -webkit-fill-available;
@@ -347,7 +347,7 @@
     .cart-content .detail-row {
       display: flex;
       align-items: center;
-      margin-bottom: 5px; /* Giảm khoảng cách giữa các dòng */
+      margin-bottom: 5px;
     }
     .cart-content .detail-row label {
       font-weight: bold;
@@ -356,11 +356,11 @@
       font-size: 14px;
     }
     .cart-content .detail-row span {
-      font-size: 14px; /* Tăng kích thước chữ cho đồng bộ */
+      font-size: 14px;
       font-weight: normal;
     }
     .cart-content .detail-row.vertical {
-      flex-direction: row; /* Đặt lại thành hàng ngang */
+      flex-direction: row;
       align-items: flex-start;
       gap: 5px;
     }
@@ -479,7 +479,7 @@
         margin-bottom: 5px;
       }
       .cart-content .detail-row {
-        flex-direction: row; /* Đảm bảo trên mobile cũng hiển thị trên cùng một dòng */
+        flex-direction: row;
         align-items: center;
       }
       .cart-content .detail-row label {
@@ -568,7 +568,7 @@
     let toppings = [];
     let currentProduct = {};
     let cart = [];
-    let editingGroupKey = null; // Lưu key của nhóm đang chỉnh sửa
+    let editingGroupKey = null;
 
     // Hàm xử lý CSV
     function csvToJson(csv) {
@@ -587,7 +587,16 @@
       return result;
     }
 
-    // Lấy dữ liệu từ Google Sheets
+    // Hàm preload hình ảnh
+    function preloadImages(imageUrls) {
+      const uniqueUrls = [...new Set(imageUrls.filter(url => url && url !== 'https://via.placeholder.com/180'))];
+      uniqueUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+      });
+    }
+
+    // Lấy dữ liệu từ Google Sheets và preload hình ảnh
     fetch(csvUrl)
       .then(response => {
         if (!response.ok) throw new Error('Không thể tải dữ liệu từ Google Sheets');
@@ -599,6 +608,10 @@
           name: item['Tên món'],
           price: Number(item['Giá tiền']) || 0
         }));
+
+        // Preload tất cả hình ảnh từ cột 'URL hình ảnh'
+        const imageUrls = allData.map(item => item['URL hình ảnh'] || 'https://via.placeholder.com/180');
+        preloadImages(imageUrls);
 
         const categoryList = document.getElementById('category-list');
         const categories = [...new Set(allData.map(item => item['Danh mục']))].filter(cat => cat !== 'Topping');
@@ -644,7 +657,7 @@
 
     // Mở popup chọn size, topping, đường, đá
     function openPopup(name, sizeOptions, price, sugarOptions = '30%,50%,70%,100%', iceOptions = 'Không đá,Ít đá,Thường,Nhiều đá', groupKey = null, existingItem = null) {
-      editingGroupKey = groupKey; // Lưu key của nhóm đang chỉnh sửa
+      editingGroupKey = groupKey;
       currentProduct = existingItem ? { ...existingItem, price: Number(price), toppingPrice: 0 } : { name, size: '', toppings: [], sugar: '', ice: '', price: Number(price), toppingPrice: 0, quantity: 1, note: '' };
       
       document.getElementById('popup-product-name').textContent = name;
@@ -653,7 +666,6 @@
       actionBtn.textContent = existingItem ? 'Cập nhật' : 'Thêm vào giỏ';
       actionBtn.onclick = existingItem ? updateCartItem : addToCart;
 
-      // Size (radio - chỉ chọn 1)
       const sizeContainer = document.getElementById('size-options');
       sizeContainer.innerHTML = '';
       sizeOptions.split(',').forEach(size => {
@@ -667,7 +679,6 @@
         }
       });
 
-      // Topping (checkbox - có thể chọn nhiều)
       const toppingContainer = document.getElementById('topping-options');
       toppingContainer.innerHTML = '';
       toppings.forEach(topping => {
@@ -684,7 +695,6 @@
       noToppingLabel.innerHTML = `<input type="checkbox" name="topping" value="Không" data-price="0" ${noToppingChecked ? 'checked' : ''}> Không (+0 VNĐ)`;
       toppingContainer.appendChild(noToppingLabel);
 
-      // Mức đường (radio - chỉ chọn 1)
       const sugarContainer = document.getElementById('sugar-options');
       sugarContainer.innerHTML = '';
       sugarOptions.split(',').forEach(sugar => {
@@ -698,7 +708,6 @@
         }
       });
 
-      // Mức đá (radio - chỉ chọn 1)
       const iceContainer = document.getElementById('ice-options');
       iceContainer.innerHTML = '';
       iceOptions.split(',').forEach(ice => {
@@ -712,11 +721,9 @@
         }
       });
 
-      // Điền sẵn số lượng và ghi chú
       document.getElementById('quantity-input').value = existingItem ? existingItem.quantity : 1;
       document.getElementById('note-input').value = existingItem ? existingItem.note : '';
 
-      // Ẩn giỏ hàng nếu đang chỉnh sửa
       if (groupKey) {
         closeCart();
       }
@@ -724,13 +731,11 @@
       document.getElementById('popup').style.display = 'flex';
     }
 
-    // Đóng popup
     function closePopup() {
       document.getElementById('popup').style.display = 'none';
-      editingGroupKey = null; // Reset key khi đóng popup
+      editingGroupKey = null;
     }
 
-    // Thêm vào giỏ hàng
     function addToCart() {
       const size = document.querySelector('input[name="size"]:checked');
       const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
@@ -767,23 +772,19 @@
       currentProduct.note = note;
       currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
 
-      // Cộng thêm 5,000 VNĐ nếu chọn size L
       if (currentProduct.size === 'L') {
         currentProduct.price += 5000;
       }
 
-      // Thêm vào giỏ hàng
       cart.push({ ...currentProduct });
       updateCartCount();
       closePopup();
     }
 
-    // Cập nhật số lượng giỏ hàng
     function updateCartCount() {
       document.getElementById('cart-count').textContent = cart.length;
     }
 
-    // Nhóm các sản phẩm trong giỏ hàng theo tên và tùy chọn
     function groupCartItems() {
       const groupedCart = {};
       cart.forEach((item, index) => {
@@ -804,7 +805,6 @@
       return Object.values(groupedCart);
     }
 
-    // Xem giỏ hàng
     function viewCart() {
       const cartPopup = document.getElementById('cart-popup');
       const cartItems = document.getElementById('cart-items');
@@ -821,7 +821,6 @@
           productName.textContent = `${index + 1}. ${group.name}`;
           li.appendChild(productName);
 
-          // Thêm nút chỉnh sửa
           const editBtn = document.createElement('button');
           editBtn.className = 'edit-btn';
           editBtn.textContent = 'Chỉnh sửa';
@@ -842,7 +841,6 @@
           };
           li.appendChild(editBtn);
 
-          // Thêm nút xóa
           const deleteBtn = document.createElement('button');
           deleteBtn.className = 'delete-btn';
           deleteBtn.textContent = 'Xóa';
@@ -852,50 +850,43 @@
               return key !== group.key;
             });
             updateCartCount();
-            viewCart(); // Cập nhật lại giao diện giỏ hàng
+            viewCart();
           };
           li.appendChild(deleteBtn);
 
           group.items.forEach(item => {
             const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
 
-            // Size
             const sizeRow = document.createElement('div');
             sizeRow.className = 'detail-row';
             sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
             li.appendChild(sizeRow);
 
-            // Topping
             const toppingRow = document.createElement('div');
             toppingRow.className = 'detail-row vertical';
             toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
             li.appendChild(toppingRow);
 
-            // Mức đường
             const sugarRow = document.createElement('div');
             sugarRow.className = 'detail-row';
             sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
             li.appendChild(sugarRow);
 
-            // Mức đá
             const iceRow = document.createElement('div');
             iceRow.className = 'detail-row';
             iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
             li.appendChild(iceRow);
 
-            // Số lượng
             const quantityRow = document.createElement('div');
             quantityRow.className = 'detail-row';
             quantityRow.innerHTML = `<label>Số lượng:</label><span>${item.quantity}</span>`;
             li.appendChild(quantityRow);
 
-            // Ghi chú
             const noteRow = document.createElement('div');
             noteRow.className = 'detail-row vertical';
             noteRow.innerHTML = `<label>Ghi chú:</label><span>${item.note || 'Không có'}</span>`;
             li.appendChild(noteRow);
 
-            // Giá tiền
             const priceRow = document.createElement('div');
             priceRow.className = 'detail-row';
             priceRow.innerHTML = `<label>Giá tiền:</label><span>${group.totalPrice.toLocaleString('vi-VN')} VNĐ</span>`;
@@ -916,7 +907,6 @@
       }
     }
 
-    // Cập nhật sản phẩm trong giỏ hàng
     function updateCartItem() {
       const size = document.querySelector('input[name="size"]:checked');
       const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
@@ -942,13 +932,11 @@
         return;
       }
 
-      // Xóa các sản phẩm thuộc nhóm đang chỉnh sửa
       cart = cart.filter(item => {
         const key = `${item.name}-${item.size}-${item.sugar}-${item.ice}-${JSON.stringify(item.toppings)}-${item.note}`;
         return key !== editingGroupKey;
       });
 
-      // Cập nhật thông tin mới
       currentProduct.size = size.value;
       currentProduct.toppings = Array.from(selectedToppings).map(topping => ({
         name: topping.value,
@@ -960,26 +948,22 @@
       currentProduct.note = note;
       currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
 
-      // Cộng thêm 5,000 VNĐ nếu chọn size L
       let basePrice = currentProduct.price;
       if (currentProduct.size === 'L') {
         basePrice += 5000;
       }
       currentProduct.price = basePrice;
 
-      // Thêm lại sản phẩm đã chỉnh sửa vào giỏ hàng
       cart.push({ ...currentProduct });
       updateCartCount();
       closePopup();
-      viewCart(); // Mở lại giỏ hàng sau khi cập nhật
+      viewCart();
     }
 
-    // Đóng giỏ hàng
     function closeCart() {
       document.getElementById('cart-popup').style.display = 'none';
     }
 
-    // Toggle menu trên điện thoại
     function toggleMenu() {
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('active');
