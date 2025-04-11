@@ -496,7 +496,24 @@
         right: 5px;
       }
     }
-  </style>
+  
+.cart-content #checkout-btn {
+  margin-top: 15px;
+  padding: 12px 20px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.cart-content #checkout-btn:hover {
+  background: #218838;
+}
+
+</style>
 </head>
 <body>
   <div class="header">
@@ -559,6 +576,7 @@
       <h3>Giỏ hàng</h3>
       <ul id="cart-items"></ul>
       <div class="total" id="cart-total">Tổng cộng: 0 VNĐ</div>
+<button id="checkout-btn" onclick="placeOrder()">Đặt hàng</button>
     </div>
   </div>
 
@@ -968,6 +986,37 @@
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('active');
     }
-  </script>
+  
+function placeOrder() {
+  if (cart.length === 0) {
+    alert("Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi đặt hàng!");
+    return;
+  }
+
+  let orderSummary = "🧾 Đơn hàng của bạn:\n\n";
+  let total = 0;
+
+  cart.forEach((item, index) => {
+    const toppingText = item.toppings.map(t => t.name).join(', ') || 'Không';
+    const price = (item.price + item.toppingPrice) * item.quantity;
+    total += price;
+
+    orderSummary += `${index + 1}. ${item.name} - Size ${item.size}\n`;
+    orderSummary += `   Đường: ${item.sugar}, Đá: ${item.ice}, SL: ${item.quantity}\n`;
+    orderSummary += `   Topping: ${toppingText}, Ghi chú: ${item.note || 'Không'}\n`;
+    orderSummary += `   Thành tiền: ${price.toLocaleString('vi-VN')} VNĐ\n\n`;
+  });
+
+  orderSummary += `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
+
+  if (confirm(orderSummary + "\n\nBạn có muốn xác nhận đặt hàng không?")) {
+    alert("🎉 Đặt hàng thành công! Cảm ơn bạn.");
+    cart = [];
+    updateCartCount();
+    closeCart();
+  }
+}
+
+</script>
 </body>
 </html>
