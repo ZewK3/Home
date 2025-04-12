@@ -873,7 +873,7 @@
           li.appendChild(deleteBtn);
 
           group.items.forEach(item => {
-            const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
+            const toppingNames = item.toppings.map(t => t.name).join(', ');
 
             const sizeRow = document.createElement('div');
             sizeRow.className = 'detail-row';
