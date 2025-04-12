@@ -129,6 +129,7 @@
       justify-content: space-between;
       height: 250px;
       transition: all 0.3s ease;
+      cursor: pointer; /* Thêm con trỏ để người dùng biết có thể click */
     }
     .product:hover {
       transform: translateY(-5px);
@@ -415,6 +416,78 @@
       background: none;
       color: #ff6f61;
     }
+    .cart-content #checkout-btn {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .cart-content #checkout-btn:hover {
+      background: #218838;
+    }
+    /* Zoom Popup */
+    .zoom-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000; /* Đảm bảo popup phóng to nằm trên các popup khác */
+    }
+    .zoom-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      animation: slideIn 0.3s ease;
+    }
+    .zoom-content img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+    .zoom-content h3 {
+      font-size: 1.5em;
+      color: #ff6f61;
+      margin: 10px 0;
+    }
+    .zoom-content p {
+      font-size: 1.2em;
+      color: #666;
+      margin: 5px 0;
+    }
+    .zoom-content .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: none;
+      color: #333;
+      border: none;
+      border-radius: 0;
+      width: auto;
+      height: auto;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: normal;
+      transition: all 0.3s ease;
+    }
+    .zoom-content .close-btn:hover {
+      background: none;
+      color: #ff6f61;
+    }
     @keyframes slideIn {
       from { transform: translateY(-50px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -495,25 +568,14 @@
       .cart-content .delete-btn {
         right: 5px;
       }
+      .zoom-content {
+        width: 95%;
+      }
+      .zoom-content img {
+        max-height: 300px;
+      }
     }
-  
-.cart-content #checkout-btn {
-  margin-top: 15px;
-  padding: 12px 20px;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  font-size: 1em;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.cart-content #checkout-btn:hover {
-  background: #218838;
-}
-
-</style>
+  </style>
 </head>
 <body>
   <div class="header">
@@ -576,7 +638,17 @@
       <h3>Giỏ hàng</h3>
       <ul id="cart-items"></ul>
       <div class="total" id="cart-total">Tổng cộng: 0 VNĐ</div>
-<button id="checkout-btn" onclick="placeOrder()">Đặt hàng</button>
+      <button id="checkout-btn" onclick="placeOrder()">Đặt hàng</button>
+    </div>
+  </div>
+
+  <!-- Popup phóng to sản phẩm -->
+  <div class="zoom-popup" id="zoom-popup">
+    <div class="zoom-content">
+      <button class="close-btn" onclick="closeZoomPopup()">×</button>
+      <img id="zoom-image" src="" alt="Product Image">
+      <h3 id="zoom-product-name"></h3>
+      <p id="zoom-product-price"></p>
     </div>
   </div>
 
@@ -664,6 +736,13 @@
           <p>${Number(item['Giá tiền']).toLocaleString('vi-VN')} VNĐ</p>
           <button onclick="openPopup('${item['Tên món']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']}, '${item['Đường'] || '30%,50%,70%,100%'}', '${item['Đá'] || 'Không đá,Ít đá,Thường,Nhiều đá'}')">Thêm</button>
         `;
+        // Thêm sự kiện click để phóng to sản phẩm
+        productDiv.onclick = (e) => {
+          // Ngăn sự kiện click trên button "Thêm" kích hoạt phóng to
+          if (e.target.tagName !== 'BUTTON') {
+            openZoomPopup(item['URL hình ảnh'] || 'https://via.placeholder.com/180', item['Tên món'], Number(item['Giá tiền']));
+          }
+        };
         productList.appendChild(productDiv);
       });
 
@@ -671,6 +750,19 @@
       categoryItems.forEach(item => item.classList.remove('active'));
       const selectedCategory = Array.from(categoryItems).find(item => item.textContent === category);
       if (selectedCategory) selectedCategory.classList.add('active');
+    }
+
+    // Mở popup phóng to
+    function openZoomPopup(imageUrl, name, price) {
+      document.getElementById('zoom-image').src = imageUrl;
+      document.getElementById('zoom-product-name').textContent = name;
+      document.getElementById('zoom-product-price').textContent = `${price.toLocaleString('vi-VN')} VNĐ`;
+      document.getElementById('zoom-popup').style.display = 'flex';
+    }
+
+    // Đóng popup phóng to
+    function closeZoomPopup() {
+      document.getElementById('zoom-popup').style.display = 'none';
     }
 
     // Mở popup chọn size, topping, đường, đá
@@ -708,10 +800,7 @@
         `;
         toppingContainer.appendChild(label);
       });
-      const noToppingLabel = document.createElement('label');
-      const noToppingChecked = existingItem && existingItem.toppings.length === 0;
-      noToppingLabel.innerHTML = `<input type="checkbox" name="topping" value="Không" data-price="0" ${noToppingChecked ? 'checked' : ''}> Không (+0 VNĐ)`;
-      toppingContainer.appendChild(noToppingLabel);
+      
 
       const sugarContainer = document.getElementById('sugar-options');
       sugarContainer.innerHTML = '';
@@ -986,37 +1075,37 @@
       const sidebar = document.getElementById('sidebar');
       sidebar.classList.toggle('active');
     }
-  
-function placeOrder() {
-  if (cart.length === 0) {
-    alert("Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi đặt hàng!");
-    return;
-  }
 
-  let orderSummary = "🧾 Đơn hàng của bạn:\n\n";
-  let total = 0;
+    function placeOrder() {
+      if (cart.length === 0) {
+        alert("Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi đặt hàng!");
+        return;
+      }
 
-  cart.forEach((item, index) => {
-    const toppingText = item.toppings.map(t => t.name).join(', ') || 'Không';
-    const price = (item.price + item.toppingPrice) * item.quantity;
-    total += price;
+      let orderSummary = "🧾 Đơn hàng của bạn:\n\n";
+      let total = 0;
 
-    orderSummary += `${index + 1}. ${item.name} - Size ${item.size}\n`;
-    orderSummary += `   Đường: ${item.sugar}, Đá: ${item.ice}, SL: ${item.quantity}\n`;
-    orderSummary += `   Topping: ${toppingText}, Ghi chú: ${item.note || 'Không'}\n`;
-    orderSummary += `   Thành tiền: ${price.toLocaleString('vi-VN')} VNĐ\n\n`;
-  });
+      cart.forEach((item, index) => {
+        const toppingText = item.toppings.map(t => t.name).join(', ') || 'Không';
+        const price = (item.price + item.toppingPrice) * item.quantity;
+        total += price;
 
-  orderSummary += `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
+        orderSummary += `${index + 1}. ${item.name} - Size ${item.size}\n`;
+        orderSummary += `   Đường: ${item.sugar}, Đá: ${item.ice}, SL: ${item.quantity}\n`;
+        orderSummary += `   Topping: ${toppingText}, Ghi chú: ${item.note || 'Không'}\n`;
+        orderSummary += `   Thành tiền: ${price.toLocaleString('vi-VN')} VNĐ\n\n`;
+      });
 
-  if (confirm(orderSummary + "\n\nBạn có muốn xác nhận đặt hàng không?")) {
-    alert("🎉 Đặt hàng thành công! Cảm ơn bạn.");
-    cart = [];
-    updateCartCount();
-    closeCart();
-  }
-}
+      orderSummary += `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
 
-</script>
+      if (confirm(orderSummary + "\n\nBạn có muốn xác nhận đặt hàng không?")) {
+        alert("🎉 Đặt hàng thành công! Cảm ơn bạn.");
+        cart = [];
+        updateCartCount();
+        closeCart();
+      }
+    }
+  </script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92f491692cb92733',t:'MTc0NDQ4MDI0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
