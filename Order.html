@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order ToCoToCo - Lạc Long Quân</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -110,7 +111,7 @@
       background: #ff6f61;
       color: white;
     }
-    .cart {
+    .cart, .history {
       background: #fff;
       padding: 12px;
       border-radius: 10px;
@@ -118,8 +119,9 @@
       text-align: center;
       cursor: pointer;
       transition: all 0.3s ease;
+      margin-top: 10px;
     }
-    .cart:hover {
+    .cart:hover, .history:hover {
       background: #ff6f61;
       color: white;
     }
@@ -557,6 +559,167 @@
     #auth-popup button:hover {
       background: #e95a50;
     }
+    /* History Popup */
+    .history-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .history-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 15px;
+      width: 450px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideIn 0.3s ease;
+    }
+    .history-content h3 {
+      margin-top: 0;
+      color: #ff6f61;
+    }
+    .history-content ul {
+      list-style: none;
+      padding: 0;
+    }
+    .history-content li {
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 1.1em;
+    }
+    .history-content .order-id {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    .history-content .detail-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .history-content .detail-row label {
+      font-weight: bold;
+      width: max-content;
+      margin-right: 5px;
+      font-size: 14px;
+    }
+    .history-content .detail-row span {
+      font-size: 14px;
+      font-weight: normal;
+    }
+    .history-content .detail-row.vertical {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .history-content .total {
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #ff6f61;
+    }
+    .history-content .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: none;
+      color: #333;
+      border: none;
+      border-radius: 0;
+      width: auto;
+      height: auto;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: normal;
+      transition: all 0.3s ease;
+    }
+    .history-content .close-btn:hover {
+      background: none;
+      color: #ff6f61;
+    }
+    /* QR Popup */
+    .qr-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    .qr-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      animation: slideIn 0.3s ease;
+    }
+    .qr-content img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+    .qr-content h3 {
+      font-size: 1.5em;
+      color: #ff6f61;
+      margin: 10px 0;
+    }
+    .qr-content p {
+      font-size: 1.2em;
+      color: #666;
+      margin: 5px 0;
+    }
+    .qr-content .countdown {
+      font-size: 1.2em;
+      color: #ff6f61;
+      margin: 10px 0;
+    }
+    .qr-content button {
+      background: #ff6f61;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin: 5px;
+      transition: all 0.3s ease;
+    }
+    .qr-content button:hover {
+      background: #e65b50;
+    }
+    .qr-content .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: none;
+      color: #333;
+      border: none;
+      border-radius: 0;
+      width: auto;
+      height: auto;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: normal;
+      transition: all 0.3s ease;
+    }
+    .qr-content .close-btn:hover {
+      background: none;
+      color: #ff6f61;
+    }
     @keyframes slideIn {
       from { transform: translateY(-50px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -600,7 +763,7 @@
         padding: 10px;
         font-size: 1em;
       }
-      .cart {
+      .cart, .history {
         padding: 10px;
         margin-top: 10px;
       }
@@ -664,6 +827,9 @@
       </div>
       <div class="cart" onclick="viewCart()">
         Giỏ hàng (<span id="cart-count">0</span>)
+      </div>
+      <div class="history" onclick="viewOrderHistory()">
+        Lịch sử đơn hàng
       </div>
     </div>
     <div class="content" id="product-list"></div>
@@ -737,6 +903,28 @@
     </div>
   </div>
 
+  <!-- Popup lịch sử đơn hàng -->
+  <div class="history-popup" id="history-popup">
+    <div class="history-content">
+      <button class="close-btn" onclick="closeHistoryPopup()">×</button>
+      <h3>Lịch sử đơn hàng</h3>
+      <ul id="history-items"></ul>
+    </div>
+  </div>
+
+  <!-- Popup QR thanh toán -->
+  <div class="qr-popup" id="qr-popup">
+    <div class="qr-content">
+      <button class="close-btn" onclick="cancelTransaction()">×</button>
+      <h3>Thanh toán đơn hàng</h3>
+      <img id="popup-qr-image" src="" alt="QR Code">
+      <p id="qr-amount"></p>
+      <p class="countdown" id="countdown"></p>
+      <button id="pause-transaction">Treo giao dịch</button>
+      <button id="cancel-transaction" onclick="cancelTransaction()">Hủy giao dịch</button>
+    </div>
+  </div>
+
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
     const apiBase = "https://zewk.tocotoco.workers.dev/"; // Thay bằng URL Cloudflare Worker thực tế
@@ -746,6 +934,121 @@
     let cart = [];
     let editingGroupKey = null;
     let isRegisterMode = false;
+
+    // Transaction Tracker for QR Payment
+    const transactionTracker = {
+      state: {
+        baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
+        activeTransactions: new Map()
+      },
+      elements: {
+        qrPopup: document.getElementById("qr-popup"),
+        popupQrImage: document.getElementById("popup-qr-image"),
+        qrAmount: document.getElementById("qr-amount"),
+        countdown: document.getElementById("countdown"),
+        pauseBtn: document.getElementById("pause-transaction"),
+        cancelBtn: document.getElementById("cancel-transaction")
+      },
+      formatCurrency(amount) {
+        return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount).replace("₫", " VNĐ");
+      },
+      formatDateTime() {
+        const date = new Date();
+        return date.toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+      },
+      formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+      },
+      generateQRCode(amount, transactionId) {
+        return `${this.state.baseQRUrl}&amount=${amount}&addInfo=ID${transactionId}`;
+      },
+      async checkTransactionStatus(transactionId) {
+        try {
+          const response = await fetch(`${apiBase}?action=checkTransaction&transactionId=ID${transactionId}`);
+          if (!response.ok) return false;
+          const data = await response.json();
+          return data.success === true ? data : false;
+        } catch (error) {
+          console.error("Error checking transaction:", error);
+          return false;
+        }
+      },
+      startTransaction(amount, transactionId, orderId) {
+        const transaction = {
+          amount: Number(amount),
+          timeLeft: 300,
+          countdownTimer: null,
+          checkInterval: null,
+          orderId: orderId
+        };
+
+        this.elements.qrAmount.textContent = `Số tiền: ${this.formatCurrency(amount)}`;
+        this.elements.countdown.textContent = this.formatTime(transaction.timeLeft);
+
+        transaction.countdownTimer = setInterval(() => {
+          transaction.timeLeft--;
+          if (transaction.timeLeft >= 0) {
+            this.elements.countdown.textContent = this.formatTime(transaction.timeLeft);
+          }
+          if (transaction.timeLeft <= 0) {
+            this.handleTransactionTimeout(transactionId);
+          }
+        }, 1000);
+
+        transaction.checkInterval = setInterval(async () => {
+          const serverData = await this.checkTransactionStatus(transactionId);
+          if (serverData && this.state.activeTransactions.has(transactionId)) {
+            const clientAmount = transaction.amount;
+            const serverAmount = Number(serverData.amount);
+            if (clientAmount === serverAmount) {
+              this.handleTransactionSuccess(transactionId, orderId);
+            } else {
+              alert(`Số tiền không khớp: Client ${this.formatCurrency(clientAmount)} != Server ${this.formatCurrency(serverAmount)}`);
+              this.handleTransactionTimeout(transactionId);
+            }
+          }
+        }, 5000);
+
+        this.state.activeTransactions.set(transactionId, transaction);
+      },
+      async handleTransactionSuccess(transactionId, orderId) {
+        const transaction = this.state.activeTransactions.get(transactionId);
+        if (!transaction) return;
+
+        try {
+          const response = await fetch(`${apiBase}?action=updateOrderStatus&orderId=${orderId}&status=paid`);
+          const data = await response.json();
+          if (data.success) {
+            alert("Thanh toán thành công! Đơn hàng đã được xác nhận.");
+          } else {
+            alert("Lỗi khi cập nhật trạng thái đơn hàng!");
+          }
+        } catch (error) {
+          console.error("Lỗi cập nhật trạng thái đơn hàng:", error);
+          alert("Đã có lỗi xảy ra khi cập nhật trạng thái đơn hàng!");
+        }
+
+        clearInterval(transaction.countdownTimer);
+        clearInterval(transaction.checkInterval);
+        this.state.activeTransactions.delete(transactionId);
+        this.resetPopup();
+      },
+      handleTransactionTimeout(transactionId) {
+        const transaction = this.state.activeTransactions.get(transactionId);
+        if (!transaction) return;
+
+        clearInterval(transaction.countdownTimer);
+        clearInterval(transaction.checkInterval);
+        this.state.activeTransactions.delete(transactionId);
+        this.resetPopup();
+        alert("Giao dịch hết hạn!");
+      },
+      resetPopup() {
+        this.elements.qrPopup.style.display = "none";
+      }
+    };
 
     // Hàm xử lý CSV
     function csvToJson(csv) {
@@ -786,7 +1089,6 @@
           price: Number(item['Giá tiền']) || 0
         }));
 
-        // Preload tất cả hình ảnh từ cột 'URL hình ảnh'
         const imageUrls = allData.map(item => item['URL hình ảnh'] || 'https://via.placeholder.com/180');
         preloadImages(imageUrls);
 
@@ -1199,7 +1501,15 @@
           const data = await response.json();
 
           if (data.message === "Đặt hàng thành công!") {
-            alert(`🎉 Đặt hàng thành công! Cảm ơn bạn.\nĐiểm tích lũy: +${data.gainedExp}\nTổng điểm: ${data.newExp}\nHạng: ${data.newRank}`);
+            alert(`🎉 Đặt hàng thành công! Mã đơn hàng: ${data.orderId}\nĐiểm tích lũy: +${data.gainedExp}\nTổng điểm: ${data.newExp}\nHạng: ${data.newRank}`);
+            
+            // Tạo mã QR thanh toán
+            const transactionId = transactionTracker.formatDateTime();
+            const qrUrl = transactionTracker.generateQRCode(total, transactionId);
+            transactionTracker.elements.popupQrImage.src = qrUrl;
+            transactionTracker.elements.qrPopup.style.display = 'flex';
+            transactionTracker.startTransaction(total, transactionId, data.orderId);
+
             cart = [];
             updateCartCount();
             closeCart();
@@ -1211,6 +1521,108 @@
           alert("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!");
         }
       }
+    }
+
+    function cancelTransaction() {
+      const transactionId = transactionTracker.elements.popupQrImage.src.match(/ID(\d+)/)?.[1];
+      if (transactionId && transactionTracker.state.activeTransactions.has(transactionId)) {
+        transactionTracker.handleTransactionTimeout(transactionId);
+      }
+    }
+
+    async function viewOrderHistory() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Vui lòng đăng nhập để xem lịch sử đơn hàng!");
+        showLoginPopup(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${apiBase}?action=getOrders&token=${token}`);
+        const data = await response.json();
+
+        const historyPopup = document.getElementById('history-popup');
+        const historyItems = document.getElementById('history-items');
+        historyItems.innerHTML = '';
+
+        if (!data.orders || data.orders.length === 0) {
+          historyItems.innerHTML = '<li>Chưa có đơn hàng nào!</li>';
+        } else {
+          data.orders.forEach((order, index) => {
+            const li = document.createElement('li');
+            const orderId = document.createElement('div');
+            orderId.className = 'order-id';
+            orderId.textContent = `${index + 1}. Mã đơn: ${order.orderId} - Trạng thái: ${order.status}`;
+            li.appendChild(orderId);
+
+            order.cart.forEach(item => {
+              const toppingNames = item.toppings.map(t => t.name).join(', ');
+
+              const nameRow = document.createElement('div');
+              nameRow.className = 'detail-row';
+              nameRow.innerHTML = `<label>Tên món:</label><span>${item.name}</span>`;
+              li.appendChild(nameRow);
+
+              const sizeRow = document.createElement('div');
+              sizeRow.className = 'detail-row';
+              sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
+              li.appendChild(sizeRow);
+
+              const toppingRow = document.createElement('div');
+              toppingRow.className = 'detail-row vertical';
+              toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
+              li.appendChild(toppingRow);
+
+              const sugarRow = document.createElement('div');
+              sugarRow.className = 'detail-row';
+              sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
+              li.appendChild(sugarRow);
+
+              const iceRow = document.createElement('div');
+              iceRow.className = 'detail-row';
+              iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
+              li.appendChild(iceRow);
+
+              const quantityRow = document.createElement('div');
+              quantityRow.className = 'detail-row';
+              quantityRow.innerHTML = `<label>Số lượng:</label><span>${item.quantity}</span>`;
+              li.appendChild(quantityRow);
+
+              const noteRow = document.createElement('div');
+              noteRow.className = 'detail-row vertical';
+              noteRow.innerHTML = `<label>Ghi chú:</label><span>${item.note || 'Không có'}</span>`;
+              li.appendChild(noteRow);
+
+              const priceRow = document.createElement('div');
+              priceRow.className = 'detail-row';
+              priceRow.innerHTML = `<label>Giá tiền:</label><span>${((item.price + item.toppingPrice) * item.quantity).toLocaleString('vi-VN')} VNĐ</span>`;
+              li.appendChild(priceRow);
+            });
+
+            const totalRow = document.createElement('div');
+            totalRow.className = 'detail-row';
+            totalRow.innerHTML = `<label>Tổng cộng:</label><span>${order.total.toLocaleString('vi-VN')} VNĐ</span>`;
+            li.appendChild(totalRow);
+
+            historyItems.appendChild(li);
+          });
+        }
+
+        historyPopup.style.display = 'flex';
+
+        if (window.innerWidth <= 768) {
+          const sidebar = document.getElementById('sidebar');
+          sidebar.classList.remove('active');
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải lịch sử đơn hàng:", error);
+        alert("Đã có lỗi xảy ra khi tải lịch sử đơn hàng!");
+      }
+    }
+
+    function closeHistoryPopup() {
+      document.getElementById('history-popup').style.display = 'none';
     }
 
     // Auth Functions
@@ -1235,8 +1647,11 @@
         return alert("Vui lòng nhập đầy đủ thông tin!");
       }
 
+      // Mã hóa mật khẩu bằng SHA-256
+      const hashedPassword = CryptoJS.SHA256(password).toString();
+
       const action = isRegisterMode ? "registerUser" : "loginUser";
-      const body = isRegisterMode ? { name, email, password } : { email, password };
+      const body = isRegisterMode ? { name, email, password: hashedPassword } : { email, password: hashedPassword };
 
       try {
         const response = await fetch(`${apiBase}?action=${action}`, {
