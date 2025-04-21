@@ -40,6 +40,26 @@
       color: white;
       cursor: pointer;
     }
+    #auth-control {
+      position: absolute;
+      right: 10px;
+      top: 5px;
+      display: flex;
+      gap: 10px;
+    }
+    #auth-control button {
+      background: white;
+      color: #ff6f61;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #auth-control button:hover {
+      background: #ffe0e0;
+    }
     .container {
       display: flex;
       max-width: 1200px;
@@ -129,7 +149,7 @@
       justify-content: space-between;
       height: 250px;
       transition: all 0.3s ease;
-      cursor: pointer; /* Thêm con trỏ để người dùng biết có thể click */
+      cursor: pointer;
     }
     .product:hover {
       transform: translateY(-5px);
@@ -441,7 +461,7 @@
       display: none;
       justify-content: center;
       align-items: center;
-      z-index: 2000; /* Đảm bảo popup phóng to nằm trên các popup khác */
+      z-index: 2000;
     }
     .zoom-content {
       background: #fff;
@@ -487,6 +507,55 @@
     .zoom-content .close-btn:hover {
       background: none;
       color: #ff6f61;
+    }
+    /* Auth Popup */
+    #auth-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+    #auth-popup .auth-box {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 12px;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    #auth-popup .auth-box h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.5em;
+      color: #ff6f61;
+    }
+    #auth-popup input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+    }
+    #auth-popup button {
+      width: 100%;
+      background: #ff6f61;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    #auth-popup button:hover {
+      background: #e95a50;
     }
     @keyframes slideIn {
       from { transform: translateY(-50px); opacity: 0; }
@@ -581,6 +650,11 @@
   <div class="header">
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <h1>Trà Sữa Ngon</h1>
+    <div id="auth-control">
+      <button onclick="showLoginPopup(false)" id="login-button">Đăng nhập</button>
+      <button onclick="showLoginPopup(true)" id="register-button">Đăng ký</button>
+      <button onclick="logout()" id="logout-button" style="display: none;">Đăng xuất</button>
+    </div>
   </div>
   <div class="container">
     <div class="sidebar" id="sidebar">
@@ -652,13 +726,26 @@
     </div>
   </div>
 
+  <!-- Popup đăng nhập/đăng ký -->
+  <div id="auth-popup" onclick="hidePopup(event)">
+    <div class="auth-box" onclick="event.stopPropagation()">
+      <h3 id="auth-title">Đăng nhập</h3>
+      <input id="user-name" placeholder="Tên của bạn" style="display:none;">
+      <input id="user-email" placeholder="Email/SĐT">
+      <input id="user-password" type="password" placeholder="Mật khẩu">
+      <button onclick="submitAuth()">Tiếp tục</button>
+    </div>
+  </div>
+
   <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
+    const apiBase = "https://tocotoco.pages.dev/"; // Thay bằng URL Cloudflare Worker thực tế
     let allData = [];
     let toppings = [];
     let currentProduct = {};
     let cart = [];
     let editingGroupKey = null;
+    let isRegisterMode = false;
 
     // Hàm xử lý CSV
     function csvToJson(csv) {
@@ -736,9 +823,7 @@
           <p>${Number(item['Giá tiền']).toLocaleString('vi-VN')} VNĐ</p>
           <button onclick="openPopup('${item['Tên món']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']}, '${item['Đường'] || '30%,50%,70%,100%'}', '${item['Đá'] || 'Không đá,Ít đá,Thường,Nhiều đá'}')">Thêm</button>
         `;
-        // Thêm sự kiện click để phóng to sản phẩm
         productDiv.onclick = (e) => {
-          // Ngăn sự kiện click trên button "Thêm" kích hoạt phóng to
           if (e.target.tagName !== 'BUTTON') {
             openZoomPopup(item['URL hình ảnh'] || 'https://via.placeholder.com/180', item['Tên món'], Number(item['Giá tiền']));
           }
@@ -800,7 +885,6 @@
         `;
         toppingContainer.appendChild(label);
       });
-      
 
       const sugarContainer = document.getElementById('sugar-options');
       sugarContainer.innerHTML = '';
@@ -1076,9 +1160,16 @@
       sidebar.classList.toggle('active');
     }
 
-    function placeOrder() {
+    async function placeOrder() {
       if (cart.length === 0) {
         alert("Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi đặt hàng!");
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Vui lòng đăng nhập trước khi đặt hàng!");
+        showLoginPopup(false);
         return;
       }
 
@@ -1099,13 +1190,121 @@
       orderSummary += `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
 
       if (confirm(orderSummary + "\n\nBạn có muốn xác nhận đặt hàng không?")) {
-        alert("🎉 Đặt hàng thành công! Cảm ơn bạn.");
-        cart = [];
-        updateCartCount();
-        closeCart();
+        try {
+          const response = await fetch(`${apiBase}?action=saveOrder&token=${token}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cart })
+          });
+          const data = await response.json();
+
+          if (data.message === "Đặt hàng thành công!") {
+            alert(`🎉 Đặt hàng thành công! Cảm ơn bạn.\nĐiểm tích lũy: +${data.gainedExp}\nTổng điểm: ${data.newExp}\nHạng: ${data.newRank}`);
+            cart = [];
+            updateCartCount();
+            closeCart();
+          } else {
+            alert(data.message || "Lỗi khi đặt hàng!");
+          }
+        } catch (error) {
+          console.error("Lỗi khi đặt hàng:", error);
+          alert("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!");
+        }
       }
     }
+
+    // Auth Functions
+    function showLoginPopup(register = false) {
+      isRegisterMode = register;
+      document.getElementById("auth-title").textContent = register ? "Đăng ký" : "Đăng nhập";
+      document.getElementById("user-name").style.display = register ? "block" : "none";
+      document.getElementById("auth-popup").style.display = "flex";
+    }
+
+    function hidePopup(event) {
+      if (event.target.id === "auth-popup") {
+        document.getElementById("auth-popup").style.display = "none";
+      }
+    }
+
+    async function submitAuth() {
+      const name = document.getElementById("user-name").value.trim();
+      const email = document.getElementById("user-email").value.trim();
+      const password = document.getElementById("user-password").value.trim();
+      if (!email || !password || (isRegisterMode && !name)) {
+        return alert("Vui lòng nhập đầy đủ thông tin!");
+      }
+
+      const action = isRegisterMode ? "registerUser" : "loginUser";
+      const body = isRegisterMode ? { name, email, password } : { email, password };
+
+      try {
+        const response = await fetch(`${apiBase}?action=${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          document.getElementById("auth-popup").style.display = "none";
+          updateUserInfo(data.name || name);
+        } else {
+          alert(data.message || "Lỗi khi đăng nhập/đăng ký.");
+        }
+      } catch (error) {
+        console.error("Lỗi:", error);
+        alert("Đã có lỗi xảy ra. Vui lòng thử lại!");
+      }
+    }
+
+    function updateUserInfo(name) {
+      document.querySelector(".header h1").textContent = `👋 Xin chào, ${name}`;
+      document.getElementById("login-button").style.display = "none";
+      document.getElementById("register-button").style.display = "none";
+      document.getElementById("logout-button").style.display = "block";
+    }
+
+    async function checkUserSession() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch(`${apiBase}?action=getUser&token=${token}`);
+        const data = await response.json();
+
+        if (data.name) {
+          updateUserInfo(data.name);
+        } else {
+          localStorage.removeItem("token");
+          document.getElementById("login-button").style.display = "block";
+          document.getElementById("register-button").style.display = "block";
+          document.getElementById("logout-button").style.display = "none";
+          document.querySelector(".header h1").textContent = "Trà Sữa Ngon";
+        }
+      } catch (error) {
+        console.error("Lỗi kiểm tra phiên:", error);
+        localStorage.removeItem("token");
+        document.getElementById("login-button").style.display = "block";
+        document.getElementById("register-button").style.display = "block";
+        document.getElementById("logout-button").style.display = "none";
+        document.querySelector(".header h1").textContent = "Trà Sữa Ngon";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      document.getElementById("login-button").style.display = "block";
+      document.getElementById("register-button").style.display = "block";
+      document.getElementById("logout-button").style.display = "none";
+      document.querySelector(".header h1").textContent = "Trà Sữa Ngon";
+    }
+
+    window.addEventListener("load", () => {
+      checkUserSession();
+    });
   </script>
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'92f491692cb92733',t:'MTc0NDQ4MDI0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'933e1f1f1e626fa1',t:'MTc0NTI1MTUxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
