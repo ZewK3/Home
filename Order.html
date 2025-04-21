@@ -966,7 +966,7 @@ let currentProduct = {};
 let cart = [];
 let editingGroupKey = null;
 let isRegisterMode = false;
-let pendingOrder = null; // Biến lưu đơn hàng tạm thời
+let pendingOrder = null;
 
 // Tạo phần tử notification
 const notification = document.createElement("div");
@@ -1714,14 +1714,14 @@ async function submitAuth() {
   const name = document.getElementById("user-name").value.trim();
   const email = document.getElementById("user-email").value.trim();
   const password = document.getElementById("user-password").value.trim();
-  if (!email || !password || (isRegisterMode && !name)) {
-    showNotification("Vui lòng nhập đầy đủ thông tin!", "error");
+  
+  if (!email || !password || password === "" || (isRegisterMode && (!name || name === ""))) {
+    showNotification("Vui lòng nhập đầy đủ thông tin và không để trống!", "error");
     return;
   }
 
-  const hashedPassword = CryptoJS.SHA256(password).toString();
   const action = isRegisterMode ? "registerUser" : "loginUser";
-  const body = isRegisterMode ? { name, email, password: hashedPassword } : { email, password: hashedPassword };
+  const body = isRegisterMode ? { name, email, password } : { email, password };
 
   try {
     const response = await fetch(`${apiBase}?action=${action}`, {
