@@ -978,7 +978,7 @@
       startTransaction(amount, transactionId, orderId) {
         const transaction = {
           amount: Number(amount),
-          timeLeft: 300,
+          timeLeft: 900,
           countdownTimer: null,
           checkInterval: null,
           orderId: orderId
@@ -1018,10 +1018,10 @@
         if (!transaction) return;
 
         try {
-          const response = await fetch(`${apiBase}?action=updateOrderStatus&orderId=${orderId}&status=paid`);
+          const response = await fetch(`${apiBase}?action=updateOrderStatus&orderId=${orderId}&status=success`);
           const data = await response.json();
           if (data.success) {
-            alert("Thanh toán thành công! Đơn hàng đã được xác nhận.");
+            alert(`🎉 Thanh toán thành công! Đơn hàng ${orderId} đã được xác nhận.\nĐiểm tích lũy: +${data.gainedExp}\nTổng điểm: ${data.newExp}\nHạng: ${data.newRank}`);
           } else {
             alert("Lỗi khi cập nhật trạng thái đơn hàng!");
           }
@@ -1035,9 +1035,15 @@
         this.state.activeTransactions.delete(transactionId);
         this.resetPopup();
       },
-      handleTransactionTimeout(transactionId) {
+      async handleTransactionTimeout(transactionId) {
         const transaction = this.state.activeTransactions.get(transactionId);
         if (!transaction) return;
+
+        try {
+          await fetch(`${apiBase}?action=updateOrderStatus&orderId=${transaction.orderId}&status=failed`);
+        } catch (error) {
+          console.error("Lỗi cập nhật trạng thái đơn hàng:", error);
+        }
 
         clearInterval(transaction.countdownTimer);
         clearInterval(transaction.checkInterval);
@@ -1496,12 +1502,12 @@
           const response = await fetch(`${apiBase}?action=saveOrder&token=${token}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cart })
+            body: JSON.stringify({ cart, status: "pending", total })
           });
           const data = await response.json();
 
-          if (data.message === "Đặt hàng thành công!") {
-            alert(`🎉 Đặt hàng thành công! Mã đơn hàng: ${data.orderId}\nĐiểm tích lũy: +${data.gainedExp}\nTổng điểm: ${data.newExp}\nHạng: ${data.newRank}`);
+          if (data.orderId) {
+            alert(`Đơn hàng đã được tạo với mã: ${data.orderId}\nVui lòng thanh toán để hoàn tất!`);
             
             // Tạo mã QR thanh toán
             const transactionId = transactionTracker.formatDateTime();
@@ -1514,11 +1520,11 @@
             updateCartCount();
             closeCart();
           } else {
-            alert(data.message || "Lỗi khi đặt hàng!");
+            alert(data.message || "Lỗi khi tạo đơn hàng!");
           }
         } catch (error) {
-          console.error("Lỗi khi đặt hàng:", error);
-          alert("Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!");
+          console.error("Lỗi khi tạo đơn hàng:", error);
+          alert("Đã có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại!");
         }
       }
     }
@@ -1686,7 +1692,7 @@
       if (!token) return;
 
       try {
-        const response = await fetch(`${apiBase}?action=getUser&token=${token}`);
+        const response = await fetch(`${apiBase}?action=User&token=${token}`);
         const data = await response.json();
 
         if (data.name) {
@@ -1720,6 +1726,5 @@
       checkUserSession();
     });
   </script>
-  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'933e1f1f1e626fa1',t:'MTc0NTI1MTUxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
