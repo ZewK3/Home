@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order ToCoToCo - Lạc Long Quân</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <link rel="stylesheet" href="Order.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="header">
@@ -39,26 +39,26 @@
     <div class="content" id="product-list"></div>
   </div>
 
-  <!-- Popup chọn size, topping, đường, đá -->
+  <!-- Popup chọn tùy chọn -->
   <div class="popup" id="popup">
     <div class="popup-content">
       <button class="close-btn" onclick="closePopup()">×</button>
       <h3 id="popup-title">Chọn tùy chọn</h3>
       <p class="product-name" id="popup-product-name"></p>
       
-      <div class="option-row">
+      <div class="option-row" id="size-section">
         <label>Size:</label>
         <div id="size-options" class="checkbox-group"></div>
       </div>
-      <div class="option-row">
+      <div class="option-row" id="topping-section">
         <label>Topping:</label>
         <div id="topping-options" class="checkbox-group vertical"></div>
       </div>
-      <div class="option-row">
+      <div class="option-row" id="sugar-section">
         <label>Mức đường:</label>
         <div id="sugar-options" class="checkbox-group"></div>
       </div>
-      <div class="option-row">
+      <div class="option-row" id="ice-section">
         <label>Mức đá:</label>
         <div id="ice-options" class="checkbox-group"></div>
       </div>
@@ -130,6 +130,6 @@
     </div>
   </div>
 
-  <script src="Order.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
