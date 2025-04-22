@@ -245,7 +245,7 @@ function filterProducts(category) {
       <img src="${item['URL hình ảnh'] || 'https://via.placeholder.com/180'}" alt="${item['Tên món']}">
       <h3>${item['Tên món']}</h3>
       <p>${Number(item['Giá tiền']).toLocaleString('vi-VN')} VNĐ</p>
-      <button onclick="openPopup('${item['Tên món']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']}, '${item['Đường'] || '30%,50%,70%,100%'}', '${item['Đá'] || 'Không đá,Ít đá,Thường,Nhiều đá'}')">Thêm</button>
+      <button onclick="openPopup('${item['Tên món']}', '${item['Danh mục']}', '${item['Size'] || 'M,L'}', ${item['Giá tiền']}, '${item['Đường'] || '30%,50%,70%,100%'}', '${item['Đá'] || 'Không đá,Ít đá,Thường,Nhiều đá'}')">Thêm</button>
     `;
     productDiv.onclick = (e) => {
       if (e.target.tagName !== 'BUTTON') {
@@ -274,10 +274,21 @@ function closeZoomPopup() {
   document.getElementById('zoom-popup').style.display = 'none';
 }
 
-// Mở popup chọn size, topping, đường, đá
-function openPopup(name, sizeOptions, price, sugarOptions = '30%,50%,70%,100%', iceOptions = 'Không đá,Ít đá,Thường,Nhiều đá', groupKey = null, existingItem = null) {
+// Mở popup chọn tùy chọn
+function openPopup(name, category, sizeOptions, price, sugarOptions = '30%,50%,70%,100%', iceOptions = 'Không đá,Ít đá,Thường,Nhiều đá', groupKey = null, existingItem = null) {
   editingGroupKey = groupKey;
-  currentProduct = existingItem ? { ...existingItem, price: Number(price), toppingPrice: 0 } : { name, size: '', toppings: [], sugar: '', ice: '', price: Number(price), toppingPrice: 0, quantity: 1, note: '' };
+  currentProduct = existingItem ? { ...existingItem, price: Number(price), toppingPrice: 0 } : { 
+    name, 
+    category, 
+    size: '', 
+    toppings: [], 
+    sugar: '', 
+    ice: '', 
+    price: Number(price), 
+    toppingPrice: 0, 
+    quantity: 1, 
+    note: '' 
+  };
   
   document.getElementById('popup-product-name').textContent = name;
   document.getElementById('popup-title').textContent = existingItem ? 'Chỉnh sửa sản phẩm' : 'Chọn tùy chọn';
@@ -285,56 +296,68 @@ function openPopup(name, sizeOptions, price, sugarOptions = '30%,50%,70%,100%', 
   actionBtn.textContent = existingItem ? 'Cập nhật' : 'Thêm vào giỏ';
   actionBtn.onclick = existingItem ? updateCartItem : addToCart;
 
-  const sizeContainer = document.getElementById('size-options');
-  sizeContainer.innerHTML = '';
-  sizeOptions.split(',').forEach(size => {
-    if (size.trim()) {
-      const sizeTrimmed = size.trim();
-      const label = document.createElement('label');
-      label.innerHTML = `
-        <input type="radio" name="size" value="${sizeTrimmed}" ${existingItem && existingItem.size === sizeTrimmed ? 'checked' : ''}> ${sizeTrimmed}
-      `;
-      sizeContainer.appendChild(label);
-    }
-  });
+  // Điều chỉnh hiển thị tùy chọn dựa trên danh mục
+  const isSimpleCategory = category === 'Món thêm' || category === 'Kem';
+  
+  // Ẩn các section không cần thiết cho Món thêm và Kem
+  document.getElementById('size-section').style.display = isSimpleCategory ? 'none' : 'flex';
+  document.getElementById('topping-section').style.display = isSimpleCategory ? 'none' : 'flex';
+  document.getElementById('sugar-section').style.display = isSimpleCategory ? 'none' : 'flex';
+  document.getElementById('ice-section').style.display = isSimpleCategory ? 'none' : 'flex';
 
-  const toppingContainer = document.getElementById('topping-options');
-  toppingContainer.innerHTML = '';
-  toppings.forEach(topping => {
-    const label = document.createElement('label');
-    const isChecked = existingItem && existingItem.toppings.some(t => t.name === topping.name);
-    label.innerHTML = `
-      <input type="checkbox" name="topping" value="${topping.name}" data-price="${topping.price}" ${isChecked ? 'checked' : ''}> 
-      ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)
-    `;
-    toppingContainer.appendChild(label);
-  });
+  // Chỉ hiển thị tùy chọn cho các danh mục không phải Món thêm hoặc Kem
+  if (!isSimpleCategory) {
+    const sizeContainer = document.getElementById('size-options');
+    sizeContainer.innerHTML = '';
+    sizeOptions.split(',').forEach(size => {
+      if (size.trim()) {
+        const sizeTrimmed = size.trim();
+        const label = document.createElement('label');
+        label.innerHTML = `
+          <input type="radio" name="size" value="${sizeTrimmed}" ${existingItem && existingItem.size === sizeTrimmed ? 'checked' : ''}> ${sizeTrimmed}
+        `;
+        sizeContainer.appendChild(label);
+      }
+    });
 
-  const sugarContainer = document.getElementById('sugar-options');
-  sugarContainer.innerHTML = '';
-  sugarOptions.split(',').forEach(sugar => {
-    if (sugar.trim()) {
-      const sugarTrimmed = sugar.trim();
+    const toppingContainer = document.getElementById('topping-options');
+    toppingContainer.innerHTML = '';
+    toppings.forEach(topping => {
       const label = document.createElement('label');
+      const isChecked = existingItem && existingItem.toppings.some(t => t.name === topping.name);
       label.innerHTML = `
-        <input type="radio" name="sugar" value="${sugarTrimmed}" ${existingItem && existingItem.sugar === sugarTrimmed ? 'checked' : ''}> ${sugarTrimmed}
+        <input type="checkbox" name="topping" value="${topping.name}" data-price="${topping.price}" ${isChecked ? 'checked' : ''}> 
+        ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)
       `;
-      sugarContainer.appendChild(label);
-    }
-  });
+      toppingContainer.appendChild(label);
+    });
 
-  const iceContainer = document.getElementById('ice-options');
-  iceContainer.innerHTML = '';
-  iceOptions.split(',').forEach(ice => {
-    if (ice.trim()) {
-      const iceTrimmed = ice.trim();
-      const label = document.createElement('label');
-      label.innerHTML = `
-        <input type="radio" name="ice" value="${iceTrimmed}" ${existingItem && existingItem.ice === iceTrimmed ? 'checked' : ''}> ${iceTrimmed}
-      `;
-      iceContainer.appendChild(label);
-    }
-  });
+    const sugarContainer = document.getElementById('sugar-options');
+    sugarContainer.innerHTML = '';
+    sugarOptions.split(',').forEach(sugar => {
+      if (sugar.trim()) {
+        const sugarTrimmed = sugar.trim();
+        const label = document.createElement('label');
+        label.innerHTML = `
+          <input type="radio" name="sugar" value="${sugarTrimmed}" ${existingItem && existingItem.sugar === sugarTrimmed ? 'checked' : ''}> ${sugarTrimmed}
+        `;
+        sugarContainer.appendChild(label);
+      }
+    });
+
+    const iceContainer = document.getElementById('ice-options');
+    iceContainer.innerHTML = '';
+    iceOptions.split(',').forEach(ice => {
+      if (ice.trim()) {
+        const iceTrimmed = ice.trim();
+        const label = document.createElement('label');
+        label.innerHTML = `
+          <input type="radio" name="ice" value="${iceTrimmed}" ${existingItem && existingItem.ice === iceTrimmed ? 'checked' : ''}> ${iceTrimmed}
+        `;
+        iceContainer.appendChild(label);
+      }
+    });
+  }
 
   document.getElementById('quantity-input').value = existingItem ? existingItem.quantity : 1;
   document.getElementById('note-input').value = existingItem ? existingItem.note : '';
@@ -352,44 +375,57 @@ function closePopup() {
 }
 
 function addToCart() {
-  const size = document.querySelector('input[name="size"]:checked');
-  const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
-  const sugar = document.querySelector('input[name="sugar"]:checked');
-  const ice = document.querySelector('input[name="ice"]:checked');
   const quantity = document.getElementById('quantity-input').value;
   const note = document.getElementById('note-input').value;
+  const isSimpleCategory = currentProduct.category === 'Món thêm' || currentProduct.category === 'Kem';
 
-  if (!size) {
-    showNotification("Vui lòng chọn size!", "error");
-    return;
-  }
-  if (!sugar) {
-    showNotification("Vui lòng chọn mức đường!", "error");
-    return;
-  }
-  if (!ice) {
-    showNotification("Vui lòng chọn mức đá!", "error");
-    return;
-  }
   if (quantity < 1) {
     showNotification("Số lượng phải lớn hơn 0!", "error");
     return;
   }
 
-  currentProduct.size = size.value;
-  currentProduct.toppings = Array.from(selectedToppings).map(topping => ({
-    name: topping.value,
-    price: Number(topping.dataset.price)
-  }));
-  currentProduct.sugar = sugar.value;
-  currentProduct.ice = ice.value;
+  if (!isSimpleCategory) {
+    const size = document.querySelector('input[name="size"]:checked');
+    const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
+    const sugar = document.querySelector('input[name="sugar"]:checked');
+    const ice = document.querySelector('input[name="ice"]:checked');
+
+    if (!size) {
+      showNotification("Vui lòng chọn size!", "error");
+      return;
+    }
+    if (!sugar) {
+      showNotification("Vui lòng chọn mức đường!", "error");
+      return;
+    }
+    if (!ice) {
+      showNotification("Vui lòng chọn mức đá!", "error");
+      return;
+    }
+
+    currentProduct.size = size.value;
+    currentProduct.toppings = Array.from(selectedToppings).map(topping => ({
+      name: topping.value,
+      price: Number(topping.dataset.price)
+    }));
+    currentProduct.sugar = sugar.value;
+    currentProduct.ice = ice.value;
+    currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
+
+    if (currentProduct.size === 'L') {
+      currentProduct.price += 5000;
+    }
+  } else {
+    // Cho Món thêm và Kem, đặt các giá trị mặc định để tránh lỗi
+    currentProduct.size = 'N/A';
+    currentProduct.toppings = [];
+    currentProduct.sugar = 'N/A';
+    currentProduct.ice = 'N/A';
+    currentProduct.toppingPrice = 0;
+  }
+
   currentProduct.quantity = Number(quantity);
   currentProduct.note = note;
-  currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
-
-  if (currentProduct.size === 'L') {
-    currentProduct.price += 5000;
-  }
 
   cart.push({ ...currentProduct });
   updateCartCount();
@@ -411,7 +447,8 @@ function groupCartItems() {
         items: [],
         totalPrice: 0,
         totalQuantity: 0,
-        key: key
+        key: key,
+        category: item.category
       };
     }
     groupedCart[key].items.push({ ...item, originalIndex: index });
@@ -462,6 +499,7 @@ function viewCart() {
         if (productData) {
           openPopup(
             group.name,
+            productData['Danh mục'],
             productData['Size'] || 'M,L',
             productData['Giá tiền'],
             productData['Đường'] || '30%,50%,70%,100%',
@@ -487,27 +525,31 @@ function viewCart() {
       li.appendChild(deleteBtn);
 
       group.items.forEach(item => {
-        const toppingNames = item.toppings.map(t => t.name).join(', ');
+        const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
 
-        const sizeRow = document.createElement('div');
-        sizeRow.className = 'detail-row';
-        sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
-        li.appendChild(sizeRow);
+        if (!isSimpleCategory) {
+          const toppingNames = item.toppings.map(t => t.name).join(', ');
 
-        const toppingRow = document.createElement('div');
-        toppingRow.className = 'detail-row vertical';
-        toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
-        li.appendChild(toppingRow);
+          const sizeRow = document.createElement('div');
+          sizeRow.className = 'detail-row';
+          sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
+          li.appendChild(sizeRow);
 
-        const sugarRow = document.createElement('div');
-        sugarRow.className = 'detail-row';
-        sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
-        li.appendChild(sugarRow);
+          const toppingRow = document.createElement('div');
+          toppingRow.className = 'detail-row vertical';
+          toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
+          li.appendChild(toppingRow);
 
-        const iceRow = document.createElement('div');
-        iceRow.className = 'detail-row';
-        iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
-        li.appendChild(iceRow);
+          const sugarRow = document.createElement('div');
+          sugarRow.className = 'detail-row';
+          sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
+          li.appendChild(sugarRow);
+
+          const iceRow = document.createElement('div');
+          iceRow.className = 'detail-row';
+          iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
+          li.appendChild(iceRow);
+        }
 
         const quantityRow = document.createElement('div');
         quantityRow.className = 'detail-row';
@@ -540,25 +582,10 @@ function viewCart() {
 }
 
 function updateCartItem() {
-  const size = document.querySelector('input[name="size"]:checked');
-  const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
-  const sugar = document.querySelector('input[name="sugar"]:checked');
-  const ice = document.querySelector('input[name="ice"]:checked');
   const quantity = document.getElementById('quantity-input').value;
   const note = document.getElementById('note-input').value;
+  const isSimpleCategory = currentProduct.category === 'Món thêm' || currentProduct.category === 'Kem';
 
-  if (!size) {
-    showNotification("Vui lòng chọn size!", "error");
-    return;
-  }
-  if (!sugar) {
-    showNotification("Vui lòng chọn mức đường!", "error");
-    return;
-  }
-  if (!ice) {
-    showNotification("Vui lòng chọn mức đá!", "error");
-    return;
-  }
   if (quantity < 1) {
     showNotification("Số lượng phải lớn hơn 0!", "error");
     return;
@@ -569,22 +596,49 @@ function updateCartItem() {
     return key !== editingGroupKey;
   });
 
-  currentProduct.size = size.value;
-  currentProduct.toppings = Array.from(selectedToppings).map(topping => ({
-    name: topping.value,
-    price: Number(topping.dataset.price)
-  }));
-  currentProduct.sugar = sugar.value;
-  currentProduct.ice = ice.value;
+  if (!isSimpleCategory) {
+    const size = document.querySelector('input[name="size"]:checked');
+    const selectedToppings = document.querySelectorAll('input[name="topping"]:checked');
+    const sugar = document.querySelector('input[name="sugar"]:checked');
+    const ice = document.querySelector('input[name="ice"]:checked');
+
+    if (!size) {
+      showNotification("Vui lòng chọn size!", "error");
+      return;
+    }
+    if (!sugar) {
+      showNotification("Vui lòng chọn mức đường!", "error");
+      return;
+    }
+    if (!ice) {
+      showNotification("Vui lòng chọn mức đá!", "error");
+      return;
+    }
+
+    currentProduct.size = size.value;
+    currentProduct.toppings = Array.from(selectedToppings).map(topping => ({
+      name: topping.value,
+      price: Number(topping.dataset.price)
+    }));
+    currentProduct.sugar = sugar.value;
+    currentProduct.ice = ice.value;
+    currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
+
+    let basePrice = currentProduct.price;
+    if (currentProduct.size === 'L') {
+      basePrice += 5000;
+    }
+    currentProduct.price = basePrice;
+  } else {
+    currentProduct.size = 'N/A';
+    currentProduct.toppings = [];
+    currentProduct.sugar = 'N/A';
+    currentProduct.ice = 'N/A';
+    currentProduct.toppingPrice = 0;
+  }
+
   currentProduct.quantity = Number(quantity);
   currentProduct.note = note;
-  currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
-
-  let basePrice = currentProduct.price;
-  if (currentProduct.size === 'L') {
-    basePrice += 5000;
-  }
-  currentProduct.price = basePrice;
 
   cart.push({ ...currentProduct });
   updateCartCount();
@@ -623,8 +677,10 @@ async function placeOrder() {
     const price = (item.price + item.toppingPrice) * item.quantity;
     total += price;
 
-    orderSummary += `${index + 1}. ${item.name} - Size ${item.size}\n`;
-    orderSummary += `   Đường: ${item.sugar}, Đá: ${item.ice}, SL: ${item.quantity}\n`;
+    orderSummary += `${index + 1}. ${item.name}${item.size !== 'N/A' ? ` - Size ${item.size}` : ''}\n`;
+    if (item.sugar !== 'N/A') orderSummary += `   Đường: ${item.sugar}, `;
+    if (item.ice !== 'N/A') orderSummary += `Đá: ${item.ice}, `;
+    orderSummary += `SL: ${item.quantity}\n`;
     orderSummary += `   Topping: ${toppingText}, Ghi chú: ${item.note || 'Không'}\n`;
     orderSummary += `   Thành tiền: ${price.toLocaleString('vi-VN')} VNĐ\n\n`;
   });
@@ -684,6 +740,7 @@ async function viewOrderHistory() {
         li.appendChild(orderId);
 
         order.cart.forEach(item => {
+          const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
           const toppingNames = item.toppings.map(t => t.name).join(', ');
 
           const nameRow = document.createElement('div');
@@ -691,25 +748,27 @@ async function viewOrderHistory() {
           nameRow.innerHTML = `<label>Tên món:</label><span>${item.name}</span>`;
           li.appendChild(nameRow);
 
-          const sizeRow = document.createElement('div');
-          sizeRow.className = 'detail-row';
-          sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
-          li.appendChild(sizeRow);
+          if (!isSimpleCategory) {
+            const sizeRow = document.createElement('div');
+            sizeRow.className = 'detail-row';
+            sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
+            li.appendChild(sizeRow);
 
-          const toppingRow = document.createElement('div');
-          toppingRow.className = 'detail-row vertical';
-          toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
-          li.appendChild(toppingRow);
+            const toppingRow = document.createElement('div');
+            toppingRow.className = 'detail-row vertical';
+            toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
+            li.appendChild(toppingRow);
 
-          const sugarRow = document.createElement('div');
-          sugarRow.className = 'detail-row';
-          sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
-          li.appendChild(sugarRow);
+            const sugarRow = document.createElement('div');
+            sugarRow.className = 'detail-row';
+            sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
+            li.appendChild(sugarRow);
 
-          const iceRow = document.createElement('div');
-          iceRow.className = 'detail-row';
-          iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
-          li.appendChild(iceRow);
+            const iceRow = document.createElement('div');
+            iceRow.className = 'detail-row';
+            iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
+            li.appendChild(iceRow);
+          }
 
           const quantityRow = document.createElement('div');
           quantityRow.className = 'detail-row';
