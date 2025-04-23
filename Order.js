@@ -939,7 +939,7 @@ async function checkUserSession() {
   if (!token) return;
 
   try {
-    const response = await fetch(`${apiBase}?action=getUser&token=${token}`);
+    const response = await fetch(`${apiBase}?action=User&token=${token}`);
     const data = await response.json();
 
     if (data.name) {
