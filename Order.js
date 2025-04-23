@@ -68,14 +68,9 @@ const transactionTracker = {
     }
   },
   downloadQRCode() {
-    const qrImage = this.elements.popupQrImage;
-    const canvas = document.createElement('canvas');
-    canvas.width = qrImage.width;
-    canvas.height = qrImage.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(qrImage, 0, 0);
+    const qrImageSrc = this.elements.popupQrImage.src;
     const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
+    link.href = qrImageSrc;
     link.download = `QR_Payment_${this.formatDateTime()}.png`;
     link.click();
   },
@@ -176,13 +171,15 @@ const transactionTracker = {
       pendingOrder = null;
     }
   },
-  async handleTransactionTimeout(transactionId) {
+  handleTransactionTimeout(transactionId) {
     const transaction = this.state.activeTransactions.get(transactionId);
     if (!transaction) return;
 
     clearInterval(transaction.countdownTimer);
     clearInterval(transaction.checkInterval);
     this.state.activeTransactions.delete(transactionId);
+    delete this.state.transactionDetails[transaction.orderId];
+    localStorage.setItem('transactionDetails', JSON.stringify(this.state.transactionDetails));
     this.resetPopup();
     showNotification("Giao dịch hết hạn! Đơn hàng không được lưu.", "error");
     pendingOrder = null;
@@ -599,8 +596,18 @@ function viewCart() {
         const qrUrl = transactionTracker.generateQRCode(amount, transactionId);
         transactionTracker.elements.popupQrImage.src = qrUrl;
         transactionTracker.elements.qrAmount.textContent = `Số tiền: ${transactionTracker.formatCurrency(amount)}`;
-        transactionTracker.elements.qrPopup.style.display = 'flex';
-        transactionTracker.startTransaction(amount, transactionId, pendingOrder.orderId);
+
+        // Kiểm tra xem giao dịch đã tồn tại trong activeTransactions
+        const existingTransaction = transactionTracker.state.activeTransactions.get(transactionId);
+        if (existingTransaction) {
+          // Nếu giao dịch đã tồn tại, chỉ hiển thị popup với thời gian hiện tại
+          transactionTracker.elements.countdown.textContent = transactionTracker.formatTime(existingTransaction.timeLeft);
+          transactionTracker.elements.qrPopup.style.display = 'flex';
+        } else {
+          // Nếu không, bắt đầu giao dịch mới
+          transactionTracker.elements.qrPopup.style.display = 'flex';
+          transactionTracker.startTransaction(amount, transactionId, pendingOrder.orderId);
+        }
       };
       cartItems.appendChild(continueBtn);
     }
@@ -722,7 +729,15 @@ async function placeOrder() {
 function cancelTransaction() {
   const transactionId = transactionTracker.elements.popupQrImage.src.match(/ID(\d+)/)?.[1];
   if (transactionId && transactionTracker.state.activeTransactions.has(transactionId)) {
-    transactionTracker.handleTransactionTimeout(transactionId);
+    const transaction = transactionTracker.state.activeTransactions.get(transactionId);
+    clearInterval(transaction.countdownTimer);
+    clearInterval(transaction.checkInterval); // Dừng ngay kiểm tra API
+    transactionTracker.state.activeTransactions.delete(transactionId);
+    delete transactionTracker.state.transactionDetails[transaction.orderId];
+    localStorage.setItem('transactionDetails', JSON.stringify(transactionTracker.state.transactionDetails));
+    transactionTracker.resetPopup();
+    pendingOrder = null;
+    showNotification("Đã hủy giao dịch!", "error");
   }
 }
 
@@ -856,13 +871,8 @@ function showOrderDetails(order) {
     downloadBtn.textContent = 'Tải QR';
     downloadBtn.style.marginTop = '10px';
     downloadBtn.onclick = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = qrImg.width;
-      canvas.height = qrImg.height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(qrImg, 0, 0);
       const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
+      link.href = qrUrl;
       link.download = `QR_Payment_${transactionTracker.formatDateTime()}.png`;
       link.click();
     };
