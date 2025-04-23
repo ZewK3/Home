@@ -67,12 +67,23 @@ const transactionTracker = {
       return false;
     }
   },
-  downloadQRCode() {
+  async downloadQRCode() {
     const qrImageSrc = this.elements.popupQrImage.src;
-    const link = document.createElement('a');
-    link.href = qrImageSrc;
-    link.download = `QR_Payment_${this.formatDateTime()}.png`;
-    link.click();
+    try {
+      const response = await fetch(qrImageSrc);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `QR_Payment_${this.formatDateTime()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading QR code:", error);
+      showNotification("Không thể tải QR code. Vui lòng thử lại!", "error");
+    }
   },
   startTransaction(amount, transactionId, orderId) {
     const transaction = {
@@ -780,7 +791,7 @@ async function viewOrderHistory() {
   }
 }
 
-function showOrderDetails(order) {
+async function showOrderDetails(order) {
   const detailsContent = document.getElementById('order-details-content');
   detailsContent.innerHTML = '';
 
@@ -870,11 +881,22 @@ function showOrderDetails(order) {
     const downloadBtn = document.createElement('button');
     downloadBtn.textContent = 'Tải QR';
     downloadBtn.style.marginTop = '10px';
-    downloadBtn.onclick = () => {
-      const link = document.createElement('a');
-      link.href = qrUrl;
-      link.download = `QR_Payment_${transactionTracker.formatDateTime()}.png`;
-      link.click();
+    downloadBtn.onclick = async () => {
+      try {
+        const response = await fetch(qrUrl);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `QR_Payment_${transactionTracker.formatDateTime()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error downloading QR code:", error);
+        showNotification("Không thể tải QR code. Vui lòng thử lại!", "error");
+      }
     };
     detailsContent.appendChild(downloadBtn);
   }
