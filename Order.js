@@ -155,6 +155,8 @@ const transactionTracker = {
             5000
           );
           updateUserInfo(data.name, updateData.newExp, updateData.newRank);
+          cart = []; // Xóa giỏ hàng khi thanh toán thành công
+          updateCartCount();
         } else {
           showNotification("Lỗi khi cập nhật trạng thái đơn hàng!", "error");
         }
@@ -720,9 +722,6 @@ async function placeOrder() {
     transactionTracker.elements.popupQrImage.src = qrUrl;
     transactionTracker.elements.qrPopup.style.display = 'flex';
     transactionTracker.startTransaction(total, transactionId, pendingOrder.orderId);
-
-    cart = [];
-    updateCartCount();
     closeCart();
   }
 }
@@ -755,7 +754,14 @@ async function viewOrderHistory() {
       data.orders.forEach((order, index) => {
         const li = document.createElement('li');
         li.style.cursor = 'pointer';
-        li.innerHTML = `<div class="order-id">${index + 1}. Mã đơn: ${order.orderId} - Trạng thái: ${order.status}</div>`;
+        const createdAt = new Date(order.createdAt || Date.now()).toLocaleString('vi-VN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        li.innerHTML = `<div class="order-id">${index + 1}. Mã đơn: ${order.orderId} - Trạng thái: ${order.status} - Ngày đặt: ${createdAt}</div>`;
         li.onclick = () => showOrderDetails(order);
         historyItems.appendChild(li);
       });
@@ -780,9 +786,20 @@ function showOrderDetails(order) {
   statusDiv.innerHTML = `<label>Trạng thái:</label><span>${order.status}</span>`;
   detailsContent.appendChild(statusDiv);
 
+  const createdAt = new Date(order.createdAt || Date.now()).toLocaleString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  const createdAtDiv = document.createElement('div');
+  createdAtDiv.className = 'detail-row';
+  createdAtDiv.innerHTML = `<label>Ngày đặt:</label><span>${createdAt}</span>`;
+  detailsContent.appendChild(createdAtDiv);
+
   order.cart.forEach(item => {
     const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
-    const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
 
     const nameDiv = document.createElement('div');
     nameDiv.className = 'detail-row';
@@ -795,6 +812,7 @@ function showOrderDetails(order) {
       sizeDiv.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
       detailsContent.appendChild(sizeDiv);
 
+      const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
       const toppingDiv = document.createElement('div');
       toppingDiv.className = 'detail-row vertical';
       toppingDiv.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
@@ -879,8 +897,9 @@ function showLoginPopup(isRegister) {
 }
 
 function hidePopup(event) {
-  if (event.target.id === 'auth-popup') {
-    document.getElementById('auth-popup').style.display = 'none';
+  const popups = ['auth-popup', 'qr-popup', 'popup', 'cart-popup', 'order-details-popup', 'zoom-popup'];
+  if (popups.includes(event.target.id)) {
+    event.target.style.display = 'none';
   }
 }
 
@@ -908,7 +927,7 @@ async function submitAuth() {
       localStorage.setItem('token', data.token);
       document.getElementById('auth-popup').style.display = 'none';
       showNotification(isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!", "success");
-      await checkUserSession(); // Gọi checkUserSession ngay sau khi đăng nhập thành công
+      await checkUserSession();
     } else {
       showNotification(data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"), "error");
     }
