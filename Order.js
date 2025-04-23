@@ -30,14 +30,15 @@ function showNotification(message, type = "success", duration = 3000) {
 const transactionTracker = {
   state: {
     baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
-    activeTransactions: new Map()
+    activeTransactions: new Map(),
+    transactionDetails: JSON.parse(localStorage.getItem('transactionDetails') || '{}')
   },
   elements: {
     qrPopup: document.getElementById("qr-popup"),
     popupQrImage: document.getElementById("popup-qr-image"),
     qrAmount: document.getElementById("qr-amount"),
     countdown: document.getElementById("countdown"),
-    pauseBtn: document.getElementById("pause-transaction"),
+    downloadBtn: document.getElementById("download-qr"),
     cancelBtn: document.getElementById("cancel-transaction")
   },
   formatCurrency(amount) {
@@ -65,6 +66,18 @@ const transactionTracker = {
       console.error("Error checking transaction:", error);
       return false;
     }
+  },
+  downloadQRCode() {
+    const qrImage = this.elements.popupQrImage;
+    const canvas = document.createElement('canvas');
+    canvas.width = qrImage.width;
+    canvas.height = qrImage.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(qrImage, 0, 0);
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = `QR_Payment_${this.formatDateTime()}.png`;
+    link.click();
   },
   startTransaction(amount, transactionId, orderId) {
     const transaction = {
@@ -103,6 +116,9 @@ const transactionTracker = {
     }, 5000);
 
     this.state.activeTransactions.set(transactionId, transaction);
+    this.state.transactionDetails[orderId] = { transactionId, amount };
+    localStorage.setItem('transactionDetails', JSON.stringify(this.state.transactionDetails));
+    this.elements.downloadBtn.onclick = () => this.downloadQRCode();
   },
   async handleTransactionSuccess(transactionId, tempOrderId) {
     const transaction = this.state.activeTransactions.get(transactionId);
@@ -172,21 +188,9 @@ const transactionTracker = {
   }
 };
 
-// Hàm xử lý CSV
-function csvToJson(csv) {
-  const lines = csv.split('\n').filter(line => line.trim());
-  const headers = lines[0].split(',').map(h => h.trim());
-  const result = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
-    if (values.length < headers.length) continue;
-    const obj = {};
-    headers.forEach((header, index) => {
-      obj[header] = values[index] || '';
-    });
-    if (obj['Tên món']) result.push(obj);
-  }
-  return result;
+// Hàm đóng QR popup mà không hủy giao dịch
+function closeQRPopup() {
+  document.getElementById("qr-popup").style.display = "none";
 }
 
 // Hàm preload hình ảnh
@@ -232,6 +236,23 @@ fetch(csvUrl)
     console.error('Lỗi:', error);
     showNotification('Không thể tải menu. Vui lòng kiểm tra kết nối hoặc Google Sheets.', "error");
   });
+
+// Hàm xử lý CSV
+function csvToJson(csv) {
+  const lines = csv.split('\n').filter(line => line.trim());
+  const headers = lines[0].split(',').map(h => h.trim());
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
+    if (values.length < headers.length) continue;
+    const obj = {};
+    headers.forEach((header, index) => {
+      obj[header] = values[index] || '';
+    });
+    if (obj['Tên món']) result.push(obj);
+  }
+  return result;
+}
 
 // Lọc và hiển thị sản phẩm
 function filterProducts(category) {
@@ -416,7 +437,6 @@ function addToCart() {
       currentProduct.price += 5000;
     }
   } else {
-    // Cho Món thêm và Kem, đặt các giá trị mặc định để tránh lỗi
     currentProduct.size = 'N/A';
     currentProduct.toppings = [];
     currentProduct.sugar = 'N/A';
@@ -734,63 +754,9 @@ async function viewOrderHistory() {
     } else {
       data.orders.forEach((order, index) => {
         const li = document.createElement('li');
-        const orderId = document.createElement('div');
-        orderId.className = 'order-id';
-        orderId.textContent = `${index + 1}. Mã đơn: ${order.orderId} - Trạng thái: ${order.status}`;
-        li.appendChild(orderId);
-
-        order.cart.forEach(item => {
-          const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
-          const toppingNames = item.toppings.map(t => t.name).join(', ');
-
-          const nameRow = document.createElement('div');
-          nameRow.className = 'detail-row';
-          nameRow.innerHTML = `<label>Tên món:</label><span>${item.name}</span>`;
-          li.appendChild(nameRow);
-
-          if (!isSimpleCategory) {
-            const sizeRow = document.createElement('div');
-            sizeRow.className = 'detail-row';
-            sizeRow.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
-            li.appendChild(sizeRow);
-
-            const toppingRow = document.createElement('div');
-            toppingRow.className = 'detail-row vertical';
-            toppingRow.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
-            li.appendChild(toppingRow);
-
-            const sugarRow = document.createElement('div');
-            sugarRow.className = 'detail-row';
-            sugarRow.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
-            li.appendChild(sugarRow);
-
-            const iceRow = document.createElement('div');
-            iceRow.className = 'detail-row';
-            iceRow.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
-            li.appendChild(iceRow);
-          }
-
-          const quantityRow = document.createElement('div');
-          quantityRow.className = 'detail-row';
-          quantityRow.innerHTML = `<label>Số lượng:</label><span>${item.quantity}</span>`;
-          li.appendChild(quantityRow);
-
-          const noteRow = document.createElement('div');
-          noteRow.className = 'detail-row vertical';
-          noteRow.innerHTML = `<label>Ghi chú:</label><span>${item.note || 'Không có'}</span>`;
-          li.appendChild(noteRow);
-
-          const priceRow = document.createElement('div');
-          priceRow.className = 'detail-row';
-          priceRow.innerHTML = `<label>Giá tiền:</label><span>${((item.price + item.toppingPrice) * item.quantity).toLocaleString('vi-VN')} VNĐ</span>`;
-          li.appendChild(priceRow);
-        });
-
-        const totalRow = document.createElement('div');
-        totalRow.className = 'detail-row';
-        totalRow.innerHTML = `<label>Tổng cộng:</label><span>${order.total.toLocaleString('vi-VN')} VNĐ</span>`;
-        li.appendChild(totalRow);
-
+        li.style.cursor = 'pointer';
+        li.innerHTML = `<div class="order-id">${index + 1}. Mã đơn: ${order.orderId} - Trạng thái: ${order.status}</div>`;
+        li.onclick = () => showOrderDetails(order);
         historyItems.appendChild(li);
       });
     }
@@ -800,109 +766,173 @@ async function viewOrderHistory() {
   }
 }
 
-// Auth Functions
-function showLoginPopup(register = false) {
-  isRegisterMode = register;
-  document.getElementById("auth-title").textContent = register ? "Đăng ký" : "Đăng nhập";
-  document.getElementById("user-name").style.display = register ? "block" : "none";
-  document.getElementById("auth-popup").style.display = "flex";
+function showOrderDetails(order) {
+  const detailsContent = document.getElementById('order-details-content');
+  detailsContent.innerHTML = '';
+
+  const orderIdDiv = document.createElement('div');
+  orderIdDiv.className = 'detail-row';
+  orderIdDiv.innerHTML = `<label>Mã đơn:</label><span>${order.orderId}</span>`;
+  detailsContent.appendChild(orderIdDiv);
+
+  const statusDiv = document.createElement('div');
+  statusDiv.className = 'detail-row';
+  statusDiv.innerHTML = `<label>Trạng thái:</label><span>${order.status}</span>`;
+  detailsContent.appendChild(statusDiv);
+
+  order.cart.forEach(item => {
+    const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
+    const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'detail-row';
+    nameDiv.innerHTML = `<label>Tên món:</label><span>${item.name}</span>`;
+    detailsContent.appendChild(nameDiv);
+
+    if (!isSimpleCategory) {
+      const sizeDiv = document.createElement('div');
+      sizeDiv.className = 'detail-row';
+      sizeDiv.innerHTML = `<label>Size:</label><span>${item.size}</span>`;
+      detailsContent.appendChild(sizeDiv);
+
+      const toppingDiv = document.createElement('div');
+      toppingDiv.className = 'detail-row vertical';
+      toppingDiv.innerHTML = `<label>Topping:</label><span>${toppingNames}</span>`;
+      detailsContent.appendChild(toppingDiv);
+
+      const sugarDiv = document.createElement('div');
+      sugarDiv.className = 'detail-row';
+      sugarDiv.innerHTML = `<label>Mức đường:</label><span>${item.sugar}</span>`;
+      detailsContent.appendChild(sugarDiv);
+
+      const iceDiv = document.createElement('div');
+      iceDiv.className = 'detail-row';
+      iceDiv.innerHTML = `<label>Mức đá:</label><span>${item.ice}</span>`;
+      detailsContent.appendChild(iceDiv);
+    }
+
+    const quantityDiv = document.createElement('div');
+    quantityDiv.className = 'detail-row';
+    quantityDiv.innerHTML = `<label>Số lượng:</label><span>${item.quantity}</span>`;
+    detailsContent.appendChild(quantityDiv);
+
+    const noteDiv = document.createElement('div');
+    noteDiv.className = 'detail-row vertical';
+    noteDiv.innerHTML = `<label>Ghi chú:</label><span>${item.note || 'Không có'}</span>`;
+    detailsContent.appendChild(noteDiv);
+
+    const priceDiv = document.createElement('div');
+    priceDiv.className = 'detail-row';
+    priceDiv.innerHTML = `<label>Giá tiền:</label><span>${((item.price + item.toppingPrice) * item.quantity).toLocaleString('vi-VN')} VNĐ</span>`;
+    detailsContent.appendChild(priceDiv);
+  });
+
+  const totalDiv = document.createElement('div');
+  totalDiv.className = 'detail-row';
+  totalDiv.innerHTML = `<label>Tổng cộng:</label><span>${order.total.toLocaleString('vi-VN')} VNĐ</span>`;
+  detailsContent.appendChild(totalDiv);
+
+  if (order.status === 'pending' && transactionTracker.state.transactionDetails[order.orderId]) {
+    const { transactionId, amount } = transactionTracker.state.transactionDetails[order.orderId];
+    const qrUrl = transactionTracker.generateQRCode(amount, transactionId);
+    const qrImg = document.createElement('img');
+    qrImg.src = qrUrl;
+    qrImg.alt = 'QR Code';
+    detailsContent.appendChild(qrImg);
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.textContent = 'Tải QR';
+    downloadBtn.onclick = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = qrImg.width;
+      canvas.height = qrImg.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(qrImg, 0, 0);
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = `QR_Payment_${transactionTracker.formatDateTime()}.png`;
+      link.click();
+    };
+    detailsContent.appendChild(downloadBtn);
+  }
+
+  document.getElementById('order-details-popup').style.display = 'flex';
+}
+
+function closeOrderDetailsPopup() {
+  document.getElementById('order-details-popup').style.display = 'none';
+}
+
+function showLoginPopup(isRegister) {
+  isRegisterMode = isRegister;
+  const authPopup = document.getElementById('auth-popup');
+  const authTitle = document.getElementById('auth-title');
+  const userNameInput = document.getElementById('user-name');
+  authTitle.textContent = isRegister ? 'Đăng ký' : 'Đăng nhập';
+  userNameInput.style.display = isRegister ? 'block' : 'none';
+  document.getElementById('user-email').value = '';
+  document.getElementById('user-password').value = '';
+  authPopup.style.display = 'flex';
 }
 
 function hidePopup(event) {
-  if (event.target.id === "auth-popup") {
-    document.getElementById("auth-popup").style.display = "none";
+  if (event.target.id === 'auth-popup') {
+    document.getElementById('auth-popup').style.display = 'none';
   }
 }
 
 async function submitAuth() {
-  const name = document.getElementById("user-name").value.trim();
-  const email = document.getElementById("user-email").value.trim();
-  const password = document.getElementById("user-password").value.trim();
-  
-  if (!email || !password || password === "" || (isRegisterMode && (!name || name === ""))) {
-    showNotification("Vui lòng nhập đầy đủ thông tin và không để trống!", "error");
+  const email = document.getElementById('user-email').value;
+  const password = document.getElementById('user-password').value;
+  const name = isRegisterMode ? document.getElementById('user-name').value : '';
+
+  if (!email || !password || (isRegisterMode && !name)) {
+    showNotification("Vui lòng điền đầy đủ thông tin!", "error");
     return;
   }
 
-  const action = isRegisterMode ? "registerUser" : "loginUser";
-  const body = isRegisterMode ? { name, email, password } : { email, password };
-
   try {
-    const response = await fetch(`${apiBase}?action=${action}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const endpoint = isRegisterMode ? 'register' : 'login';
+    const body = isRegisterMode ? { name, email, password } : { email, password };
+    const response = await fetch(`${apiBase}?action=${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     const data = await response.json();
 
     if (data.token) {
-      localStorage.setItem("token", data.token);
-      document.getElementById("auth-popup").style.display = "none";
-      updateUserInfo(data.name || name, data.exp || 0, data.rank || 'Bronze');
+      localStorage.setItem('token', data.token);
+      updateUserInfo(data.name, data.exp, data.rank);
+      document.getElementById('auth-popup').style.display = 'none';
       showNotification(isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!", "success");
     } else {
-      showNotification(data.message || "Lỗi khi đăng nhập/đăng ký.", "error");
+      showNotification(data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"), "error");
     }
   } catch (error) {
-    console.error("Lỗi:", error);
+    console.error('Lỗi:', error);
     showNotification("Đã có lỗi xảy ra. Vui lòng thử lại!", "error");
   }
 }
 
-function updateUserInfo(name, exp = 0, rank = 'Bronze') {
+function updateUserInfo(name, exp, rank) {
+  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('user-points').textContent = `${exp} Points`;
+  document.getElementById('exp-fill').style.width = `${Math.min(exp / 1000 * 100, 100)}%`;
   const rankIcon = document.getElementById('rank-icon');
   rankIcon.className = `rank-icon rank-${rank.toLowerCase()}`;
-  
-  document.getElementById('user-name-display').textContent = `👋 ${name}`;
-  document.getElementById('user-points').textContent = `${exp} Points`;
-  
-  const expPercentage = Math.min((exp % 1000) / 10, 100);
-  document.getElementById('exp-fill').style.width = `${expPercentage}%`;
-  
-  document.getElementById("login-button").style.display = "none";
-  document.getElementById("register-button").style.display = "none";
-  document.getElementById("logout-button").style.display = "block";
-  document.getElementById("user-info").style.display = "flex";
-}
-
-async function checkUserSession() {
-  const token = localStorage.getItem("token");
-  if (!token) return;
-
-  try {
-    const response = await fetch(`${apiBase}?action=User&token=${token}`);
-    const data = await response.json();
-
-    if (data.name) {
-      updateUserInfo(data.name, data.exp || 0, data.rank || 'Bronze');
-    } else {
-      localStorage.removeItem("token");
-      document.getElementById("login-button").style.display = "block";
-      document.getElementById("register-button").style.display = "block";
-      document.getElementById("logout-button").style.display = "none";
-      document.getElementById('user-info').style.display = "none";
-      showNotification("Phiên đăng nhập không hợp lệ!", "error");
-    }
-  } catch (error) {
-    console.error("Lỗi kiểm tra phiên:", error);
-    localStorage.removeItem("token");
-    document.getElementById("login-button").style.display = "block";
-    document.getElementById("register-button").style.display = "block";
-    document.getElementById("logout-button").style.display = "none";
-    document.getElementById('user-info').style.display = "none";
-    showNotification("Phiên đăng nhập không hợp lệ!", "error");
-  }
+  document.getElementById('user-info').style.display = 'flex';
+  document.getElementById('auth-control').innerHTML = `
+    <button onclick="logout()" id="logout-button">Đăng xuất</button>
+  `;
 }
 
 function logout() {
-  localStorage.removeItem("token");
-  document.getElementById("login-button").style.display = "block";
-  document.getElementById("register-button").style.display = "block";
-  document.getElementById("logout-button").style.display = "none";
-  document.getElementById('user-info').style.display = "none";
+  localStorage.removeItem('token');
+  document.getElementById('user-info').style.display = 'none';
+  document.getElementById('auth-control').innerHTML = `
+    <button onclick="showLoginPopup(false)" id="login-button">Đăng nhập</button>
+    <button onclick="showLoginPopup(true)" id="register-button">Đăng ký</button>
+  `;
   showNotification("Đã đăng xuất!", "success");
 }
-
-window.addEventListener("load", () => {
-  checkUserSession();
-});
