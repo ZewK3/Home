@@ -193,6 +193,23 @@ function closeQRPopup() {
   document.getElementById("qr-popup").style.display = "none";
 }
 
+// Hàm xử lý CSV
+function csvToJson(csv) {
+  const lines = csv.split('\n').filter(line => line.trim());
+  const headers = lines[0].split(',').map(h => h.trim());
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
+    if (values.length < headers.length) continue;
+    const obj = {};
+    headers.forEach((header, index) => {
+      obj[header] = values[index] || '';
+    });
+    if (obj['Tên món']) result.push(obj);
+  }
+  return result;
+}
+
 // Hàm preload hình ảnh
 function preloadImages(imageUrls) {
   const uniqueUrls = [...new Set(imageUrls.filter(url => url && url !== 'https://via.placeholder.com/180'))];
@@ -236,23 +253,6 @@ fetch(csvUrl)
     console.error('Lỗi:', error);
     showNotification('Không thể tải menu. Vui lòng kiểm tra kết nối hoặc Google Sheets.', "error");
   });
-
-// Hàm xử lý CSV
-function csvToJson(csv) {
-  const lines = csv.split('\n').filter(line => line.trim());
-  const headers = lines[0].split(',').map(h => h.trim());
-  const result = [];
-  for (let i = 1; i < lines.length; i++) {
-    const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
-    if (values.length < headers.length) continue;
-    const obj = {};
-    headers.forEach((header, index) => {
-      obj[header] = values[index] || '';
-    });
-    if (obj['Tên món']) result.push(obj);
-  }
-  return result;
-}
 
 // Lọc và hiển thị sản phẩm
 function filterProducts(category) {
@@ -863,6 +863,7 @@ function closeOrderDetailsPopup() {
   document.getElementById('order-details-popup').style.display = 'none';
 }
 
+// Auth Functions
 function showLoginPopup(isRegister) {
   isRegisterMode = isRegister;
   const authPopup = document.getElementById('auth-popup');
@@ -882,9 +883,9 @@ function hidePopup(event) {
 }
 
 async function submitAuth() {
-  const email = document.getElementById('user-email').value;
-  const password = document.getElementById('user-password').value;
-  const name = isRegisterMode ? document.getElementById('user-name').value : '';
+  const name = document.getElementById("user-name").value.trim();
+  const email = document.getElementById("user-email").value.trim();
+  const password = document.getElementById("user-password").value.trim();
 
   if (!email || !password || (isRegisterMode && !name)) {
     showNotification("Vui lòng điền đầy đủ thông tin!", "error");
@@ -892,9 +893,9 @@ async function submitAuth() {
   }
 
   try {
-    const endpoint = isRegisterMode ? 'register' : 'login';
+    const action = isRegisterMode ? "register" : "login";
     const body = isRegisterMode ? { name, email, password } : { email, password };
-    const response = await fetch(`${apiBase}?action=${endpoint}`, {
+    const response = await fetch(`${apiBase}?action=${action}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
@@ -903,7 +904,7 @@ async function submitAuth() {
 
     if (data.token) {
       localStorage.setItem('token', data.token);
-      updateUserInfo(data.name, data.exp, data.rank);
+      updateUserInfo(data.name || name, data.exp || 0, data.rank || 'Bronze');
       document.getElementById('auth-popup').style.display = 'none';
       showNotification(isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!", "success");
     } else {
@@ -915,24 +916,60 @@ async function submitAuth() {
   }
 }
 
-function updateUserInfo(name, exp, rank) {
-  document.getElementById('user-name-display').textContent = name;
-  document.getElementById('user-points').textContent = `${exp} Points`;
-  document.getElementById('exp-fill').style.width = `${Math.min(exp / 1000 * 100, 100)}%`;
+function updateUserInfo(name, exp = 0, rank = 'Bronze') {
   const rankIcon = document.getElementById('rank-icon');
   rankIcon.className = `rank-icon rank-${rank.toLowerCase()}`;
-  document.getElementById('user-info').style.display = 'flex';
-  document.getElementById('auth-control').innerHTML = `
-    <button onclick="logout()" id="logout-button">Đăng xuất</button>
-  `;
+  
+  document.getElementById('user-name-display').textContent = `👋 ${name}`;
+  document.getElementById('user-points').textContent = `${exp} Points`;
+  
+  const expPercentage = Math.min((exp % 1000) / 10, 100);
+  document.getElementById('exp-fill').style.width = `${expPercentage}%`;
+  
+  document.getElementById("login-button").style.display = "none";
+  document.getElementById("register-button").style.display = "none";
+  document.getElementById("logout-button").style.display = "block";
+  document.getElementById("user-info").style.display = "flex";
+}
+
+async function checkUserSession() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const response = await fetch(`${apiBase}?action=User&token=${token}`);
+    const data = await response.json();
+
+    if (data.name) {
+      updateUserInfo(data.name, data.exp || 0, data.rank || 'Bronze');
+    } else {
+      localStorage.removeItem("token");
+      document.getElementById("login-button").style.display = "block";
+      document.getElementById("register-button").style.display = "block";
+      document.getElementById("logout-button").style.display = "none";
+      document.getElementById('user-info').style.display = "none";
+      showNotification("Phiên đăng nhập không hợp lệ!", "error");
+    }
+  } catch (error) {
+    console.error("Lỗi kiểm tra phiên:", error);
+    localStorage.removeItem("token");
+    document.getElementById("login-button").style.display = "block";
+    document.getElementById("register-button").style.display = "block";
+    document.getElementById("logout-button").style.display = "none";
+    document.getElementById('user-info').style.display = "none";
+    showNotification("Phiên đăng nhập không hợp lệ!", "error");
+  }
 }
 
 function logout() {
-  localStorage.removeItem('token');
-  document.getElementById('user-info').style.display = 'none';
-  document.getElementById('auth-control').innerHTML = `
-    <button onclick="showLoginPopup(false)" id="login-button">Đăng nhập</button>
-    <button onclick="showLoginPopup(true)" id="register-button">Đăng ký</button>
-  `;
+  localStorage.removeItem("token");
+  document.getElementById("login-button").style.display = "block";
+  document.getElementById("register-button").style.display = "block";
+  document.getElementById("logout-button").style.display = "none";
+  document.getElementById('user-info').style.display = "none";
   showNotification("Đã đăng xuất!", "success");
 }
+
+window.addEventListener("load", () => {
+  checkUserSession();
+});
