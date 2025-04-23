@@ -892,9 +892,16 @@ function showLoginPopup(isRegister) {
 function hidePopup(event) {
   const popups = ['auth-popup', 'qr-popup', 'popup', 'cart-popup', 'order-details-popup', 'zoom-popup'];
   if (popups.includes(event.target.id)) {
-    event.target.style.display = 'none';
+    if (event.target.id === 'qr-popup') {
+      transactionTracker.resetPopup(); // Chỉ đóng popup QR, không hủy giao dịch
+    } else {
+      event.target.style.display = 'none';
+    }
   }
 }
+
+// Gắn sự kiện nhấp chuột cho toàn bộ document
+document.addEventListener('click', hidePopup);
 
 async function submitAuth() {
   const name = document.getElementById("user-name").value.trim();
