@@ -893,7 +893,7 @@ async function submitAuth() {
   }
 
   try {
-    const action = isRegisterMode ? "register" : "login";
+    const action = isRegisterMode ? "registerUser" : "loginUser";
     const body = isRegisterMode ? { name, email, password } : { email, password };
     const response = await fetch(`${apiBase}?action=${action}`, {
       method: 'POST',
