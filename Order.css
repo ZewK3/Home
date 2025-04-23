@@ -16,7 +16,7 @@ body {
   background: linear-gradient(90deg, #ff6f61, #ff8a80);
   color: white;
   max-width: 1200px;
-  width: 100%;
+  width: 95%;
   margin: 10px auto;
   padding: 10px 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -172,7 +172,7 @@ body {
 }
 
 .sidebar {
-  width: 280px;
+/*   width: 280px; */
   background: linear-gradient(180deg, #ffffff, #f8f9fa);
   padding: 20px;
   border-radius: 20px;
@@ -1107,12 +1107,13 @@ button#popup-action-btn {
 }
 
 @media (max-width: 768px) {
-  .header {
-    width: 95%;
-    margin: 10px auto;
-    padding: 8px 10px;
-    font-size: 0.9em;
-  }
+      .header {
+        width: 95%;
+        margin: 10px auto;
+        padding: 8px 10px;
+        font-size: 14px;
+        height: 4%;
+    }
 
   .header .user-info {
     flex-direction: column;
