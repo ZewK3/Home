@@ -145,7 +145,7 @@ const transactionTracker = {
       const data = await response.json();
 
       if (data.orderId) {
-        const updateResponse = await fetch(`${apiBase}?action=updateOrderStatus&orderId=${data.orderId}&status=success&token=${token}`);
+        const updateResponse = await fetch(`${apiBase}?action=updateOrderStatus&token=${token}&orderId=${data.orderId}&status=success`);
         const updateData = await updateResponse.json();
 
         if (updateData.success) {
@@ -168,6 +168,8 @@ const transactionTracker = {
       clearInterval(transaction.countdownTimer);
       clearInterval(transaction.checkInterval);
       this.state.activeTransactions.delete(transactionId);
+      delete this.state.transactionDetails[transaction.orderId];
+      localStorage.setItem('transactionDetails', JSON.stringify(this.state.transactionDetails));
       this.resetPopup();
       pendingOrder = null;
     }
@@ -472,7 +474,7 @@ function groupCartItems() {
       };
     }
     groupedCart[key].items.push({ ...item, originalIndex: index });
-    groupedCart[key].totalPrice += (item.price + item.toppingPrice);
+    groupedCart[key].totalPrice += (item.price + item.toppingPrice) * item.quantity;
     groupedCart[key].totalQuantity += item.quantity;
   });
   return Object.values(groupedCart);
@@ -548,7 +550,7 @@ function viewCart() {
         const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
 
         if (!isSimpleCategory) {
-          const toppingNames = item.toppings.map(t => t.name).join(', ');
+          const toppingNames = item.toppings.map(t => t.name).join(', ') || 'Không';
 
           const sizeRow = document.createElement('div');
           sizeRow.className = 'detail-row';
@@ -583,7 +585,7 @@ function viewCart() {
 
         const priceRow = document.createElement('div');
         priceRow.className = 'detail-row';
-        priceRow.innerHTML = `<label>Giá tiền:</label><span>${group.totalPrice.toLocaleString('vi-VN')} VNĐ</span>`;
+        priceRow.innerHTML = `<label>Giá tiền:</label><span>${((item.price + item.toppingPrice) * item.quantity).toLocaleString('vi-VN')} VNĐ</span>`;
         li.appendChild(priceRow);
       });
 
@@ -644,11 +646,9 @@ function updateCartItem() {
     currentProduct.ice = ice.value;
     currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
 
-    let basePrice = currentProduct.price;
     if (currentProduct.size === 'L') {
-      basePrice += 5000;
+      currentProduct.price += 5000;
     }
-    currentProduct.price = basePrice;
   } else {
     currentProduct.size = 'N/A';
     currentProduct.toppings = [];
@@ -838,10 +838,12 @@ function showOrderDetails(order) {
     const qrImg = document.createElement('img');
     qrImg.src = qrUrl;
     qrImg.alt = 'QR Code';
+    qrImg.style.marginTop = '10px';
     detailsContent.appendChild(qrImg);
 
     const downloadBtn = document.createElement('button');
     downloadBtn.textContent = 'Tải QR';
+    downloadBtn.style.marginTop = '10px';
     downloadBtn.onclick = () => {
       const canvas = document.createElement('canvas');
       canvas.width = qrImg.width;
