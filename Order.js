@@ -906,9 +906,9 @@ async function submitAuth() {
 
     if (data.token) {
       localStorage.setItem('token', data.token);
-      updateUserInfo(data.name || name, data.exp || 0, data.rank || 'Bronze');
       document.getElementById('auth-popup').style.display = 'none';
       showNotification(isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!", "success");
+      await checkUserSession(); // Gọi checkUserSession ngay sau khi đăng nhập thành công
     } else {
       showNotification(data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"), "error");
     }
@@ -939,7 +939,7 @@ async function checkUserSession() {
   if (!token) return;
 
   try {
-    const response = await fetch(`${apiBase}?action=User&token=${token}`);
+    const response = await fetch(`${apiBase}?action=getUser&token=${token}`);
     const data = await response.json();
 
     if (data.name) {
