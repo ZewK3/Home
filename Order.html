@@ -120,13 +120,22 @@
   <!-- Popup QR thanh toán -->
   <div class="qr-popup" id="qr-popup">
     <div class="qr-content">
-      <button class="close-btn" onclick="cancelTransaction()">×</button>
+      <button class="close-btn" onclick="closeQRPopup()">×</button>
       <h3>Thanh toán đơn hàng</h3>
       <img id="popup-qr-image" src="" alt="QR Code">
       <p id="qr-amount"></p>
       <p class="countdown" id="countdown"></p>
-      <button id="pause-transaction">Treo giao dịch</button>
+      <button id="download-qr">Tải QR</button>
       <button id="cancel-transaction" onclick="cancelTransaction()">Hủy giao dịch</button>
+    </div>
+  </div>
+
+  <!-- Popup chi tiết đơn hàng -->
+  <div class="order-details-popup" id="order-details-popup">
+    <div class="order-details-content">
+      <button class="close-btn" onclick="closeOrderDetailsPopup()">×</button>
+      <h3>Chi tiết đơn hàng</h3>
+      <div id="order-details-content"></div>
     </div>
   </div>
 
