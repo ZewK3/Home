@@ -192,11 +192,6 @@ const transactionTracker = {
   }
 };
 
-// Hàm đóng QR popup mà không hủy giao dịch
-function closeQRPopup() {
-  document.getElementById("qr-popup").style.display = "none";
-}
-
 // Hàm xử lý CSV
 function csvToJson(csv) {
   const lines = csv.split('\n').filter(line => line.trim());
@@ -593,6 +588,22 @@ function viewCart() {
 
       cartItems.appendChild(li);
     });
+
+    // Hiển thị nút "Tiếp tục giao dịch" nếu có pendingOrder
+    if (pendingOrder && transactionTracker.state.transactionDetails[pendingOrder.orderId]) {
+      const continueBtn = document.createElement('button');
+      continueBtn.id = 'continue-transaction';
+      continueBtn.textContent = 'Tiếp tục giao dịch';
+      continueBtn.onclick = () => {
+        const { transactionId, amount } = transactionTracker.state.transactionDetails[pendingOrder.orderId];
+        const qrUrl = transactionTracker.generateQRCode(amount, transactionId);
+        transactionTracker.elements.popupQrImage.src = qrUrl;
+        transactionTracker.elements.qrAmount.textContent = `Số tiền: ${transactionTracker.formatCurrency(amount)}`;
+        transactionTracker.elements.qrPopup.style.display = 'flex';
+        transactionTracker.startTransaction(amount, transactionId, pendingOrder.orderId);
+      };
+      cartItems.appendChild(continueBtn);
+    }
   }
 
   const total = cart.reduce((sum, item) => sum + (item.price + item.toppingPrice) * item.quantity, 0);
@@ -691,39 +702,21 @@ async function placeOrder() {
     return;
   }
 
-  let orderSummary = "🧾 Đơn hàng của bạn:\n\n";
-  let total = 0;
+  const total = cart.reduce((sum, item) => sum + (item.price + item.toppingPrice) * item.quantity, 0);
+  pendingOrder = {
+    cart: [...cart],
+    status: "pending",
+    total,
+    orderId: `TEMP_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  };
 
-  cart.forEach((item, index) => {
-    const toppingText = item.toppings.map(t => t.name).join(', ') || 'Không';
-    const price = (item.price + item.toppingPrice) * item.quantity;
-    total += price;
-
-    orderSummary += `${index + 1}. ${item.name}${item.size !== 'N/A' ? ` - Size ${item.size}` : ''}\n`;
-    if (item.sugar !== 'N/A') orderSummary += `   Đường: ${item.sugar}, `;
-    if (item.ice !== 'N/A') orderSummary += `Đá: ${item.ice}, `;
-    orderSummary += `SL: ${item.quantity}\n`;
-    orderSummary += `   Topping: ${toppingText}, Ghi chú: ${item.note || 'Không'}\n`;
-    orderSummary += `   Thành tiền: ${price.toLocaleString('vi-VN')} VNĐ\n\n`;
-  });
-
-  orderSummary += `Tổng cộng: ${total.toLocaleString('vi-VN')} VNĐ`;
-
-  if (confirm(orderSummary + "\n\nBạn có muốn xác nhận đặt hàng không?")) {
-    pendingOrder = {
-      cart: [...cart],
-      status: "pending",
-      total,
-      orderId: `TEMP_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-    };
-
-    const transactionId = transactionTracker.formatDateTime();
-    const qrUrl = transactionTracker.generateQRCode(total, transactionId);
-    transactionTracker.elements.popupQrImage.src = qrUrl;
-    transactionTracker.elements.qrPopup.style.display = 'flex';
-    transactionTracker.startTransaction(total, transactionId, pendingOrder.orderId);
-    closeCart();
-  }
+  const transactionId = transactionTracker.formatDateTime();
+  const qrUrl = transactionTracker.generateQRCode(total, transactionId);
+  transactionTracker.elements.popupQrImage.src = qrUrl;
+  transactionTracker.elements.qrAmount.textContent = `Số tiền: ${transactionTracker.formatCurrency(total)}`;
+  transactionTracker.elements.qrPopup.style.display = 'flex';
+  transactionTracker.startTransaction(total, transactionId, pendingOrder.orderId);
+  closeCart();
 }
 
 function cancelTransaction() {
@@ -942,7 +935,7 @@ function updateUserInfo(name, exp = 0, rank = 'Bronze') {
   rankIcon.className = `rank-icon rank-${rank.toLowerCase()}`;
   
   document.getElementById('user-name-display').textContent = `👋 ${name}`;
-  document.getElementById('user-points').textContent = `${exp} Points`;
+  document.getElementById('user-points').textContent = `${exp} Points | Rank: ${rank}`;
   
   const expPercentage = Math.min((exp % 1000) / 10, 100);
   document.getElementById('exp-fill').style.width = `${expPercentage}%`;
