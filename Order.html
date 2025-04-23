@@ -118,13 +118,13 @@
   </div>
 
   <!-- Popup QR thanh toán -->
-  <div class="qr-popup" id="qr-popup">
+  <div id="qr-popup" class="qr-popup">
     <div class="qr-content">
-      <button class="close-btn" onclick="closeQRPopup()">×</button>
-      <h3>Thanh toán đơn hàng</h3>
+      <button class="close-btn" onclick="transactionTracker.resetPopup()">×</button>
+      <h3>Quét mã QR để thanh toán</h3>
       <img id="popup-qr-image" src="" alt="QR Code">
-      <p id="qr-amount"></p>
-      <p class="countdown" id="countdown"></p>
+      <p id="qr-amount">Số tiền: 0 VNĐ</p>
+      <p class="countdown" id="countdown">15:00</p>
       <button id="download-qr">Tải QR</button>
       <button id="cancel-transaction" onclick="cancelTransaction()">Hủy giao dịch</button>
     </div>
