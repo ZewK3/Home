@@ -14,14 +14,16 @@ body {
 .header {
   background: linear-gradient(90deg, #ff6f61, #ff8a80);
   color: white;
+  max-width: 1200px;
   width: 100%;
+  margin: 10px auto;
   padding: 10px 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
+  border-radius: 20px;
 }
 .header .user-info {
   display: flex;
@@ -83,6 +85,7 @@ body {
 #auth-control {
   display: flex;
   gap: 10px;
+  margin-left: auto;
 }
 #auth-control button {
   background: white;
@@ -101,8 +104,8 @@ body {
   display: flex;
   max-width: 1200px;
   width: 100%;
-  height: calc(100vh - 60px);
-  margin: 10px auto;
+  height: calc(100vh - 80px);
+  margin: 0 auto;
   gap: 15px;
   overflow: hidden;
 }
@@ -117,7 +120,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   overflow-y: auto;
-  max-height: calc(100vh - 60px);
+  max-height: calc(100vh - 80px);
   transition: transform 0.3s ease;
   background: linear-gradient(180deg, #ffffff, #f8f9fa);
 }
@@ -615,40 +618,48 @@ button#popup-action-btn {
   z-index: 10000;
 }
 #auth-popup .auth-box {
-  background: white;
-  padding: 30px 20px;
-  border-radius: 12px;
-  width: 320px;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  padding: 30px;
+  border-radius: 15px;
+  width: 350px;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
   position: relative;
+  animation: slideIn 0.3s ease;
 }
 #auth-popup .auth-box h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.5em;
+  margin: 0 0 20px;
+  font-size: 1.8em;
   color: #ff6f61;
+  text-transform: uppercase;
 }
 #auth-popup input {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
   border-radius: 8px;
   font-size: 1em;
+  transition: border-color 0.3s ease;
+}
+#auth-popup input:focus {
+  border-color: #ff6f61;
+  outline: none;
 }
 #auth-popup button {
   width: 100%;
   background: #ff6f61;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 20px;
-  font-size: 1em;
+  padding: 12px;
+  border-radius: 25px;
+  font-size: 1.1em;
+  font-weight: bold;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 #auth-popup button:hover {
-  background: #e95a50;
+  background: #e65b50;
 }
 .qr-popup {
   position: fixed;
@@ -663,53 +674,66 @@ button#popup-action-btn {
   z-index: 2000;
 }
 .qr-content {
-  background: #fff;
-  padding: 20px;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  padding: 25px;
   border-radius: 15px;
-  max-width: 500px;
+  max-width: 400px;
   width: 90%;
   text-align: center;
   position: relative;
   animation: slideIn 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 .qr-content img {
-  width: 100%;
-  max-height: 400px;
+  width: 250px;
+  height: 250px;
   object-fit: contain;
   border-radius: 10px;
+  margin: 15px 0;
+  border: 2px solid #ddd;
 }
 .qr-content h3 {
-  font-size: 1.5em;
+  font-size: 1.6em;
   color: #ff6f61;
   margin: 10px 0;
+  text-transform: uppercase;
 }
 .qr-content p {
   font-size: 1.2em;
-  color: #666;
-  margin: 5px 0;
+  color: #333;
+  margin: 10px 0;
 }
 .qr-content .countdown {
-  font-size: 1.2em;
+  font-size: 1.3em;
   color: #ff6f61;
-  margin: 10px 0;
+  font-weight: bold;
+  margin: 15px 0;
 }
 .qr-content button {
   background: #ff6f61;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 12px 20px;
   border-radius: 25px;
   cursor: pointer;
-  margin: 5px;
+  margin: 8px;
+  font-size: 1em;
+  font-weight: bold;
   transition: all 0.3s ease;
 }
 .qr-content button:hover {
   background: #e65b50;
 }
+.qr-content #download-qr {
+  background: #28a745;
+}
+.qr-content #download-qr:hover {
+  background: #218838;
+}
 .qr-content .close-btn {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: 10px;
+  right: 10px;
   background: none;
   color: #333;
   border: none;
@@ -717,11 +741,90 @@ button#popup-action-btn {
   width: auto;
   height: auto;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: normal;
   transition: all 0.3s ease;
 }
 .qr-content .close-btn:hover {
+  background: none;
+  color: #ff6f61;
+}
+.order-details-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+.order-details-content {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  padding: 25px;
+  border-radius: 15px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.order-details-content h3 {
+  font-size: 1.6em;
+  color: #ff6f61;
+  margin: 0 0 20px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.order-details-content .detail-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.order-details-content .detail-row label {
+  font-weight: bold;
+  width: max-content;
+  margin-right: 10px;
+  font-size: 14px;
+}
+.order-details-content .detail-row span {
+  font-size: 14px;
+  color: #333;
+}
+.order-details-content .detail-row.vertical {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+.order-details-content img {
+  width: 250px;
+  height: 250px;
+  object-fit: contain;
+  border-radius: 10px;
+  margin: 15px auto;
+  display: block;
+  border: 2px solid #ddd;
+}
+.order-details-content .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  color: #333;
+  border: none;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: normal;
+  transition: all 0.3s ease;
+}
+.order-details-content .close-btn:hover {
   background: none;
   color: #ff6f61;
 }
@@ -760,6 +863,8 @@ button#popup-action-btn {
 }
 @media (max-width: 768px) {
   .header {
+    width: 95%;
+    margin: 10px auto;
     padding: 8px 10px;
     font-size: 0.9em;
   }
@@ -783,7 +888,7 @@ button#popup-action-btn {
     height: auto;
   }
   .sidebar {
-    position: fixed;
+    position: fresh;
     top: 0.1vh;
     left: -280px;
     width: 200px;
@@ -846,5 +951,25 @@ button#popup-action-btn {
   }
   .zoom-content img {
     max-height: 300px;
+  }
+  .auth-box {
+    width: 90%;
+    padding: 20px;
+  }
+  .qr-content {
+    width: 95%;
+    padding: 20px;
+  }
+  .qr-content img {
+    width: 200px;
+    height: 200px;
+  }
+  .order-details-content {
+    width: 95%;
+    padding: 20px;
+  }
+  .order-details-content img {
+    width: 200px;
+    height: 200px;
   }
 }
