@@ -288,30 +288,32 @@ body {
 }
 
 .content {
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
-  overflow-y: auto;
-  max-height: 100%;
-  padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    overflow-y: auto;
+    max-height: 100%;
+    padding: 10px;
+    margin-block: auto;
+    margin-top: inherit;
 }
 
 .product {
-  width: 150px;
-  background: #fff;
-  border-radius: 15px;
-  padding: 5px;
-  text-align: center;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 250px;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  position: relative;
+    width: 150px;
+    background: #fff;
+    border-radius: 15px;
+    padding: 5px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 250px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
 }
 
 .product:hover {
@@ -1136,17 +1138,17 @@ button#popup-action-btn {
     height: auto;
   }
 
-  .sidebar {
-    position: fixed;
-    top: 0.1vh;
-    left: -280px;
-    width: 200px;
-    height: 99vh;
-    max-height: none;
-    z-index: 1000;
-    border-radius: 0 15px 15px 0;
-    padding: 15px;
-  }
+      .sidebar {
+        position: fixed;
+        top: 7%;
+        left: -280px;
+        width: auto;
+        height: 90%;
+        max-height: none;
+        z-index: 1000;
+        border-radius: 0 15px 15px 0;
+        padding: 15px;
+    }
 
   .sidebar.active {
     left: 0;
@@ -1175,6 +1177,8 @@ button#popup-action-btn {
 
   .product {
     max-width: 280px;
+    width: 120px;
+    height: 240px;
   }
 
   .option-row {
