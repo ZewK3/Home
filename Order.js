@@ -1,5 +1,8 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
+const storeAddress = "123 Nguyễn Huệ, Quận 1, TP.HCM"; // Địa chỉ quán
+const nominatimBase = "https://nominatim.openstreetmap.org/search";
+const osrmBase = "http://router.project-osrm.org/route/v1/driving/";
 let allData = [];
 let toppings = [];
 let currentProduct = {};
@@ -199,6 +202,107 @@ const transactionTracker = {
     this.elements.qrPopup.style.display = "none";
   }
 };
+
+// Hàm lấy tọa độ từ địa chỉ bằng Nominatim
+async function getCoordinates(address) {
+  try {
+    const response = await fetch(`${nominatimBase}?q=${encodeURIComponent(address)}&format=json&addressdetails=1&countrycodes=vn&limit=1`);
+    const data = await response.json();
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lon: parseFloat(data[0].lon),
+        display_name: data[0].display_name
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching coordinates:", error);
+    return null;
+  }
+}
+
+// Hàm tính khoảng cách và thời gian bằng OSRM
+async function calculateDistance() {
+  const addressInput = document.getElementById('delivery-address').value.trim();
+  if (!addressInput) {
+    showNotification("Vui lòng nhập địa chỉ giao hàng!", "error");
+    return;
+  }
+
+  const storeCoords = await getCoordinates(storeAddress);
+  const deliveryCoords = await getCoordinates(addressInput);
+
+  if (!storeCoords || !deliveryCoords) {
+    document.getElementById('distance-info').innerHTML = 'Không thể tìm thấy địa chỉ. Vui lòng thử lại!';
+    document.getElementById('confirm-delivery-btn').disabled = true;
+    return;
+  }
+
+  try {
+    const osrmUrl = `${osrmBase}${storeCoords.lon},${storeCoords.lat};${deliveryCoords.lon},${deliveryCoords.lat}?overview=false`;
+    const response = await fetch(osrmUrl);
+    const data = await response.json();
+
+    if (data.code === 'Ok' && data.routes.length > 0) {
+      const distance = (data.routes[0].distance / 1000).toFixed(1); // km
+      const duration = Math.round(data.routes[0].duration / 60); // phút
+      document.getElementById('distance-info').innerHTML = `Khoảng cách: ${distance} km | Thời gian di chuyển: ${duration} phút`;
+      document.getElementById('confirm-delivery-btn').disabled = false;
+      pendingOrder.deliveryAddress = deliveryCoords.display_name;
+      pendingOrder.distance = `${distance} km`;
+      pendingOrder.duration = `${duration} phút`;
+    } else {
+      document.getElementById('distance-info').innerHTML = 'Không thể tính khoảng cách. Vui lòng thử địa chỉ khác!';
+      document.getElementById('confirm-delivery-btn').disabled = true;
+    }
+  } catch (error) {
+    console.error("Error calculating distance:", error);
+    document.getElementById('distance-info').innerHTML = 'Lỗi khi tính khoảng cách. Vui lòng thử lại!';
+    document.getElementById('confirm-delivery-btn').disabled = true;
+  }
+}
+
+// Hàm khởi tạo autocomplete bằng Nominatim
+function initAutocomplete() {
+  $("#delivery-address").autocomplete({
+    source: async function(request, response) {
+      try {
+        const res = await fetch(`${nominatimBase}?q=${encodeURIComponent(request.term)}&format=json&addressdetails=1&countrycodes=vn&limit=5`);
+        const data = await res.json();
+        response(data.map(item => ({
+          label: item.display_name,
+          value: item.display_name
+        })));
+      } catch (error) {
+        console.error("Error fetching autocomplete:", error);
+        response([]);
+      }
+    },
+    minLength: 3,
+    select: function(event, ui) {
+      document.getElementById('delivery-address').value = ui.item.value;
+      calculateDistance();
+    }
+  });
+}
+
+// Hàm mở popup chọn địa chỉ
+function openDeliveryPopup() {
+  document.getElementById('delivery-popup').style.display = 'flex';
+  document.getElementById('delivery-address').value = '';
+  document.getElementById('distance-info').innerHTML = '';
+  document.getElementById('confirm-delivery-btn').disabled = true;
+  initAutocomplete();
+}
+
+// Hàm đóng popup chọn địa chỉ
+function closeDeliveryPopup() {
+  document.getElementById('delivery-popup').style.display = 'none';
+  pendingOrder.deliveryAddress = null;
+  pendingOrder.distance = null;
+  pendingOrder.duration = null;
+}
 
 // Hàm xử lý CSV
 function csvToJson(csv) {
@@ -725,16 +829,31 @@ async function placeOrder() {
     cart: [...cart],
     status: "pending",
     total,
-    orderId: `TEMP_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+    orderId: `TEMP_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+    deliveryAddress: null,
+    distance: null,
+    duration: null
   };
 
+  openDeliveryPopup();
+  closeCart();
+}
+
+// Hàm xác nhận địa chỉ giao hàng và mở popup QR
+function confirmDelivery() {
+  if (!pendingOrder.deliveryAddress) {
+    showNotification("Vui lòng chọn địa chỉ giao hàng hợp lệ!", "error");
+    return;
+  }
+
+  const total = pendingOrder.total;
   const transactionId = transactionTracker.formatDateTime();
   const qrUrl = transactionTracker.generateQRCode(total, transactionId);
   transactionTracker.elements.popupQrImage.src = qrUrl;
   transactionTracker.elements.qrAmount.textContent = `Số tiền: ${transactionTracker.formatCurrency(total)}`;
   transactionTracker.elements.qrPopup.style.display = 'flex';
   transactionTracker.startTransaction(total, transactionId, pendingOrder.orderId);
-  closeCart();
+  closeDeliveryPopup();
 }
 
 function cancelTransaction() {
@@ -742,7 +861,7 @@ function cancelTransaction() {
   if (transactionId && transactionTracker.state.activeTransactions.has(transactionId)) {
     const transaction = transactionTracker.state.activeTransactions.get(transactionId);
     clearInterval(transaction.countdownTimer);
-    clearInterval(transaction.checkInterval); // Dừng ngay kiểm tra API
+    clearInterval(transaction.checkInterval);
     transactionTracker.state.activeTransactions.delete(transactionId);
     delete transactionTracker.state.transactionDetails[transaction.orderId];
     localStorage.setItem('transactionDetails', JSON.stringify(transactionTracker.state.transactionDetails));
@@ -816,6 +935,23 @@ async function showOrderDetails(order) {
   createdAtDiv.className = 'detail-row';
   createdAtDiv.innerHTML = `<label>Ngày đặt:</label><span>${createdAt}</span>`;
   detailsContent.appendChild(createdAtDiv);
+
+  if (order.deliveryAddress) {
+    const deliveryDiv = document.createElement('div');
+    deliveryDiv.className = 'detail-row vertical';
+    deliveryDiv.innerHTML = `<label>Địa chỉ giao hàng:</label><span>${order.deliveryAddress}</span>`;
+    detailsContent.appendChild(deliveryDiv);
+
+    const distanceDiv = document.createElement('div');
+    distanceDiv.className = 'detail-row';
+    distanceDiv.innerHTML = `<label>Khoảng cách:</label><span>${order.distance || 'N/A'}</span>`;
+    detailsContent.appendChild(distanceDiv);
+
+    const durationDiv = document.createElement('div');
+    durationDiv.className = 'detail-row';
+    durationDiv.innerHTML = `<label>Thời gian di chuyển:</label><span>${order.duration || 'N/A'}</span>`;
+    detailsContent.appendChild(durationDiv);
+  }
 
   order.cart.forEach(item => {
     const isSimpleCategory = item.category === 'Món thêm' || item.category === 'Kem';
@@ -922,10 +1058,12 @@ function showLoginPopup(isRegister) {
 }
 
 function hidePopup(event) {
-  const popups = ['auth-popup', 'qr-popup', 'popup', 'cart-popup', 'order-details-popup', 'zoom-popup'];
+  const popups = ['auth-popup', 'qr-popup', 'popup', 'cart-popup', 'order-details-popup', 'zoom-popup', 'delivery-popup'];
   if (popups.includes(event.target.id)) {
     if (event.target.id === 'qr-popup') {
-      transactionTracker.resetPopup(); // Chỉ đóng popup QR, không hủy giao dịch
+      transactionTracker.resetPopup();
+    } else if (event.target.id === 'delivery-popup') {
+      closeDeliveryPopup();
     } else {
       event.target.style.display = 'none';
     }
@@ -1022,6 +1160,10 @@ function logout() {
   document.getElementById('user-info').style.display = "none";
   showNotification("Đã đăng xuất!", "success");
 }
+
+// Gắn sự kiện xác nhận địa chỉ giao hàng và tính khoảng cách khi nhập
+document.getElementById('confirm-delivery-btn').onclick = confirmDelivery;
+document.getElementById('delivery-address').addEventListener('change', calculateDistance);
 
 window.addEventListener("load", () => {
   checkUserSession();
