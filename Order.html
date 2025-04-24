@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,169 +6,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đặt hàng Tocotoco</title>
   <link rel="stylesheet" href="Order.css">
-  <!-- Tải thư viện jQuery để xử lý autocomplete -->
+  <!-- Tải thư viện jQuery và jQuery UI để xử lý autocomplete -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <img src="https://tocotocotea.com/wp-content/uploads/2023/08/logo-tocotoco.png" alt="Tocotoco Logo">
-    </div>
+  <div class="header">
     <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-    <div class="auth-buttons">
+    <div class="user-info" id="user-info" style="display: none;">
+      <span class="user-name" id="user-name-display"></span>
+      <div class="points-exp">
+        <span class="points" id="user-points"></span>
+        <div class="exp-bar">
+          <div class="exp-fill" id="exp-fill"></div>
+        </div>
+      </div>
+      <span id="rank-icon" class="rank-icon"></span>
+    </div>
+    <div id="auth-control">
       <button id="login-button" onclick="showLoginPopup(false)">Đăng nhập</button>
       <button id="register-button" onclick="showLoginPopup(true)">Đăng ký</button>
       <button id="logout-button" onclick="logout()" style="display: none;">Đăng xuất</button>
     </div>
-    <div id="user-info" style="display: none;">
-      <span id="user-name-display"></span>
-      <div class="exp-bar">
-        <div id="exp-fill"></div>
-      </div>
-      <span id="user-points"></span>
-      <span id="rank-icon" class="rank-icon"></span>
-    </div>
-  </header>
+  </div>
 
   <div class="container">
-    <aside id="sidebar">
+    <div class="sidebar" id="sidebar">
+      <h3>Danh mục</h3>
       <ul id="category-list"></ul>
-    </aside>
-    <main>
+      <div class="cart" onclick="showCartTab()">
+        Giỏ hàng <span id="cart-count">0</span>
+      </div>
+    </div>
+    <div class="content">
       <div id="product-list"></div>
-    </main>
-    <div class="cart">
-      <button onclick="showCartTab()">
-        <span id="cart-count">0</span> 🛒
-      </button>
     </div>
   </div>
 
   <!-- Popup chọn tùy chọn sản phẩm -->
   <div id="popup" class="popup">
     <div class="popup-content">
-      <h2 id="popup-title">Chọn tùy chọn</h2>
-      <h3 id="popup-product-name"></h3>
-      <div id="size-section" class="option-section">
+      <button class="close-btn" onclick="closePopup()">×</button>
+      <h3 id="popup-title">Chọn tùy chọn</h3>
+      <p class="product-name" id="popup-product-name"></p>
+      <div id="size-section" class="option-row">
         <label>Size:</label>
-        <div id="size-options"></div>
+        <div id="size-options" class="checkbox-group"></div>
       </div>
-      <div id="topping-section" class="option-section">
+      <div id="topping-section" class="option-row">
         <label>Topping:</label>
-        <div id="topping-options"></div>
+        <div id="topping-options" class="checkbox-group vertical"></div>
       </div>
-      <div id="sugar-section" class="option-section">
+      <div id="sugar-section" class="option-row">
         <label>Mức đường:</label>
-        <div id="sugar-options"></div>
+        <div id="sugar-options" class="checkbox-group"></div>
       </div>
-      <div id="ice-section" class="option-section">
+      <div id="ice-section" class="option-row">
         <label>Mức đá:</label>
-        <div id="ice-options"></div>
+        <div id="ice-options" class="checkbox-group"></div>
       </div>
-      <div class="option-section">
+      <div class="quantity-group">
         <label>Số lượng:</label>
         <input type="number" id="quantity-input" min="1" value="1">
       </div>
-      <div class="option-section">
+      <div class="note-group">
         <label>Ghi chú:</label>
         <textarea id="note-input" placeholder="Nhập ghi chú nếu có"></textarea>
       </div>
-      <div class="popup-buttons">
-        <button onclick="closePopup()">Hủy</button>
-        <button id="popup-action-btn">Thêm vào giỏ</button>
-      </div>
+      <button id="popup-action-btn" onclick="addToCart()">Thêm vào giỏ</button>
     </div>
   </div>
 
   <!-- Popup giỏ hàng và lịch sử -->
-  <div id="cart-popup" class="popup">
-    <div class="popup-content">
-      <div class="tab-buttons">
+  <div id="cart-popup" class="cart-popup">
+    <div class="cart-content">
+      <button class="close-btn" onclick="closeCart()">×</button>
+      <div class="tabs">
         <button class="tab-button active" onclick="showCartTab()">Giỏ hàng</button>
         <button class="tab-button" onclick="showHistoryTab()">Lịch sử</button>
       </div>
-      <div id="cart-tab">
+      <div id="cart-tab" class="tab-content">
         <ul id="cart-items"></ul>
-        <div id="cart-total">Tổng cộng: 0 VNĐ</div>
-        <div class="popup-buttons">
-          <button onclick="closeCart()">Đóng</button>
-          <button onclick="placeOrder()">Đặt hàng</button>
-        </div>
+        <div class="total" id="cart-total">Tổng cộng: 0 VNĐ</div>
+        <button id="checkout-btn" onclick="placeOrder()">Đặt hàng</button>
       </div>
-      <div id="history-tab" style="display: none;">
+      <div id="history-tab" class="tab-content" style="display: none;">
         <ul id="history-items"></ul>
-        <div class="popup-buttons">
-          <button onclick="closeCart()">Đóng</button>
-        </div>
       </div>
     </div>
   </div>
 
   <!-- Popup chi tiết đơn hàng -->
-  <div id="order-details-popup" class="popup">
-    <div class="popup-content">
-      <h2>Chi tiết đơn hàng</h2>
+  <div id="order-details-popup" class="order-details-popup">
+    <div class="order-details-content">
+      <button class="close-btn" onclick="closeOrderDetailsPopup()">×</button>
+      <h3>Chi tiết đơn hàng</h3>
       <div id="order-details-content"></div>
-      <div class="popup-buttons">
-        <button onclick="closeOrderDetailsPopup()">Đóng</button>
-      </div>
     </div>
   </div>
 
   <!-- Popup phóng to hình ảnh -->
-  <div id="zoom-popup" class="popup">
-    <div class="popup-content">
+  <div id="zoom-popup" class="zoom-popup">
+    <div class="zoom-content">
+      <button class="close-btn" onclick="closeZoomPopup()">×</button>
       <img id="zoom-image" src="" alt="Product Image">
       <h3 id="zoom-product-name"></h3>
       <p id="zoom-product-price"></p>
-      <button onclick="closeZoomPopup()">Đóng</button>
     </div>
   </div>
 
   <!-- Popup QR thanh toán -->
-  <div id="qr-popup" class="popup">
-    <div class="popup-content">
-      <h2>Thanh toán qua QR</h2>
+  <div id="qr-popup" class="qr-popup">
+    <div class="qr-content">
+      <button class="close-btn" onclick="cancelTransaction()">×</button>
+      <h3>Thanh toán qua QR</h3>
       <img id="popup-qr-image" src="" alt="QR Code">
       <p id="qr-amount">Số tiền: 0 VNĐ</p>
-      <p id="countdown">15:00</p>
-      <div class="popup-buttons">
-        <button id="download-qr" onclick="transactionTracker.downloadQRCode()">Tải QR</button>
-        <button id="cancel-transaction" onclick="cancelTransaction()">Hủy</button>
-      </div>
+      <p class="countdown" id="countdown">15:00</p>
+      <button id="download-qr" onclick="transactionTracker.downloadQRCode()">Tải QR</button>
+      <button id="cancel-transaction" onclick="cancelTransaction()">Hủy</button>
     </div>
   </div>
 
   <!-- Popup đăng nhập/đăng ký -->
-  <div id="auth-popup" class="popup">
-    <div class="popup-content">
-      <h2 id="auth-title">Đăng nhập</h2>
-      <div class="auth-form">
-        <label for="user-name">Họ tên:</label>
-        <input type="text" id="user-name" placeholder="Nhập họ tên" style="display: none;">
-        <label for="user-email">Email:</label>
-        <input type="email" id="user-email" placeholder="Nhập email">
-        <label for="user-password">Mật khẩu:</label>
-        <input type="password" id="user-password" placeholder="Nhập mật khẩu">
-        <div class="popup-buttons">
-          <button onclick="submitAuth()">Xác nhận</button>
-          <button onclick="document.getElementById('auth-popup').style.display='none'">Hủy</button>
-        </div>
-      </div>
+  <div id="auth-popup">
+    <div class="auth-box">
+      <button class="close-btn" onclick="document.getElementById('auth-popup').style.display='none'">×</button>
+      <h3 id="auth-title">Đăng nhập</h3>
+      <input type="text" id="user-name" placeholder="Nhập họ tên" style="display: none;">
+      <input type="email" id="user-email" placeholder="Nhập email">
+      <input type="password" id="user-password" placeholder="Nhập mật khẩu">
+      <button onclick="submitAuth()">Xác nhận</button>
     </div>
   </div>
 
   <!-- Popup chọn địa chỉ giao hàng -->
-  <div id="delivery-popup" class="popup">
-    <div class="popup-content">
-      <h2>Chọn địa chỉ giao hàng</h2>
-      <div class="option-section">
+  <div id="delivery-popup" class="delivery-popup">
+    <div class="delivery-content">
+      <button class="close-btn" onclick="closeDeliveryPopup()">×</button>
+      <h3>Chọn địa chỉ giao hàng</h3>
+      <div class="option-row">
         <label for="delivery-address">Địa chỉ:</label>
         <input type="text" id="delivery-address" placeholder="Nhập địa chỉ giao hàng">
       </div>
-      <div id="distance-info" style="margin-top: 10px;"></div>
+      <div class="distance-info" id="distance-info"></div>
       <div class="popup-buttons">
         <button onclick="closeDeliveryPopup()">Hủy</button>
         <button id="confirm-delivery-btn" disabled>Xác nhận</button>
@@ -178,3 +161,4 @@
   <script src="Order.js"></script>
 </body>
 </html>
+```
