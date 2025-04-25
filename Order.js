@@ -3,7 +3,7 @@ const apiBase = "https://zewk.tocotoco.workers.dev/";
 const storeCoords = { lng: 106.650467, lat: 10.782461 }; // Tọa độ quán Lạc Long Quân, Tân Bình
 const mapboxAccessToken = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d3MwYjI5MHZzaTJtcjBmajl5dWI5diJ9.dP89zeG92u7AeHigH4tJwg"; // Token của bạn
 const geocodeBase = "https://api.mapbox.com/geocoding/v5/mapbox.places";
-const directionsBase = "https://api.mapbox.com/directions/v5/mapbox/driving/"; // Dùng Directions API
+const directionsBase = "https://api.mapbox.com/directions/v5/mapbox/driving/";
 let allData = [];
 let toppings = [];
 let currentProduct = {};
@@ -11,6 +11,9 @@ let cart = [];
 let editingGroupKey = null;
 let isRegisterMode = false;
 let pendingOrder = null;
+let map = null; // Biến lưu trữ bản đồ Mapbox GL
+let marker = null; // Biến lưu trữ marker trên bản đồ
+let selectedCoords = null; // Tọa độ được chọn từ bản đồ
 
 // Tạo phần tử notification
 const notification = document.createElement("div");
@@ -226,20 +229,28 @@ async function getCoordinates(address) {
   }
 }
 
-// Hàm tính khoảng cách và thời gian bằng Mapbox Directions API
-async function calculateDistance() {
-  const addressInput = document.getElementById('delivery-address').value.trim();
-  if (!addressInput) {
-    showNotification("Vui lòng nhập địa chỉ giao hàng!", "error");
-    document.getElementById('distance-info').innerHTML = '';
-    document.getElementById('confirm-delivery-btn').disabled = true;
-    return;
+// Hàm lấy địa chỉ từ tọa độ (reverse geocoding)
+async function getAddressFromCoords(lng, lat) {
+  try {
+    const response = await fetch(
+      `${geocodeBase}/${lng},${lat}.json?country=vn&access_token=${mapboxAccessToken}`
+    );
+    const data = await response.json();
+    if (data.features && data.features.length > 0) {
+      return data.features[0].place_name;
+    }
+    return "Không tìm thấy địa chỉ";
+  } catch (error) {
+    console.error("Error fetching address from coordinates:", error);
+    return "Không tìm thấy địa chỉ";
   }
+}
 
-  const deliveryCoords = await getCoordinates(addressInput);
-
+// Hàm tính khoảng cách và thời gian bằng Mapbox Directions API
+async function calculateDistance(deliveryCoords) {
   if (!deliveryCoords) {
-    document.getElementById('distance-info').innerHTML = 'Không thể tìm thấy địa chỉ. Vui lòng thử lại!';
+    showNotification("Vui lòng chọn địa chỉ giao hàng trên bản đồ!", "error");
+    document.getElementById('distance-info').innerHTML = '';
     document.getElementById('confirm-delivery-btn').disabled = true;
     return;
   }
@@ -260,7 +271,7 @@ async function calculateDistance() {
       pendingOrder.distance = `${distance} km`;
       pendingOrder.duration = `${duration} phút`;
     } else {
-      document.getElementById('distance-info').innerHTML = 'Không thể tính khoảng cách. Vui lòng thử địa chỉ khác!';
+      document.getElementById('distance-info').innerHTML = 'Không thể tính khoảng cách. Vui lòng chọn địa chỉ khác!';
       document.getElementById('confirm-delivery-btn').disabled = true;
     }
   } catch (error) {
@@ -277,9 +288,73 @@ async function calculateDistance() {
   }
 }
 
-// Hàm khởi tạo autocomplete bằng Mapbox Geocoding API
-function initAutocomplete() {
-  $("#delivery-address").autocomplete({
+// Khởi tạo bản đồ Mapbox GL trong delivery-popup
+function initMap() {
+  mapboxgl.accessToken = mapboxAccessToken;
+  map = new mapboxgl.Map({
+    container: 'map-container',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [storeCoords.lng, storeCoords.lat],
+    zoom: 14
+  });
+
+  // Thêm marker tại vị trí cửa hàng
+  new mapboxgl.Marker({ color: '#FF0000' })
+    .setLngLat([storeCoords.lng, storeCoords.lat])
+    .setPopup(new mapboxgl.Popup().setText('Cửa hàng TocoToco'))
+    .addTo(map);
+
+  // Sự kiện nhấp chuột lên bản đồ để chọn địa chỉ
+  map.on('click', async (e) => {
+    const { lng, lat } = e.lngLat;
+    selectedCoords = { lon: lng, lat: lat };
+
+    // Xóa marker cũ nếu có
+    if (marker) marker.remove();
+
+    // Thêm marker mới tại vị trí được chọn
+    marker = new mapboxgl.Marker()
+      .setLngLat([lng, lat])
+      .addTo(map);
+
+    // Lấy địa chỉ từ tọa độ (reverse geocoding)
+    const address = await getAddressFromCoords(lng, lat);
+    selectedCoords.display_name = address;
+    document.getElementById('delivery-address-display').innerHTML = `Địa chỉ: ${address}`;
+    document.getElementById('map-search').value = address;
+
+    // Tính khoảng cách
+    await calculateDistance(selectedCoords);
+  });
+
+  // Thêm tìm kiếm địa chỉ trên bản đồ
+  const searchInput = document.getElementById('map-search');
+  searchInput.addEventListener('input', async (e) => {
+    const query = e.target.value;
+    if (query.length < 3) return;
+
+    const coords = await getCoordinates(query);
+    if (coords) {
+      selectedCoords = coords;
+
+      // Di chuyển bản đồ đến vị trí tìm kiếm
+      map.flyTo({ center: [coords.lon, coords.lat], zoom: 14 });
+
+      // Xóa marker cũ nếu có
+      if (marker) marker.remove();
+
+      // Thêm marker mới tại vị trí tìm kiếm
+      marker = new mapboxgl.Marker()
+        .setLngLat([coords.lon, coords.lat])
+        .addTo(map);
+
+      document.getElementById('delivery-address-display').innerHTML = `Địa chỉ: ${coords.display_name}`;
+      await calculateDistance(selectedCoords);
+    }
+  });
+
+  // Thêm autocomplete cho ô tìm kiếm
+  $("#map-search").autocomplete({
     source: async function(request, response) {
       try {
         const res = await fetch(
@@ -296,15 +371,25 @@ function initAutocomplete() {
       }
     },
     minLength: 3,
-    appendTo: "#delivery-content", // Gắn menu autocomplete vào delivery-content
-    select: function(event, ui) {
-      document.getElementById('delivery-address').value = ui.item.value;
-      calculateDistance();
+    appendTo: ".delivery-content",
+    select: async function(event, ui) {
+      const coords = await getCoordinates(ui.item.value);
+      if (coords) {
+        selectedCoords = coords;
+        map.flyTo({ center: [coords.lon, coords.lat], zoom: 14 });
+
+        if (marker) marker.remove();
+        marker = new mapboxgl.Marker()
+          .setLngLat([coords.lon, coords.lat])
+          .addTo(map);
+
+        document.getElementById('delivery-address-display').innerHTML = `Địa chỉ: ${coords.display_name}`;
+        await calculateDistance(selectedCoords);
+      }
     },
     open: function() {
-      // Đảm bảo menu autocomplete hiển thị bên dưới input
       $(this).autocomplete("widget").css({
-        "width": $("#delivery-address").outerWidth(),
+        "width": $("#map-search").outerWidth(),
         "z-index": 3000
       });
     }
@@ -314,10 +399,26 @@ function initAutocomplete() {
 // Hàm mở popup chọn địa chỉ
 function openDeliveryPopup() {
   document.getElementById('delivery-popup').style.display = 'flex';
-  document.getElementById('delivery-address').value = '';
+  document.getElementById('map-search').value = '';
+  document.getElementById('delivery-address-display').innerHTML = '';
   document.getElementById('distance-info').innerHTML = '';
   document.getElementById('confirm-delivery-btn').disabled = true;
-  initAutocomplete();
+  selectedCoords = null;
+
+  // Khởi tạo bản đồ nếu chưa có
+  if (!map) {
+    initMap();
+  } else {
+    // Nếu bản đồ đã được khởi tạo, chỉ cần resize để hiển thị đúng
+    map.resize();
+    map.flyTo({ center: [storeCoords.lng, storeCoords.lat], zoom: 14 });
+  }
+
+  // Xóa marker cũ nếu có
+  if (marker) {
+    marker.remove();
+    marker = null;
+  }
 }
 
 // Hàm đóng popup chọn địa chỉ
@@ -326,6 +427,7 @@ function closeDeliveryPopup() {
   pendingOrder.deliveryAddress = null;
   pendingOrder.distance = null;
   pendingOrder.duration = null;
+  selectedCoords = null;
 }
 
 // Hàm xử lý CSV
@@ -805,7 +907,7 @@ function updateCartItem() {
     currentProduct.ice = ice.value;
     currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
 
-    if (currentProduct.size === 'L') {
+    if (current DSTNProduct.size === 'L') {
       currentProduct.price += 5000;
     }
   } else {
@@ -866,7 +968,7 @@ async function placeOrder() {
 // Hàm xác nhận địa chỉ giao hàng và mở popup QR
 function confirmDelivery() {
   if (!pendingOrder.deliveryAddress) {
-    showNotification("Vui lòng chọn địa chỉ giao hàng hợp lệ!", "error");
+    showNotification("Vui lòng chọn địa chỉ giao hàng hợp lệ trên bản đồ!", "error");
     return;
   }
 
@@ -1184,10 +1286,6 @@ function logout() {
   document.getElementById('user-info').style.display = "none";
   showNotification("Đã đăng xuất!", "success");
 }
-
-// Gắn sự kiện xác nhận địa chỉ giao hàng và tính khoảng cách khi nhập
-document.getElementById('confirm-delivery-btn').onclick = confirmDelivery;
-document.getElementById('delivery-address').addEventListener('change', calculateDistance);
 
 window.addEventListener("load", () => {
   checkUserSession();
