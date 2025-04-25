@@ -1,8 +1,9 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
-const storeAddress = "Lạc Long Quân, Phường 10, Quận Tân Bình, Thành phố Hồ Chí Minh, 72000, Việt Nam"; // Địa chỉ quán
-const nominatimBase = "https://nominatim.openstreetmap.org/search";
-const osrmBase = "http://router.project-osrm.org/route/v1/driving/";
+const storeCoords = { lon: 106.650467, lat: 10.782461 }; // Tọa độ cửa hàng ToCoToCo
+const orsApiKey = "5b3ce3597851110001cf624861912c9b67ed4e90aea8243730ec8cc4"; // Thay bằng API key của bạn
+const orsGeocodeBase = "https://api.openrouteservice.org/geocode";
+const orsDirectionsBase = "https://api.openrouteservice.org/v2/directions/driving-car";
 let allData = [];
 let toppings = [];
 let currentProduct = {};
@@ -203,28 +204,27 @@ const transactionTracker = {
   }
 };
 
-// Hàm lấy tọa độ từ địa chỉ bằng Nominatim
+// Hàm lấy tọa độ từ địa chỉ bằng ORS Geocode
 async function getCoordinates(address) {
   try {
-    const response = await fetch(`${nominatimBase}?q=${encodeURIComponent(address)}&format=json&addressdetails=1&countrycodes=vn&limit=1`, {
-      headers: { 'User-Agent': 'TocotocoOrderApp/1.0' }
-    });
+    const response = await fetch(`${orsGeocodeBase}/search?api_key=${orsApiKey}&text=${encodeURIComponent(address)}&boundary.country=VN&size=1`);
     const data = await response.json();
-    if (data && data.length > 0) {
+    if (data.features && data.features.length > 0) {
+      const feature = data.features[0];
       return {
-        lat: parseFloat(data[0].lat),
-        lon: parseFloat(data[0].lon),
-        display_name: data[0].display_name
+        lon: feature.geometry.coordinates[0], // lng
+        lat: feature.geometry.coordinates[1], // lat
+        display_name: feature.properties.label
       };
     }
     return null;
   } catch (error) {
-    console.error("Error fetching coordinates:", error);
+    console.error("Error fetching coordinates from ORS:", error);
     return null;
   }
 }
 
-// Hàm tính khoảng cách và thời gian bằng OSRM
+// Hàm tính khoảng cách và thời gian bằng ORS Directions
 async function calculateDistance() {
   const addressInput = document.getElementById('delivery-address').value.trim();
   if (!addressInput) {
@@ -234,23 +234,31 @@ async function calculateDistance() {
     return;
   }
 
-  const storeCoords = await getCoordinates(storeAddress);
   const deliveryCoords = await getCoordinates(addressInput);
 
-  if (!storeCoords || !deliveryCoords) {
+  if (!deliveryCoords) {
     document.getElementById('distance-info').innerHTML = 'Không thể tìm thấy địa chỉ. Vui lòng thử lại!';
     document.getElementById('confirm-delivery-btn').disabled = true;
     return;
   }
 
   try {
-    const osrmUrl = `${osrmBase}${storeCoords.lon},${storeCoords.lat};${deliveryCoords.lon},${deliveryCoords.lat}?overview=false`;
-    const response = await fetch(osrmUrl);
+    const response = await fetch(orsDirectionsBase, {
+      method: "POST",
+      headers: {
+        "Authorization": orsApiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        coordinates: [[storeCoords.lon, storeCoords.lat], [deliveryCoords.lon, deliveryCoords.lat]],
+        units: "km"
+      })
+    });
     const data = await response.json();
 
-    if (data.code === 'Ok' && data.routes.length > 0) {
-      const distance = (data.routes[0].distance / 1000).toFixed(1); // km
-      const duration = Math.round(data.routes[0].duration / 60); // phút
+    if (data.routes && data.routes.length > 0) {
+      const distance = data.routes[0].summary.distance.toFixed(1); // km
+      const duration = Math.round(data.routes[0].summary.duration / 60); // phút
       document.getElementById('distance-info').innerHTML = `Khoảng cách: ${distance} km | Thời gian di chuyển: ${duration} phút`;
       document.getElementById('confirm-delivery-btn').disabled = false;
       pendingOrder.deliveryAddress = deliveryCoords.display_name;
@@ -261,38 +269,43 @@ async function calculateDistance() {
       document.getElementById('confirm-delivery-btn').disabled = true;
     }
   } catch (error) {
-    console.error("Error calculating distance:", error);
-    document.getElementById('distance-info').innerHTML = 'Lỗi khi tính khoảng cách. Vui lòng thử lại!';
+    console.error("Error calculating distance with ORS:", error);
+    let errorMessage = "Lỗi khi tính khoảng cách. Vui lòng thử lại!";
+    if (error.message.includes("400")) {
+      errorMessage = "Yêu cầu không hợp lệ. Vui lòng kiểm tra địa chỉ!";
+    } else if (error.message.includes("429")) {
+      errorMessage = "Vượt quá giới hạn yêu cầu API!";
+    }
+    showNotification(errorMessage, "error");
+    document.getElementById('distance-info').innerHTML = '';
     document.getElementById('confirm-delivery-btn').disabled = true;
   }
 }
 
-// Hàm khởi tạo autocomplete bằng Nominatim
+// Hàm khởi tạo autocomplete bằng ORS Geocode
 function initAutocomplete() {
   $("#delivery-address").autocomplete({
     source: async function(request, response) {
       try {
-        const res = await fetch(`${nominatimBase}?q=${encodeURIComponent(request.term)}&format=json&addressdetails=1&countrycodes=vn&limit=5`, {
-          headers: { 'User-Agent': 'TocotocoOrderApp/1.0' }
-        });
+        const res = await fetch(`${orsGeocodeBase}/autocomplete?api_key=${orsApiKey}&text=${encodeURIComponent(request.term)}&boundary.country=VN&size=5`);
         const data = await res.json();
-        response(data.map(item => ({
-          label: item.display_name,
-          value: item.display_name
+        response(data.features.map(item => ({
+          label: item.properties.label,
+          value: item.properties.label
         })));
       } catch (error) {
-        console.error("Error fetching autocomplete:", error);
+        console.error("Error fetching autocomplete from ORS:", error);
         response([]);
+        showNotification("Lỗi khi tìm địa chỉ. Vui lòng thử lại!", "error");
       }
     },
     minLength: 3,
-    appendTo: "#delivery-content", // Gắn menu autocomplete vào delivery-content
+    appendTo: "#delivery-content",
     select: function(event, ui) {
       document.getElementById('delivery-address').value = ui.item.value;
       calculateDistance();
     },
     open: function() {
-      // Đảm bảo menu autocomplete hiển thị bên dưới input
       $(this).autocomplete("widget").css({
         "width": $("#delivery-address").outerWidth(),
         "z-index": 3000
