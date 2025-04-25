@@ -43,64 +43,72 @@ body {
   display: flex;
   align-items: center;
   gap: 15px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 15px;
+  border-radius: 15px;
+  backdrop-filter: blur(5px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.header .user-info:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .header .user-name {
   font-weight: bold;
-  font-size: 1.1em;
+  font-size: 1.2em;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .header .user-name .rank-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   position: relative;
   overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
 }
 
 .header .rank-bronze {
   background: linear-gradient(135deg, #cd7f32, #a0522d);
-  animation: glowBronze 2s infinite;
+  animation: glowRank 2s infinite, rotateRank 5s infinite linear;
 }
 
 .header .rank-silver {
   background: linear-gradient(135deg, #c0c0c0, #a9a9a9);
-  animation: spinSilver 3s infinite;
+  animation: glowRank 2s infinite, rotateRank 4s infinite linear;
 }
 
 .header .rank-gold {
   background: linear-gradient(135deg, #ffd700, #ffa500);
-  animation: pulseGold 1.5s infinite;
+  animation: glowRank 1.5s infinite, rotateRank 3s infinite linear;
 }
 
 .header .rank-diamond {
   background: linear-gradient(135deg, #b9f2ff, #87ceeb);
-  animation: sparkleDiamond 2s infinite;
+  animation: glowRank 1.5s infinite, sparkleDiamond 2s infinite;
 }
 
-@keyframes glowBronze {
-  0% { box-shadow: 0 0 5px #cd7f32; }
-  50% { box-shadow: 0 0 15px #cd7f32; }
-  100% { box-shadow: 0 0 5px #cd7f32; }
+@keyframes glowRank {
+  0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
+  50% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 25px rgba(255, 255, 255, 0.4); }
+  100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.5); }
 }
 
-@keyframes spinSilver {
+@keyframes rotateRank {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-@keyframes pulseGold {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
 @keyframes sparkleDiamond {
   0% { box-shadow: 0 0 5px #b9f2ff, 0 0 10px #87ceeb; }
-  50% { box-shadow: 0 0 15px #b9f2ff, 0 0 20px #87ceeb; }
+  50% { box-shadow: 0 0 15px #b9f2ff, 0 0 20px #87ceeb, 0 0 30px rgba(255, 255, 255, 0.8); }
   100% { box-shadow: 0 0 5px #b9f2ff, 0 0 10px #87ceeb; }
 }
 
@@ -108,32 +116,55 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  align-items: flex-end;
 }
 
 .header .points {
-  font-size: 0.9em;
+  font-size: 0.95em;
   font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .header .exp-bar {
-  width: 120px;
-  height: 8px;
-  background: #ffffff33;
-  border-radius: 4px;
+  width: 140px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
   overflow: hidden;
   position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .header .exp-fill {
   height: 100%;
-  background: #28a745;
+  background: linear-gradient(90deg, #28a745, #34d058);
   transition: width 0.5s ease;
+  position: relative;
+  overflow: hidden;
   animation: fillExp 1s ease;
+}
+
+.header .exp-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: sparkleExp 2s infinite;
 }
 
 @keyframes fillExp {
   from { width: 0; }
   to { width: inherit; }
+}
+
+@keyframes sparkleExp {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .menu-toggle {
@@ -989,7 +1020,7 @@ input#map-search {
 
 #auth-popup input:focus {
   border-color: #ff6f61;
-  outline: cryptographic-strength randomness was not available to the Web Crypto API in this contextnone;
+  outline: none;
   transform: scale(1.02);
 }
 
@@ -1266,6 +1297,16 @@ input#map-search {
     flex-direction: column;
     align-items: flex-end;
     gap: 5px;
+    padding: 5px 10px;
+  }
+
+  .header .user-name {
+    font-size: 1em;
+  }
+
+  .header .user-name .rank-icon {
+    width: 24px;
+    height: 24px;
   }
 
   .header .points-exp {
