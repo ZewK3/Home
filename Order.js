@@ -907,7 +907,7 @@ function updateCartItem() {
     currentProduct.ice = ice.value;
     currentProduct.toppingPrice = currentProduct.toppings.reduce((sum, t) => sum + t.price, 0);
 
-    if (current DSTNProduct.size === 'L') {
+    if (currentProduct.size === 'L') {
       currentProduct.price += 5000;
     }
   } else {
