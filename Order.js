@@ -1,9 +1,9 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
-const storeCoords = { lng: 106.650467, lat: 10.782461 }; // Tọa độ cửa hàng ToCoToCo
-const googleApiKey = "AIzaSyB4pHvpF-AaoDrFxdU2XMa1BjjeSLORyPY"; // Google Maps API Key
-const geocodeBase = "https://maps.googleapis.com/maps/api/geocode/json";
-const distanceMatrixBase = "https://maps.googleapis.com/maps/api/distancematrix/json";
+const storeCoords = { lng: 106.650467, lat: 10.782461 }; // Tọa độ quán Lạc Long Quân, Tân Bình
+const mapboxAccessToken = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d29pYnE4MHIxazJrb2VzMDd0cGowcSJ9.iTaT5kKjyJOHT7pWaqweuA"; // Thay bằng Mapbox Access Token của bạn
+const geocodeBase = "https://api.mapbox.com/geocoding/v5/mapbox.places";
+const distanceMatrixBase = "https://api.mapbox.com/directions-matrix/v1/mapbox/driving/";
 let allData = [];
 let toppings = [];
 let currentProduct = {};
@@ -204,27 +204,29 @@ const transactionTracker = {
   }
 };
 
-// Hàm lấy tọa độ từ địa chỉ bằng Google Maps Geocoding API
+// Hàm lấy tọa độ từ địa chỉ bằng Mapbox Geocoding API
 async function getCoordinates(address) {
   try {
-    const response = await fetch(`${geocodeBase}?address=${encodeURIComponent(address)}&region=vn&key=${googleApiKey}`);
+    const response = await fetch(
+      `${geocodeBase}/${encodeURIComponent(address)}.json?country=vn&access_token=${mapboxAccessToken}`
+    );
     const data = await response.json();
-    if (data.status === "OK" && data.results.length > 0) {
-      const result = data.results[0];
+    if (data.features && data.features.length > 0) {
+      const feature = data.features[0];
       return {
-        lng: result.geometry.location.lng,
-        lat: result.geometry.location.lat,
-        display_name: result.formatted_address
+        lat: feature.center[1],
+        lon: feature.center[0],
+        display_name: feature.place_name
       };
     }
     return null;
   } catch (error) {
-    console.error("Error fetching coordinates from Google Maps:", error);
+    console.error("Error fetching coordinates from Mapbox:", error);
     return null;
   }
 }
 
-// Hàm tính khoảng cách và thời gian bằng Google Maps Distance Matrix API
+// Hàm tính khoảng cách và thời gian bằng Mapbox Directions Matrix API
 async function calculateDistance() {
   const addressInput = document.getElementById('delivery-address').value.trim();
   if (!addressInput) {
@@ -243,14 +245,15 @@ async function calculateDistance() {
   }
 
   try {
+    const coordinates = `${storeCoords.lng},${storeCoords.lat};${deliveryCoords.lon},${deliveryCoords.lat}`;
     const response = await fetch(
-      `${distanceMatrixBase}?origins=${storeCoords.lat},${storeCoords.lng}&destinations=${deliveryCoords.lat},${deliveryCoords.lng}&units=metric&mode=driving&region=vn&key=${googleApiKey}`
+      `${distanceMatrixBase}/${coordinates}?access_token=${mapboxAccessToken}`
     );
     const data = await response.json();
 
-    if (data.status === "OK" && data.rows[0].elements[0].status === "OK") {
-      const distance = (data.rows[0].elements[0].distance.value / 1000).toFixed(1); // km
-      const duration = Math.round(data.rows[0].elements[0].duration.value / 60); // phút
+    if (data.code === "Ok" && data.distances[0][1]) {
+      const distance = (data.distances[0][1] / 1000).toFixed(1); // km
+      const duration = Math.round(data.durations[0][1] / 60); // phút
       document.getElementById('distance-info').innerHTML = `Khoảng cách: ${distance} km | Thời gian di chuyển: ${duration} phút`;
       document.getElementById('confirm-delivery-btn').disabled = false;
       pendingOrder.deliveryAddress = deliveryCoords.display_name;
@@ -261,7 +264,7 @@ async function calculateDistance() {
       document.getElementById('confirm-delivery-btn').disabled = true;
     }
   } catch (error) {
-    console.error("Error calculating distance with Google Maps:", error);
+    console.error("Error calculating distance with Mapbox:", error);
     let errorMessage = "Lỗi khi tính khoảng cách. Vui lòng thử lại!";
     if (error.message.includes("400")) {
       errorMessage = "Yêu cầu không hợp lệ. Vui lòng kiểm tra địa chỉ!";
@@ -274,29 +277,38 @@ async function calculateDistance() {
   }
 }
 
-// Hàm khởi tạo autocomplete bằng Google Maps Places API
+// Hàm khởi tạo autocomplete bằng Mapbox Geocoding API
 function initAutocomplete() {
-  const input = document.getElementById('delivery-address');
-  const autocomplete = new google.maps.places.Autocomplete(input, {
-    componentRestrictions: { country: 'vn' },
-    fields: ['formatted_address', 'geometry'],
-    types: ['address']
-  });
-
-  autocomplete.addListener('place_changed', () => {
-    const place = autocomplete.getPlace();
-    if (place.geometry) {
-      input.value = place.formatted_address;
+  $("#delivery-address").autocomplete({
+    source: async function(request, response) {
+      try {
+        const res = await fetch(
+          `${geocodeBase}/${encodeURIComponent(request.term)}.json?country=vn&autocomplete=true&access_token=${mapboxAccessToken}`
+        );
+        const data = await res.json();
+        response(data.features.map(feature => ({
+          label: feature.place_name,
+          value: feature.place_name
+        })));
+      } catch (error) {
+        console.error("Error fetching autocomplete from Mapbox:", error);
+        response([]);
+      }
+    },
+    minLength: 3,
+    appendTo: "#delivery-content", // Gắn menu autocomplete vào delivery-content
+    select: function(event, ui) {
+      document.getElementById('delivery-address').value = ui.item.value;
       calculateDistance();
+    },
+    open: function() {
+      // Đảm bảo menu autocomplete hiển thị bên dưới input
+      $(this).autocomplete("widget").css({
+        "width": $("#delivery-address").outerWidth(),
+        "z-index": 3000
+      });
     }
   });
-
-  // Đảm bảo autocomplete hiển thị đúng vị trí
-  const autocompleteWidget = document.querySelector('.pac-container');
-  if (autocompleteWidget) {
-    autocompleteWidget.style.zIndex = '3000';
-    autocompleteWidget.style.width = `${input.offsetWidth}px`;
-  }
 }
 
 // Hàm mở popup chọn địa chỉ
