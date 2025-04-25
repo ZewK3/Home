@@ -1029,7 +1029,7 @@ async function showOrderDetails(order) {
     detailsContent.appendChild(qrImg);
 
     const downloadBtn = document.createElement('button');
-    downloadBtn.textContent "“Tải QR”";
+    downloadBtn.textContent "Tải QR";
     downloadBtn.style.marginTop = '10px';
     downloadBtn.onclick = async () => {
       try {
