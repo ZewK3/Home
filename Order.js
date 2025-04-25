@@ -7,7 +7,7 @@ const directionsBase = "https://api.mapbox.com/directions/v5/mapbox/driving/";
 let allData = [];
 let toppings = [];
 let currentProduct = {};
-let cart = [];
+let cart = JSON.parse(localStorage.getItem('cart')) || []; // Khởi tạo giỏ hàng từ localStorage
 let editingGroupKey = null;
 let isRegisterMode = false;
 let pendingOrder = null;
@@ -93,27 +93,48 @@ const transactionTracker = {
     }
   },
   startTransaction(amount, transactionId, orderId) {
+    const startTime = Date.now(); // Lưu thời gian bắt đầu giao dịch
+    const duration = 900 * 1000; // 15 phút (900 giây) tính bằng milliseconds
+    const endTime = startTime + duration; // Thời gian kết thúc giao dịch
+
     const transaction = {
       amount: Number(amount),
-      timeLeft: 900,
+      startTime: startTime,
+      endTime: endTime,
       countdownTimer: null,
       checkInterval: null,
       orderId: orderId
     };
 
-    this.elements.qrAmount.textContent = `Số tiền: ${this.formatCurrency(amount)}`;
-    this.elements.countdown.textContent = this.formatTime(transaction.timeLeft);
+    // Lưu transaction vào localStorage để khôi phục khi reload
+    this.state.transactionDetails[orderId] = {
+      transactionId,
+      amount,
+      startTime,
+      endTime
+    };
+    localStorage.setItem('transactionDetails', JSON.stringify(this.state.transactionDetails));
 
-    transaction.countdownTimer = setInterval(() => {
-      transaction.timeLeft--;
-      if (transaction.timeLeft >= 0) {
-        this.elements.countdown.textContent = this.formatTime(transaction.timeLeft);
-      }
-      if (transaction.timeLeft <= 0) {
+    this.elements.qrAmount.textContent = `Số tiền: ${this.formatCurrency(amount)}`;
+
+    // Cập nhật countdown dựa trên thời gian thực
+    const updateCountdown = () => {
+      const now = Date.now();
+      const timeLeft = Math.max(0, Math.floor((transaction.endTime - now) / 1000)); // Tính thời gian còn lại
+      this.elements.countdown.textContent = this.formatTime(timeLeft);
+
+      if (timeLeft <= 0) {
         this.handleTransactionTimeout(transactionId);
       }
-    }, 1000);
+    };
 
+    // Cập nhật countdown ngay lập tức
+    updateCountdown();
+
+    // Cập nhật countdown mỗi giây
+    transaction.countdownTimer = setInterval(updateCountdown, 1000);
+
+    // Kiểm tra trạng thái giao dịch
     transaction.checkInterval = setInterval(async () => {
       const serverData = await this.checkTransactionStatus(transactionId);
       if (serverData && this.state.activeTransactions.has(transactionId)) {
@@ -129,8 +150,6 @@ const transactionTracker = {
     }, 5000);
 
     this.state.activeTransactions.set(transactionId, transaction);
-    this.state.transactionDetails[orderId] = { transactionId, amount };
-    localStorage.setItem('transactionDetails', JSON.stringify(this.state.transactionDetails));
     this.elements.downloadBtn.onclick = () => this.downloadQRCode();
   },
   async handleTransactionSuccess(transactionId, tempOrderId) {
@@ -169,6 +188,7 @@ const transactionTracker = {
           );
           updateUserInfo(data.name, updateData.newExp, updateData.newRank);
           cart = []; // Xóa giỏ hàng khi thanh toán thành công
+          localStorage.setItem('cart', JSON.stringify(cart)); // Cập nhật localStorage
           updateCartCount();
         } else {
           showNotification("Lỗi khi cập nhật trạng thái đơn hàng!", "error");
@@ -204,6 +224,63 @@ const transactionTracker = {
   },
   resetPopup() {
     this.elements.qrPopup.style.display = "none";
+  },
+  restoreTransactions() {
+    const transactions = this.state.transactionDetails;
+    for (const orderId in transactions) {
+      const { transactionId, amount, startTime, endTime } = transactions[orderId];
+      const now = Date.now();
+      const timeLeft = Math.max(0, Math.floor((endTime - now) / 1000));
+
+      if (timeLeft <= 0) {
+        delete this.state.transactionDetails[orderId];
+        localStorage.setItem('transactionDetails', JSON.stringify(this.state.transactionDetails));
+        continue;
+      }
+
+      if (pendingOrder && pendingOrder.orderId === orderId) {
+        const transaction = {
+          amount: Number(amount),
+          startTime: startTime,
+          endTime: endTime,
+          countdownTimer: null,
+          checkInterval: null,
+          orderId: orderId
+        };
+
+        this.elements.qrAmount.textContent = `Số tiền: ${this.formatCurrency(amount)}`;
+
+        const updateCountdown = () => {
+          const now = Date.now();
+          const timeLeft = Math.max(0, Math.floor((transaction.endTime - now) / 1000));
+          this.elements.countdown.textContent = this.formatTime(timeLeft);
+
+          if (timeLeft <= 0) {
+            this.handleTransactionTimeout(transactionId);
+          }
+        };
+
+        updateCountdown();
+        transaction.countdownTimer = setInterval(updateCountdown, 1000);
+
+        transaction.checkInterval = setInterval(async () => {
+          const serverData = await this.checkTransactionStatus(transactionId);
+          if (serverData && this.state.activeTransactions.has(transactionId)) {
+            const clientAmount = transaction.amount;
+            const serverAmount = Number(serverData.amount);
+            if (clientAmount === serverAmount) {
+              this.handleTransactionSuccess(transactionId, orderId);
+            } else {
+              showNotification(`Số tiền không khớp: Client ${this.formatCurrency(clientAmount)} != Server ${this.formatCurrency(serverAmount)}`, "error");
+              this.handleTransactionTimeout(transactionId);
+            }
+          }
+        }, 5000);
+
+        this.state.activeTransactions.set(transactionId, transaction);
+        this.elements.downloadBtn.onclick = () => this.downloadQRCode();
+      }
+    }
   }
 };
 
@@ -258,7 +335,7 @@ async function calculateDistance(deliveryCoords) {
   try {
     const coordinates = `${storeCoords.lng}%2C${storeCoords.lat}%3B${deliveryCoords.lon}%2C${deliveryCoords.lat}`;
     const response = await fetch(
-      `${directionsBase}${coordinates}?alternatives=false&continue_straight=false&geometries=geojson&overview=simplified&steps=false&notifications=none&access_token=${mapboxAccessToken}`
+      `${directionsBase}${coordinates}?alternatives=false&continue_straight=false&geometries=geojson&overview=simplified&steps=false¬ifications=none&access_token=${mapboxAccessToken}`
     );
     const data = await response.json();
 
@@ -567,15 +644,16 @@ function openPopup(name, category, sizeOptions, price, sugarOptions = '30%,50%,7
   if (!isSimpleCategory) {
     const sizeContainer = document.getElementById('size-options');
     sizeContainer.innerHTML = '';
-    sizeOptions.split(',').forEach(size => {
-      if (size.trim()) {
-        const sizeTrimmed = size.trim();
-        const label = document.createElement('label');
-        label.innerHTML = `
-          <input type="radio" name="size" value="${sizeTrimmed}" ${existingItem && existingItem.size === sizeTrimmed ? 'checked' : ''}> ${sizeTrimmed}
-        `;
-        sizeContainer.appendChild(label);
-      }
+    const sizes = sizeOptions.split(',').map(size => size.trim()).filter(size => size);
+    let defaultSize = sizes.includes('M') ? 'M' : (sizes.includes('XL') ? 'XL' : sizes[0] || '');
+    sizes.forEach(size => {
+      const sizeTrimmed = size.trim();
+      const label = document.createElement('label');
+      const isChecked = (existingItem && existingItem.size === sizeTrimmed) || (!existingItem && sizeTrimmed === defaultSize);
+      label.innerHTML = `
+        <input type="radio" name="size" value="${sizeTrimmed}" ${isChecked ? 'checked' : ''}> ${sizeTrimmed}
+      `;
+      sizeContainer.appendChild(label);
     });
 
     const toppingContainer = document.getElementById('topping-options');
@@ -592,28 +670,30 @@ function openPopup(name, category, sizeOptions, price, sugarOptions = '30%,50%,7
 
     const sugarContainer = document.getElementById('sugar-options');
     sugarContainer.innerHTML = '';
-    sugarOptions.split(',').forEach(sugar => {
-      if (sugar.trim()) {
-        const sugarTrimmed = sugar.trim();
-        const label = document.createElement('label');
-        label.innerHTML = `
-          <input type="radio" name="sugar" value="${sugarTrimmed}" ${existingItem && existingItem.sugar === sugarTrimmed ? 'checked' : ''}> ${sugarTrimmed}
-        `;
-        sugarContainer.appendChild(label);
-      }
+    const sugars = sugarOptions.split(',').map(sugar => sugar.trim()).filter(sugar => sugar);
+    let defaultSugar = sugars.includes('100%') ? '100%' : sugars[0] || '';
+    sugars.forEach(sugar => {
+      const sugarTrimmed = sugar.trim();
+      const label = document.createElement('label');
+      const isChecked = (existingItem && existingItem.sugar === sugarTrimmed) || (!existingItem && sugarTrimmed === defaultSugar);
+      label.innerHTML = `
+        <input type="radio" name="sugar" value="${sugarTrimmed}" ${isChecked ? 'checked' : ''}> ${sugarTrimmed}
+      `;
+      sugarContainer.appendChild(label);
     });
 
     const iceContainer = document.getElementById('ice-options');
     iceContainer.innerHTML = '';
-    iceOptions.split(',').forEach(ice => {
-      if (ice.trim()) {
-        const iceTrimmed = ice.trim();
-        const label = document.createElement('label');
-        label.innerHTML = `
-          <input type="radio" name="ice" value="${iceTrimmed}" ${existingItem && existingItem.ice === iceTrimmed ? 'checked' : ''}> ${iceTrimmed}
-        `;
-        iceContainer.appendChild(label);
-      }
+    const ices = iceOptions.split(',').map(ice => ice.trim()).filter(ice => ice);
+    let defaultIce = ices.includes('Thường') ? 'Thường' : ices[0] || '';
+    ices.forEach(ice => {
+      const iceTrimmed = ice.trim();
+      const label = document.createElement('label');
+      const isChecked = (existingItem && existingItem.ice === iceTrimmed) || (!existingItem && iceTrimmed === defaultIce);
+      label.innerHTML = `
+        <input type="radio" name="ice" value="${iceTrimmed}" ${isChecked ? 'checked' : ''}> ${iceTrimmed}
+      `;
+      iceContainer.appendChild(label);
     });
   }
 
@@ -692,6 +772,7 @@ function addToCart() {
 
 function updateCartCount() {
   document.getElementById('cart-count').textContent = cart.length;
+  localStorage.setItem('cart', JSON.stringify(cart)); // Lưu vào localStorage
 }
 
 function groupCartItems() {
@@ -838,14 +919,11 @@ function viewCart() {
         transactionTracker.elements.popupQrImage.src = qrUrl;
         transactionTracker.elements.qrAmount.textContent = `Số tiền: ${transactionTracker.formatCurrency(amount)}`;
 
-        // Kiểm tra xem giao dịch đã tồn tại trong activeTransactions
         const existingTransaction = transactionTracker.state.activeTransactions.get(transactionId);
         if (existingTransaction) {
-          // Nếu giao dịch đã tồn tại, chỉ hiển thị popup với thời gian hiện tại
-          transactionTracker.elements.countdown.textContent = transactionTracker.formatTime(existingTransaction.timeLeft);
+          transactionTracker.elements.countdown.textContent = transactionTracker.formatTime(Math.max(0, Math.floor((existingTransaction.endTime - Date.now()) / 1000)));
           transactionTracker.elements.qrPopup.style.display = 'flex';
         } else {
-          // Nếu không, bắt đầu giao dịch mới
           transactionTracker.elements.qrPopup.style.display = 'flex';
           transactionTracker.startTransaction(amount, transactionId, pendingOrder.orderId);
         }
@@ -1289,4 +1367,6 @@ function logout() {
 
 window.addEventListener("load", () => {
   checkUserSession();
+  updateCartCount(); // Hiển thị số lượng giỏ hàng từ localStorage
+  transactionTracker.restoreTransactions(); // Khôi phục giao dịch nếu có
 });
