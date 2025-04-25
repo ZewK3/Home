@@ -19,19 +19,19 @@ body {
 }
 
 .header {
-  background: linear-gradient(90deg, #ff6f61, #ff8a80);
-  color: white;
-  max-width: 1200px;
-  width: 95%;
-  margin: 10px auto;
-  padding: 10px 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  border-radius: 20px;
-  animation: slideInHeader 0.5s ease;
+    background: linear-gradient(90deg, #ff6f61, #ff8a80);
+    color: white;
+    max-width: 1200px;
+    width: 100%;
+    margin: 10px auto;
+    padding: 10px 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    border-radius: 20px;
+    animation: slideInHeader 0.5s ease;
 }
 
 @keyframes slideInHeader {
@@ -1285,13 +1285,13 @@ input#map-search {
 }
 
 @media (max-width: 768px) {
-  .header {
-    width: 95%;
-    margin: 10px auto;
-    padding: 8px 10px;
-    font-size: 14px;
-    height: 4%;
-  }
+    .header {
+        width: 95%;
+        margin: 10px;
+        padding: 10px;
+        font-size: 14px;
+        height: 8%;
+    }
 
   .header .user-info {
     flex-direction: column;
@@ -1327,17 +1327,17 @@ input#map-search {
     height: auto;
   }
 
-  .sidebar {
-    position: fixed;
-    top: 7%;
-    left: -280px;
-    width: auto;
-    height: 90%;
-    max-height: none;
-    z-index: 1000;
-    border-radius: 0 15px 15px 0;
-    padding: 15px;
-  }
+      .sidebar {
+        position: fixed;
+        top: 10%;
+        left: -280px;
+        width: auto;
+        height: 90%;
+        max-height: none;
+        z-index: 1000;
+        border-radius: 0 15px 15px 0;
+        padding: 10px;
+    }
 
   .sidebar.active {
     left: 0;
