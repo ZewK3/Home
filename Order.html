@@ -6,10 +6,9 @@
   <title>Order ToCoToCo - Lạc Long Quân</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <link rel="stylesheet" href="Order.css">
-  <!-- Tải thư viện jQuery và jQuery UI để xử lý autocomplete -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 </head>
 <body>
   <div class="header">
@@ -113,7 +112,6 @@
   <!-- Popup đăng nhập/đăng ký -->
   <div id="auth-popup" onclick="hidePopup(event)">
     <div class="auth-box" onclick="event.stopPropagation()">
-      <button class="close-btn" onclick="document.getElementById('auth-popup').style.display='none'">×</button>
       <h3 id="auth-title">Đăng nhập</h3>
       <input id="user-name" placeholder="Tên của bạn" style="display:none;">
       <input id="user-email" placeholder="Email/SĐT">
@@ -125,12 +123,12 @@
   <!-- Popup QR thanh toán -->
   <div id="qr-popup" class="qr-popup">
     <div class="qr-content">
-      <button class="close-btn" onclick="cancelTransaction()">×</button>
+      <button class="close-btn" onclick="transactionTracker.resetPopup()">×</button>
       <h3>Quét mã QR để thanh toán</h3>
       <img id="popup-qr-image" src="" alt="QR Code">
       <p id="qr-amount">Số tiền: 0 VNĐ</p>
       <p class="countdown" id="countdown">15:00</p>
-      <button id="download-qr" onclick="transactionTracker.downloadQRCode()">Tải QR</button>
+      <button id="download-qr">Tải QR</button>
       <button id="cancel-transaction" onclick="cancelTransaction()">Hủy giao dịch</button>
     </div>
   </div>
@@ -145,23 +143,18 @@
   </div>
 
   <!-- Popup chọn địa chỉ giao hàng -->
-  <div id="delivery-popup" class="delivery-popup">
+  <div id="delivery-popup" class="popup">
     <div class="delivery-content">
       <button class="close-btn" onclick="closeDeliveryPopup()">×</button>
       <h3>Chọn địa chỉ giao hàng</h3>
-      <div class="option-row">
-        <label for="delivery-address">Địa chỉ:</label>
-        <input type="text" id="delivery-address" placeholder="Nhập địa chỉ giao hàng">
-      </div>
-      <div class="distance-info" id="distance-info"></div>
-      <div class="popup-buttons">
-        <button onclick="closeDeliveryPopup()">Hủy</button>
-        <button id="confirm-delivery-btn" disabled>Xác nhận</button>
-      </div>
+      <input id="delivery-address" placeholder="Nhập địa chỉ giao hàng">
+      <div id="distance-info"></div>
+      <button id="confirm-delivery-btn" onclick="confirmDelivery()" disabled>Xác nhận</button>
+      <button id="close-delivery-btn" onclick="closeDeliveryPopup()">Hủy</button>
     </div>
   </div>
 
   <script src="Order.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9357623a295ee58e',t:'MTc0NTUxNjQwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'935b8966cc91bd25',t:'MTc0NTU1OTk1Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
