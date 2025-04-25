@@ -1,9 +1,9 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
 const storeCoords = { lng: 106.650467, lat: 10.782461 }; // Tọa độ quán Lạc Long Quân, Tân Bình
-const mapboxAccessToken = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d3MwYjI5MHZzaTJtcjBmajl5dWI5diJ9.dP89zeG92u7AeHigH4tJwg"; // Thay bằng Mapbox Access Token của bạn
+const mapboxAccessToken = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d3MwYjI5MHZzaTJtcjBmajl5dWI5diJ9.dP89zeG92u7AeHigH4tJwg"; // Token của bạn
 const geocodeBase = "https://api.mapbox.com/geocoding/v5/mapbox.places";
-const distanceMatrixBase = "https://api.mapbox.com/directions-matrix/v1/mapbox/driving/";
+const directionsBase = "https://api.mapbox.com/directions/v5/mapbox/driving/"; // Dùng Directions API
 let allData = [];
 let toppings = [];
 let currentProduct = {};
@@ -226,7 +226,7 @@ async function getCoordinates(address) {
   }
 }
 
-// Hàm tính khoảng cách và thời gian bằng Mapbox Directions Matrix API
+// Hàm tính khoảng cách và thời gian bằng Mapbox Directions API
 async function calculateDistance() {
   const addressInput = document.getElementById('delivery-address').value.trim();
   if (!addressInput) {
@@ -247,13 +247,13 @@ async function calculateDistance() {
   try {
     const coordinates = `${storeCoords.lng},${storeCoords.lat};${deliveryCoords.lon},${deliveryCoords.lat}`;
     const response = await fetch(
-      `${distanceMatrixBase}/${coordinates}?access_token=${mapboxAccessToken}`
+      `${directionsBase}${coordinates}?alternatives=false&continue_straight=false&geometries=geojson&overview=simplified&steps=false¬ifications=none&access_token=${mapboxAccessToken}`
     );
     const data = await response.json();
 
-    if (data.code === "Ok" && data.distances[0][1]) {
-      const distance = (data.distances[0][1] / 1000).toFixed(1); // km
-      const duration = Math.round(data.durations[0][1] / 60); // phút
+    if (data.code === "Ok" && data.routes.length > 0) {
+      const distance = (data.routes[0].distance / 1000).toFixed(1); // km
+      const duration = Math.round(data.routes[0].duration / 60); // phút
       document.getElementById('distance-info').innerHTML = `Khoảng cách: ${distance} km | Thời gian di chuyển: ${duration} phút`;
       document.getElementById('confirm-delivery-btn').disabled = false;
       pendingOrder.deliveryAddress = deliveryCoords.display_name;
@@ -264,7 +264,7 @@ async function calculateDistance() {
       document.getElementById('confirm-delivery-btn').disabled = true;
     }
   } catch (error) {
-    console.error("Error calculating distance with Mapbox:", error);
+    console.error("Error calculating distance with Mapbox Directions API:", error);
     let errorMessage = "Lỗi khi tính khoảng cách. Vui lòng thử lại!";
     if (error.message.includes("400")) {
       errorMessage = "Yêu cầu không hợp lệ. Vui lòng kiểm tra địa chỉ!";
