@@ -1,7 +1,7 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
 const storeCoords = { lng: 106.650467, lat: 10.782461 }; // Tọa độ quán Lạc Long Quân, Tân Bình
-const mapboxAccessToken = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d29pYnE4MHIxazJrb2VzMDd0cGowcSJ9.iTaT5kKjyJOHT7pWaqweuA"; // Thay bằng Mapbox Access Token của bạn
+const mapboxAccessToken = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d3MwYjI5MHZzaTJtcjBmajl5dWI5diJ9.dP89zeG92u7AeHigH4tJwg"; // Thay bằng Mapbox Access Token của bạn
 const geocodeBase = "https://api.mapbox.com/geocoding/v5/mapbox.places";
 const distanceMatrixBase = "https://api.mapbox.com/directions-matrix/v1/mapbox/driving/";
 let allData = [];
