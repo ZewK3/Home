@@ -1,6 +1,6 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
-const storeAddress = "123 Nguyễn Huệ, Quận 1, TP.HCM"; // Địa chỉ quán
+const storeAddress = "Lạc Long Quân, Phường 10, Quận Tân Bình, Thành phố Hồ Chí Minh, 72000, Việt Nam"; // Địa chỉ quán
 const nominatimBase = "https://nominatim.openstreetmap.org/search";
 const osrmBase = "http://router.project-osrm.org/route/v1/driving/";
 let allData = [];
@@ -206,7 +206,9 @@ const transactionTracker = {
 // Hàm lấy tọa độ từ địa chỉ bằng Nominatim
 async function getCoordinates(address) {
   try {
-    const response = await fetch(`${nominatimBase}?q=${encodeURIComponent(address)}&format=json&addressdetails=1&countrycodes=vn&limit=1`);
+    const response = await fetch(`${nominatimBase}?q=${encodeURIComponent(address)}&format=json&addressdetails=1&countrycodes=vn&limit=1`, {
+      headers: { 'User-Agent': 'TocotocoOrderApp/1.0' }
+    });
     const data = await response.json();
     if (data && data.length > 0) {
       return {
@@ -227,6 +229,8 @@ async function calculateDistance() {
   const addressInput = document.getElementById('delivery-address').value.trim();
   if (!addressInput) {
     showNotification("Vui lòng nhập địa chỉ giao hàng!", "error");
+    document.getElementById('distance-info').innerHTML = '';
+    document.getElementById('confirm-delivery-btn').disabled = true;
     return;
   }
 
@@ -268,7 +272,9 @@ function initAutocomplete() {
   $("#delivery-address").autocomplete({
     source: async function(request, response) {
       try {
-        const res = await fetch(`${nominatimBase}?q=${encodeURIComponent(request.term)}&format=json&addressdetails=1&countrycodes=vn&limit=5`);
+        const res = await fetch(`${nominatimBase}?q=${encodeURIComponent(request.term)}&format=json&addressdetails=1&countrycodes=vn&limit=5`, {
+          headers: { 'User-Agent': 'TocotocoOrderApp/1.0' }
+        });
         const data = await res.json();
         response(data.map(item => ({
           label: item.display_name,
@@ -280,9 +286,17 @@ function initAutocomplete() {
       }
     },
     minLength: 3,
+    appendTo: "#delivery-content", // Gắn menu autocomplete vào delivery-content
     select: function(event, ui) {
       document.getElementById('delivery-address').value = ui.item.value;
       calculateDistance();
+    },
+    open: function() {
+      // Đảm bảo menu autocomplete hiển thị bên dưới input
+      $(this).autocomplete("widget").css({
+        "width": $("#delivery-address").outerWidth(),
+        "z-index": 3000
+      });
     }
   });
 }
@@ -1015,7 +1029,7 @@ async function showOrderDetails(order) {
     detailsContent.appendChild(qrImg);
 
     const downloadBtn = document.createElement('button');
-    downloadBtn.textContent = 'Tải QR';
+    downloadBtn.textContent "“Tải QR”";
     downloadBtn.style.marginTop = '10px';
     downloadBtn.onclick = async () => {
       try {
