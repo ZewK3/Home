@@ -1,6 +1,6 @@
 const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
 const apiBase = "https://zewk.tocotoco.workers.dev/";
-const storeCoords = { lon: 106.650467, lat: 10.782461 }; // Tọa độ cửa hàng ToCoToCo
+const storeAddress = "970 Lạc Long Quân, Phường 8, Tân Bình, Hồ Chí Minh, Vietnam"; // Địa chỉ quán
 const orsApiKey = "5b3ce3597851110001cf624861912c9b67ed4e90aea8243730ec8cc4"; // Thay bằng API key của bạn
 const orsGeocodeBase = "https://api.openrouteservice.org/geocode";
 const orsDirectionsBase = "https://api.openrouteservice.org/v2/directions/driving-car";
@@ -234,9 +234,10 @@ async function calculateDistance() {
     return;
   }
 
+  const storeCoords = await getCoordinates(storeAddress);
   const deliveryCoords = await getCoordinates(addressInput);
 
-  if (!deliveryCoords) {
+  if (!storeCoords || !deliveryCoords) {
     document.getElementById('distance-info').innerHTML = 'Không thể tìm thấy địa chỉ. Vui lòng thử lại!';
     document.getElementById('confirm-delivery-btn').disabled = true;
     return;
