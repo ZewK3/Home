@@ -335,7 +335,7 @@ async function calculateDistance(deliveryCoords) {
   try {
     const coordinates = `${storeCoords.lng}%2C${storeCoords.lat}%3B${deliveryCoords.lon}%2C${deliveryCoords.lat}`;
     const response = await fetch(
-      `${directionsBase}${coordinates}?alternatives=false&continue_straight=false&geometries=geojson&overview=simplified&steps=false¬ifications=none&access_token=${mapboxAccessToken}`
+      `${directionsBase}${coordinates}?alternatives=false&continue_straight=false&geometries=geojson&overview=simplified&steps=false&notifications=none&access_token=${mapboxAccessToken}`
     );
     const data = await response.json();
 
