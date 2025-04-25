@@ -7,7 +7,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <link rel="stylesheet" href="Order.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB4pHvpF-AaoDrFxdU2XMa1BjjeSLORyPY&libraries=places®ion=VN&callback=initMap"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
 </head>
 <body>
   <div class="header">
@@ -154,9 +157,9 @@
   </div>
 
   <script>
-    // Callback cho Google Maps API
+    // Callback cho Mapbox (trống, để tương thích nếu dùng bản đồ sau này)
     function initMap() {
-      // Được gọi khi Google Maps API tải xong
+      // Được gọi khi Mapbox GL JS tải xong
     }
   </script>
   <script src="Order.js"></script>
