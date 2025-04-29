@@ -1153,13 +1153,7 @@ async function checkUserSession() {
   }
 
   try {
-    const response = await fetch(`${API_BASE}?action=User`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` // Gửi token qua header
-      }
-    });
+    const response = await fetch(`${apiBase}?action=User&token=${token}`);
 
     // Kiểm tra trạng thái HTTP
     if (!response.ok) {
@@ -1197,28 +1191,10 @@ async function checkUserSession() {
     showNotification(errorMessage, "error");
   }
 }
-async function checkAuth() {
-  const token = localStorage.getItem('token');
-  if (token) {
-    try {
-      const response = await fetch(`${API_BASE}?action=checkAuth&token=${token}`);
-      const data = await response.json();
-      if (data.name) {
-        updateUserInfo(data.name, data.exp, data.rank);
-      } else {
-        localStorage.removeItem('token');
-      }
-    } catch (error) {
-      console.error('Error checking auth:', error);
-      localStorage.removeItem('token');
-    }
-  }
-}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   updateCartCount();
   loadMenu();
-  checkAuth();
   transactionTracker.restoreTransactions();
 });
