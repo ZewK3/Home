@@ -1023,39 +1023,92 @@ function hidePopup(event) {
 }
 
 async function submitAuth() {
-  const name = document.getElementById("user-name").value.trim();
-  const email = document.getElementById("user-email").value.trim();
-  const password = document.getElementById("user-password").value.trim();
+  const nameInput = document.getElementById("user-name");
+  const emailInput = document.getElementById("user-email");
+  const passwordInput = document.getElementById("user-password");
+  const submitButton = document.querySelector('#auth-popup button');
 
+  // Lấy giá trị đầu vào
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  // Xác định chế độ đăng ký/đăng nhập
+  const isRegisterMode = document.getElementById('auth-title').innerText === 'Đăng ký';
+
+  // Kiểm tra đầu vào
   if (!email || !password || (isRegisterMode && !name)) {
     showNotification("Vui lòng điền đầy đủ thông tin!", "error");
     return;
   }
 
+  // Kiểm tra định dạng email hoặc số điện thoại
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^[0-9]{10,11}$/;
+  if (!emailRegex.test(email) && !phoneRegex.test(email)) {
+    showNotification("Email hoặc số điện thoại không hợp lệ!", "error");
+    return;
+  }
+
+  // Kiểm tra độ dài mật khẩu
+  if (password.length < 6) {
+    showNotification("Mật khẩu phải có ít nhất 6 ký tự!", "error");
+    return;
+  }
+
+  // Vô hiệu hóa nút trong khi xử lý
+  submitButton.disabled = true;
+  submitButton.innerText = 'Đang xử lý...';
+
   try {
     const action = isRegisterMode ? "registerUser" : "loginUser";
-    const body = isRegisterMode ? { name, email, password } : { email, password };
+    const body = isRegisterMode
+      ? { name, email, password }
+      : { email, password };
+
     const response = await fetch(`${apiBase}?action=${action}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+
+    // Kiểm tra trạng thái HTTP
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (data.token) {
       localStorage.setItem('token', data.token);
       document.getElementById('auth-popup').style.display = 'none';
-      showNotification(isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!", "success");
+      showNotification(
+        isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!",
+        "success"
+      );
       await checkUserSession();
     } else {
-      showNotification(data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"), "error");
+      showNotification(
+        data.message ||
+          (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"),
+        "error"
+      );
     }
   } catch (error) {
     console.error('Lỗi:', error);
-    showNotification("Đã có lỗi xảy ra. Vui lòng thử lại!", "error");
+    let errorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại!";
+    if (error.message.includes('HTTP error')) {
+      errorMessage = "Lỗi server, vui lòng thử lại sau!";
+    } else if (error.message.includes('Failed to fetch')) {
+      errorMessage = "Lỗi kết nối mạng, vui lòng kiểm tra kết nối!";
+    }
+    showNotification(errorMessage, "error");
+  } finally {
+    // Khôi phục trạng thái nút
+    submitButton.disabled = false;
+    submitButton.innerText = 'Tiếp tục';
   }
 }
-
 function updateUserInfo(name, exp, rank) {
   elements.userInfo.style.display = 'flex';
   elements.userNameDisplay.textContent = name || 'Khách';
