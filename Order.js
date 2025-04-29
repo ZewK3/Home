@@ -38,7 +38,7 @@ const elements = {
   cartPopup: document.getElementById('cart-popup'),
   cartTab: document.getElementById('cart-tab'),
   historyTab: document.getElementById('history-tab'),
-  historyItems: document.getElementWithTagName('history-items'),
+  historyItems: document.getElementById('history-items'),
   zoomPopup: document.getElementById('zoom-popup'),
   zoomImage: document.getElementById('zoom-image'),
   zoomProductName: document.getElementById('zoom-product-name'),
