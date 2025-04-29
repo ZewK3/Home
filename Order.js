@@ -1138,31 +1138,65 @@ function logout() {
 }
 async function checkUserSession() {
   const token = localStorage.getItem("token");
-  if (!token) return;
+  const userInfoDiv = document.getElementById('user-info');
+  const loginButton = document.getElementById("login-button");
+  const registerButton = document.getElementById("register-button");
+  const logoutButton = document.getElementById("logout-button");
+
+  // Nếu không có token, đặt lại giao diện và thoát
+  if (!token) {
+    userInfoDiv.style.display = "none";
+    loginButton.style.display = "block";
+    registerButton.style.display = "block";
+    logoutButton.style.display = "none";
+    return;
+  }
 
   try {
-    const response = await fetch(`${apiBase}?action=User&token=${token}`);
+    const response = await fetch(`${API_BASE}?action=User`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Gửi token qua header
+      }
+    });
+
+    // Kiểm tra trạng thái HTTP
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
     const data = await response.json();
 
     if (data.name) {
+      // Cập nhật thông tin người dùng nếu thành công
       updateUserInfo(data.name, data.exp || 0, data.rank || 'Bronze');
     } else {
-      localStorage.removeItem("token");
-      document.getElementById("login-button").style.display = "block";
-      document.getElementById("register-button").style.display = "block";
-      document.getElementById("logout-button").style.display = "none";
-      document.getElementById('user-info').style.display = "none";
-      showNotification("Phiên đăng nhập không hợp lệ!", "error");
+      throw new Error('Invalid session');
     }
   } catch (error) {
     console.error("Lỗi kiểm tra phiên:", error);
+    // Xóa token và đặt lại giao diện
     localStorage.removeItem("token");
-    document.getElementById("login-button").style.display = "block";
-    document.getElementById("register-button").style.display = "block";
-    document.getElementById("logout-button").style.display = "none";
-    document.getElementById('user-info').style.display = "none";
-    showNotification("Phiên đăng nhập không hợp lệ!", "error");
+    userInfoDiv.style.display = "none";
+    loginButton.style.display = "block";
+    registerButton.style.display = "block";
+    logoutButton.style.display = "none";
+
+    // Phân loại lỗi và hiển thị thông báo phù hợp
+    let errorMessage = "Phiên đăng nhập không hợp lệ!";
+    if (error.message.includes('HTTP error')) {
+      if (error.message.includes('401')) {
+        errorMessage = "Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!";
+      } else {
+        errorMessage = "Lỗi server, vui lòng thử lại sau!";
+      }
+    } else if (error.message.includes('Failed to fetch')) {
+      errorMessage = "Lỗi kết nối mạng, vui lòng kiểm tra kết nối!";
+    }
+    showNotification(errorMessage, "error");
   }
+}
 async function checkAuth() {
   const token = localStorage.getItem('token');
   if (token) {
