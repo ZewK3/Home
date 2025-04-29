@@ -904,24 +904,14 @@ function confirmDelivery() {
     return;
   }
 
-  // Cập nhật pendingOrder với thông tin địa chỉ mới nhất
-  pendingOrder.deliveryAddress = this.state.deliveryAddress || elements.deliveryAddressInput?.value || pendingOrder.deliveryAddress || 'Tại quán';
-  pendingOrder.distance = this.state.distance || elements.distanceSpan?.textContent || 'N/A';
-  pendingOrder.duration = this.state.duration || elements.durationSpan?.textContent || 'N/A';
-
-  // Log để kiểm tra pendingOrder sau khi cập nhật
-  console.log('pendingOrder sau khi cập nhật trong confirmDelivery:', pendingOrder);
-
-  // Tiến hành tạo QR code và hiển thị popup thanh toán
   const total = pendingOrder.total;
   const transactionId = transactionTracker.formatDateTime();
   const qrUrl = transactionTracker.generateQRCode(total, transactionId);
+  
   transactionTracker.elements.popupQrImage.src = qrUrl;
   transactionTracker.elements.qrAmount.textContent = `Số tiền: ${transactionTracker.formatCurrency(total)}`;
   transactionTracker.elements.qrPopup.style.display = 'flex';
   transactionTracker.startTransaction(total, transactionId, pendingOrder.orderId);
-
-  // Đóng popup chọn địa chỉ sau khi cập nhật pendingOrder
   closeDeliveryPopup();
 }
 
