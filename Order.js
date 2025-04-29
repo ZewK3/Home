@@ -450,9 +450,6 @@ function openDeliveryPopup() {
 
 function closeDeliveryPopup() {
   elements.deliveryPopup.style.display = 'none';
-  pendingOrder.deliveryAddress = null;
-  pendingOrder.distance = null;
-  pendingOrder.duration = null;
   selectedCoords = null;
 }
 
