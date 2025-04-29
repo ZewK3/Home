@@ -1136,7 +1136,33 @@ function logout() {
   updateCartCount();
   showNotification('Đã đăng xuất!', 'success');
 }
+async function checkUserSession() {
+  const token = localStorage.getItem("token");
+  if (!token) return;
 
+  try {
+    const response = await fetch(`${apiBase}?action=User&token=${token}`);
+    const data = await response.json();
+
+    if (data.name) {
+      updateUserInfo(data.name, data.exp || 0, data.rank || 'Bronze');
+    } else {
+      localStorage.removeItem("token");
+      document.getElementById("login-button").style.display = "block";
+      document.getElementById("register-button").style.display = "block";
+      document.getElementById("logout-button").style.display = "none";
+      document.getElementById('user-info').style.display = "none";
+      showNotification("Phiên đăng nhập không hợp lệ!", "error");
+    }
+  } catch (error) {
+    console.error("Lỗi kiểm tra phiên:", error);
+    localStorage.removeItem("token");
+    document.getElementById("login-button").style.display = "block";
+    document.getElementById("register-button").style.display = "block";
+    document.getElementById("logout-button").style.display = "none";
+    document.getElementById('user-info').style.display = "none";
+    showNotification("Phiên đăng nhập không hợp lệ!", "error");
+  }
 async function checkAuth() {
   const token = localStorage.getItem('token');
   if (token) {
