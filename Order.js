@@ -962,7 +962,7 @@ async function showOrderDetails(orderId) {
   if (!token) return;
 
   try {
-    const response = await fetch(`${API_BASE}?action=getOrderDetails&token=${token}&orderId=${orderId}`);
+    const response = await fetch(`${API_BASE}?action=getOrderById&token=${token}&orderId=${orderId}`);
     const data = await response.json();
 
     if (data.order) {
