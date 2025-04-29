@@ -65,7 +65,7 @@ const elements = {
   orderDetailsContent: document.getElementById('order-details-content'),
 };
 
-// Transaction Tracker
+// Transaction Tracker (Giữ nguyên phần đã hoàn thiện)
 const transactionTracker = {
   state: {
     baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
