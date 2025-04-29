@@ -65,7 +65,7 @@ const elements = {
   orderDetailsContent: document.getElementById('order-details-content'),
 };
 
-// Transaction Tracker (Giữ nguyên phần đã hoàn thiện)
+// Transaction Tracker
 const transactionTracker = {
   state: {
     baseQRUrl: 'https://api.vietqr.io/image/970403-062611062003-sIxhggL.jpg?accountName=LE%20DAI%20LOI',
@@ -202,6 +202,7 @@ const transactionTracker = {
           cart = [];
           localStorage.setItem('cart', JSON.stringify(cart));
           updateCartCount();
+          pendingOrder = null; // Đặt lại pendingOrder sau khi lưu thành công
         } else {
           showNotification('Lỗi cập nhật trạng thái đơn hàng!', 'error');
         }
@@ -221,7 +222,7 @@ const transactionTracker = {
 
     this.cleanupTransaction(transactionId, transaction);
     showNotification('Giao dịch hết hạn! Đơn hàng không được lưu.', 'error');
-    pendingOrder = null;
+    // Không đặt pendingOrder = null tại đây để tránh mất dữ liệu
   },
   cleanupTransaction(transactionId, transaction) {
     clearInterval(transaction.countdownTimer);
@@ -332,6 +333,12 @@ async function calculateDistance(deliveryCoords) {
     return;
   }
 
+  // Thêm kiểm tra pendingOrder trước khi cập nhật
+  if (!pendingOrder) {
+    showNotification('Đơn hàng tạm thời chưa được tạo. Vui lòng thử lại!', 'error');
+    return;
+  }
+
   try {
     const coordinates = `${STORE_COORDS.lng}%2C${STORE_COORDS.lat}%3B${deliveryCoords.lon}%2C${deliveryCoords.lat}`;
     const response = await fetch(`${DIRECTIONS_BASE}${coordinates}?alternatives=false&geometries=geojson&overview=simplified&steps=false&access_token=${MAPBOX_TOKEN}`);
@@ -428,6 +435,12 @@ function initMap() {
 }
 
 function openDeliveryPopup() {
+  // Thêm kiểm tra pendingOrder trước khi mở popup
+  if (!pendingOrder) {
+    showNotification('Vui lòng đặt hàng trước khi chọn địa chỉ giao hàng!', 'error');
+    return;
+  }
+
   elements.deliveryPopup.style.display = 'flex';
   elements.mapSearch.value = '';
   elements.deliveryAddressDisplay.innerHTML = '';
@@ -451,6 +464,7 @@ function openDeliveryPopup() {
 function closeDeliveryPopup() {
   elements.deliveryPopup.style.display = 'none';
   selectedCoords = null;
+  // Không đặt lại pendingOrder tại đây để giữ thông tin giao hàng
 }
 
 function csvToJson(csv) {
@@ -583,7 +597,7 @@ function openPopup(name, category, sizeOptions, price, sugarOptions = '30%,50%,7
     toppings.forEach(topping => {
       const label = document.createElement('label');
       const isChecked = existingItem && existingItem.toppings.some(t => t.name === topping.name);
-      label.innerHTML = `<input type="checkbox" name="topping" value="${topping.name}" data-price="${topping.price}" ${isChecked ? 'checked' : ''}> ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)`;
+      label.innerHTML = `<input type="checkbox " name="topping" value="${topping.name}" data-price="${topping.price}" ${isChecked ? 'checked' : ''}> ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)`;
       elements.toppingOptions.appendChild(label);
     });
 
@@ -896,6 +910,13 @@ async function placeOrder() {
 }
 
 function confirmDelivery() {
+  // Thêm kiểm tra pendingOrder trước khi truy cập deliveryAddress
+  if (!pendingOrder) {
+    showNotification('Đơn hàng tạm thời chưa được tạo. Vui lòng thử lại!', 'error');
+    return;
+  }
+
+  // Kiểm tra deliveryAddress
   if (!pendingOrder.deliveryAddress) {
     showNotification('Vui lòng chọn địa chỉ giao hàng hợp lệ!', 'error');
     return;
@@ -918,6 +939,7 @@ function cancelTransaction() {
     const transaction = transactionTracker.state.activeTransactions.get(transactionId);
     transactionTracker.cleanupTransaction(transactionId, transaction);
     showNotification('Đã hủy giao dịch!', 'error');
+    // Không đặt lại pendingOrder tại đây để tránh mất dữ liệu
   }
 }
 
@@ -963,13 +985,13 @@ async function showOrderDetails(orderId) {
     const response = await fetch(`${API_BASE}?action=getOrderById&token=${token}&orderId=${orderId}`);
     const data = await response.json();
 
-    if (data.order) {
-      const order = data.order;
+    if (data.orderId) { // Sửa để tương thích với API getOrderById
+      const order = data;
       elements.orderDetailsContent.innerHTML = `
         <div class="detail-row"><label>Đơn hàng #:</label><span>${order.orderId}</span></div>
         <div class="detail-row"><label>Trạng thái:</label><span>${order.status}</span></div>
         <div class="detail-row"><label>Tổng tiền:</label><span>${order.total.toLocaleString('vi-VN')} VNĐ</span></div>
-        <div class="detail-row"><label>Địa chỉ:</label><span>${order.deliveryAddress || 'Không có'}</span></div>
+        <div class="detail-row vertical"><label>Địa chỉ:</label><span>${order.deliveryAddress || 'Không có'}</span></div>
         <div class="detail-row"><label>Khoảng cách:</label><span>${order.distance || 'Không có'}</span></div>
         <div class="detail-row"><label>Thời gian giao:</label><span>${order.duration || 'Không có'}</span></div>
         <h4>Sản phẩm:</h4>
@@ -995,7 +1017,7 @@ async function showOrderDetails(orderId) {
 
       elements.orderDetailsPopup.style.display = 'flex';
     } else {
-      showNotification('Không tìm thấy chi tiết đơn hàng!', 'error');
+      showNotification(data.message || 'Không tìm thấy chi tiết đơn hàng!', 'error');
     }
   } catch (error) {
     console.error('Error fetching order details:', error);
@@ -1107,6 +1129,7 @@ async function submitAuth() {
     submitButton.innerText = 'Tiếp tục';
   }
 }
+
 function updateUserInfo(name, exp, rank) {
   elements.userInfo.style.display = 'flex';
   elements.userNameDisplay.textContent = name || 'Khách';
@@ -1134,6 +1157,7 @@ function logout() {
   updateCartCount();
   showNotification('Đã đăng xuất!', 'success');
 }
+
 async function checkUserSession() {
   const token = localStorage.getItem("token");
   const userInfoDiv = document.getElementById('user-info');
