@@ -3,163 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Đặt hàng tại TocoToco Lạc Long Quân - Trà sữa và đồ uống yêu thích của bạn với giao hàng nhanh chóng!">
   <title>Order ToCoToCo - Lạc Long Quân</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="Order.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="noopener noreferrer">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" rel="noopener noreferrer">
 </head>
 <body>
   <div class="header">
-    <button class="menu-toggle" aria-label="Mở menu" onclick="toggleMenu()">☰</button>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
     <div class="user-info" id="user-info" style="display: none;">
       <div class="user-name">
-        <span id="user-name-display" aria-live="polite"></span>
-        <span class="rank-icon" id="rank-icon" role="img" aria-label="Hạng thành viên"></span>
+        <span id="user-name-display"></span>
+        <span class="rank-icon" id="rank-icon"></span>
       </div>
       <div class="points-exp">
-        <div class="points" id="user-points" aria-label="Điểm tích lũy">0 Points</div>
+        <div class="points" id="user-points">0 Points</div>
         <div class="exp-bar"><div class="exp-fill" id="exp-fill" style="width: 0%"></div></div>
       </div>
     </div>
     <div id="auth-control">
-      <button onclick="showLoginPopup(false)" id="login-button" aria-label="Đăng nhập">Đăng nhập</button>
-      <button onclick="showLoginPopup(true)" id="register-button" aria-label="Đăng ký">Đăng ký</button>
-      <button onclick="logout()" id="logout-button" style="display: none;" aria-label="Đăng xuất">Đăng xuất</button>
+      <button onclick="showLoginPopup(false)" id="login-button">Đăng nhập</button>
+      <button onclick="showLoginPopup(true)" id="register-button">Đăng ký</button>
+      <button onclick="logout()" id="logout-button" style="display: none;">Đăng xuất</button>
     </div>
   </div>
   <div class="container">
     <div class="sidebar" id="sidebar">
       <div>
         <h3>Danh Mục</h3>
-        <ul id="category-list" role="navigation" aria-label="Danh sách danh mục"></ul>
+        <ul id="category-list"></ul>
       </div>
-      <div class="cart" onclick="viewCart()" role="button" aria-label="Xem giỏ hàng">
-        Giỏ hàng (<span id="cart-count" aria-live="polite">0</span>)
+      <div class="cart" onclick="viewCart()">
+        Giỏ hàng (<span id="cart-count">0</span>)
       </div>
     </div>
-    <div class="content" id="product-list" role="main" aria-label="Danh sách sản phẩm"></div>
+    <div class="content" id="product-list"></div>
   </div>
 
   <!-- Popup chọn tùy chọn -->
-  <div class="popup" id="popup" role="dialog" aria-labelledby="popup-title">
+  <div class="popup" id="popup">
     <div class="popup-content">
-      <button class="close-btn" onclick="closePopup()" aria-label="Đóng popup">×</button>
+      <button class="close-btn" onclick="closePopup()">×</button>
       <h3 id="popup-title">Chọn tùy chọn</h3>
-      <p class="product-name" id="popup-product-name" aria-live="polite"></p>
+      <p class="product-name" id="popup-product-name"></p>
       
       <div class="option-row" id="size-section">
-        <label for="size-options">Size:</label>
-        <div id="size-options" class="checkbox-group" role="radiogroup" aria-label="Chọn size"></div>
+        <label>Size:</label>
+        <div id="size-options" class="checkbox-group"></div>
       </div>
       <div class="option-row" id="topping-section">
-        <label for="topping-options">Topping:</label>
-        <div id="topping-options" class="checkbox-group vertical" role="group" aria-label="Chọn topping"></div>
+        <label>Topping:</label>
+        <div id="topping-options" class="checkbox-group vertical"></div>
       </div>
       <div class="option-row" id="sugar-section">
-        <label for="sugar-options">Mức đường:</label>
-        <div id="sugar-options" class="checkbox-group" role="radiogroup" aria-label="Chọn mức đường"></div>
+        <label>Mức đường:</label>
+        <div id="sugar-options" class="checkbox-group"></div>
       </div>
       <div class="option-row" id="ice-section">
-        <label for="ice-options">Mức đá:</label>
-        <div id="ice-options" class="checkbox-group" role="radiogroup" aria-label="Chọn mức đá"></div>
+        <label>Mức đá:</label>
+        <div id="ice-options" class="checkbox-group"></div>
       </div>
       <div class="quantity-group">
-        <label for="quantity-input">Số lượng:</label>
-        <input type="number" id="quantity-input" min="1" value="1" aria-label="Số lượng sản phẩm">
+        <label>Số lượng:</label>
+        <input type="number" id="quantity-input" min="1" value="1">
       </div>
       <div class="note-group">
-        <label for="note-input">Ghi chú:</label>
-        <textarea id="note-input" placeholder="Nhập ghi chú (nếu có)" aria-label="Ghi chú cho sản phẩm"></textarea>
+        <label>Ghi chú:</label>
+        <textarea id="note-input" placeholder="Nhập ghi chú (nếu có)"></textarea>
       </div>
       
-      <button id="popup-action-btn" onclick="addToCart()" aria-label="Thêm vào giỏ hàng">Thêm vào giỏ</button>
+      <button id="popup-action-btn" onclick="addToCart()">Thêm vào giỏ</button>
     </div>
   </div>
 
   <!-- Popup giỏ hàng và lịch sử -->
-  <div class="cart-popup" id="cart-popup" role="dialog" aria-labelledby="cart-tab-heading">
+  <div class="cart-popup" id="cart-popup">
     <div class="cart-content">
-      <button class="close-btn" onclick="closeCart()" aria-label="Đóng giỏ hàng">×</button>
+      <button class="close-btn" onclick="closeCart()">×</button>
       <div class="tabs">
-        <button class="tab-button active" onclick="showCartTab()" aria-label="Xem giỏ hàng">Giỏ hàng</button>
-        <button class="tab-button" onclick="showHistoryTab()" aria-label="Xem lịch sử đơn hàng">Lịch sử đơn hàng</button>
+        <button class="tab-button active" onclick="showCartTab()">Giỏ hàng</button>
+        <button class="tab-button" onclick="showHistoryTab()">Lịch sử đơn hàng</button>
       </div>
       <div id="cart-tab" class="tab-content">
-        <h3 id="cart-tab-heading">Giỏ hàng</h3>
-        <ul id="cart-items" aria-label="Danh sách sản phẩm trong giỏ hàng"></ul>
-        <div class="total" id="cart-total" aria-live="polite">Tổng cộng: 0 VNĐ</div>
-        <button id="checkout-btn" onclick="placeOrder()" aria-label="Đặt hàng">Đặt hàng</button>
+        <h3>Giỏ hàng</h3>
+        <ul id="cart-items"></ul>
+        <div class="total" id="cart-total">Tổng cộng: 0 VNĐ</div>
+        <button id="checkout-btn" onclick="placeOrder()">Đặt hàng</button>
       </div>
       <div id="history-tab" class="tab-content" style="display: none;">
         <h3>Lịch sử đơn hàng</h3>
-        <ul id="history-items" aria-label="Danh sách lịch sử đơn hàng"></ul>
+        <ul id="history-items"></ul>
       </div>
     </div>
   </div>
 
   <!-- Popup phóng to sản phẩm -->
-  <div class="zoom-popup" id="zoom-popup" role="dialog" aria-labelledby="zoom-product-name">
+  <div class="zoom-popup" id="zoom-popup">
     <div class="zoom-content">
-      <button class="close-btn" onclick="closeZoomPopup()" aria-label="Đóng hình ảnh phóng to">×</button>
-      <img id="zoom-image" src="" alt="Hình ảnh sản phẩm" aria-describedby="zoom-product-name">
+      <button class="close-btn" onclick="closeZoomPopup()">×</button>
+      <img id="zoom-image" src="" alt="Product Image">
       <h3 id="zoom-product-name"></h3>
-      <p id="zoom-product-price" aria-live="polite"></p>
+      <p id="zoom-product-price"></p>
     </div>
   </div>
 
   <!-- Popup đăng nhập/đăng ký -->
-  <div id="auth-popup" onclick="hidePopup(event)" role="dialog" aria-labelledby="auth-title">
+  <div id="auth-popup" onclick="hidePopup(event)">
     <div class="auth-box" onclick="event.stopPropagation()">
       <h3 id="auth-title">Đăng nhập</h3>
-      <input id="user-name" placeholder="Tên của bạn" style="display:none;" aria-label="Tên người dùng">
-      <input id="user-email" placeholder="Email/SĐT" aria-label="Email hoặc số điện thoại">
-      <input id="user-password" type="password" placeholder="Mật khẩu" aria-label="Mật khẩu">
-      <button onclick="submitAuth()" aria-label="Xác nhận đăng nhập hoặc đăng ký">Tiếp tục</button>
+      <input id="user-name" placeholder="Tên của bạn" style="display:none;">
+      <input id="user-email" placeholder="Email/SĐT">
+      <input id="user-password" type="password" placeholder="Mật khẩu">
+      <button onclick="submitAuth()">Tiếp tục</button>
     </div>
   </div>
 
   <!-- Popup QR thanh toán -->
-  <div id="qr-popup" class="qr-popup" role="dialog" aria-labelledby="qr-heading">
+  <div id="qr-popup" class="qr-popup">
     <div class="qr-content">
-      <button class="close-btn" onclick="transactionTracker.resetPopup()" aria-label="Đóng popup QR">×</button>
-      <h3 id="qr-heading">Quét mã QR để thanh toán</h3>
-      <img id="popup-qr-image" src="" alt="Mã QR thanh toán">
-      <p id="qr-amount" aria-live="polite">Số tiền: 0 VNĐ</p>
-      <p class="countdown" id="countdown" aria-live="polite">15:00</p>
-      <button id="download-qr" aria-label="Tải mã QR">Tải QR</button>
-      <button id="cancel-transaction" onclick="cancelTransaction()" aria-label="Hủy giao dịch">Hủy giao dịch</button>
+      <button class="close-btn" onclick="transactionTracker.resetPopup()">×</button>
+      <h3>Quét mã QR để thanh toán</h3>
+      <img id="popup-qr-image" src="" alt="QR Code">
+      <p id="qr-amount">Số tiền: 0 VNĐ</p>
+      <p class="countdown" id="countdown">15:00</p>
+      <button id="download-qr">Tải QR</button>
+      <button id="cancel-transaction" onclick="cancelTransaction()">Hủy giao dịch</button>
     </div>
   </div>
 
   <!-- Popup chi tiết đơn hàng -->
-  <div class="order-details-popup" id="order-details-popup" role="dialog" aria-labelledby="order-details-heading">
+  <div class="order-details-popup" id="order-details-popup">
     <div class="order-details-content">
-      <button class="close-btn" onclick="closeOrderDetailsPopup()" aria-label="Đóng chi tiết đơn hàng">×</button>
-      <h3 id="order-details-heading">Chi tiết đơn hàng</h3>
-      <div id="order-details-content" aria-live="polite"></div>
+      <button class="close-btn" onclick="closeOrderDetailsPopup()">×</button>
+      <h3>Chi tiết đơn hàng</h3>
+      <div id="order-details-content"></div>
     </div>
   </div>
 
   <!-- Popup chọn địa chỉ giao hàng -->
-  <div id="delivery-popup" class="popup" role="dialog" aria-labelledby="delivery-heading">
+  <div id="delivery-popup" class="popup">
     <div class="delivery-content">
-      <button class="close-btn" onclick="closeDeliveryPopup()" aria-label="Đóng popup chọn địa chỉ">×</button>
-      <h3 id="delivery-heading">Chọn địa chỉ giao hàng</h3>
+      <button class="close-btn" onclick="closeDeliveryPopup()">×</button>
+      <h3>Chọn địa chỉ giao hàng</h3>
       <div class="map-search-container">
-        <input id="map-search" placeholder="Tìm kiếm địa chỉ..." aria-label="Tìm kiếm địa chỉ giao hàng">
+        <input id="map-search" placeholder="Tìm kiếm địa chỉ...">
       </div>
-      <div id="map-container" style="width: 100%; height: 400px;" aria-label="Bản đồ chọn địa chỉ"></div>
-      <div id="delivery-address-display" aria-live="polite"></div>
-      <div id="distance-info" aria-live="polite"></div>
-      <button id="confirm-delivery-btn" onclick="confirmDelivery()" disabled aria-label="Xác nhận địa chỉ giao hàng">Xác nhận</button>
-      <button id="close-delivery-btn" onclick="closeDeliveryPopup()" aria-label="Hủy chọn địa chỉ">Hủy</button>
+      <div id="map-container" style="width: 100%; height: 400px;"></div>
+      <div id="delivery-address-display"></div>
+      <div id="distance-info"></div>
+      <button id="confirm-delivery-btn" onclick="confirmDelivery()" disabled>Xác nhận</button>
+      <button id="close-delivery-btn" onclick="closeDeliveryPopup()">Hủy</button>
     </div>
   </div>
 
-  <script src="Order.js"></script>
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" defer rel="noopener noreferrer"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer rel="noopener noreferrer"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" defer rel="noopener noreferrer"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js" defer rel="noopener noreferrer"></script>
+  <script>
+    // Callback cho Mapbox
+    function initMap() {
+      // Được gọi khi Mapbox GL JS tải xong
+    }
+  </script>
+  <script src="Order.js" defer></script>
+  <script defer>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'937f7b9fedfdb0eb',t:'MTc0NTkzNjg3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
