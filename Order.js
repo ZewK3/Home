@@ -1153,7 +1153,7 @@ async function checkUserSession() {
   }
 
   try {
-    const response = await fetch(`${apiBase}?action=User&token=${token}`);
+    const response = await fetch(`${API_BASE}?action=User&token=${token}`);
 
     // Kiểm tra trạng thái HTTP
     if (!response.ok) {
