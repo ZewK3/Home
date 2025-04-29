@@ -38,7 +38,7 @@ const elements = {
   cartPopup: document.getElementById('cart-popup'),
   cartTab: document.getElementById('cart-tab'),
   historyTab: document.getElementById('history-tab'),
-  historyItems: document.getElementById('history-items'),
+  historyItems: document.getElementWithTagName('history-items'),
   zoomPopup: document.getElementById('zoom-popup'),
   zoomImage: document.getElementById('zoom-image'),
   zoomProductName: document.getElementById('zoom-product-name'),
@@ -198,7 +198,7 @@ const transactionTracker = {
 
         if (updateData.success) {
           showNotification(`Thanh toán thành công! Đơn hàng ${data.orderId} đã được xác nhận.\nĐiểm: +${updateData.gainedExp}\nTổng: ${updateData.newExp}\nHạng: ${updateData.newRank}`, 'success', 5000);
-          updateUserInfo(data.name, updateData.newExp, updateData.newRank);
+          updateUserInfo(data.name || 'Khách', updateData.newExp, updateData.newRank);
           cart = [];
           localStorage.setItem('cart', JSON.stringify(cart));
           updateCartCount();
@@ -1087,17 +1087,24 @@ async function submitAuth() {
 
     if (data.token) {
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userInfo', JSON.stringify({
-        name: data.name,
+      const userInfo = {
+        name: data.name || (isRegisterMode ? name : email.split('@')[0] || 'Khách'),
         exp: data.exp || 0,
-        rank: data.rank || 'Bronze'
-      }));
+        rank: data.rank || 'Bronze',
+        expiresAt: data.expiresAt || null
+      };
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      updateUserInfo(userInfo.name, userInfo.exp, userInfo.rank);
       document.getElementById('auth-popup').style.display = 'none';
       showNotification(
         isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!",
         "success"
       );
-      await checkUserSession();
+      try {
+        await checkUserSession();
+      } catch (error) {
+        console.warn("Không thể kiểm tra phiên sau khi đăng nhập:", error);
+      }
     } else {
       showNotification(
         data.message ||
@@ -1136,7 +1143,7 @@ function updateUserInfo(name, exp, rank) {
   elements.registerButton.style.display = 'none';
   elements.logoutButton.style.display = 'block';
 
-  localStorage.setItem('userInfo', JSON.stringify({ name, exp, rank }));
+  localStorage.setItem('userInfo', JSON.stringify({ name: name || 'Khách', exp, rank }));
 }
 
 function logout() {
@@ -1151,7 +1158,7 @@ function logout() {
   showNotification('Đã đăng xuất!', 'success');
 }
 
-async function checkUserSession() {
+async function checkUserSession(attempt = 1, maxAttempts = 3, delayMs = 2000) {
   const token = localStorage.getItem("token");
   const userInfoDiv = document.getElementById('user-info');
   const loginButton = document.getElementById("login-button");
@@ -1169,6 +1176,21 @@ async function checkUserSession() {
     return;
   }
 
+  if (savedUserInfo.expiresAt) {
+    const expiryDate = new Date(savedUserInfo.expiresAt);
+    const now = new Date();
+    if (now > expiryDate) {
+      showNotification("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!", "error");
+      localStorage.removeItem("token");
+      localStorage.removeItem('userInfo');
+      userInfoDiv.style.display = "none";
+      loginButton.style.display = "block";
+      registerButton.style.display = "block";
+      logoutButton.style.display = "none";
+      return;
+    }
+  }
+
   if (savedUserInfo.name) {
     updateUserInfo(savedUserInfo.name, savedUserInfo.exp || 0, savedUserInfo.rank || 'Bronze');
   }
@@ -1177,21 +1199,30 @@ async function checkUserSession() {
     const response = await fetch(`${API_BASE}?action=User&token=${token}`);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const error = new Error(`HTTP error! Status: ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
 
     const data = await response.json();
 
-    if (data.success && data.name) {
+    console.log(`API User response (attempt ${attempt}):`, data);
+
+    if (data.name) {
       updateUserInfo(data.name, data.exp || 0, data.rank || 'Bronze');
     } else {
-      throw new Error('Invalid session');
+      console.warn("API User không trả về thông tin name, giữ thông tin đã lưu.");
     }
   } catch (error) {
-    console.error("Lỗi kiểm tra phiên:", error);
-    let errorMessage = "Phiên đăng nhập không hợp lệ!";
+    console.error(`Lỗi kiểm tra phiên (attempt ${attempt}):`, error);
+    let errorMessage = "Không thể tải thông tin người dùng!";
     if (error.message.includes('HTTP error')) {
-      if (error.message.includes('401')) {
+      if (error.status === 401) {
+        if (attempt < maxAttempts) {
+          console.log(`Thử lại lần ${attempt + 1} sau ${delayMs}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+          return checkUserSession(attempt + 1, maxAttempts, delayMs);
+        }
         errorMessage = "Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!";
         localStorage.removeItem("token");
         localStorage.removeItem('userInfo');
@@ -1204,14 +1235,6 @@ async function checkUserSession() {
       }
     } else if (error.message.includes('Failed to fetch')) {
       errorMessage = "Lỗi kết nối mạng, vui lòng kiểm tra kết nối!";
-    } else {
-      errorMessage = "Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!";
-      localStorage.removeItem("token");
-      localStorage.removeItem('userInfo');
-      userInfoDiv.style.display = "none";
-      loginButton.style.display = "block";
-      registerButton.style.display = "block";
-      logoutButton.style.display = "none";
     }
     showNotification(errorMessage, "error");
   }
