@@ -202,7 +202,7 @@ const transactionTracker = {
           cart = [];
           localStorage.setItem('cart', JSON.stringify(cart));
           updateCartCount();
-          pendingOrder = null; // Đặt lại pendingOrder sau khi lưu thành công
+          pendingOrder = null;
         } else {
           showNotification('Lỗi cập nhật trạng thái đơn hàng!', 'error');
         }
@@ -222,7 +222,6 @@ const transactionTracker = {
 
     this.cleanupTransaction(transactionId, transaction);
     showNotification('Giao dịch hết hạn! Đơn hàng không được lưu.', 'error');
-    // Không đặt pendingOrder = null tại đây để tránh mất dữ liệu
   },
   cleanupTransaction(transactionId, transaction) {
     clearInterval(transaction.countdownTimer);
@@ -333,7 +332,6 @@ async function calculateDistance(deliveryCoords) {
     return;
   }
 
-  // Thêm kiểm tra pendingOrder trước khi cập nhật
   if (!pendingOrder) {
     showNotification('Đơn hàng tạm thời chưa được tạo. Vui lòng thử lại!', 'error');
     return;
@@ -435,7 +433,6 @@ function initMap() {
 }
 
 function openDeliveryPopup() {
-  // Thêm kiểm tra pendingOrder trước khi mở popup
   if (!pendingOrder) {
     showNotification('Vui lòng đặt hàng trước khi chọn địa chỉ giao hàng!', 'error');
     return;
@@ -464,7 +461,6 @@ function openDeliveryPopup() {
 function closeDeliveryPopup() {
   elements.deliveryPopup.style.display = 'none';
   selectedCoords = null;
-  // Không đặt lại pendingOrder tại đây để giữ thông tin giao hàng
 }
 
 function csvToJson(csv) {
@@ -597,7 +593,7 @@ function openPopup(name, category, sizeOptions, price, sugarOptions = '30%,50%,7
     toppings.forEach(topping => {
       const label = document.createElement('label');
       const isChecked = existingItem && existingItem.toppings.some(t => t.name === topping.name);
-      label.innerHTML = `<input type="checkbox " name="topping" value="${topping.name}" data-price="${topping.price}" ${isChecked ? 'checked' : ''}> ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)`;
+      label.innerHTML = `<input type="checkbox" name="topping" value="${topping.name}" data-price="${topping.price}" ${isChecked ? 'checked' : ''}> ${topping.name} (+${topping.price.toLocaleString('vi-VN')} VNĐ)`;
       elements.toppingOptions.appendChild(label);
     });
 
@@ -910,13 +906,11 @@ async function placeOrder() {
 }
 
 function confirmDelivery() {
-  // Thêm kiểm tra pendingOrder trước khi truy cập deliveryAddress
   if (!pendingOrder) {
     showNotification('Đơn hàng tạm thời chưa được tạo. Vui lòng thử lại!', 'error');
     return;
   }
 
-  // Kiểm tra deliveryAddress
   if (!pendingOrder.deliveryAddress) {
     showNotification('Vui lòng chọn địa chỉ giao hàng hợp lệ!', 'error');
     return;
@@ -939,7 +933,6 @@ function cancelTransaction() {
     const transaction = transactionTracker.state.activeTransactions.get(transactionId);
     transactionTracker.cleanupTransaction(transactionId, transaction);
     showNotification('Đã hủy giao dịch!', 'error');
-    // Không đặt lại pendingOrder tại đây để tránh mất dữ liệu
   }
 }
 
@@ -985,7 +978,7 @@ async function showOrderDetails(orderId) {
     const response = await fetch(`${API_BASE}?action=getOrderById&token=${token}&orderId=${orderId}`);
     const data = await response.json();
 
-    if (data.orderId) { // Sửa để tương thích với API getOrderById
+    if (data.orderId) {
       const order = data;
       elements.orderDetailsContent.innerHTML = `
         <div class="detail-row"><label>Đơn hàng #:</label><span>${order.orderId}</span></div>
@@ -1048,21 +1041,17 @@ async function submitAuth() {
   const passwordInput = document.getElementById("user-password");
   const submitButton = document.querySelector('#auth-popup button');
 
-  // Lấy giá trị đầu vào
   const name = nameInput.value.trim();
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
 
-  // Xác định chế độ đăng ký/đăng nhập
   const isRegisterMode = document.getElementById('auth-title').innerText === 'Đăng ký';
 
-  // Kiểm tra đầu vào
   if (!email || !password || (isRegisterMode && !name)) {
     showNotification("Vui lòng điền đầy đủ thông tin!", "error");
     return;
   }
 
-  // Kiểm tra định dạng email hoặc số điện thoại
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phoneRegex = /^[0-9]{10,11}$/;
   if (!emailRegex.test(email) && !phoneRegex.test(email)) {
@@ -1070,13 +1059,11 @@ async function submitAuth() {
     return;
   }
 
-  // Kiểm tra độ dài mật khẩu
   if (password.length < 6) {
     showNotification("Mật khẩu phải có ít nhất 6 ký tự!", "error");
     return;
   }
 
-  // Vô hiệu hóa nút trong khi xử lý
   submitButton.disabled = true;
   submitButton.innerText = 'Đang xử lý...';
 
@@ -1092,7 +1079,6 @@ async function submitAuth() {
       body: JSON.stringify(body)
     });
 
-    // Kiểm tra trạng thái HTTP
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
@@ -1101,6 +1087,11 @@ async function submitAuth() {
 
     if (data.token) {
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userInfo', JSON.stringify({
+        name: data.name,
+        exp: data.exp || 0,
+        rank: data.rank || 'Bronze'
+      }));
       document.getElementById('auth-popup').style.display = 'none';
       showNotification(
         isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!",
@@ -1124,7 +1115,6 @@ async function submitAuth() {
     }
     showNotification(errorMessage, "error");
   } finally {
-    // Khôi phục trạng thái nút
     submitButton.disabled = false;
     submitButton.innerText = 'Tiếp tục';
   }
@@ -1145,10 +1135,13 @@ function updateUserInfo(name, exp, rank) {
   elements.loginButton.style.display = 'none';
   elements.registerButton.style.display = 'none';
   elements.logoutButton.style.display = 'block';
+
+  localStorage.setItem('userInfo', JSON.stringify({ name, exp, rank }));
 }
 
 function logout() {
   localStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
   elements.userInfo.style.display = 'none';
   elements.loginButton.style.display = 'block';
   elements.registerButton.style.display = 'block';
@@ -1165,50 +1158,60 @@ async function checkUserSession() {
   const registerButton = document.getElementById("register-button");
   const logoutButton = document.getElementById("logout-button");
 
-  // Nếu không có token, đặt lại giao diện và thoát
+  const savedUserInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+
   if (!token) {
     userInfoDiv.style.display = "none";
     loginButton.style.display = "block";
     registerButton.style.display = "block";
     logoutButton.style.display = "none";
+    localStorage.removeItem('userInfo');
     return;
+  }
+
+  if (savedUserInfo.name) {
+    updateUserInfo(savedUserInfo.name, savedUserInfo.exp || 0, savedUserInfo.rank || 'Bronze');
   }
 
   try {
     const response = await fetch(`${API_BASE}?action=User&token=${token}`);
 
-    // Kiểm tra trạng thái HTTP
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
     const data = await response.json();
 
-    if (data.name) {
-      // Cập nhật thông tin người dùng nếu thành công
+    if (data.success && data.name) {
       updateUserInfo(data.name, data.exp || 0, data.rank || 'Bronze');
     } else {
       throw new Error('Invalid session');
     }
   } catch (error) {
     console.error("Lỗi kiểm tra phiên:", error);
-    // Xóa token và đặt lại giao diện
-    localStorage.removeItem("token");
-    userInfoDiv.style.display = "none";
-    loginButton.style.display = "block";
-    registerButton.style.display = "block";
-    logoutButton.style.display = "none";
-
-    // Phân loại lỗi và hiển thị thông báo phù hợp
     let errorMessage = "Phiên đăng nhập không hợp lệ!";
     if (error.message.includes('HTTP error')) {
       if (error.message.includes('401')) {
         errorMessage = "Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!";
+        localStorage.removeItem("token");
+        localStorage.removeItem('userInfo');
+        userInfoDiv.style.display = "none";
+        loginButton.style.display = "block";
+        registerButton.style.display = "block";
+        logoutButton.style.display = "none";
       } else {
         errorMessage = "Lỗi server, vui lòng thử lại sau!";
       }
     } else if (error.message.includes('Failed to fetch')) {
       errorMessage = "Lỗi kết nối mạng, vui lòng kiểm tra kết nối!";
+    } else {
+      errorMessage = "Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!";
+      localStorage.removeItem("token");
+      localStorage.removeItem('userInfo');
+      userInfoDiv.style.display = "none";
+      loginButton.style.display = "block";
+      registerButton.style.display = "block";
+      logoutButton.style.display = "none";
     }
     showNotification(errorMessage, "error");
   }
@@ -1219,4 +1222,5 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCartCount();
   loadMenu();
   transactionTracker.restoreTransactions();
+  checkUserSession();
 });
