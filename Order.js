@@ -1023,38 +1023,36 @@ function hidePopup(event) {
 }
 
 async function submitAuth() {
-  const name = elements.userNameInput.value.trim();
-  const email = elements.userEmailInput.value.trim();
-  const password = elements.userPasswordInput.value.trim();
+  const name = document.getElementById("user-name").value.trim();
+  const email = document.getElementById("user-email").value.trim();
+  const password = document.getElementById("user-password").value.trim();
 
-  if (isRegisterMode && !name) {
-    showNotification('Vui lòng nhập tên của bạn!', 'error');
+  if (!email || !password || (isRegisterMode && !name)) {
+    showNotification("Vui lòng điền đầy đủ thông tin!", "error");
     return;
   }
-  if (!email || !password) {
-    showNotification('Vui lòng nhập email/số điện thoại và mật khẩu!', 'error');
-    return;
-  }
-
-  const hashedPassword = CryptoJS.SHA256(password).toString();
-  const action = isRegisterMode ? 'register' : 'login';
-  const url = `${API_BASE}?action=${action}&email=${encodeURIComponent(email)}&password=${hashedPassword}${isRegisterMode ? `&name=${encodeURIComponent(name)}` : ''}`;
 
   try {
-    const response = await fetch(url);
+    const action = isRegisterMode ? "registerUser" : "loginUser";
+    const body = isRegisterMode ? { name, email, password } : { email, password };
+    const response = await fetch(`${apiBase}?action=${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
     const data = await response.json();
 
     if (data.token) {
       localStorage.setItem('token', data.token);
-      updateUserInfo(data.name, data.exp, data.rank);
-      elements.authPopup.style.display = 'none';
-      showNotification(isRegisterMode ? 'Đăng ký thành công!' : 'Đăng nhập thành công!', 'success');
+      document.getElementById('auth-popup').style.display = 'none';
+      showNotification(isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!", "success");
+      await checkUserSession();
     } else {
-      showNotification(data.message || 'Đã có lỗi xảy ra. Vui lòng thử lại!', 'error');
+      showNotification(data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"), "error");
     }
   } catch (error) {
-    console.error('Error during authentication:', error);
-    showNotification('Lỗi kết nối. Vui lòng thử lại!', 'error');
+    console.error('Lỗi:', error);
+    showNotification("Đã có lỗi xảy ra. Vui lòng thử lại!", "error");
   }
 }
 
