@@ -1066,7 +1066,7 @@ async function submitAuth() {
       ? { name, email, password }
       : { email, password };
 
-    const response = await fetch(`${apiBase}?action=${action}`, {
+    const response = await fetch(`${API_BASE}?action=${action}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
