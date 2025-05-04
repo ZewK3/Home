@@ -48,6 +48,8 @@ const elements = {
   userNameInput: document.getElementById('user-name'),
   userEmailInput: document.getElementById('user-email'),
   userPasswordInput: document.getElementById('user-password'),
+  loginSubmitBtn: document.getElementById('login-submit-btn'),
+  registerSubmitBtn: document.getElementById('register-submit-btn'),
   userInfo: document.getElementById('user-info'),
   userNameDisplay: document.getElementById('user-name-display'),
   userPoints: document.getElementById('user-points'),
@@ -1026,6 +1028,8 @@ function showLoginPopup(registerMode) {
   isRegisterMode = registerMode;
   elements.authTitle.textContent = registerMode ? 'Đăng ký' : 'Đăng nhập';
   elements.userNameInput.style.display = registerMode ? 'block' : 'none';
+  elements.loginSubmitBtn.style.display = registerMode ? 'none' : 'block';
+  elements.registerSubmitBtn.style.display = registerMode ? 'block' : 'none';
   elements.authPopup.style.display = 'flex';
 }
 
@@ -1039,7 +1043,7 @@ async function registerUser() {
   const nameInput = document.getElementById("user-name");
   const emailInput = document.getElementById("user-email");
   const passwordInput = document.getElementById("user-password");
-  const submitButton = document.querySelector('#auth-popup button');
+  const submitButton = document.getElementById("register-submit-btn");
 
   const name = nameInput.value.trim();
   const email = emailInput.value.trim();
@@ -1120,14 +1124,14 @@ async function registerUser() {
     showNotification(errorMessage, "error");
   } finally {
     submitButton.disabled = false;
-    submitButton.innerText = 'Tiếp tục';
+    submitButton.innerText = 'Đăng ký';
   }
 }
 
 async function loginUser() {
   const emailInput = document.getElementById("user-email");
   const passwordInput = document.getElementById("user-password");
-  const submitButton = document.querySelector('#auth-popup button');
+  const submitButton = document.getElementById("login-submit-btn");
 
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
@@ -1202,16 +1206,7 @@ async function loginUser() {
     showNotification(errorMessage, "error");
   } finally {
     submitButton.disabled = false;
-    submitButton.innerText = 'Tiếp tục';
-  }
-}
-
-function submitAuth() {
-  const isRegisterMode = document.getElementById('auth-title').innerText === 'Đăng ký';
-  if (isRegisterMode) {
-    registerUser();
-  } else {
-    loginUser();
+    submitButton.innerText = 'Đăng nhập';
   }
 }
 
