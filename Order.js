@@ -1089,7 +1089,7 @@ async function registerUser() {
 
     const data = await response.json();
 
-    if (data.success && data.token) {
+    if (data.token) {
       localStorage.setItem('token', data.token);
       const userInfo = {
         name: data.name || name,
@@ -1171,7 +1171,7 @@ async function loginUser() {
 
     const data = await response.json();
 
-    if (data.success && data.token) {
+    if (data.token) {
       localStorage.setItem('token', data.token);
       const userInfo = {
         name: data.name || email.split('@')[0] || 'Khách',
