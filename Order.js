@@ -1035,7 +1035,7 @@ function hidePopup(event) {
   }
 }
 
-async function submitAuth() {
+async function registerUser() {
   const nameInput = document.getElementById("user-name");
   const emailInput = document.getElementById("user-email");
   const passwordInput = document.getElementById("user-password");
@@ -1045,10 +1045,8 @@ async function submitAuth() {
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
 
-  const isRegisterMode = document.getElementById('auth-title').innerText === 'Đăng ký';
-
   // Kiểm tra dữ liệu đầu vào
-  if (!email || !password || (isRegisterMode && !name)) {
+  if (!name || !email || !password) {
     showNotification("Vui lòng điền đầy đủ thông tin!", "error");
     return;
   }
@@ -1060,7 +1058,7 @@ async function submitAuth() {
     return;
   }
 
-  if (isRegisterMode && name.length < 2) {
+  if (name.length < 2) {
     showNotification("Tên phải có ít nhất 2 ký tự!", "error");
     return;
   }
@@ -1074,15 +1072,10 @@ async function submitAuth() {
   submitButton.innerText = 'Đang xử lý...';
 
   try {
-    const action = isRegisterMode ? "registerUser" : "loginUser";
-    const body = isRegisterMode
-      ? { name, email, password }
-      : { email, password };
-
-    const response = await fetch(`${API_BASE}?action=${action}`, {
+    const response = await fetch(`${API_BASE}?action=registerUser`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify({ name, email, password })
     });
 
     if (!response.ok) {
@@ -1095,7 +1088,7 @@ async function submitAuth() {
     if (data.success && data.token) {
       localStorage.setItem('token', data.token);
       const userInfo = {
-        name: data.name || (isRegisterMode ? name : email.split('@')[0] || 'Khách'),
+        name: data.name || name,
         exp: data.exp || 0,
         rank: data.rank || 'Bronze',
         expiresAt: data.expiresAt || null
@@ -1103,27 +1096,102 @@ async function submitAuth() {
       localStorage.setItem('userInfo', JSON.stringify(userInfo));
       updateUserInfo(userInfo.name, userInfo.exp, userInfo.rank);
       elements.authPopup.style.display = 'none';
-      showNotification(
-        isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!",
-        "success"
-      );
+      showNotification("Đăng ký thành công!", "success");
       await checkUserSession();
     } else {
-      let errorMessage = data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!");
+      let errorMessage = data.message || "Đăng ký thất bại!";
       if (data.message === "Email already exists") {
         errorMessage = "Email hoặc số điện thoại đã được sử dụng!";
-      } else if (data.message === "Invalid credentials") {
+      }
+      showNotification(errorMessage, "error");
+    }
+  } catch (error) {
+    console.error('Lỗi đăng ký:', error);
+    let errorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại!";
+    if (error.message.includes('HTTP error')) {
+      if (error.message.includes('409')) {
+        errorMessage = "Email hoặc số điện thoại đã được sử dụng!";
+      } else {
+        errorMessage = "Lỗi server, vui lòng thử lại sau!";
+      }
+    } else if (error.message.includes('Failed to fetch')) {
+      errorMessage = "Lỗi kết nối mạng, vui lòng kiểm tra kết nối!";
+    }
+    showNotification(errorMessage, "error");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.innerText = 'Tiếp tục';
+  }
+}
+
+async function loginUser() {
+  const emailInput = document.getElementById("user-email");
+  const passwordInput = document.getElementById("user-password");
+  const submitButton = document.querySelector('#auth-popup button');
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  // Kiểm tra dữ liệu đầu vào
+  if (!email || !password) {
+    showNotification("Vui lòng điền đầy đủ thông tin!", "error");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^[0-9]{10,11}$/;
+  if (!emailRegex.test(email) && !phoneRegex.test(email)) {
+    showNotification("Email hoặc số điện thoại không hợp lệ!", "error");
+    return;
+  }
+
+  if (password.length < 6) {
+    showNotification("Mật khẩu phải có ít nhất 6 ký tự!", "error");
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.innerText = 'Đang xử lý...';
+
+  try {
+    const response = await fetch(`${API_BASE}?action=loginUser`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success && data.token) {
+      localStorage.setItem('token', data.token);
+      const userInfo = {
+        name: data.name || email.split('@')[0] || 'Khách',
+        exp: data.exp || 0,
+        rank: data.rank || 'Bronze',
+        expiresAt: data.expiresAt || null
+      };
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      updateUserInfo(userInfo.name, userInfo.exp, userInfo.rank);
+      elements.authPopup.style.display = 'none';
+      showNotification("Đăng nhập thành công!", "success");
+      await checkUserSession();
+    } else {
+      let errorMessage = data.message || "Đăng nhập thất bại!";
+      if (data.message === "Invalid credentials") {
         errorMessage = "Email hoặc mật khẩu không đúng!";
       }
       showNotification(errorMessage, "error");
     }
   } catch (error) {
-    console.error('Lỗi:', error);
+    console.error('Lỗi đăng nhập:', error);
     let errorMessage = "Đã có lỗi xảy ra. Vui lòng thử lại!";
     if (error.message.includes('HTTP error')) {
-      if (error.message.includes('409')) {
-        errorMessage = "Email hoặc số điện thoại đã được sử dụng!";
-      } else if (error.message.includes('401')) {
+      if (error.message.includes('401')) {
         errorMessage = "Email hoặc mật khẩu không đúng!";
       } else {
         errorMessage = "Lỗi server, vui lòng thử lại sau!";
@@ -1135,6 +1203,15 @@ async function submitAuth() {
   } finally {
     submitButton.disabled = false;
     submitButton.innerText = 'Tiếp tục';
+  }
+}
+
+function submitAuth() {
+  const isRegisterMode = document.getElementById('auth-title').innerText === 'Đăng ký';
+  if (isRegisterMode) {
+    registerUser();
+  } else {
+    loginUser();
   }
 }
 
