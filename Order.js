@@ -377,7 +377,7 @@ function initMap() {
     .addTo(map);
 
   map.on('click', async (e) => {
-арда    const { lng, lat } = e.lngLat;
+    const { lng, lat } = e.lngLat;
     selectedCoords = { lon: lng, lat };
     if (marker) marker.remove();
     marker = new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
