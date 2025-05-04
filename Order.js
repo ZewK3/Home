@@ -377,7 +377,7 @@ function initMap() {
     .addTo(map);
 
   map.on('click', async (e) => {
-    const { lng, lat } = e.lngLat;
+арда    const { lng, lat } = e.lngLat;
     selectedCoords = { lon: lng, lat };
     if (marker) marker.remove();
     marker = new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map);
@@ -1137,6 +1137,7 @@ async function submitAuth() {
     submitButton.innerText = 'Tiếp tục';
   }
 }
+
 function updateUserInfo(name, exp, rank) {
   elements.userInfo.style.display = 'flex';
   elements.userNameDisplay.textContent = name || 'Khách';
