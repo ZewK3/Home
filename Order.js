@@ -1100,15 +1100,10 @@ async function submitAuth() {
         isRegisterMode ? "Đăng ký thành công!" : "Đăng nhập thành công!",
         "success"
       );
-      try {
-        await checkUserSession();
-      } catch (error) {
-        console.warn("Không thể kiểm tra phiên sau khi đăng nhập:", error);
-      }
+      await checkUserSession();
     } else {
       showNotification(
-        data.message ||
-          (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"),
+        data.message || (isRegisterMode ? "Đăng ký thất bại!" : "Đăng nhập thất bại!"),
         "error"
       );
     }
