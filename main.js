@@ -878,6 +878,670 @@ const updateMenuByRole = (userRole) => {
     });
 };
 
+// Reward Manager
+class RewardManager {
+    constructor(user) {
+        this.user = user;
+        this.allowedRoles = ["AD", "AM", "QL", "NV"];
+    }
+
+    renderReward() {
+        document.getElementById("openReward").addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!this.allowedRoles.includes(this.user.position)) {
+                return showNotification("Bạn không có quyền truy cập", "error", 3000);
+            }
+
+            const originalContent = mainContent.innerHTML;
+            if (isMobile()) {
+                sidebar.classList.add("hidden");
+                mainContent.classList.remove("hidden");
+            }
+
+            mainContent.innerHTML = `
+                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
+                <h1>Thưởng/Phạt</h1>
+                ${this.user.position === "AD" || this.user.position === "QL" ? `
+                    <div class="reward-form">
+                        <h2>Tạo mới Thưởng/Phạt</h2>
+                        <form id="rewardForm">
+                            <div class="form-group">
+                                <label for="employeeSelect">Nhân viên:</label>
+                                <select id="employeeSelect" required>
+                                    <option value="">Chọn nhân viên</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="type">Loại:</label>
+                                <select id="type" required>
+                                    <option value="reward">Thưởng</option>
+                                    <option value="penalty">Phạt</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Số tiền:</label>
+                                <input type="number" id="amount" required min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="reason">Lý do:</label>
+                                <textarea id="reason" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn">Lưu</button>
+                            </div>
+                        </form>
+                    </div>
+                ` : ''}
+                <div class="reward-history">
+                    <h2>Lịch sử Thưởng/Phạt</h2>
+                    <div class="reward-filter">
+                        <select id="monthFilter">
+                            <option value="">Tất cả các tháng</option>
+                        </select>
+                    </div>
+                    <table class="reward-table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Loại</th>
+                                <th>Số tiền</th>
+                                <th>Lý do</th>
+                                ${this.user.position === "AD" || this.user.position === "QL" ? '<th>Nhân viên</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody id="rewardHistory"></tbody>
+                    </table>
+                </div>
+            `;
+
+            this.setupBackButton(originalContent);
+            this.setupMonthFilter();
+            if (this.user.position === "AD" || this.user.position === "QL") {
+                await this.loadEmployees();
+                this.setupRewardForm();
+            }
+            this.loadRewardHistory();
+        });
+    }
+
+    setupBackButton(originalContent) {
+        const backButton = document.getElementById("backButton");
+        if (backButton) {
+            backButton.addEventListener("click", () => {
+                if (isMobile()) {
+                    mainContent.classList.add("hidden");
+                    sidebar.classList.remove("hidden");
+                } else {
+                    mainContent.innerHTML = originalContent;
+                }
+            });
+        }
+    }
+
+    async loadEmployees() {
+        try {
+            const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getEmployees&token=${token}`);
+            if (!response.ok) throw new Error("Failed to fetch employees");
+            
+            const employees = await response.json();
+            const select = document.getElementById("employeeSelect");
+            employees.forEach(emp => {
+                const option = document.createElement("option");
+                option.value = emp.employeeId;
+                option.textContent = `${emp.fullName} (${emp.employeeId})`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            showNotification("Không thể tải danh sách nhân viên", "error", 3000);
+        }
+    }
+
+    setupMonthFilter() {
+        const monthFilter = document.getElementById("monthFilter");
+        const currentDate = new Date();
+        
+        for (let i = 0; i < 12; i++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const option = document.createElement("option");
+            option.value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            option.textContent = `Tháng ${date.getMonth() + 1}/${date.getFullYear()}`;
+            monthFilter.appendChild(option);
+        }
+
+        monthFilter.addEventListener("change", () => this.loadRewardHistory());
+    }
+
+    setupRewardForm() {
+        document.getElementById("rewardForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                employeeId: document.getElementById("employeeSelect").value,
+                type: document.getElementById("type").value,
+                amount: document.getElementById("amount").value,
+                reason: document.getElementById("reason").value
+            };
+
+            try {
+                const response = await fetch(`https://zewk.tocotoco.workers.dev?action=createReward&token=${token}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error("Failed to create reward/penalty");
+                
+                showNotification("Đã tạo thưởng/phạt thành công", "success", 3000);
+                this.loadRewardHistory();
+                e.target.reset();
+            } catch (error) {
+                showNotification("Không thể tạo thưởng/phạt", "error", 3000);
+            }
+        });
+    }
+
+    async loadRewardHistory() {
+        const month = document.getElementById("monthFilter").value;
+        try {
+            const url = new URL("https://zewk.tocotoco.workers.dev");
+            url.searchParams.append("action", "getRewardHistory");
+            url.searchParams.append("token", token);
+            url.searchParams.append("employeeId", this.user.employeeId);
+            if (month) url.searchParams.append("month", month);
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Failed to fetch reward history");
+            
+            const history = await response.json();
+            const tbody = document.getElementById("rewardHistory");
+            
+            tbody.innerHTML = history.map(item => `
+                <tr class="${item.type === 'reward' ? 'reward-row' : 'penalty-row'}">
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td>${item.type === 'reward' ? 'Thưởng' : 'Phạt'}</td>
+                    <td>${item.amount.toLocaleString()}đ</td>
+                    <td>${item.reason}</td>
+                    ${this.user.position === "AD" || this.user.position === "QL" ? 
+                        `<td>${item.employeeName} (${item.employeeId})</td>` : ''}
+                </tr>
+            `).join("");
+        } catch (error) {
+            showNotification("Không thể tải lịch sử thưởng/phạt", "error", 3000);
+        }
+    }
+}
+
+// Submit Task Manager
+class SubmitTaskManager {
+    constructor(user) {
+        this.user = user;
+        this.allowedRoles = ["AD", "NV"];
+    }
+
+    renderSubmitTask() {
+        document.getElementById("openSubmitTask").addEventListener("click", (e) => {
+            e.preventDefault();
+            if (!this.allowedRoles.includes(this.user.position)) {
+                return showNotification("Bạn không có quyền truy cập", "error", 3000);
+            }
+
+            const originalContent = mainContent.innerHTML;
+            if (isMobile()) {
+                sidebar.classList.add("hidden");
+                mainContent.classList.remove("hidden");
+            }
+
+            mainContent.innerHTML = `
+                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
+                <h1>Gửi Yêu Cầu</h1>
+                <form id="taskForm" class="task-form">
+                    <div class="form-group">
+                        <label for="taskType">Loại yêu cầu:</label>
+                        <select id="taskType" required>
+                            <option value="">Chọn loại yêu cầu</option>
+                            <option value="leave">Xin nghỉ phép</option>
+                            <option value="equipment">Yêu cầu thiết bị</option>
+                            <option value="complaint">Khiếu nại</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskTitle">Tiêu đề:</label>
+                        <input type="text" id="taskTitle" required placeholder="Nhập tiêu đề yêu cầu">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Mô tả chi tiết:</label>
+                        <textarea id="taskDescription" required placeholder="Mô tả chi tiết yêu cầu của bạn"></textarea>
+                    </div>
+                    <div id="dateFields" class="form-group hidden">
+                        <label for="startDate">Ngày bắt đầu:</label>
+                        <input type="date" id="startDate">
+                        <label for="endDate">Ngày kết thúc:</label>
+                        <input type="date" id="endDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskAttachment">Tệp đính kèm:</label>
+                        <input type="file" id="taskAttachment" multiple>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn">Gửi yêu cầu</button>
+                    </div>
+                </form>
+                <div class="task-history">
+                    <h2>Lịch sử yêu cầu</h2>
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>Ngày gửi</th>
+                                <th>Loại yêu cầu</th>
+                                <th>Tiêu đề</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="taskHistory"></tbody>
+                    </table>
+                </div>
+            `;
+
+            this.setupBackButton(originalContent);
+            this.setupTaskForm();
+            this.loadTaskHistory();
+        });
+    }
+
+    setupBackButton(originalContent) {
+        const backButton = document.getElementById("backButton");
+        if (backButton) {
+            backButton.addEventListener("click", () => {
+                if (isMobile()) {
+                    mainContent.classList.add("hidden");
+                    sidebar.classList.remove("hidden");
+                } else {
+                    mainContent.innerHTML = originalContent;
+                }
+            });
+        }
+    }
+
+    setupTaskForm() {
+        const taskType = document.getElementById("taskType");
+        const dateFields = document.getElementById("dateFields");
+        
+        taskType.addEventListener("change", () => {
+            dateFields.classList.toggle("hidden", taskType.value !== "leave");
+        });
+
+        document.getElementById("taskForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append("employeeId", this.user.employeeId);
+            formData.append("type", taskType.value);
+            formData.append("title", document.getElementById("taskTitle").value);
+            formData.append("description", document.getElementById("taskDescription").value);
+            
+            if (taskType.value === "leave") {
+                formData.append("startDate", document.getElementById("startDate").value);
+                formData.append("endDate", document.getElementById("endDate").value);
+            }
+
+            const files = document.getElementById("taskAttachment").files;
+            for (let i = 0; i < files.length; i++) {
+                formData.append("attachments", files[i]);
+            }
+
+            try {
+                const response = await fetch(`https://zewk.tocotoco.workers.dev?action=submitTask&token=${token}`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Failed to submit task");
+                
+                showNotification("Yêu cầu đã được gửi thành công", "success", 3000);
+                this.loadTaskHistory();
+                e.target.reset();
+            } catch (error) {
+                showNotification("Không thể gửi yêu cầu", "error", 3000);
+            }
+        });
+    }
+
+    async loadTaskHistory() {
+        try {
+            const response = await fetch(
+                `https://zewk.tocotoco.workers.dev?action=getTaskHistory&employeeId=${this.user.employeeId}&token=${token}`
+            );
+            
+            if (!response.ok) throw new Error("Failed to fetch task history");
+            
+            const tasks = await response.json();
+            const taskHistory = document.getElementById("taskHistory");
+            
+            taskHistory.innerHTML = tasks.map(task => `
+                <tr>
+                    <td>${new Date(task.submitDate).toLocaleDateString()}</td>
+                    <td>${this.getTaskTypeName(task.type)}</td>
+                    <td>${task.title}</td>
+                    <td><span class="status-${task.status.toLowerCase()}">${this.getStatusName(task.status)}</span></td>
+                </tr>
+            `).join("");
+        } catch (error) {
+            showNotification("Không thể tải lịch sử yêu cầu", "error", 3000);
+        }
+    }
+
+    getTaskTypeName(type) {
+        const types = {
+            'leave': 'Xin nghỉ phép',
+            'equipment': 'Yêu cầu thiết bị',
+            'complaint': 'Khiếu nại',
+            'other': 'Khác'
+        };
+        return types[type] || 'Không xác định';
+    }
+
+    getStatusName(status) {
+        const statuses = {
+            'PENDING': 'Đang chờ',
+            'APPROVED': 'Đã duyệt',
+            'REJECTED': 'Từ chối',
+            'PROCESSING': 'Đang xử lý'
+        };
+        return statuses[status] || 'Không xác định';
+    }
+}
+// Official Work Schedule Manager
+class OfficialWorkScheduleManager {
+    constructor(user) {
+        this.user = user;
+        this.allowedRoles = ["AD", "QL", "NV"];
+    }
+
+    renderOfficialWorkSchedule() {
+        document.getElementById("openOfficialworkschedule").addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!this.allowedRoles.includes(this.user.position)) {
+                return showNotification("Bạn không có quyền truy cập", "error", 3000);
+            }
+
+            const originalContent = mainContent.innerHTML;
+            if (isMobile()) {
+                sidebar.classList.add("hidden");
+                mainContent.classList.remove("hidden");
+            }
+
+            mainContent.innerHTML = `
+                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
+                <h1>Lịch Làm Việc Chính Thức</h1>
+                <div class="schedule-filter">
+                    <select id="weekFilter">
+                        <option value="">Chọn tuần</option>
+                    </select>
+                </div>
+                <div id="officialSchedule" class="official-schedule">
+                    <div class="loading">Đang tải lịch làm việc...</div>
+                </div>
+            `;
+
+            this.setupBackButton(originalContent);
+            this.setupWeekFilter();
+        });
+    }
+
+    setupBackButton(originalContent) {
+        const backButton = document.getElementById("backButton");
+        if (backButton) {
+            backButton.addEventListener("click", () => {
+                if (isMobile()) {
+                    mainContent.classList.add("hidden");
+                    sidebar.classList.remove("hidden");
+                } else {
+                    mainContent.innerHTML = originalContent;
+                }
+            });
+        }
+    }
+
+    setupWeekFilter() {
+        const weekFilter = document.getElementById("weekFilter");
+        const currentDate = new Date();
+        
+        for (let i = 0; i < 4; i++) {
+            const startDate = new Date(currentDate);
+            startDate.setDate(currentDate.getDate() + (i * 7));
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+
+            const option = document.createElement("option");
+            option.value = startDate.toISOString().split('T')[0];
+            option.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+            weekFilter.appendChild(option);
+        }
+
+        weekFilter.addEventListener("change", () => this.loadOfficialSchedule());
+    }
+
+    async loadOfficialSchedule() {
+        const weekStart = document.getElementById("weekFilter").value;
+        if (!weekStart) return;
+
+        try {
+            const response = await fetch(
+                `https://zewk.tocotoco.workers.dev?action=getOfficialSchedule&employeeId=${this.user.employeeId}&weekStart=${weekStart}&token=${token}`
+            );
+            
+            if (!response.ok) throw new Error("Failed to fetch schedule");
+            
+            const scheduleData = await response.json();
+            this.renderOfficialSchedule(scheduleData);
+        } catch (error) {
+            showNotification("Không thể tải lịch làm việc", "error", 3000);
+        }
+    }
+
+    renderOfficialSchedule(scheduleData) {
+        const scheduleContainer = document.getElementById("officialSchedule");
+        scheduleContainer.innerHTML = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Ca làm việc</th>
+                        <th>Giờ vào</th>
+                        <th>Giờ ra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${scheduleData.shifts.map(shift => `
+                        <tr>
+                            <td>${shift.date}</td>
+                            <td>${this.getShiftName(shift.type)}</td>
+                            <td>${shift.startTime}</td>
+                            <td>${shift.endTime}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        `;
+    }
+
+    getShiftName(type) {
+        const shiftTypes = {
+            'morning': 'Ca Sáng',
+            'afternoon': 'Ca Chiều',
+            'full': 'Cả Ngày',
+            'off': 'Nghỉ'
+        };
+        return shiftTypes[type] || 'Không xác định';
+    }
+}
+// Schedule Work Manager
+class ScheduleWorkManager {
+    constructor(user) {
+        this.user = user;
+        this.allowedRoles = ["AD", "QL"];
+    }
+
+    renderScheduleWork() {
+        document.getElementById("openScheduleWork").addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!this.allowedRoles.includes(this.user.position)) {
+                return showNotification("Bạn không có quyền truy cập", "error", 3000);
+            }
+
+            const originalContent = mainContent.innerHTML;
+            if (isMobile()) {
+                sidebar.classList.add("hidden");
+                mainContent.classList.remove("hidden");
+            }
+
+            mainContent.innerHTML = `
+                ${isMobile() ? '<button id="backButton" class="btn">Quay lại</button>' : ""}
+                <h1>Xếp Lịch Làm Việc</h1>
+                <div class="schedule-filter">
+                    <select id="storeFilter">
+                        <option value="">Tất cả cửa hàng</option>
+                    </select>
+                    <select id="weekFilter">
+                        <option value="">Chọn tuần</option>
+                    </select>
+                </div>
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            ${this.days.map(day => `<th>${day}</th>`).join("")}
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody">
+                        <tr><td colspan="8">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            `;
+
+            this.setupBackButton(originalContent);
+            await this.loadStores();
+            this.setupWeekFilter();
+        });
+    }
+
+    setupBackButton(originalContent) {
+        const backButton = document.getElementById("backButton");
+        if (backButton) {
+            backButton.addEventListener("click", () => {
+                if (isMobile()) {
+                    mainContent.classList.add("hidden");
+                    sidebar.classList.remove("hidden");
+                } else {
+                    mainContent.innerHTML = originalContent;
+                }
+            });
+        }
+    }
+
+    async loadStores() {
+        try {
+            const response = await fetch(`https://zewk.tocotoco.workers.dev?action=getStores&token=${token}`);
+            if (!response.ok) throw new Error("Failed to fetch stores");
+            
+            const stores = await response.json();
+            const storeFilter = document.getElementById("storeFilter");
+            stores.forEach(store => {
+                const option = document.createElement("option");
+                option.value = store.id;
+                option.textContent = store.name;
+                storeFilter.appendChild(option);
+            });
+
+            storeFilter.addEventListener("change", () => this.loadScheduleData());
+        } catch (error) {
+            showNotification("Không thể tải danh sách cửa hàng", "error", 3000);
+        }
+    }
+
+    setupWeekFilter() {
+        const weekFilter = document.getElementById("weekFilter");
+        const currentDate = new Date();
+        
+        for (let i = 0; i < 4; i++) {
+            const startDate = new Date(currentDate);
+            startDate.setDate(currentDate.getDate() + (i * 7));
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+
+            const option = document.createElement("option");
+            option.value = startDate.toISOString().split('T')[0];
+            option.textContent = `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+            weekFilter.appendChild(option);
+        }
+
+        weekFilter.addEventListener("change", () => this.loadScheduleData());
+    }
+
+    async loadScheduleData() {
+        const storeId = document.getElementById("storeFilter").value;
+        const weekStart = document.getElementById("weekFilter").value;
+        
+        if (!storeId || !weekStart) return;
+
+        try {
+            const response = await fetch(
+                `https://zewk.tocotoco.workers.dev?action=getSchedule&storeId=${storeId}&weekStart=${weekStart}&token=${token}`
+            );
+            
+            if (!response.ok) throw new Error("Failed to fetch schedule");
+            
+            const scheduleData = await response.json();
+            this.renderScheduleTable(scheduleData);
+        } catch (error) {
+            showNotification("Không thể tải dữ liệu lịch làm", "error", 3000);
+        }
+    }
+
+    renderScheduleTable(scheduleData) {
+        const tbody = document.getElementById("scheduleTableBody");
+        tbody.innerHTML = scheduleData.map(employee => `
+            <tr>
+                <td>${employee.fullName}</td>
+                ${this.days.map(day => {
+                    const shift = employee.shifts.find(s => s.day === day);
+                    return `<td>
+                        <select class="shift-select" data-employee="${employee.employeeId}" data-day="${day}">
+                            <option value="">Nghỉ</option>
+                            <option value="morning" ${shift?.type === 'morning' ? 'selected' : ''}>Ca Sáng</option>
+                            <option value="afternoon" ${shift?.type === 'afternoon' ? 'selected' : ''}>Ca Chiều</option>
+                            <option value="full" ${shift?.type === 'full' ? 'selected' : ''}>Cả Ngày</option>
+                        </select>
+                    </td>`;
+                }).join("")}
+            </tr>
+        `).join("");
+
+        // Add event listeners for shift changes
+        document.querySelectorAll(".shift-select").forEach(select => {
+            select.addEventListener("change", async () => {
+                const employeeId = select.dataset.employee;
+                const day = select.dataset.day;
+                const shiftType = select.value;
+
+                try {
+                    const response = await fetch(`https://zewk.tocotoco.workers.dev?action=updateShift&token=${token}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ employeeId, day, shiftType })
+                    });
+
+                    if (!response.ok) throw new Error("Failed to update shift");
+                    showNotification("Cập nhật ca làm thành công", "success", 3000);
+                } catch (error) {
+                    showNotification("Không thể cập nhật ca làm", "error", 3000);
+                    this.loadScheduleData(); // Reload data to revert changes
+                }
+            });
+        });
+    }
+}
 // Initialization
 (async () => {
     setupSecurity();
@@ -893,6 +1557,18 @@ const updateMenuByRole = (userRole) => {
 
         const scheduleManager = new ScheduleManager(user);
         scheduleManager.renderScheduleRegistration();
+
+        const scheduleWorkManager = new ScheduleWorkManager(user);
+        scheduleWorkManager.renderScheduleWork();
+
+        const officialWorkScheduleManager = new OfficialWorkScheduleManager(user);
+        officialWorkScheduleManager.renderOfficialWorkSchedule();
+
+        const submitTaskManager = new SubmitTaskManager(user);
+        submitTaskManager.renderSubmitTask();
+
+        const rewardManager = new RewardManager(user);
+        rewardManager.renderReward();
 
         const chatManager = new ChatManager(user);
 
