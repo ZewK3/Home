@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expiration Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+    <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-center mb-6">Quản lý hạn sử dụng</h1>
+        <table id="materialTable" class="w-full border-collapse mb-6">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border p-2">Tên nguyên vật liệu</th>
+                    <th class="border p-2">Giờ nấu</th>
+                    <th class="border p-2">Thời gian còn lại</th>
+                    <th class="border p-2">Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+        <button id="addButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Thêm</button>
+    </div>
+
+    <!-- Popup -->
+    <div id="popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 class="text-xl font-bold mb-4">Thêm nguyên vật liệu</h2>
+            <div class="mb-4">
+                <label class="block mb-1">Tên nguyên vật liệu</label>
+                <select id="materialSelect" class="w-full border p-2 rounded"></select>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-1">Giờ nấu</label>
+                <input id="cookTime" type="time" class="w-full border p-2 rounded" required>
+            </div>
+            <div class="flex justify-end">
+                <button id="saveButton" class="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600">Lưu</button>
+                <button id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let materialsData = [];
+        let materialHSD = {};
+        let updateInterval = null;
+
+        // Fetch data from Google Sheet using PapaParse
+        async function fetchMaterials() {
+            try {
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv');
+                if (!response.ok) throw new Error('Failed to fetch CSV');
+                const csvText = await response.text();
+
+                Papa.parse(csvText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        materialsData = [];
+                        materialHSD = {};
+                        result.data.forEach(row => {
+                            const material = row['Tên BTP']?.trim();
+                            const hsd = parseInt(row['HSD']);
+                            if (material && !isNaN(hsd)) {
+                                materialsData.push(material);
+                                materialHSD[material] = hsd;
+                            }
+                        });
+                        if (materialsData.length === 0) {
+                            console.error('No valid materials found in the sheet');
+                            alert('Không thể tải danh sách nguyên vật liệu. Vui lòng kiểm tra sheet.');
+                        } else {
+                            console.log('Materials loaded:', materialsData);
+                            localStorage.setItem('materialsData', JSON.stringify({ materialsData, materialHSD }));
+                            populateMaterialSelect();
+                            loadTableData();
+                        }
+                    },
+                    error: (error) => {
+                        console.error('PapaParse error:', error);
+                        const cachedData = localStorage.getItem('materialsData');
+                        if (cachedData) {
+                            const { materialsData: cachedMaterials, materialHSD: cachedHSD } = JSON.parse(cachedData);
+                            materialsData = cachedMaterials;
+                            materialHSD = cachedHSD;
+                            populateMaterialSelect();
+                            loadTableData();
+                            alert('Sử dụng dữ liệu đã lưu do lỗi kết nối.');
+                        } else {
+                            alert('Lỗi khi đọc dữ liệu từ sheet.');
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Fetch error:', error);
+                const cachedData = localStorage.getItem('materialsData');
+                if (cachedData) {
+                    const { materialsData: cachedMaterials, materialHSD: cachedHSD } = JSON.parse(cachedData);
+                    materialsData = cachedMaterials;
+                    materialHSD = cachedHSD;
+                    populateMaterialSelect();
+                    loadTableData();
+                    alert('Sử dụng dữ liệu đã lưu do lỗi kết nối.');
+                } else {
+                    alert('Không thể kết nối tới sheet. Vui lòng kiểm tra URL hoặc kết nối mạng.');
+                }
+            }
+        }
+
+        // Populate material select dropdown
+        function populateMaterialSelect() {
+            const select = document.getElementById('materialSelect');
+            select.innerHTML = '<option value="">Chọn nguyên vật liệu</option>';
+            materialsData.forEach(material => {
+                const option = document.createElement('option');
+                option.value = material;
+                option.textContent = material;
+                select.appendChild(option);
+            });
+        }
+
+        // Save table data to localStorage
+        function saveTableData() {
+            const rows = Array.from(document.querySelectorAll('#tableBody tr')).map(row => ({
+                material: row.cells[0].textContent,
+                cookTime: row.cells[1].textContent
+            }));
+            localStorage.setItem('tableData', JSON.stringify(rows));
+        }
+
+        // Load table data from localStorage
+        function loadTableData() {
+            const savedData = localStorage.getItem('tableData');
+            if (savedData) {
+                JSON.parse(savedData).forEach(({ material, cookTime }) => {
+                    addMaterialToTable(material, cookTime);
+                });
+            }
+        }
+
+        // Show popup
+        document.getElementById('addButton').addEventListener('click', () => {
+            if (materialsData.length === 0) {
+                alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
+                return;
+            }
+            document.getElementById('popup').classList.remove('hidden');
+            document.getElementById('saveButton').onclick = saveNewMaterial;
+        });
+
+        // Cancel popup
+        document.getElementById('cancelButton').addEventListener('click', () => {
+            document.getElementById('popup').classList.add('hidden');
+            document.getElementById('materialSelect').value = '';
+            document.getElementById('cookTime').value = '';
+        });
+
+        // Save new material
+        function saveNewMaterial() {
+            const material = document.getElementById('materialSelect').value;
+            const cookTime = document.getElementById('cookTime').value;
+            if (material && cookTime) {
+                addMaterialToTable(material, cookTime);
+                saveTableData();
+                document.getElementById('popup').classList.add('hidden');
+                document.getElementById('materialSelect').value = '';
+                document.getElementById('cookTime').value = '';
+                startUpdateInterval();
+            } else {
+                alert('Vui lòng điền đầy đủ thông tin');
+            }
+        }
+
+        // Add material to table
+        function addMaterialToTable(material, cookTime) {
+            const tableBody = document.getElementById('tableBody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="border p-2">${material}</td>
+                <td class="border p-2">${cookTime}</td>
+                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}"></td>
+                <td class="border p-2">
+                    <button class="edit bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Sửa</button>
+                    <button class="delete bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Xóa</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+            updateRemainingTimes();
+
+            // Edit and Delete handlers
+            row.querySelector('.edit').addEventListener('click', () => editRow(row, material, cookTime));
+            row.querySelector('.delete').addEventListener('click', () => {
+                row.remove();
+                saveTableData();
+                manageUpdateInterval();
+            });
+        }
+
+        // Edit row
+        function editRow(row, material, cookTime) {
+            document.getElementById('materialSelect').value = material;
+            document.getElementById('cookTime').value = cookTime;
+            document.getElementById('popup').classList.remove('hidden');
+            document.getElementById('saveButton').onclick = () => {
+                const newMaterial = document.getElementById('materialSelect').value;
+                const newCookTime = document.getElementById('cookTime').value;
+                if (newMaterial && newCookTime) {
+                    row.cells[0].textContent = newMaterial;
+                    row.cells[1].textContent = newCookTime;
+                    row.cells[2].dataset.material = newMaterial;
+                    row.cells[2].dataset.cooktime = newCookTime;
+                    document.getElementById('popup').classList.add('hidden');
+                    document.getElementById('materialSelect').value = '';
+                    document.getElementById('cookTime').value = '';
+                    updateRemainingTimes();
+                    saveTableData();
+                } else {
+                    alert('Vui lòng điền đầy đủ thông tin');
+                }
+            };
+        }
+
+        // Calculate and update remaining times
+        function updateRemainingTimes() {
+            const now = new Date();
+            const rows = document.querySelectorAll('.remaining-time');
+            rows.forEach(cell => {
+                const material = cell.dataset.material;
+                const cookTime = cell.dataset.cooktime;
+                const [hours, minutes] = cookTime.split(':').map(Number);
+                const cookDate = new Date();
+                cookDate.setHours(hours, minutes, 0, 0);
+                if (cookDate > now) {
+                    cookDate.setDate(cookDate.getDate() - 1); // Assume previous day if time is in future
+                }
+                const hsdHours = materialHSD[material] || 0;
+                const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
+                const timeDiff = expiryTime - now;
+                if (timeDiff <= 0) {
+                    cell.textContent = 'Hết hạn';
+                    cell.classList.add('text-red-500');
+                } else {
+                    const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
+                    const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                    cell.textContent = `${hoursLeft}h ${minutesLeft}m`;
+                    cell.classList.remove('text-red-500');
+                }
+            });
+        }
+
+        // Manage update interval
+        function manageUpdateInterval() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            if (document.querySelectorAll('#tableBody tr').length > 0) {
+                updateInterval = setInterval(updateRemainingTimes, 60000);
+            }
+        }
+
+        // Start update interval if needed
+        function startUpdateInterval() {
+            manageUpdateInterval();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMaterials();
+            loadTableData();
+            startUpdateInterval();
+        });
+    </script>
+</body>
+</html>
