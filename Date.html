@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expiration Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="dist/output.css" rel="stylesheet">
     <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
 </head>
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
@@ -38,7 +38,7 @@
             </div>
             <div class="flex justify-end">
                 <button id="saveButton" class="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600">Lưu</button>
-                <button id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Hủy</button>
+                <button id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded hover mg-gray-600">Hủy</button>
             </div>
         </div>
     </div>
@@ -48,22 +48,28 @@
         let materialHSD = {};
         let updateInterval = null;
 
-        // Fetch data from Google Sheet using PapaParse
+        // Fetch data from "HSD_Nấu" sheet using PapaParse
         async function fetchMaterials() {
             try {
-                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv');
+                // Replace YOUR_GID_HERE with the actual gid of the "HSD_Nấu" sheet
+                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xsXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv&gid=607072915');
                 if (!response.ok) throw new Error('Failed to fetch CSV');
                 const csvText = await response.text();
 
                 Papa.parse(csvText, {
-                    header: true,
+                    header: false, // Use column indices (A, B)
                     skipEmptyLines: true,
                     complete: (result) => {
                         materialsData = [];
                         materialHSD = {};
-                        result.data.forEach(row => {
-                            const material = row['Tên BTP']?.trim();
-                            const hsd = parseInt(row['HSD']);
+                        let data = result.data;
+                        // Skip header row if it contains 'Tên BTP' or 'HSD'
+                        if (data[0][0]?.trim() === 'Tên BTP' || data[0][1]?.trim() === 'HSD') {
+                            data = data.slice(1); // Remove header row
+                        }
+                        data.forEach(row => {
+                            const material = row[0]?.trim(); // Column A (index 0) is Tên BTP
+                            const hsd = parseInt(row[1]); // Column B (index 1) is HSD
                             if (material && !isNaN(hsd)) {
                                 materialsData.push(material);
                                 materialHSD[material] = hsd;
