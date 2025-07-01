@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi-VN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -169,13 +169,12 @@
         <div class="popup-content">
             <h2>Thêm nguyên vật liệu</h2>
             <div>
-                < Grown
                 <label>Tên nguyên vật liệu</label>
                 <select id="materialSelect"></select>
             </div>
             <div>
                 <label>Giờ nấu</label>
-                <input id="cookTime" type="time" required>
+                <input id="cookTime" type="time" step="60" required>
             </div>
             <div class="button-group">
                 <button id="saveButton" class="save-button">Lưu</button>
@@ -220,7 +219,7 @@
             return result;
         }
 
-        // Play TTS notification with consistent voice
+        // Play TTS notification with default Web Speech API
         function playNotification(material) {
             try {
                 const utterance = new SpeechSynthesisUtterance(`Check lại ${material}`);
@@ -251,7 +250,7 @@
             };
         }
 
-        // Fetch data from "HSD_Nấu" sheet (first sheet)
+        // Fetch data from "HSD_Nấu" sheet
         async function fetchMaterials() {
             try {
                 const response = await fetch(CSV_URL);
@@ -262,7 +261,6 @@
                 materialsData = [];
                 materialHSD = {};
 
-                // Process data
                 data.forEach(row => {
                     const material = row['Tên BTP']?.trim();
                     const hsd = parseInt(row['HSD']);
@@ -277,23 +275,11 @@
                     alert('Không thể tải danh sách nguyên vật liệu. Vui lòng kiểm tra sheet.');
                 } else {
                     console.log('Materials loaded:', materialsData);
-                    localStorage.setItem('materialsData', JSON.stringify({ materialsData, materialHSD }));
                     populateMaterialSelect();
-                    loadTableData();
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                const cachedData = localStorage.getItem('materialsData');
-                if (cachedData) {
-                    const { materialsData: cachedMaterials, materialHSD: cachedHSD } = JSON.parse(cachedData);
-                    materialsData = cachedMaterials;
-                    materialHSD = cachedHSD;
-                    populateMaterialSelect();
-                    loadTableData();
-                    alert('Sử dụng dữ liệu đã lưu do lỗi kết nối.');
-                } else {
-                    alert('Không thể kết nối tới sheet. Vui lòng kiểm tra URL hoặc kết nối mạng.');
-                }
+                alert('Không thể kết nối tới sheet. Vui lòng kiểm tra URL hoặc kết nối mạng.');
             }
         }
 
@@ -309,25 +295,10 @@
             });
         }
 
-        // Save table data to localStorage
-        function saveTableData() {
-            const rows = Array.from(document.querySelectorAll('#tableBody tr')).map(row => ({
-                material: row.cells[0].textContent,
-                cookTime: row.cells[1].textContent
-            }));
-            localStorage.setItem('tableData', JSON.stringify(rows));
-            expiredMaterials.clear();
-            unconfirmedExpirations.clear();
-        }
-
-        // Load table data from localStorage
-        function loadTableData() {
-            const savedData = localStorage.getItem('tableData');
-            if (savedData) {
-                JSON.parse(savedData).forEach(({ material, cookTime }) => {
-                    addMaterialToTable(material, cookTime);
-                });
-            }
+        // Normalize time to 24-hour format (HH:mm)
+        function normalizeTime(timeStr) {
+            const date = new Date(`1970-01-01T${timeStr}`);
+            return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         }
 
         // Show add/edit popup
@@ -338,6 +309,14 @@
             }
             document.getElementById('popup').classList.add('show');
             document.getElementById('saveButton').onclick = saveNewMaterial;
+            // Initialize TTS context
+            try {
+                const testUtterance = new SpeechSynthesisUtterance('');
+                window.speechSynthesis.speak(testUtterance);
+                window.speechSynthesis.cancel();
+            } catch (error) {
+                console.warn('TTS initialization failed:', error);
+            }
         });
 
         // Cancel add/edit popup
@@ -352,8 +331,8 @@
             const material = document.getElementById('materialSelect').value;
             const cookTime = document.getElementById('cookTime').value;
             if (material && cookTime) {
-                addMaterialToTable(material, cookTime);
-                saveTableData();
+                const normalizedCookTime = normalizeTime(cookTime);
+                addMaterialToTable(material, normalizedCookTime);
                 document.getElementById('popup').classList.remove('show');
                 document.getElementById('materialSelect').value = '';
                 document.getElementById('cookTime').value = '';
@@ -379,11 +358,11 @@
             tableBody.appendChild(row);
             updateRemainingTimes();
 
-            // Edit and Delete handlers
             row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime));
             row.querySelector('.delete-button').addEventListener('click', () => {
                 row.remove();
-                saveTableData();
+                expiredMaterials.delete(material);
+                unconfirmedExpirations.delete(material);
                 manageUpdateInterval();
                 manageNotificationInterval();
             });
@@ -398,15 +377,17 @@
                 const newMaterial = document.getElementById('materialSelect').value;
                 const newCookTime = document.getElementById('cookTime').value;
                 if (newMaterial && newCookTime) {
+                    const normalizedNewCookTime = normalizeTime(newCookTime);
                     row.cells[0].textContent = newMaterial;
-                    row.cells[1].textContent = newCookTime;
+                    row.cells[1].textContent = normalizedNewCookTime;
                     row.cells[2].dataset.material = newMaterial;
-                    row.cells[2].dataset.cooktime = newCookTime;
+                    row.cells[2].dataset.cooktime = normalizedNewCookTime;
                     document.getElementById('popup').classList.remove('show');
                     document.getElementById('materialSelect').value = '';
                     document.getElementById('cookTime').value = '';
                     updateRemainingTimes();
-                    saveTableData();
+                    expiredMaterials.delete(material);
+                    unconfirmedExpirations.delete(material);
                     manageNotificationInterval();
                 } else {
                     alert('Vui lòng điền đầy đủ thông tin');
@@ -437,6 +418,7 @@
                         showExpirationPopup(material);
                         unconfirmedExpirations.add(material);
                         expiredMaterials.add(material);
+                        playNotification(material);
                         manageNotificationInterval();
                     }
                 } else {
@@ -483,31 +465,12 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            // Load voices early
             window.speechSynthesis.onvoiceschanged = () => {
                 const voices = window.speechSynthesis.getVoices();
                 console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
             };
             fetchMaterials();
-            loadTableData();
             startUpdateInterval();
-            // Initialize speech synthesis after user interaction
-            document.getElementById('addButton').addEventListener('click', () => {
-                if (materialsData.length === 0) {
-                    alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
-                    return;
-                }
-                document.getElementById('popup').classList.add('show');
-                document.getElementById('saveButton').onclick = saveNewMaterial;
-                // Test TTS to initialize audio context
-                try {
-                    const testUtterance = new SpeechSynthesisUtterance('');
-                    window.speechSynthesis.speak(testUtterance);
-                    window.speechSynthesis.cancel();
-                } catch (error) {
-                    console.warn('TTS initialization failed:', error);
-                }
-            });
         });
     </script>
 </body>
