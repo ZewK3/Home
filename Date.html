@@ -4,102 +4,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expiration Management</title>
-    <link href="dist/output.css" rel="stylesheet">
-    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 100%;
+            max-width: 1024px;
+            background-color: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        th, td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #e5e7eb;
+        }
+        .text-red-500 {
+            color: #ef4444;
+        }
+        .add-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-button:hover {
+            background-color: #2563eb;
+        }
+        .popup, .expiration-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .popup.show, .expiration-popup.show {
+            display: flex;
+        }
+        .popup-content, .expiration-popup-content {
+            background-color: white;
+            padding: 24px;
+            border-radius: 8px;
+            width: 384px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .popup-content h2, .expiration-popup-content h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 16px;
+        }
+        .popup-content label {
+            display: block;
+            margin-bottom: 4px;
+        }
+        .popup-content select,
+        .popup-content input[type="time"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .popup-content .button-group, .expiration-popup-content .button-group {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
+        .save-button {
+            background-color: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        .save-button:hover {
+            background-color: #059669;
+        }
+        .cancel-button, .confirm-button {
+            background-color: #6b7280;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .cancel-button:hover, .confirm-button:hover {
+            background-color: #4b5563;
+        }
+        .edit-button {
+            background-color: #eab308;
+            color: white;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+        .edit-button:hover {
+            background-color: #ca8a04;
+        }
+        .delete-button {
+            background-color: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-button:hover {
+            background-color: #dc2626;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
-    <div class="w-full max-w-4xl bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-2xl font-bold text-center mb-6">Quản lý hạn sử dụng</h1>
-        <table id="materialTable" class="w-full border-collapse mb-6">
+<body>
+    <div class="container">
+        <h1>Quản lý hạn sử dụng</h1>
+        <table id="materialTable">
             <thead>
-                <tr class="bg-gray-200">
-                    <th class="border p-2">Tên nguyên vật liệu</th>
-                    <th class="border p-2">Giờ nấu</th>
-                    <th class="border p-2">Thời gian còn lại</th>
-                    <th class="border p-2">Hành động</th>
+                <tr>
+                    <th>Tên nguyên vật liệu</th>
+                    <th>Giờ nấu</th>
+                    <th>Thời gian còn lại</th>
+                    <th>Hành động</th>
                 </tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
-        <button id="addButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Thêm</button>
+        <button id="addButton" class="add-button">Thêm</button>
     </div>
 
-    <!-- Popup -->
-    <div id="popup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 class="text-xl font-bold mb-4">Thêm nguyên vật liệu</h2>
-            <div class="mb-4">
-                <label class="block mb-1">Tên nguyên vật liệu</label>
-                <select id="materialSelect" class="w-full border p-2 rounded"></select>
+    <!-- Add/Edit Popup -->
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <h2>Thêm nguyên vật liệu</h2>
+            <div>
+                < Grown
+                <label>Tên nguyên vật liệu</label>
+                <select id="materialSelect"></select>
             </div>
-            <div class="mb-4">
-                <label class="block mb-1">Giờ nấu</label>
-                <input id="cookTime" type="time" class="w-full border p-2 rounded" required>
+            <div>
+                <label>Giờ nấu</label>
+                <input id="cookTime" type="time" required>
             </div>
-            <div class="flex justify-end">
-                <button id="saveButton" class="bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600">Lưu</button>
-                <button id="cancelButton" class="bg-gray-500 text-white px-4 py-2 rounded hover mg-gray-600">Hủy</button>
+            <div class="button-group">
+                <button id="saveButton" class="save-button">Lưu</button>
+                <button id="cancelButton" class="cancel-button">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiration Popup -->
+    <div id="expirationPopup" class="expiration-popup">
+        <div class="expiration-popup-content">
+            <h2>Thông báo hết hạn</h2>
+            <p id="expirationMessage"></p>
+            <div class="button-group">
+                <button id="confirmExpirationButton" class="confirm-button">Xác nhận</button>
             </div>
         </div>
     </div>
 
     <script>
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv';
         let materialsData = [];
         let materialHSD = {};
         let updateInterval = null;
+        let notificationInterval = null;
+        let expiredMaterials = new Set();
+        let unconfirmedExpirations = new Set();
 
-        // Fetch data from "HSD_Nấu" sheet using PapaParse
+        // CSV to JSON function from Order.js
+        function csvToJson(csv) {
+            const lines = csv.split('\n').filter(line => line.trim());
+            if (lines.length === 0) return [];
+            const headers = lines[0].split(',').map(h => h.trim());
+            const result = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
+                if (values.length < headers.length) continue;
+                const obj = {};
+                headers.forEach((header, index) => (obj[header] = values[index] || ''));
+                if (obj['Tên BTP']) result.push(obj);
+            }
+            return result;
+        }
+
+        // Play TTS notification with consistent voice
+        function playNotification(material) {
+            try {
+                const utterance = new SpeechSynthesisUtterance(`Check lại ${material}`);
+                utterance.lang = 'vi-VN';
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(voice => voice.name.includes('Google') && voice.lang === 'vi-VN') || voices.find(voice => voice.lang === 'vi-VN');
+                if (preferredVoice) utterance.voice = preferredVoice;
+                utterance.volume = 1.0;
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.warn('TTS failed:', error);
+                alert('Không thể phát thông báo âm thanh. Vui lòng kiểm tra hỗ trợ trình duyệt.');
+            }
+        }
+
+        // Show expiration popup
+        function showExpirationPopup(material) {
+            const popup = document.getElementById('expirationPopup');
+            const message = document.getElementById('expirationMessage');
+            message.textContent = `Hết hạn: ${material}`;
+            popup.classList.add('show');
+            document.getElementById('confirmExpirationButton').onclick = () => {
+                popup.classList.remove('show');
+                unconfirmedExpirations.delete(material);
+                manageNotificationInterval();
+            };
+        }
+
+        // Fetch data from "HSD_Nấu" sheet (first sheet)
         async function fetchMaterials() {
             try {
-                // Replace YOUR_GID_HERE with the actual gid of the "HSD_Nấu" sheet
-                const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xsXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv&gid=607072915');
+                const response = await fetch(CSV_URL);
                 if (!response.ok) throw new Error('Failed to fetch CSV');
                 const csvText = await response.text();
+                const data = csvToJson(csvText);
 
-                Papa.parse(csvText, {
-                    header: false, // Use column indices (A, B)
-                    skipEmptyLines: true,
-                    complete: (result) => {
-                        materialsData = [];
-                        materialHSD = {};
-                        let data = result.data;
-                        // Skip header row if it contains 'Tên BTP' or 'HSD'
-                        if (data[0][0]?.trim() === 'Tên BTP' || data[0][1]?.trim() === 'HSD') {
-                            data = data.slice(1); // Remove header row
-                        }
-                        data.forEach(row => {
-                            const material = row[0]?.trim(); // Column A (index 0) is Tên BTP
-                            const hsd = parseInt(row[1]); // Column B (index 1) is HSD
-                            if (material && !isNaN(hsd)) {
-                                materialsData.push(material);
-                                materialHSD[material] = hsd;
-                            }
-                        });
-                        if (materialsData.length === 0) {
-                            console.error('No valid materials found in the sheet');
-                            alert('Không thể tải danh sách nguyên vật liệu. Vui lòng kiểm tra sheet.');
-                        } else {
-                            console.log('Materials loaded:', materialsData);
-                            localStorage.setItem('materialsData', JSON.stringify({ materialsData, materialHSD }));
-                            populateMaterialSelect();
-                            loadTableData();
-                        }
-                    },
-                    error: (error) => {
-                        console.error('PapaParse error:', error);
-                        const cachedData = localStorage.getItem('materialsData');
-                        if (cachedData) {
-                            const { materialsData: cachedMaterials, materialHSD: cachedHSD } = JSON.parse(cachedData);
-                            materialsData = cachedMaterials;
-                            materialHSD = cachedHSD;
-                            populateMaterialSelect();
-                            loadTableData();
-                            alert('Sử dụng dữ liệu đã lưu do lỗi kết nối.');
-                        } else {
-                            alert('Lỗi khi đọc dữ liệu từ sheet.');
-                        }
+                materialsData = [];
+                materialHSD = {};
+
+                // Process data
+                data.forEach(row => {
+                    const material = row['Tên BTP']?.trim();
+                    const hsd = parseInt(row['HSD']);
+                    if (material && !isNaN(hsd)) {
+                        materialsData.push(material);
+                        materialHSD[material] = hsd;
                     }
                 });
+
+                if (materialsData.length === 0) {
+                    console.error('No valid materials found in the sheet');
+                    alert('Không thể tải danh sách nguyên vật liệu. Vui lòng kiểm tra sheet.');
+                } else {
+                    console.log('Materials loaded:', materialsData);
+                    localStorage.setItem('materialsData', JSON.stringify({ materialsData, materialHSD }));
+                    populateMaterialSelect();
+                    loadTableData();
+                }
             } catch (error) {
                 console.error('Fetch error:', error);
                 const cachedData = localStorage.getItem('materialsData');
@@ -135,6 +316,8 @@
                 cookTime: row.cells[1].textContent
             }));
             localStorage.setItem('tableData', JSON.stringify(rows));
+            expiredMaterials.clear();
+            unconfirmedExpirations.clear();
         }
 
         // Load table data from localStorage
@@ -147,19 +330,19 @@
             }
         }
 
-        // Show popup
+        // Show add/edit popup
         document.getElementById('addButton').addEventListener('click', () => {
             if (materialsData.length === 0) {
                 alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
                 return;
             }
-            document.getElementById('popup').classList.remove('hidden');
+            document.getElementById('popup').classList.add('show');
             document.getElementById('saveButton').onclick = saveNewMaterial;
         });
 
-        // Cancel popup
+        // Cancel add/edit popup
         document.getElementById('cancelButton').addEventListener('click', () => {
-            document.getElementById('popup').classList.add('hidden');
+            document.getElementById('popup').classList.remove('show');
             document.getElementById('materialSelect').value = '';
             document.getElementById('cookTime').value = '';
         });
@@ -171,7 +354,7 @@
             if (material && cookTime) {
                 addMaterialToTable(material, cookTime);
                 saveTableData();
-                document.getElementById('popup').classList.add('hidden');
+                document.getElementById('popup').classList.remove('show');
                 document.getElementById('materialSelect').value = '';
                 document.getElementById('cookTime').value = '';
                 startUpdateInterval();
@@ -189,19 +372,20 @@
                 <td class="border p-2">${cookTime}</td>
                 <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}"></td>
                 <td class="border p-2">
-                    <button class="edit bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600">Sửa</button>
-                    <button class="delete bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Xóa</button>
+                    <button class="edit-button">Sửa</button>
+                    <button class="delete-button">Xóa</button>
                 </td>
             `;
             tableBody.appendChild(row);
             updateRemainingTimes();
 
             // Edit and Delete handlers
-            row.querySelector('.edit').addEventListener('click', () => editRow(row, material, cookTime));
-            row.querySelector('.delete').addEventListener('click', () => {
+            row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime));
+            row.querySelector('.delete-button').addEventListener('click', () => {
                 row.remove();
                 saveTableData();
                 manageUpdateInterval();
+                manageNotificationInterval();
             });
         }
 
@@ -209,7 +393,7 @@
         function editRow(row, material, cookTime) {
             document.getElementById('materialSelect').value = material;
             document.getElementById('cookTime').value = cookTime;
-            document.getElementById('popup').classList.remove('hidden');
+            document.getElementById('popup').classList.add('show');
             document.getElementById('saveButton').onclick = () => {
                 const newMaterial = document.getElementById('materialSelect').value;
                 const newCookTime = document.getElementById('cookTime').value;
@@ -218,11 +402,12 @@
                     row.cells[1].textContent = newCookTime;
                     row.cells[2].dataset.material = newMaterial;
                     row.cells[2].dataset.cooktime = newCookTime;
-                    document.getElementById('popup').classList.add('hidden');
+                    document.getElementById('popup').classList.remove('show');
                     document.getElementById('materialSelect').value = '';
                     document.getElementById('cookTime').value = '';
                     updateRemainingTimes();
                     saveTableData();
+                    manageNotificationInterval();
                 } else {
                     alert('Vui lòng điền đầy đủ thông tin');
                 }
@@ -240,7 +425,7 @@
                 const cookDate = new Date();
                 cookDate.setHours(hours, minutes, 0, 0);
                 if (cookDate > now) {
-                    cookDate.setDate(cookDate.getDate() - 1); // Assume previous day if time is in future
+                    cookDate.setDate(cookDate.getDate() - 1);
                 }
                 const hsdHours = materialHSD[material] || 0;
                 const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
@@ -248,13 +433,36 @@
                 if (timeDiff <= 0) {
                     cell.textContent = 'Hết hạn';
                     cell.classList.add('text-red-500');
+                    if (!expiredMaterials.has(material)) {
+                        showExpirationPopup(material);
+                        unconfirmedExpirations.add(material);
+                        expiredMaterials.add(material);
+                        manageNotificationInterval();
+                    }
                 } else {
                     const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
                     const minutesLeft = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
                     cell.textContent = `${hoursLeft}h ${minutesLeft}m`;
                     cell.classList.remove('text-red-500');
+                    expiredMaterials.delete(material);
+                    unconfirmedExpirations.delete(material);
                 }
             });
+        }
+
+        // Manage notification interval for repeating TTS
+        function manageNotificationInterval() {
+            if (notificationInterval) {
+                clearInterval(notificationInterval);
+                notificationInterval = null;
+            }
+            if (unconfirmedExpirations.size > 0) {
+                notificationInterval = setInterval(() => {
+                    unconfirmedExpirations.forEach(material => {
+                        playNotification(material);
+                    });
+                }, 10000);
+            }
         }
 
         // Manage update interval
@@ -268,16 +476,38 @@
             }
         }
 
-        // Start update interval if needed
+        // Start update interval
         function startUpdateInterval() {
             manageUpdateInterval();
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Load voices early
+            window.speechSynthesis.onvoiceschanged = () => {
+                const voices = window.speechSynthesis.getVoices();
+                console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+            };
             fetchMaterials();
             loadTableData();
             startUpdateInterval();
+            // Initialize speech synthesis after user interaction
+            document.getElementById('addButton').addEventListener('click', () => {
+                if (materialsData.length === 0) {
+                    alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
+                    return;
+                }
+                document.getElementById('popup').classList.add('show');
+                document.getElementById('saveButton').onclick = saveNewMaterial;
+                // Test TTS to initialize audio context
+                try {
+                    const testUtterance = new SpeechSynthesisUtterance('');
+                    window.speechSynthesis.speak(testUtterance);
+                    window.speechSynthesis.cancel();
+                } catch (error) {
+                    console.warn('TTS initialization failed:', error);
+                }
+            });
         });
     </script>
 </body>
