@@ -183,6 +183,16 @@
         .delete-button:hover {
             background-color: #dc2626;
         }
+        tr.draggable {
+            cursor: move;
+        }
+        tr.dragging {
+            opacity: 0.5;
+            background-color: #f0f0f0;
+        }
+        tr.drag-over {
+            border-top: 2px solid #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -416,6 +426,8 @@
 
             // Create new row
             const row = document.createElement('tr');
+            row.draggable = true;
+            row.classList.add('draggable');
             let expiryTimeStr = 'Chưa xác định';
             if (cookTime !== '00:00:00') {
                 const [hours, minutes, seconds] = cookTime.split(':').map(Number);
@@ -450,6 +462,53 @@
                 manageUpdateInterval();
                 manageNotificationInterval();
             });
+
+            // Add drag and drop event listeners
+            row.addEventListener('dragstart', handleDragStart);
+            row.addEventListener('dragover', handleDragOver);
+            row.addEventListener('drop', handleDrop);
+            row.addEventListener('dragend', handleDragEnd);
+        }
+
+        // Drag and drop handlers
+        let draggedRow = null;
+
+        function handleDragStart(e) {
+            draggedRow = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const targetRow = e.target.closest('tr');
+            if (targetRow && targetRow !== draggedRow) {
+                targetRow.classList.add('drag-over');
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const targetRow = e.target.closest('tr');
+            if (targetRow && targetRow !== draggedRow) {
+                const tableBody = document.getElementById('tableBody');
+                const allRows = Array.from(tableBody.querySelectorAll('tr'));
+                const draggedIndex = allRows.indexOf(draggedRow);
+                const targetIndex = allRows.indexOf(targetRow);
+                if (draggedIndex < targetIndex) {
+                    tableBody.insertBefore(draggedRow, targetRow.nextSibling);
+                } else {
+                    tableBody.insertBefore(draggedRow, targetRow);
+                }
+            }
+            targetRow.classList.remove('drag-over');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            const allRows = document.querySelectorAll('#tableBody tr');
+            allRows.forEach(row => row.classList.remove('drag-over'));
         }
 
         // Edit row
