@@ -283,14 +283,14 @@
         }
 
         // Show expiration popup
-        function showExpirationPopup(material) {
+        function showExpirationPopup(material, rowId) {
             const popup = document.getElementById('expirationPopup');
             const message = document.getElementById('expirationMessage');
             message.textContent = `Hết hạn: ${material}`;
             popup.classList.add('show');
             popup.onclick = () => {
                 popup.classList.remove('show');
-                unconfirmedExpirations.delete(material);
+                unconfirmedExpirations.delete(`${material}_${rowId}`);
                 window.speechSynthesis.cancel();
                 manageNotificationInterval();
             };
@@ -379,6 +379,11 @@
             document.getElementById('cookTime').value = '';
         });
 
+        // Generate unique ID for rows
+        function generateRowId() {
+            return 'row_' + Math.random().toString(36).substr(2, 9);
+        }
+
         // Save new material
         function saveNewMaterial() {
             const material = document.getElementById('materialSelect').value;
@@ -396,38 +401,13 @@
         }
 
         // Add material to table
-        function addMaterialToTable(material, cookTime) {
+        function addMaterialToTable(material, cookTime, rowId = generateRowId()) {
             const tableBody = document.getElementById('tableBody');
-            // Check if material already exists in table to avoid duplicates
-            const existingRow = Array.from(tableBody.querySelectorAll('tr')).find(row => row.cells[0].textContent === material);
-            if (existingRow) {
-                // Update existing row
-                existingRow.cells[1].textContent = cookTime;
-                existingRow.cells[3].dataset.cooktime = cookTime;
-                if (cookTime === '00:00:00') {
-                    existingRow.cells[2].textContent = 'Chưa xác định';
-                    existingRow.cells[3].textContent = 'Đợi';
-                    existingRow.cells[3].classList.remove('text-red-500');
-                } else {
-                    const [hours, minutes, seconds] = cookTime.split(':').map(Number);
-                    const cookDate = new Date();
-                    cookDate.setHours(hours, minutes, seconds, 0);
-                    if (cookDate > new Date()) {
-                        cookDate.setDate(cookDate.getDate() - 1);
-                    }
-                    const hsdHours = materialHSD[material] || 0;
-                    const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
-                    const expiryTimeStr = expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    existingRow.cells[2].textContent = expiryTimeStr;
-                }
-                updateRemainingTimes();
-                return;
-            }
-
-            // Create new row
             const row = document.createElement('tr');
             row.draggable = true;
             row.classList.add('draggable');
+            row.dataset.rowId = rowId;
+
             let expiryTimeStr = 'Chưa xác định';
             if (cookTime !== '00:00:00') {
                 const [hours, minutes, seconds] = cookTime.split(':').map(Number);
@@ -445,7 +425,7 @@
                 <td class="border p-2">${material}</td>
                 <td class="border p-2">${cookTime}</td>
                 <td class="border p-2">${expiryTimeStr}</td>
-                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}">${cookTime === '00:00:00' ? 'Đợi' : ''}</td>
+                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}" data-row-id="${rowId}">${cookTime === '00:00:00' ? 'Đợi' : ''}</td>
                 <td class="border p-2">
                     <button class="edit-button">Sửa</button>
                     <button class="delete-button">Xóa</button>
@@ -454,11 +434,11 @@
             tableBody.appendChild(row);
             updateRemainingTimes();
 
-            row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime));
+            row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime, rowId));
             row.querySelector('.delete-button').addEventListener('click', () => {
                 row.remove();
-                expiredMaterials.delete(material);
-                unconfirmedExpirations.delete(material);
+                expiredMaterials.delete(`${material}_${rowId}`);
+                unconfirmedExpirations.delete(`${material}_${rowId}`);
                 manageUpdateInterval();
                 manageNotificationInterval();
             });
@@ -512,7 +492,7 @@
         }
 
         // Edit row
-        function editRow(row, material, cookTime) {
+        function editRow(row, material, cookTime, rowId) {
             document.getElementById('popupTitle').textContent = 'Sửa nguyên vật liệu';
             document.getElementById('materialSelect').value = material;
             document.getElementById('cookTime').value = cookTime;
@@ -537,12 +517,13 @@
                     row.cells[2].textContent = expiryTimeStr;
                     row.cells[3].dataset.material = newMaterial;
                     row.cells[3].dataset.cooktime = normalizedNewCookTime;
+                    row.cells[3].dataset.rowId = rowId;
                     document.getElementById('popup').classList.remove('show');
                     document.getElementById('materialSelect').value = '';
                     document.getElementById('cookTime').value = '';
                     updateRemainingTimes();
-                    expiredMaterials.delete(material);
-                    unconfirmedExpirations.delete(material);
+                    expiredMaterials.delete(`${material}_${rowId}`);
+                    unconfirmedExpirations.delete(`${material}_${rowId}`);
                     manageNotificationInterval();
                 } else {
                     alert('Vui lòng điền đầy đủ thông tin');
@@ -557,11 +538,12 @@
             rows.forEach(cell => {
                 const material = cell.dataset.material;
                 const cookTime = cell.dataset.cooktime;
+                const rowId = cell.dataset.rowId;
                 if (cookTime === '00:00:00') {
                     cell.textContent = 'Đợi';
                     cell.classList.remove('text-red-500');
-                    expiredMaterials.delete(material);
-                    unconfirmedExpirations.delete(material);
+                    expiredMaterials.delete(`${material}_${rowId}`);
+                    unconfirmedExpirations.delete(`${material}_${rowId}`);
                     return;
                 }
                 const [hours, minutes, seconds] = cookTime.split(':').map(Number);
@@ -576,10 +558,10 @@
                 if (timeDiff <= 0) {
                     cell.textContent = 'Hết hạn';
                     cell.classList.add('text-red-500');
-                    if (!expiredMaterials.has(material)) {
-                        showExpirationPopup(material);
-                        unconfirmedExpirations.add(material);
-                        expiredMaterials.add(material);
+                    if (!expiredMaterials.has(`${material}_${rowId}`)) {
+                        showExpirationPopup(material, rowId);
+                        unconfirmedExpirations.add(`${material}_${rowId}`);
+                        expiredMaterials.add(`${material}_${rowId}`);
                         playNotification(material);
                     }
                 } else {
@@ -588,8 +570,8 @@
                     const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
                     cell.textContent = `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
                     cell.classList.remove('text-red-500');
-                    expiredMaterials.delete(material);
-                    unconfirmedExpirations.delete(material);
+                    expiredMaterials.delete(`${material}_${rowId}`);
+                    unconfirmedExpirations.delete(`${material}_${rowId}`);
                 }
             });
         }
@@ -602,7 +584,8 @@
             }
             if (unconfirmedExpirations.size > 0) {
                 notificationInterval = setInterval(() => {
-                    unconfirmedExpirations.forEach(material => {
+                    unconfirmedExpirations.forEach(key => {
+                        const [material] = key.split('_');
                         playNotification(material);
                     });
                 }, 10000);
