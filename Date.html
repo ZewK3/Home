@@ -296,6 +296,31 @@
             };
         }
 
+        // Save table data to localStorage
+        function saveTableData() {
+            const tableBody = document.getElementById('tableBody');
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const tableData = rows.map(row => ({
+                rowId: row.dataset.rowId,
+                material: row.cells[0].textContent,
+                cookTime: row.cells[1].textContent
+            }));
+            localStorage.setItem('materialTableData', JSON.stringify(tableData));
+        }
+
+        // Load table data from localStorage
+        function loadTableData() {
+            const savedData = localStorage.getItem('materialTableData');
+            if (savedData) {
+                const tableData = JSON.parse(savedData);
+                tableData.forEach(data => {
+                    if (materialsData.includes(data.material)) {
+                        addMaterialToTable(data.material, data.cookTime, data.rowId);
+                    }
+                });
+            }
+        }
+
         // Fetch data from sheet and populate table
         async function fetchMaterials() {
             try {
@@ -313,8 +338,6 @@
                     if (material && !isNaN(hsd)) {
                         materialsData.push(material);
                         materialHSD[material] = hsd;
-                        // Add each material to the table with default time 00:00:00
-                        addMaterialToTable(material, '00:00:00');
                     }
                 });
 
@@ -324,6 +347,15 @@
                 } else {
                     console.log('Materials loaded:', materialsData);
                     populateMaterialSelect();
+                    loadTableData(); // Load saved data from localStorage
+                    const savedData = JSON.parse(localStorage.getItem('materialTableData') || '[]');
+                    const savedMaterials = savedData.map(data => data.material);
+                    // Add missing materials from sheet with default time
+                    materialsData.forEach(material => {
+                        if (!savedMaterials.includes(material)) {
+                            addMaterialToTable(material, '00:00:00', generateRowId());
+                        }
+                    });
                     startUpdateInterval();
                 }
             } catch (error) {
@@ -394,6 +426,7 @@
                 document.getElementById('popup').classList.remove('show');
                 document.getElementById('materialSelect').value = '';
                 document.getElementById('cookTime').value = '';
+                saveTableData();
                 startUpdateInterval();
             } else {
                 alert('Vui lòng điền đầy đủ thông tin');
@@ -439,6 +472,7 @@
                 row.remove();
                 expiredMaterials.delete(`${material}_${rowId}`);
                 unconfirmedExpirations.delete(`${material}_${rowId}`);
+                saveTableData();
                 manageUpdateInterval();
                 manageNotificationInterval();
             });
@@ -481,6 +515,7 @@
                 } else {
                     tableBody.insertBefore(draggedRow, targetRow);
                 }
+                saveTableData();
             }
             targetRow.classList.remove('drag-over');
         }
@@ -521,6 +556,7 @@
                     document.getElementById('popup').classList.remove('show');
                     document.getElementById('materialSelect').value = '';
                     document.getElementById('cookTime').value = '';
+                    saveTableData();
                     updateRemainingTimes();
                     expiredMaterials.delete(`${material}_${rowId}`);
                     unconfirmedExpirations.delete(`${material}_${rowId}`);
