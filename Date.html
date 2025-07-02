@@ -148,6 +148,18 @@
         .cancel-button:hover {
             background-color: #4b5563;
         }
+        .current-time-button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .current-time-button:hover {
+            background-color: #2563eb;
+        }
         .edit-button {
             background-color: #eab308;
             color: white;
@@ -194,7 +206,7 @@
     <!-- Add/Edit Popup -->
     <div id="popup" class="popup">
         <div class="popup-content">
-            <h2>Thêm nguyên vật liệu</h2>
+            <h2 id="popupTitle">Thêm nguyên vật liệu</h2>
             <div>
                 <label>Tên nguyên vật liệu</label>
                 <select id="materialSelect"></select>
@@ -202,6 +214,7 @@
             <div>
                 <label>Giờ nấu</label>
                 <input id="cookTime" type="time" step="1" required>
+                <button id="currentTimeButton" class="current-time-button">Lấy thời gian hiện tại</button>
             </div>
             <div class="button-group">
                 <button id="saveButton" class="save-button">Lưu</button>
@@ -273,7 +286,7 @@
             };
         }
 
-        // Fetch data from sheet
+        // Fetch data from sheet and populate table
         async function fetchMaterials() {
             try {
                 const response = await fetch(CSV_URL);
@@ -290,6 +303,8 @@
                     if (material && !isNaN(hsd)) {
                         materialsData.push(material);
                         materialHSD[material] = hsd;
+                        // Add each material to the table with default time 00:00:00
+                        addMaterialToTable(material, '00:00:00');
                     }
                 });
 
@@ -299,6 +314,7 @@
                 } else {
                     console.log('Materials loaded:', materialsData);
                     populateMaterialSelect();
+                    startUpdateInterval();
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
@@ -330,15 +346,20 @@
                 alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
                 return;
             }
+            document.getElementById('popupTitle').textContent = 'Thêm nguyên vật liệu';
+            document.getElementById('materialSelect').value = '';
+            document.getElementById('cookTime').value = '';
             document.getElementById('popup').classList.add('show');
             document.getElementById('saveButton').onclick = saveNewMaterial;
-            try {
-                const testUtterance = new SpeechSynthesisUtterance('');
-                window.speechSynthesis.speak(testUtterance);
-                window.speechSynthesis.cancel();
-            } catch (error) {
-                console.warn('TTS initialization failed:', error);
-            }
+        });
+
+        // Set current time in cookTime input
+        document.getElementById('currentTimeButton').addEventListener('click', () => {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('cookTime').value = `${hours}:${minutes}:${seconds}`;
         });
 
         // Cancel add/edit popup
@@ -367,22 +388,52 @@
         // Add material to table
         function addMaterialToTable(material, cookTime) {
             const tableBody = document.getElementById('tableBody');
-            const row = document.createElement('tr');
-            const [hours, minutes, seconds] = cookTime.split(':').map(Number);
-            const cookDate = new Date();
-            cookDate.setHours(hours, minutes, seconds, 0);
-            if (cookDate > new Date()) {
-                cookDate.setDate(cookDate.getDate() - 1);
+            // Check if material already exists in table to avoid duplicates
+            const existingRow = Array.from(tableBody.querySelectorAll('tr')).find(row => row.cells[0].textContent === material);
+            if (existingRow) {
+                // Update existing row
+                existingRow.cells[1].textContent = cookTime;
+                existingRow.cells[3].dataset.cooktime = cookTime;
+                if (cookTime === '00:00:00') {
+                    existingRow.cells[2].textContent = 'Chưa xác định';
+                    existingRow.cells[3].textContent = 'Đợi';
+                    existingRow.cells[3].classList.remove('text-red-500');
+                } else {
+                    const [hours, minutes, seconds] = cookTime.split(':').map(Number);
+                    const cookDate = new Date();
+                    cookDate.setHours(hours, minutes, seconds, 0);
+                    if (cookDate > new Date()) {
+                        cookDate.setDate(cookDate.getDate() - 1);
+                    }
+                    const hsdHours = materialHSD[material] || 0;
+                    const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
+                    const expiryTimeStr = expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    existingRow.cells[2].textContent = expiryTimeStr;
+                }
+                updateRemainingTimes();
+                return;
             }
-            const hsdHours = materialHSD[material] || 0;
-            const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
-            const expiryTimeStr = expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // Create new row
+            const row = document.createElement('tr');
+            let expiryTimeStr = 'Chưa xác định';
+            if (cookTime !== '00:00:00') {
+                const [hours, minutes, seconds] = cookTime.split(':').map(Number);
+                const cookDate = new Date();
+                cookDate.setHours(hours, minutes, seconds, 0);
+                if (cookDate > new Date()) {
+                    cookDate.setDate(cookDate.getDate() - 1);
+                }
+                const hsdHours = materialHSD[material] || 0;
+                const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
+                expiryTimeStr = expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
             
             row.innerHTML = `
                 <td class="border p-2">${material}</td>
                 <td class="border p-2">${cookTime}</td>
                 <td class="border p-2">${expiryTimeStr}</td>
-                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}"></td>
+                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}">${cookTime === '00:00:00' ? 'Đợi' : ''}</td>
                 <td class="border p-2">
                     <button class="edit-button">Sửa</button>
                     <button class="delete-button">Xóa</button>
@@ -403,6 +454,7 @@
 
         // Edit row
         function editRow(row, material, cookTime) {
+            document.getElementById('popupTitle').textContent = 'Sửa nguyên vật liệu';
             document.getElementById('materialSelect').value = material;
             document.getElementById('cookTime').value = cookTime;
             document.getElementById('popup').classList.add('show');
@@ -419,7 +471,7 @@
                     }
                     const hsdHours = materialHSD[newMaterial] || 0;
                     const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
-                    const expiryTimeStr = expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const expiryTimeStr = normalizedNewCookTime === '00:00:00' ? 'Chưa xác định' : expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
                     
                     row.cells[0].textContent = newMaterial;
                     row.cells[1].textContent = normalizedNewCookTime;
@@ -446,6 +498,13 @@
             rows.forEach(cell => {
                 const material = cell.dataset.material;
                 const cookTime = cell.dataset.cooktime;
+                if (cookTime === '00:00:00') {
+                    cell.textContent = 'Đợi';
+                    cell.classList.remove('text-red-500');
+                    expiredMaterials.delete(material);
+                    unconfirmedExpirations.delete(material);
+                    return;
+                }
                 const [hours, minutes, seconds] = cookTime.split(':').map(Number);
                 const cookDate = new Date();
                 cookDate.setHours(hours, minutes, seconds, 0);
@@ -514,7 +573,6 @@
                 console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
             };
             fetchMaterials();
-            startUpdateInterval();
         });
     </script>
 </body>
