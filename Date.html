@@ -306,6 +306,7 @@
                 cookTime: row.cells[1].textContent
             }));
             localStorage.setItem('materialTableData', JSON.stringify(tableData));
+            localStorage.setItem('lastSavedDate', new Date().toISOString().split('T')[0]);
         }
 
         // Load table data from localStorage
@@ -319,6 +320,18 @@
                     }
                 });
             }
+        }
+
+        // Clear table and localStorage
+        function clearTableData() {
+            localStorage.removeItem('materialTableData');
+            localStorage.removeItem('lastSavedDate');
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            expiredMaterials.clear();
+            unconfirmedExpirations.clear();
+            manageNotificationInterval();
+            manageUpdateInterval();
         }
 
         // Fetch data from sheet and populate table
@@ -347,15 +360,28 @@
                 } else {
                     console.log('Materials loaded:', materialsData);
                     populateMaterialSelect();
-                    loadTableData(); // Load saved data from localStorage
-                    const savedData = JSON.parse(localStorage.getItem('materialTableData') || '[]');
-                    const savedMaterials = savedData.map(data => data.material);
-                    // Add missing materials from sheet with default time
-                    materialsData.forEach(material => {
-                        if (!savedMaterials.includes(material)) {
+
+                    // Check if it's a new day
+                    const today = new Date().toISOString().split('T')[0];
+                    const lastSavedDate = localStorage.getItem('lastSavedDate');
+                    if (lastSavedDate !== today) {
+                        clearTableData();
+                        // Populate table with default materials
+                        materialsData.forEach(material => {
                             addMaterialToTable(material, '00:00:00', generateRowId());
-                        }
-                    });
+                        });
+                        saveTableData();
+                    } else {
+                        loadTableData();
+                        const savedData = JSON.parse(localStorage.getItem('materialTableData') || '[]');
+                        const savedMaterials = savedData.map(data => data.material);
+                        // Add missing materials from sheet with default time
+                        materialsData.forEach(material => {
+                            if (!savedMaterials.includes(material)) {
+                                addMaterialToTable(material, '00:00:00', generateRowId());
+                            }
+                        });
+                    }
                     startUpdateInterval();
                 }
             } catch (error) {
