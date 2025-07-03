@@ -89,7 +89,8 @@
             margin-bottom: 4px;
         }
         .popup-content select,
-        .popup-content input[type="time"] {
+        .popup-content input[type="time"],
+        .popup-content input[type="datetime-local"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #e5e7eb;
@@ -193,60 +194,149 @@
         tr.drag-over {
             border-top: 2px solid #3b82f6;
         }
+        /* Tab styles */
+        .tabs {
+            margin-bottom: 24px;
+        }
+        .tab-button {
+            padding: 8px 16px;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Quản lý hạn sử dụng</h1>
-        <table id="materialTable">
-            <thead>
-                <tr>
-                    <th>Tên nguyên vật liệu</th>
-                    <th>Giờ nấu</th>
-                    <th>Giờ hết hạn</th>
-                    <th>Thời gian còn lại</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-        <button id="addButton" class="add-button">Thêm</button>
+    <div class="tabs">
+        <button class="tab-button active" onclick="openTab('daily')">HSD trong ngày</button>
+        <button class="tab-button" onclick="openTab('longterm')">HSD dài ngày</button>
     </div>
 
-    <!-- Add/Edit Popup -->
-    <div id="popup" class="popup">
-        <div class="popup-content">
-            <h2 id="popupTitle">Thêm nguyên vật liệu</h2>
-            <div>
-                <label>Tên nguyên vật liệu</label>
-                <select id="materialSelect"></select>
+    <div id="daily" class="tab-content active">
+        <div class="container">
+            <h1>Quản lý hạn sử dụng</h1>
+            <table id="materialTable">
+                <thead>
+                    <tr>
+                        <th>Tên nguyên vật liệu</th>
+                        <th>Giờ nấu</th>
+                        <th>Giờ hết hạn</th>
+                        <th>Thời gian còn lại</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <button id="addButton" class="add-button">Thêm</button>
+        </div>
+
+        <!-- Add/Edit Popup -->
+        <div id="popup" class="popup">
+            <div class="popup-content">
+                <h2 id="popupTitle">Thêm nguyên vật liệu</h2>
+                <div>
+                    <label>Tên nguyên vật liệu</label>
+                    <select id="materialSelect"></select>
+                </div>
+                <div>
+                    <label>Giờ nấu</label>
+                    <input id="cookTime" type="time" step="1" required>
+                    <button id="currentTimeButton" class="current-time-button">Lấy thời gian hiện tại</button>
+                </div>
+                <div class="button-group">
+                    <button id="saveButton" class="save-button">Lưu</button>
+                    <button id="cancelButton" class="cancel-button">Hủy</button>
+                </div>
             </div>
-            <div>
-                <label>Giờ nấu</label>
-                <input id="cookTime" type="time" step="1" required>
-                <button id="currentTimeButton" class="current-time-button">Lấy thời gian hiện tại</button>
-            </div>
-            <div class="button-group">
-                <button id="saveButton" class="save-button">Lưu</button>
-                <button id="cancelButton" class="cancel-button">Hủy</button>
-            </div>
+        </div>
+
+        <!-- Expiration Popup -->
+        <div id="expirationPopup" class="expiration-popup">
+            <h2>Thông báo hết hạn</h2>
+            <p id="expirationMessage"></p>
         </div>
     </div>
 
-    <!-- Expiration Popup -->
-    <div id="expirationPopup" class="expiration-popup">
-        <h2>Thông báo hết hạn</h2>
-        <p id="expirationMessage"></p>
+    <div id="longterm" class="tab-content">
+        <div class="container">
+            <h1>Quản lý hạn sử dụng</h1>
+            <table id="materialTable-longterm">
+                <thead>
+                    <tr>
+                        <th>Tên nguyên vật liệu</th>
+                        <th>Ngày nhập</th>
+                        <th>Ngày hết hạn</th>
+                        <th>Thời gian còn lại</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody-longterm"></tbody>
+            </table>
+            <button id="addButton-longterm" class="add-button">Thêm</button>
+        </div>
+
+        <!-- Add/Edit Popup -->
+        <div id="popup-longterm" class="popup">
+            <div class="popup-content">
+                <h2 id="popupTitle-longterm">Thêm nguyên vật liệu</h2>
+                <div>
+                    <label>Tên nguyên vật liệu</label>
+                    <select id="materialSelect-longterm"></select>
+                </div>
+                <div>
+                    <label>Ngày nhập</label>
+                    <input id="cookTime-longterm" type="datetime-local" step="1" required>
+                    <button id="currentTimeButton-longterm" class="current-time-button">Lấy ngày giờ hiện tại</button>
+                </div>
+                <div class="button-group">
+                    <button id="saveButton-longterm" class="save-button">Lưu</button>
+                    <button id="cancelButton-longterm" class="cancel-button">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expiration Popup -->
+        <div id="expirationPopup-longterm" class="expiration-popup">
+            <h2>Thông báo hết hạn</h2>
+            <p id="expirationMessage-longterm"></p>
+        </div>
     </div>
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv';
-        let materialsData = [];
+        let materialsDataDaily = [];
+        let materialsDataLongterm = [];
         let materialHSD = {};
         let updateInterval = null;
         let notificationInterval = null;
         let expiredMaterials = new Set();
         let unconfirmedExpirations = new Set();
+
+        // Tab switching function
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
+            manageUpdateInterval();
+        }
 
         // CSV to JSON function
         function csvToJson(csv) {
@@ -283,50 +373,51 @@
         }
 
         // Show expiration popup
-        function showExpirationPopup(material, rowId) {
-            const popup = document.getElementById('expirationPopup');
-            const message = document.getElementById('expirationMessage');
+        function showExpirationPopup(material, rowId, tab) {
+            const popup = document.getElementById(`expirationPopup${tab === 'daily' ? '' : '-longterm'}`);
+            const message = document.getElementById(`expirationMessage${tab === 'daily' ? '' : '-longterm'}`);
             message.textContent = `Hết hạn: ${material}`;
             popup.classList.add('show');
             popup.onclick = () => {
                 popup.classList.remove('show');
-                unconfirmedExpirations.delete(`${material}_${rowId}`);
+                unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
                 window.speechSynthesis.cancel();
                 manageNotificationInterval();
             };
         }
 
         // Save table data to localStorage
-        function saveTableData() {
-            const tableBody = document.getElementById('tableBody');
+        function saveTableData(tab) {
+            const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
             const rows = Array.from(tableBody.querySelectorAll('tr'));
             const tableData = rows.map(row => ({
                 rowId: row.dataset.rowId,
                 material: row.cells[0].textContent,
                 cookTime: row.cells[1].textContent
             }));
-            localStorage.setItem('materialTableData', JSON.stringify(tableData));
-            localStorage.setItem('lastSavedDate', new Date().toISOString().split('T')[0]);
+            localStorage.setItem(`materialTableData-${tab}`, JSON.stringify(tableData));
+            localStorage.setItem(`lastSavedDate-${tab}`, new Date().toISOString().split('T')[0]);
         }
 
         // Load table data from localStorage
-        function loadTableData() {
-            const savedData = localStorage.getItem('materialTableData');
+        function loadTableData(tab) {
+            const savedData = localStorage.getItem(`materialTableData-${tab}`);
             if (savedData) {
                 const tableData = JSON.parse(savedData);
+                const materialsData = tab === 'daily' ? materialsDataDaily : materialsDataLongterm;
                 tableData.forEach(data => {
                     if (materialsData.includes(data.material)) {
-                        addMaterialToTable(data.material, data.cookTime, data.rowId);
+                        addMaterialToTable(data.material, data.cookTime, data.rowId, tab);
                     }
                 });
             }
         }
 
         // Clear table and localStorage
-        function clearTableData() {
-            localStorage.removeItem('materialTableData');
-            localStorage.removeItem('lastSavedDate');
-            const tableBody = document.getElementById('tableBody');
+        function clearTableData(tab) {
+            localStorage.removeItem(`materialTableData-${tab}`);
+            localStorage.removeItem(`lastSavedDate-${tab}`);
+            const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
             tableBody.innerHTML = '';
             expiredMaterials.clear();
             unconfirmedExpirations.clear();
@@ -342,46 +433,55 @@
                 const csvText = await response.text();
                 const data = csvToJson(csvText);
 
-                materialsData = [];
+                materialsDataDaily = [];
+                materialsDataLongterm = [];
                 materialHSD = {};
 
                 data.forEach(row => {
                     const material = row['Tên BTP']?.trim();
                     const hsd = parseInt(row['HSD']);
                     if (material && !isNaN(hsd)) {
-                        materialsData.push(material);
                         materialHSD[material] = hsd;
+                        if (hsd < 12) {
+                            materialsDataDaily.push(material);
+                        } else {
+                            materialsDataLongterm.push(material);
+                        }
                     }
                 });
 
-                if (materialsData.length === 0) {
+                if (materialsDataDaily.length === 0 && materialsDataLongterm.length === 0) {
                     console.error('No valid materials found in the sheet');
                     alert('Không thể tải danh sách nguyên vật liệu. Vui lòng kiểm tra sheet.');
                 } else {
-                    console.log('Materials loaded:', materialsData);
-                    populateMaterialSelect();
+                    console.log('Daily materials:', materialsDataDaily);
+                    console.log('Long-term materials:', materialsDataLongterm);
+                    populateMaterialSelect('daily');
+                    populateMaterialSelect('longterm');
 
-                    // Check if it's a new day
-                    const today = new Date().toISOString().split('T')[0];
-                    const lastSavedDate = localStorage.getItem('lastSavedDate');
-                    if (lastSavedDate !== today) {
-                        clearTableData();
-                        // Populate table with default materials
-                        materialsData.forEach(material => {
-                            addMaterialToTable(material, '00:00:00', generateRowId());
-                        });
-                        saveTableData();
-                    } else {
-                        loadTableData();
-                        const savedData = JSON.parse(localStorage.getItem('materialTableData') || '[]');
-                        const savedMaterials = savedData.map(data => data.material);
-                        // Add missing materials from sheet with default time
-                        materialsData.forEach(material => {
-                            if (!savedMaterials.includes(material)) {
-                                addMaterialToTable(material, '00:00:00', generateRowId());
-                            }
-                        });
-                    }
+                    ['daily', 'longterm'].forEach(tab => {
+                        const today = new Date().toISOString().split('T')[0];
+                        const lastSavedDate = localStorage.getItem(`lastSavedDate-${tab}`);
+                        const materialsData = tab === 'daily' ? materialsDataDaily : materialsDataLongterm;
+                        if (lastSavedDate !== today) {
+                            clearTableData(tab);
+                            materialsData.forEach(material => {
+                                const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+                                addMaterialToTable(material, defaultTime, generateRowId(), tab);
+                            });
+                            saveTableData(tab);
+                        } else {
+                            loadTableData(tab);
+                            const savedData = JSON.parse(localStorage.getItem(`materialTableData-${tab}`) || '[]');
+                            const savedMaterials = savedData.map(data => data.material);
+                            materialsData.forEach(material => {
+                                if (!savedMaterials.includes(material)) {
+                                    const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+                                    addMaterialToTable(material, defaultTime, generateRowId(), tab);
+                                }
+                            });
+                        }
+                    });
                     startUpdateInterval();
                 }
             } catch (error) {
@@ -390,10 +490,41 @@
             }
         }
 
+        // Format date to DD/MM/YYYY HH:mm:ss
+        function formatDateTime(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // Parse DD/MM/YYYY HH:mm:ss to Date object
+        function parseDateTime(dateTimeStr) {
+            const [datePart, timePart] = dateTimeStr.split(' ');
+            const [day, month, year] = datePart.split('/').map(Number);
+            const [hours, minutes, seconds] = timePart.split(':').map(Number);
+            return new Date(year, month - 1, day, hours, minutes, seconds);
+        }
+
+        // Normalize time or date-time based on tab
+        function normalizeTime(timeStr, tab) {
+            if (tab === 'daily') {
+                const date = new Date(`1970-01-01T${timeStr}`);
+                return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            } else {
+                const date = new Date(timeStr.replace('T', ' '));
+                return formatDateTime(date);
+            }
+        }
+
         // Populate material select dropdown
-        function populateMaterialSelect() {
-            const select = document.getElementById('materialSelect');
+        function populateMaterialSelect(tab) {
+            const select = document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`);
             select.innerHTML = '<option value="">Chọn nguyên vật liệu</option>';
+            const materialsData = tab === 'daily' ? materialsDataDaily : materialsDataLongterm;
             materialsData.forEach(material => {
                 const option = document.createElement('option');
                 option.value = material;
@@ -402,40 +533,46 @@
             });
         }
 
-        // Normalize time to 24-hour format (HH:mm:ss)
-        function normalizeTime(timeStr) {
-            const date = new Date(`1970-01-01T${timeStr}`);
-            return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        // Show add/edit popup
+        function setupAddButton(tab) {
+            document.getElementById(`addButton${tab === 'daily' ? '' : '-longterm'}`).addEventListener('click', () => {
+                const materialsData = tab === 'daily' ? materialsDataDaily : materialsDataLongterm;
+                if (materialsData.length === 0) {
+                    alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
+                    return;
+                }
+                document.getElementById(`popupTitle${tab === 'daily' ? '' : '-longterm'}`).textContent = 'Thêm nguyên vật liệu';
+                document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.add('show');
+                document.getElementById(`saveButton${tab === 'daily' ? '' : '-longterm'}`).onclick = () => saveNewMaterial(tab);
+            });
         }
 
-        // Show add/edit popup
-        document.getElementById('addButton').addEventListener('click', () => {
-            if (materialsData.length === 0) {
-                alert('Danh sách nguyên vật liệu chưa được tải. Vui lòng thử lại sau.');
-                return;
-            }
-            document.getElementById('popupTitle').textContent = 'Thêm nguyên vật liệu';
-            document.getElementById('materialSelect').value = '';
-            document.getElementById('cookTime').value = '';
-            document.getElementById('popup').classList.add('show');
-            document.getElementById('saveButton').onclick = saveNewMaterial;
-        });
-
-        // Set current time in cookTime input
-        document.getElementById('currentTimeButton').addEventListener('click', () => {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('cookTime').value = `${hours}:${minutes}:${seconds}`;
-        });
+        // Set current time or date-time in input
+        function setupCurrentTimeButton(tab) {
+            document.getElementById(`currentTimeButton${tab === 'daily' ? '' : '-longterm'}`).addEventListener('click', () => {
+                const now = new Date();
+                if (tab === 'daily') {
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const seconds = String(now.getSeconds()).padStart(2, '0');
+                    document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = `${hours}:${minutes}:${seconds}`;
+                } else {
+                    const dateTime = now.toISOString().slice(0, 19);
+                    document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = dateTime;
+                }
+            });
+        }
 
         // Cancel add/edit popup
-        document.getElementById('cancelButton').addEventListener('click', () => {
-            document.getElementById('popup').classList.remove('show');
-            document.getElementById('materialSelect').value = '';
-            document.getElementById('cookTime').value = '';
-        });
+        function setupCancelButton(tab) {
+            document.getElementById(`cancelButton${tab === 'daily' ? '' : '-longterm'}`).addEventListener('click', () => {
+                document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.remove('show');
+                document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = '';
+            });
+        }
 
         // Generate unique ID for rows
         function generateRowId() {
@@ -443,16 +580,16 @@
         }
 
         // Save new material
-        function saveNewMaterial() {
-            const material = document.getElementById('materialSelect').value;
-            const cookTime = document.getElementById('cookTime').value;
+        function saveNewMaterial(tab) {
+            const material = document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value;
+            const cookTime = document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value;
             if (material && cookTime) {
-                const normalizedCookTime = normalizeTime(cookTime);
-                addMaterialToTable(material, normalizedCookTime);
-                document.getElementById('popup').classList.remove('show');
-                document.getElementById('materialSelect').value = '';
-                document.getElementById('cookTime').value = '';
-                saveTableData();
+                const normalizedCookTime = normalizeTime(cookTime, tab);
+                addMaterialToTable(material, normalizedCookTime, generateRowId(), tab);
+                document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.remove('show');
+                document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                saveTableData(tab);
                 startUpdateInterval();
             } else {
                 alert('Vui lòng điền đầy đủ thông tin');
@@ -460,31 +597,29 @@
         }
 
         // Add material to table
-        function addMaterialToTable(material, cookTime, rowId = generateRowId()) {
-            const tableBody = document.getElementById('tableBody');
+        function addMaterialToTable(material, cookTime, rowId = generateRowId(), tab) {
+            const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
             const row = document.createElement('tr');
             row.draggable = true;
             row.classList.add('draggable');
             row.dataset.rowId = rowId;
 
             let expiryTimeStr = 'Chưa xác định';
-            if (cookTime !== '00:00:00') {
-                const [hours, minutes, seconds] = cookTime.split(':').map(Number);
-                const cookDate = new Date();
-                cookDate.setHours(hours, minutes, seconds, 0);
-                if (cookDate > new Date()) {
-                    cookDate.setDate(cookDate.getDate() - 1);
-                }
+            const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+            if (cookTime !== defaultTime) {
+                const cookDate = tab === 'daily' ? new Date(`1970-01-01T${cookTime}`) : parseDateTime(cookTime);
                 const hsdHours = materialHSD[material] || 0;
                 const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
-                expiryTimeStr = expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                expiryTimeStr = tab === 'daily' 
+                    ? expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    : formatDateTime(expiryTime);
             }
             
             row.innerHTML = `
                 <td class="border p-2">${material}</td>
                 <td class="border p-2">${cookTime}</td>
                 <td class="border p-2">${expiryTimeStr}</td>
-                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}" data-row-id="${rowId}">${cookTime === '00:00:00' ? 'Đợi' : ''}</td>
+                <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}" data-row-id="${rowId}" data-tab="${tab}">${cookTime === defaultTime ? 'Đợi' : ''}</td>
                 <td class="border p-2">
                     <button class="edit-button">Sửa</button>
                     <button class="delete-button">Xóa</button>
@@ -493,12 +628,12 @@
             tableBody.appendChild(row);
             updateRemainingTimes();
 
-            row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime, rowId));
+            row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime, rowId, tab));
             row.querySelector('.delete-button').addEventListener('click', () => {
                 row.remove();
-                expiredMaterials.delete(`${material}_${rowId}`);
-                unconfirmedExpirations.delete(`${material}_${rowId}`);
-                saveTableData();
+                expiredMaterials.delete(`${material}_${rowId}_${tab}`);
+                unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
+                saveTableData(tab);
                 manageUpdateInterval();
                 manageNotificationInterval();
             });
@@ -506,7 +641,7 @@
             // Add drag and drop event listeners
             row.addEventListener('dragstart', handleDragStart);
             row.addEventListener('dragover', handleDragOver);
-            row.addEventListener('drop', handleDrop);
+            row.addEventListener('drop', (e) => handleDrop(e, tab));
             row.addEventListener('dragend', handleDragEnd);
         }
 
@@ -528,11 +663,11 @@
             }
         }
 
-        function handleDrop(e) {
+        function handleDrop(e, tab) {
             e.preventDefault();
             const targetRow = e.target.closest('tr');
             if (targetRow && targetRow !== draggedRow) {
-                const tableBody = document.getElementById('tableBody');
+                const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
                 const allRows = Array.from(tableBody.querySelectorAll('tr'));
                 const draggedIndex = allRows.indexOf(draggedRow);
                 const targetIndex = allRows.indexOf(targetRow);
@@ -541,37 +676,36 @@
                 } else {
                     tableBody.insertBefore(draggedRow, targetRow);
                 }
-                saveTableData();
+                saveTableData(tab);
             }
             targetRow.classList.remove('drag-over');
         }
 
         function handleDragEnd(e) {
             e.target.classList.remove('dragging');
-            const allRows = document.querySelectorAll('#tableBody tr');
+            const allRows = document.querySelectorAll('#tableBody tr, #tableBody-longterm tr');
             allRows.forEach(row => row.classList.remove('drag-over'));
         }
 
         // Edit row
-        function editRow(row, material, cookTime, rowId) {
-            document.getElementById('popupTitle').textContent = 'Sửa nguyên vật liệu';
-            document.getElementById('materialSelect').value = material;
-            document.getElementById('cookTime').value = cookTime;
-            document.getElementById('popup').classList.add('show');
-            document.getElementById('saveButton').onclick = () => {
-                const newMaterial = document.getElementById('materialSelect').value;
-                const newCookTime = document.getElementById('cookTime').value;
+        function editRow(row, material, cookTime, rowId, tab) {
+            document.getElementById(`popupTitle${tab === 'daily' ? '' : '-longterm'}`).textContent = 'Sửa nguyên vật liệu';
+            document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = material;
+            document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = tab === 'daily' ? cookTime : cookTime.split(' ').reverse().join('-').replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$2-$1') + 'T' + cookTime.split(' ')[1];
+            document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.add('show');
+            document.getElementById(`saveButton${tab === 'daily' ? '' : '-longterm'}`).onclick = () => {
+                const newMaterial = document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value;
+                const newCookTime = document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value;
                 if (newMaterial && newCookTime) {
-                    const normalizedNewCookTime = normalizeTime(newCookTime);
-                    const [hours, minutes, seconds] = normalizedNewCookTime.split(':').map(Number);
-                    const cookDate = new Date();
-                    cookDate.setHours(hours, minutes, seconds, 0);
-                    if (cookDate > new Date()) {
-                        cookDate.setDate(cookDate.getDate() - 1);
-                    }
+                    const normalizedNewCookTime = normalizeTime(newCookTime, tab);
+                    const cookDate = tab === 'daily' ? new Date(`1970-01-01T${normalizedNewCookTime}`) : parseDateTime(normalizedNewCookTime);
                     const hsdHours = materialHSD[newMaterial] || 0;
                     const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
-                    const expiryTimeStr = normalizedNewCookTime === '00:00:00' ? 'Chưa xác định' : expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    const expiryTimeStr = normalizedNewCookTime === (tab === 'daily' ? '00:00:00' : formatDateTime(new Date())) 
+                        ? 'Chưa xác định' 
+                        : (tab === 'daily' 
+                            ? expiryTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                            : formatDateTime(expiryTime));
                     
                     row.cells[0].textContent = newMaterial;
                     row.cells[1].textContent = normalizedNewCookTime;
@@ -579,13 +713,14 @@
                     row.cells[3].dataset.material = newMaterial;
                     row.cells[3].dataset.cooktime = normalizedNewCookTime;
                     row.cells[3].dataset.rowId = rowId;
-                    document.getElementById('popup').classList.remove('show');
-                    document.getElementById('materialSelect').value = '';
-                    document.getElementById('cookTime').value = '';
-                    saveTableData();
+                    row.cells[3].dataset.tab = tab;
+                    document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.remove('show');
+                    document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                    document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                    saveTableData(tab);
                     updateRemainingTimes();
-                    expiredMaterials.delete(`${material}_${rowId}`);
-                    unconfirmedExpirations.delete(`${material}_${rowId}`);
+                    expiredMaterials.delete(`${material}_${rowId}_${tab}`);
+                    unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
                     manageNotificationInterval();
                 } else {
                     alert('Vui lòng điền đầy đủ thông tin');
@@ -601,29 +736,26 @@
                 const material = cell.dataset.material;
                 const cookTime = cell.dataset.cooktime;
                 const rowId = cell.dataset.rowId;
-                if (cookTime === '00:00:00') {
+                const tab = cell.dataset.tab;
+                const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+                if (cookTime === defaultTime) {
                     cell.textContent = 'Đợi';
                     cell.classList.remove('text-red-500');
-                    expiredMaterials.delete(`${material}_${rowId}`);
-                    unconfirmedExpirations.delete(`${material}_${rowId}`);
+                    expiredMaterials.delete(`${material}_${rowId}_${tab}`);
+                    unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
                     return;
                 }
-                const [hours, minutes, seconds] = cookTime.split(':').map(Number);
-                const cookDate = new Date();
-                cookDate.setHours(hours, minutes, seconds, 0);
-                if (cookDate > now) {
-                    cookDate.setDate(cookDate.getDate() - 1);
-                }
+                const cookDate = tab === 'daily' ? new Date(`1970-01-01T${cookTime}`) : parseDateTime(cookTime);
                 const hsdHours = materialHSD[material] || 0;
                 const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
                 const timeDiff = expiryTime - now;
                 if (timeDiff <= 0) {
                     cell.textContent = 'Hết hạn';
                     cell.classList.add('text-red-500');
-                    if (!expiredMaterials.has(`${material}_${rowId}`)) {
-                        showExpirationPopup(material, rowId);
-                        unconfirmedExpirations.add(`${material}_${rowId}`);
-                        expiredMaterials.add(`${material}_${rowId}`);
+                    if (!expiredMaterials.has(`${material}_${rowId}_${tab}`)) {
+                        showExpirationPopup(material, rowId, tab);
+                        unconfirmedExpirations.add(`${material}_${rowId}_${tab}`);
+                        expiredMaterials.add(`${material}_${rowId}_${tab}`);
                         playNotification(material);
                     }
                 } else {
@@ -632,8 +764,8 @@
                     const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
                     cell.textContent = `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
                     cell.classList.remove('text-red-500');
-                    expiredMaterials.delete(`${material}_${rowId}`);
-                    unconfirmedExpirations.delete(`${material}_${rowId}`);
+                    expiredMaterials.delete(`${material}_${rowId}_${tab}`);
+                    unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
                 }
             });
         }
@@ -660,7 +792,8 @@
                 clearInterval(updateInterval);
                 updateInterval = null;
             }
-            if (document.querySelectorAll('#tableBody tr').length > 0) {
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab && activeTab.querySelectorAll('tr').length > 0) {
                 updateInterval = setInterval(updateRemainingTimes, 1000);
             }
         }
@@ -676,6 +809,12 @@
                 const voices = window.speechSynthesis.getVoices();
                 console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
             };
+            setupAddButton('daily');
+            setupAddButton('longterm');
+            setupCurrentTimeButton('daily');
+            setupCurrentTimeButton('longterm');
+            setupCancelButton('daily');
+            setupCancelButton('longterm');
             fetchMaterials();
         });
     </script>
