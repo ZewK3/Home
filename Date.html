@@ -194,7 +194,6 @@
         tr.drag-over {
             border-top: 2px solid #3b82f6;
         }
-        /* Tab styles */
         .tabs {
             margin-bottom: 24px;
         }
@@ -243,7 +242,6 @@
             <button id="addButton" class="add-button">Thêm</button>
         </div>
 
-        <!-- Add/Edit Popup -->
         <div id="popup" class="popup">
             <div class="popup-content">
                 <h2 id="popupTitle">Thêm nguyên vật liệu</h2>
@@ -263,7 +261,6 @@
             </div>
         </div>
 
-        <!-- Expiration Popup -->
         <div id="expirationPopup" class="expiration-popup">
             <h2>Thông báo hết hạn</h2>
             <p id="expirationMessage"></p>
@@ -288,7 +285,6 @@
             <button id="addButton-longterm" class="add-button">Thêm</button>
         </div>
 
-        <!-- Add/Edit Popup -->
         <div id="popup-longterm" class="popup">
             <div class="popup-content">
                 <h2 id="popupTitle-longterm">Thêm nguyên vật liệu</h2>
@@ -308,7 +304,6 @@
             </div>
         </div>
 
-        <!-- Expiration Popup -->
         <div id="expirationPopup-longterm" class="expiration-popup">
             <h2>Thông báo hết hạn</h2>
             <p id="expirationMessage-longterm"></p>
@@ -325,7 +320,6 @@
         let expiredMaterials = new Set();
         let unconfirmedExpirations = new Set();
 
-        // Tab switching function
         function openTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -338,7 +332,6 @@
             manageUpdateInterval();
         }
 
-        // CSV to JSON function
         function csvToJson(csv) {
             const lines = csv.split('\n').filter(line => line.trim());
             if (lines.length === 0) return [];
@@ -354,7 +347,6 @@
             return result;
         }
 
-        // Play TTS notification
         function playNotification(material) {
             try {
                 const utterance = new SpeechSynthesisUtterance(`Check lại ${material}`);
@@ -372,7 +364,6 @@
             }
         }
 
-        // Show expiration popup
         function showExpirationPopup(material, rowId, tab) {
             const popup = document.getElementById(`expirationPopup${tab === 'daily' ? '' : '-longterm'}`);
             const message = document.getElementById(`expirationMessage${tab === 'daily' ? '' : '-longterm'}`);
@@ -386,7 +377,6 @@
             };
         }
 
-        // Save table data to localStorage
         function saveTableData(tab) {
             const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
             const rows = Array.from(tableBody.querySelectorAll('tr'));
@@ -399,7 +389,6 @@
             localStorage.setItem(`lastSavedDate-${tab}`, new Date().toISOString().split('T')[0]);
         }
 
-        // Load table data from localStorage
         function loadTableData(tab) {
             const savedData = localStorage.getItem(`materialTableData-${tab}`);
             if (savedData) {
@@ -413,13 +402,11 @@
             }
         }
 
-        // Clear table and localStorage
         function clearTableData(tab) {
             localStorage.removeItem(`materialTableData-${tab}`);
             localStorage.removeItem(`lastSavedDate-${tab}`);
             const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
             tableBody.innerHTML = '';
-            // Only clear expiredMaterials and unconfirmedExpirations for the specific tab
             const keysToRemove = Array.from(expiredMaterials).filter(key => key.endsWith(`_${tab}`));
             keysToRemove.forEach(key => {
                 expiredMaterials.delete(key);
@@ -429,7 +416,6 @@
             manageUpdateInterval();
         }
 
-        // Fetch data from sheet and populate table
         async function fetchMaterials() {
             try {
                 const response = await fetch(CSV_URL);
@@ -470,7 +456,7 @@
                         if (lastSavedDate !== today) {
                             clearTableData(tab);
                             materialsData.forEach(material => {
-                                const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+                                const defaultTime = tab === 'daily' ? '00:00:00' : '';
                                 addMaterialToTable(material, defaultTime, generateRowId(), tab);
                             });
                             saveTableData(tab);
@@ -480,11 +466,11 @@
                             const savedMaterials = savedData.map(data => data.material);
                             materialsData.forEach(material => {
                                 if (!savedMaterials.includes(material)) {
-                                    const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+                                    const defaultTime = tab === 'daily' ? '00:00:00' : '';
                                     addMaterialToTable(material, defaultTime, generateRowId(), tab);
                                 }
                             });
-                            saveTableData(tab); // Save to ensure new materials are persisted
+                            saveTableData(tab);
                         }
                     });
                     startUpdateInterval();
@@ -495,7 +481,6 @@
             }
         }
 
-        // Format date to DD/MM/YYYY HH:mm:ss
         function formatDateTime(date) {
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -506,26 +491,25 @@
             return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
         }
 
-        // Parse DD/MM/YYYY HH:mm:ss to Date object
         function parseDateTime(dateTimeStr) {
+            if (!dateTimeStr) return new Date();
             const [datePart, timePart] = dateTimeStr.split(' ');
             const [day, month, year] = datePart.split('/').map(Number);
             const [hours, minutes, seconds] = timePart.split(':').map(Number);
             return new Date(year, month - 1, day, hours, minutes, seconds);
         }
 
-        // Normalize time or date-time based on tab
         function normalizeTime(timeStr, tab) {
             if (tab === 'daily') {
                 const date = new Date(`1970-01-01T${timeStr}`);
                 return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             } else {
+                if (!timeStr) return '';
                 const date = new Date(timeStr.replace('T', ' '));
                 return formatDateTime(date);
             }
         }
 
-        // Populate material select dropdown
         function populateMaterialSelect(tab) {
             const select = document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`);
             select.innerHTML = '<option value="">Chọn nguyên vật liệu</option>';
@@ -538,7 +522,6 @@
             });
         }
 
-        // Show add/edit popup
         function setupAddButton(tab) {
             document.getElementById(`addButton${tab === 'daily' ? '' : '-longterm'}`).addEventListener('click', () => {
                 const materialsData = tab === 'daily' ? materialsDataDaily : materialsDataLongterm;
@@ -554,7 +537,6 @@
             });
         }
 
-        // Set current time or date-time in input
         function setupCurrentTimeButton(tab) {
             document.getElementById(`currentTimeButton${tab === 'daily' ? '' : '-longterm'}`).addEventListener('click', () => {
                 const now = new Date();
@@ -564,13 +546,16 @@
                     const seconds = String(now.getSeconds()).padStart(2, '0');
                     document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = `${hours}:${minutes}:${seconds}`;
                 } else {
-                    const dateTime = now.toISOString().slice(0, 16); // Format for datetime-local
-                    document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = dateTime;
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = `${year}-${month}-${day}T${hours}:${minutes}`;
                 }
             });
         }
 
-        // Cancel add/edit popup
         function setupCancelButton(tab) {
             document.getElementById(`cancelButton${tab === 'daily' ? '' : '-longterm'}`).addEventListener('click', () => {
                 document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.remove('show');
@@ -579,12 +564,10 @@
             });
         }
 
-        // Generate unique ID for rows
         function generateRowId() {
             return 'row_' + Math.random().toString(36).substr(2, 9);
         }
 
-        // Save new material
         function saveNewMaterial(tab) {
             const material = document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value;
             const cookTime = document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value;
@@ -601,7 +584,6 @@
             }
         }
 
-        // Add material to table
         function addMaterialToTable(material, cookTime, rowId = generateRowId(), tab) {
             const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
             const row = document.createElement('tr');
@@ -609,9 +591,9 @@
             row.classList.add('draggable');
             row.dataset.rowId = rowId;
 
-            const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+            const defaultTime = tab === 'daily' ? '00:00:00' : '';
             let expiryTimeStr = 'Chưa xác định';
-            if (cookTime !== defaultTime) {
+            if (cookTime && cookTime !== defaultTime) {
                 const cookDate = tab === 'daily' ? new Date(`1970-01-01T${cookTime}`) : parseDateTime(cookTime);
                 if (tab === 'daily' && cookDate > new Date()) {
                     cookDate.setDate(cookDate.getDate() - 1);
@@ -625,7 +607,7 @@
             
             row.innerHTML = `
                 <td class="border p-2">${material}</td>
-                <td class="border p-2">${cookTime}</td>
+                <td class="border p-2">${cookTime || 'Chưa nhập'}</td>
                 <td class="border p-2">${expiryTimeStr}</td>
                 <td class="border p-2 remaining-time" data-material="${material}" data-cooktime="${cookTime}" data-row-id="${rowId}" data-tab="${tab}">${cookTime === defaultTime ? 'Đợi' : ''}</td>
                 <td class="border p-2">
@@ -652,7 +634,6 @@
             row.addEventListener('dragend', handleDragEnd);
         }
 
-        // Drag and drop handlers
         let draggedRow = null;
 
         function handleDragStart(e) {
@@ -693,11 +674,12 @@
             document.querySelectorAll('#tableBody tr, #tableBody-longterm tr').forEach(row => row.classList.remove('drag-over'));
         }
 
-        // Edit row
         function editRow(row, material, cookTime, rowId, tab) {
             document.getElementById(`popupTitle${tab === 'daily' ? '' : '-longterm'}`).textContent = 'Sửa nguyên vật liệu';
             document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = material;
-            document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = tab === 'daily' ? cookTime : cookTime.split(' ').reverse().join('-').replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$2-$1') + 'T' + cookTime.split(' ')[1];
+            document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = cookTime && cookTime !== '' 
+                ? (tab === 'daily' ? cookTime : cookTime.split(' ').reverse().join('-').replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$2-$1') + 'T' + cookTime.split(' ')[1]) 
+                : '';
             document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.add('show');
             document.getElementById(`saveButton${tab === 'daily' ? '' : '-longterm'}`).onclick = () => {
                 const newMaterial = document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value;
@@ -710,7 +692,7 @@
                     }
                     const hsdHours = materialHSD[newMaterial] || 0;
                     const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
-                    const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
+                    const defaultTime = tab === 'daily' ? '00:00:00' : '';
                     const expiryTimeStr = normalizedNewCookTime === defaultTime 
                         ? 'Chưa xác định' 
                         : (tab === 'daily' 
@@ -718,7 +700,7 @@
                             : formatDateTime(expiryTime));
                     
                     row.cells[0].textContent = newMaterial;
-                    row.cells[1].textContent = normalizedNewCookTime;
+                    row.cells[1].textContent = normalizedNewCookTime || 'Chưa nhập';
                     row.cells[2].textContent = expiryTimeStr;
                     row.cells[3].dataset.material = newMaterial;
                     row.cells[3].dataset.cooktime = normalizedNewCookTime;
@@ -738,7 +720,6 @@
             };
         }
 
-        // Calculate and update remaining times
         function updateRemainingTimes() {
             const now = new Date();
             const rows = document.querySelectorAll('.remaining-time');
@@ -747,8 +728,8 @@
                 const cookTime = cell.dataset.cooktime;
                 const rowId = cell.dataset.rowId;
                 const tab = cell.dataset.tab;
-                const defaultTime = tab === 'daily' ? '00:00:00' : formatDateTime(new Date());
-                if (cookTime === defaultTime) {
+                const defaultTime = tab === 'daily' ? '00:00:00' : '';
+                if (!cookTime || cookTime === defaultTime) {
                     cell.textContent = 'Đợi';
                     cell.classList.remove('text-red-500');
                     expiredMaterials.delete(`${material}_${rowId}_${tab}`);
@@ -783,7 +764,6 @@
             });
         }
 
-        // Manage notification interval for repeating TTS
         function manageNotificationInterval() {
             if (notificationInterval) {
                 clearInterval(notificationInterval);
@@ -795,11 +775,10 @@
                         const [material] = key.split('_');
                         playNotification(material);
                     });
-                }, 10000); // Repeat every 10 seconds
+                }, 10000);
             }
         }
 
-        // Manage update interval
         function manageUpdateInterval() {
             if (updateInterval) {
                 clearInterval(updateInterval);
@@ -811,12 +790,10 @@
             }
         }
 
-        // Start update interval
         function startUpdateInterval() {
             manageUpdateInterval();
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             window.speechSynthesis.onvoiceschanged = () => {
                 const voices = window.speechSynthesis.getVoices();
