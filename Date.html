@@ -312,11 +312,13 @@
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv';
+        const FPT_AI_TTS_API_URL = 'https://api.fpt.ai/hmi/tts/v5';
+        const FPT_AI_API_KEY = 'IzATFczjCEsFJqq6OwaQp1mRE9sDVw46';
         let materialsDataDaily = [];
         let materialsDataLongterm = [];
         let materialHSD = {};
         let updateInterval = null;
-        let notificationInterval = null;
+        let notificationIntervals = {};
         let expiredMaterials = new Set();
         let unconfirmedExpirations = new Set();
 
@@ -347,8 +349,26 @@
             return result;
         }
 
-        function playNotification(material) {
+        async function playNotification(material, key) {
             try {
+                const response = await fetch(FPT_AI_TTS_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'api-key': FPT_AI_API_KEY,
+                        'Content-Type': 'application/json',
+                        'voice': 'banmai',
+                        'speed': ''
+                    },
+                    body: JSON.stringify({ text: `Check lại ${material}` })
+                });
+                if (!response.ok) throw new Error('Failed to fetch TTS audio');
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                const audio = new Audio(audioUrl);
+                audio.play();
+                audio.onended = () => URL.revokeObjectURL(audioUrl);
+            } catch (error) {
+                console.warn('FPT.AI TTS failed:', error);
                 const utterance = new SpeechSynthesisUtterance(`Check lại ${material}`);
                 utterance.lang = 'vi-VN';
                 const voices = window.speechSynthesis.getVoices();
@@ -358,22 +378,24 @@
                 utterance.rate = 1.0;
                 utterance.pitch = 1.0;
                 window.speechSynthesis.speak(utterance);
-            } catch (error) {
-                console.warn('TTS failed:', error);
-                alert('Không thể phát thông báo âm thanh. Vui lòng kiểm tra hỗ trợ trình duyệt.');
             }
         }
 
         function showExpirationPopup(material, rowId, tab) {
             const popup = document.getElementById(`expirationPopup${tab === 'daily' ? '' : '-longterm'}`);
             const message = document.getElementById(`expirationMessage${tab === 'daily' ? '' : '-longterm'}`);
+            const key = `${material}_${rowId}_${tab}`;
             message.textContent = `Hết hạn: ${material}`;
             popup.classList.add('show');
+            notificationIntervals[key] = setInterval(() => {
+                playNotification(material, key);
+            }, 10000);
             popup.onclick = () => {
                 popup.classList.remove('show');
-                unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
-                window.speechSynthesis.cancel();
-                manageNotificationInterval();
+                clearInterval(notificationIntervals[key]);
+                delete notificationIntervals[key];
+                unconfirmedExpirations.delete(key);
+                expiredMaterials.delete(key);
             };
         }
 
@@ -409,10 +431,11 @@
             tableBody.innerHTML = '';
             const keysToRemove = Array.from(expiredMaterials).filter(key => key.endsWith(`_${tab}`));
             keysToRemove.forEach(key => {
+                clearInterval(notificationIntervals[key]);
+                delete notificationIntervals[key];
                 expiredMaterials.delete(key);
                 unconfirmedExpirations.delete(key);
             });
-            manageNotificationInterval();
             manageUpdateInterval();
         }
 
@@ -621,11 +644,13 @@
             row.querySelector('.edit-button').addEventListener('click', () => editRow(row, material, cookTime, rowId, tab));
             row.querySelector('.delete-button').addEventListener('click', () => {
                 row.remove();
-                expiredMaterials.delete(`${material}_${rowId}_${tab}`);
-                unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
+                const key = `${material}_${rowId}_${tab}`;
+                clearInterval(notificationIntervals[key]);
+                delete notificationIntervals[key];
+                expiredMaterials.delete(key);
+                unconfirmedExpirations.delete(key);
                 saveTableData(tab);
                 manageUpdateInterval();
-                manageNotificationInterval();
             });
 
             row.addEventListener('dragstart', handleDragStart);
@@ -709,11 +734,13 @@
                     document.getElementById(`popup${tab === 'daily' ? '' : '-longterm'}`).classList.remove('show');
                     document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = '';
                     document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = '';
+                    const key = `${material}_${rowId}_${tab}`;
+                    clearInterval(notificationIntervals[key]);
+                    delete notificationIntervals[key];
+                    expiredMaterials.delete(key);
+                    unconfirmedExpirations.delete(key);
                     saveTableData(tab);
                     updateRemainingTimes();
-                    expiredMaterials.delete(`${material}_${rowId}_${tab}`);
-                    unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
-                    manageNotificationInterval();
                 } else {
                     alert('Vui lòng điền đầy đủ thông tin');
                 }
@@ -729,11 +756,14 @@
                 const rowId = cell.dataset.rowId;
                 const tab = cell.dataset.tab;
                 const defaultTime = tab === 'daily' ? '00:00:00' : '';
+                const key = `${material}_${rowId}_${tab}`;
                 if (!cookTime || cookTime === defaultTime) {
                     cell.textContent = 'Đợi';
                     cell.classList.remove('text-red-500');
-                    expiredMaterials.delete(`${material}_${rowId}_${tab}`);
-                    unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
+                    clearInterval(notificationIntervals[key]);
+                    delete notificationIntervals[key];
+                    expiredMaterials.delete(key);
+                    unconfirmedExpirations.delete(key);
                     return;
                 }
                 const cookDate = tab === 'daily'
@@ -745,11 +775,10 @@
                 if (timeDiff <= 0) {
                     cell.textContent = 'Hết hạn';
                     cell.classList.add('text-red-500');
-                    if (!expiredMaterials.has(`${material}_${rowId}_${tab}`)) {
+                    if (!expiredMaterials.has(key)) {
                         showExpirationPopup(material, rowId, tab);
-                        unconfirmedExpirations.add(`${material}_${rowId}_${tab}`);
-                        expiredMaterials.add(`${material}_${rowId}_${tab}`);
-                        playNotification(material);
+                        unconfirmedExpirations.add(key);
+                        expiredMaterials.add(key);
                     }
                 } else {
                     const hoursLeft = Math.floor(timeDiff / (1000 * 60 * 60));
@@ -757,25 +786,12 @@
                     const secondsLeft = Math.floor((timeDiff % (1000 * 60)) / 1000);
                     cell.textContent = `${hoursLeft}h ${minutesLeft}m ${secondsLeft}s`;
                     cell.classList.remove('text-red-500');
-                    expiredMaterials.delete(`${material}_${rowId}_${tab}`);
-                    unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
+                    clearInterval(notificationIntervals[key]);
+                    delete notificationIntervals[key];
+                    expiredMaterials.delete(key);
+                    unconfirmedExpirations.delete(key);
                 }
             });
-        }
-
-        function manageNotificationInterval() {
-            if (notificationInterval) {
-                clearInterval(notificationInterval);
-                notificationInterval = null;
-            }
-            if (unconfirmedExpirations.size > 0) {
-                notificationInterval = setInterval(() => {
-                    unconfirmedExpirations.forEach(key => {
-                        const [material] = key.split('_');
-                        playNotification(material);
-                    });
-                }, 10000);
-            }
         }
 
         function manageUpdateInterval() {
@@ -794,10 +810,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            window.speechSynthesis.onvoiceschanged = () => {
-                const voices = window.speechSynthesis.getVoices();
-                console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
-            };
             setupAddButton('daily');
             setupAddButton('longterm');
             setupCurrentTimeButton('daily');
