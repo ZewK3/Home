@@ -594,10 +594,10 @@
             const defaultTime = tab === 'daily' ? '00:00:00' : '';
             let expiryTimeStr = 'Chưa xác định';
             if (cookTime && cookTime !== defaultTime) {
-                const cookDate = tab === 'daily' ? new Date(`1970-01-01T${cookTime}`) : parseDateTime(cookTime);
-                if (tab === 'daily' && cookDate > new Date()) {
-                    cookDate.setDate(cookDate.getDate() - 1);
-                }
+                const now = new Date();
+                const cookDate = tab === 'daily'
+                    ? new Date(now.getFullYear(), now.getMonth(), now.getDate(), ...cookTime.split(':').map(Number))
+                    : parseDateTime(cookTime);
                 const hsdHours = materialHSD[material] || 0;
                 const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
                 expiryTimeStr = tab === 'daily' 
@@ -686,10 +686,10 @@
                 const newCookTime = document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value;
                 if (newMaterial && newCookTime) {
                     const normalizedNewCookTime = normalizeTime(newCookTime, tab);
-                    const cookDate = tab === 'daily' ? new Date(`1970-01-01T${normalizedNewCookTime}`) : parseDateTime(normalizedNewCookTime);
-                    if (tab === 'daily' && cookDate > new Date()) {
-                        cookDate.setDate(cookDate.getDate() - 1);
-                    }
+                    const now = new Date();
+                    const cookDate = tab === 'daily'
+                        ? new Date(now.getFullYear(), now.getMonth(), now.getDate(), ...normalizedNewCookTime.split(':').map(Number))
+                        : parseDateTime(normalizedNewCookTime);
                     const hsdHours = materialHSD[newMaterial] || 0;
                     const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
                     const defaultTime = tab === 'daily' ? '00:00:00' : '';
@@ -736,10 +736,9 @@
                     unconfirmedExpirations.delete(`${material}_${rowId}_${tab}`);
                     return;
                 }
-                const cookDate = tab === 'daily' ? new Date(`1970-01-01T${cookTime}`) : parseDateTime(cookTime);
-                if (tab === 'daily' && cookDate > now) {
-                    cookDate.setDate(cookDate.getDate() - 1);
-                }
+                const cookDate = tab === 'daily'
+                    ? new Date(now.getFullYear(), now.getMonth(), now.getDate(), ...cookTime.split(':').map(Number))
+                    : parseDateTime(cookTime);
                 const hsdHours = materialHSD[material] || 0;
                 const expiryTime = new Date(cookDate.getTime() + hsdHours * 60 * 60 * 1000);
                 const timeDiff = expiryTime - now;
