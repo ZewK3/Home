@@ -216,6 +216,20 @@
         .tab-content.active {
             display: block;
         }
+        /* Thêm thanh cuộn cho tbody */
+        tbody {
+            display: block;
+            max-height: 400px; /* Giới hạn chiều cao tối đa */
+            overflow-y: auto; /* Hiển thị thanh cuộn dọc khi vượt quá chiều cao */
+        }
+        thead, tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed; /* Đảm bảo các cột căn đều */
+        }
+        thead {
+            width: calc(100% - 1em); /* Điều chỉnh cho thanh cuộn */
+        }
     </style>
 </head>
 <body>
@@ -256,7 +270,7 @@
                 </div>
                 <div class="button-group">
                     <button id="saveButton" class="save-button">Lưu</button>
-                    <button id="cancelButton" class="cancel-button">Hủy</button>
+                    <button id="cancelButton" class="-cancel-button">Hủy</button>
                 </div>
             </div>
         </div>
@@ -312,8 +326,8 @@
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv';
-        const FPT_AI_TTS_API_URL = 'https://api.fpt.ai/hmi/tts/v5';
-        const FPT_AI_API_KEY = 'IzATFczjCEsFJqq6OwaQp1mRE9sDVw46';
+        // Sử dụng proxy backend (thay bằng URL của bạn nếu có)
+        const TTS_PROXY_URL = 'http://localhost:5000/tts'; // Hoặc 'http://your-server/tts.php'
         let materialsDataDaily = [];
         let materialsDataLongterm = [];
         let materialHSD = {};
@@ -351,25 +365,47 @@
 
         async function playNotification(material, key) {
             try {
-                const response = await fetch(FPT_AI_TTS_API_URL, {
-                    method: 'POST',
+                const response = await fetch(TTS_PROXY_URL, {
+                    method: 'GET', // Proxy trả về MP3 cho "Hết Hạn"
                     headers: {
-                        'api-key': FPT_AI_API_KEY,
-                        'Content-Type': 'application/json',
-                        'voice': 'banmai',
-                        'speed': ''
-                    },
-                    body: JSON.stringify({ text: `Check lại ${material}` })
+                        'Accept': 'audio/mpeg'
+                    }
                 });
-                if (!response.ok) throw new Error('Failed to fetch TTS audio');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`TTS proxy failed: ${response.status} - ${errorText}`);
+                }
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('audio/mpeg')) {
+                    throw new Error(`Invalid content type: ${contentType}`);
+                }
                 const audioBlob = await response.blob();
+                if (!audioBlob || audioBlob.size === 0) {
+                    throw new Error('Empty audio blob received');
+                }
                 const audioUrl = URL.createObjectURL(audioBlob);
                 const audio = new Audio(audioUrl);
-                audio.play();
+                audio.addEventListener('error', (e) => {
+                    console.error(`Audio playback error for ${key}:`, e);
+                    alert('Không thể phát âm thanh từ proxy. Chuyển sang TTS trình duyệt.');
+                    playFallbackTTS();
+                });
+                await audio.play().catch(e => {
+                    console.error(`Audio play failed for ${key}:`, e);
+                    alert('Không thể phát âm thanh từ proxy. Chuyển sang TTS trình duyệt.');
+                    playFallbackTTS();
+                });
                 audio.onended = () => URL.revokeObjectURL(audioUrl);
             } catch (error) {
-                console.warn('FPT.AI TTS failed:', error);
-                const utterance = new SpeechSynthesisUtterance(`Check lại ${material}`);
+                console.error(`TTS error for ${material} (${key}):`, error);
+                alert('Lỗi khi gọi TTS proxy. Chuyển sang TTS trình duyệt.');
+                playFallbackTTS();
+            }
+        }
+
+        function playFallbackTTS() {
+            try {
+                const utterance = new SpeechSynthesisUtterance('Hết Hạn');
                 utterance.lang = 'vi-VN';
                 const voices = window.speechSynthesis.getVoices();
                 const preferredVoice = voices.find(voice => voice.name.includes('Google') && voice.lang === 'vi-VN') || voices.find(voice => voice.lang === 'vi-VN');
@@ -378,6 +414,9 @@
                 utterance.rate = 1.0;
                 utterance.pitch = 1.0;
                 window.speechSynthesis.speak(utterance);
+            } catch (error) {
+                console.error('Fallback TTS failed:', error);
+                alert('Không thể phát thông báo âm thanh. Vui lòng kiểm tra hỗ trợ trình duyệt.');
             }
         }
 
@@ -810,6 +849,10 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            window.speechSynthesis.onvoiceschanged = () => {
+                const voices = window.speechSynthesis.getVoices();
+                console.log('Available voices:', voices.map(v => ({ name: v.name, lang: v.lang })));
+            };
             setupAddButton('daily');
             setupAddButton('longterm');
             setupCurrentTimeButton('daily');
