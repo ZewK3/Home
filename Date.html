@@ -38,6 +38,7 @@
             border: 1px solid #e5e7eb;
             padding: 8px;
             text-align: left;
+            overflow-wrap: break-word; /* Đảm bảo nội dung dài tự xuống dòng */
         }
         th {
             background-color: #e5e7eb;
@@ -216,11 +217,12 @@
         .tab-content.active {
             display: block;
         }
-        /* Thêm thanh cuộn cho tbody */
+        /* Thêm thanh cuộn dọc, ngăn thanh cuộn ngang */
         tbody {
             display: block;
             max-height: 400px; /* Giới hạn chiều cao tối đa */
-            overflow-y: auto; /* Hiển thị thanh cuộn dọc khi vượt quá chiều cao */
+            overflow-y: auto; /* Thanh cuộn dọc */
+            overflow-x: hidden; /* Ngăn thanh cuộn ngang */
         }
         thead, tbody tr {
             display: table;
@@ -228,7 +230,7 @@
             table-layout: fixed; /* Đảm bảo các cột căn đều */
         }
         thead {
-            width: calc(100% - 1em); /* Điều chỉnh cho thanh cuộn */
+            width: 100%; /* Không cần trừ 1em, đảm bảo khớp với tbody */
         }
     </style>
 </head>
@@ -270,7 +272,7 @@
                 </div>
                 <div class="button-group">
                     <button id="saveButton" class="save-button">Lưu</button>
-                    <button id="cancelButton" class="-cancel-button">Hủy</button>
+                    <button id="cancelButton" class="cancel-button">Hủy</button>
                 </div>
             </div>
         </div>
@@ -366,7 +368,7 @@
         async function playNotification(material, key) {
             try {
                 const response = await fetch(TTS_PROXY_URL, {
-                    method: 'GET', // Proxy trả về MP3 cho "Hết Hạn"
+                    method: 'GET',
                     headers: {
                         'Accept': 'audio/mpeg'
                     }
