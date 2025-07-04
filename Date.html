@@ -10,10 +10,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            overflow: hidden; /* Ngăn cuộn toàn trang */
+            height: 100vh; /* Chiếm toàn bộ chiều cao viewport */
         }
         .container {
             width: 100%;
@@ -22,6 +22,11 @@
             padding: 24px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            min-height: 80vh; /* Cố định chiều cao tối thiểu */
+            max-height: 80vh; /* Cố định chiều cao tối đa */
+            overflow: hidden; /* Ngăn container cuộn */
+            display: flex;
+            flex-direction: column;
         }
         h1 {
             font-size: 24px;
@@ -33,12 +38,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 24px;
+            flex-grow: 1; /* Bảng chiếm không gian còn lại trong container */
         }
         th, td {
             border: 1px solid #e5e7eb;
             padding: 8px;
             text-align: left;
-            overflow-wrap: break-word; /* Đảm bảo nội dung dài tự xuống dòng */
+            overflow-wrap: break-word; /* Ngăn tràn ngang do nội dung dài */
         }
         th {
             background-color: #e5e7eb;
@@ -217,7 +223,7 @@
         .tab-content.active {
             display: block;
         }
-        /* Thêm thanh cuộn dọc, ngăn thanh cuộn ngang */
+        /* Thanh cuộn dọc, ngăn thanh cuộn ngang */
         tbody {
             display: block;
             max-height: 400px; /* Giới hạn chiều cao tối đa */
@@ -230,7 +236,22 @@
             table-layout: fixed; /* Đảm bảo các cột căn đều */
         }
         thead {
-            width: 100%; /* Không cần trừ 1em, đảm bảo khớp với tbody */
+            width: 100%; /* Khớp hoàn toàn với tbody */
+        }
+        /* Ô tìm kiếm */
+        .search-container {
+            margin-bottom: 16px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .search-input::placeholder {
+            color: #9ca3af;
         }
     </style>
 </head>
@@ -243,6 +264,9 @@
     <div id="daily" class="tab-content active">
         <div class="container">
             <h1>Quản lý hạn sử dụng</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm nguyên vật liệu...">
+            </div>
             <table id="materialTable">
                 <thead>
                     <tr>
@@ -286,6 +310,9 @@
     <div id="longterm" class="tab-content">
         <div class="container">
             <h1>Quản lý hạn sử dụng</h1>
+            <div class="search-container">
+                <input type="text" id="searchInput-longterm" class="search-input" placeholder="Tìm kiếm nguyên vật liệu...">
+            </div>
             <table id="materialTable-longterm">
                 <thead>
                     <tr>
@@ -328,7 +355,6 @@
 
     <script>
         const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQz4fYu-0uVSVtmI29lmc-xXSXTV1c4FAbUpZNIR0bG4abs3py6tSfVrCVTgcsg6nbawP_maZWDdYJn/pub?output=csv';
-        // Sử dụng proxy backend (thay bằng URL của bạn nếu có)
         const TTS_PROXY_URL = 'http://localhost:5000/tts'; // Hoặc 'http://your-server/tts.php'
         let materialsDataDaily = [];
         let materialsDataLongterm = [];
@@ -347,6 +373,8 @@
             });
             document.getElementById(tabName).classList.add('active');
             document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`searchInput${tabName === 'daily' ? '' : '-longterm'}`).value = '';
+            filterTable(tabName);
             manageUpdateInterval();
         }
 
@@ -642,6 +670,7 @@
                 document.getElementById(`materialSelect${tab === 'daily' ? '' : '-longterm'}`).value = '';
                 document.getElementById(`cookTime${tab === 'daily' ? '' : '-longterm'}`).value = '';
                 saveTableData(tab);
+                filterTable(tab);
                 startUpdateInterval();
             } else {
                 alert('Vui lòng điền đầy đủ thông tin');
@@ -691,6 +720,7 @@
                 expiredMaterials.delete(key);
                 unconfirmedExpirations.delete(key);
                 saveTableData(tab);
+                filterTable(tab);
                 manageUpdateInterval();
             });
 
@@ -731,6 +761,7 @@
                     tableBody.insertBefore(draggedRow, targetRow);
                 }
                 saveTableData(tab);
+                filterTable(tab);
             }
             targetRow.classList.remove('drag-over');
         }
@@ -781,6 +812,7 @@
                     expiredMaterials.delete(key);
                     unconfirmedExpirations.delete(key);
                     saveTableData(tab);
+                    filterTable(tab);
                     updateRemainingTimes();
                 } else {
                     alert('Vui lòng điền đầy đủ thông tin');
@@ -835,6 +867,22 @@
             });
         }
 
+        function filterTable(tab) {
+            const searchInput = document.getElementById(`searchInput${tab === 'daily' ? '' : '-longterm'}`);
+            const tableBody = document.getElementById(`tableBody${tab === 'daily' ? '' : '-longterm'}`);
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            const searchTerm = searchInput.value.trim().toLowerCase();
+
+            rows.forEach(row => {
+                const material = row.cells[0].textContent.toLowerCase();
+                if (searchTerm === '' || material.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
         function manageUpdateInterval() {
             if (updateInterval) {
                 clearInterval(updateInterval);
@@ -861,6 +909,8 @@
             setupCurrentTimeButton('longterm');
             setupCancelButton('daily');
             setupCancelButton('longterm');
+            document.getElementById('searchInput').addEventListener('input', () => filterTable('daily'));
+            document.getElementById('searchInput-longterm').addEventListener('input', () => filterTable('longterm'));
             fetchMaterials();
         });
     </script>
