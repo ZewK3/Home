@@ -172,7 +172,7 @@ async function handleRegister(event) {
 // Hàm xử lý đăng nhập
 async function handleLogin(event) {
   event.preventDefault();
-  loginFormContainer.style.display = "block";
+  loginFormContainer.style.display = "none";
 
   const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
   const loginPassword = document.getElementById("loginPassword").value.trim();
@@ -210,7 +210,7 @@ async function handleLogin(event) {
     console.error("Lỗi xảy ra:", error.message);
     showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error");
   } finally {
-    loginFormContainer.style.display = "none";
+    loginFormContainer.style.display = "block";
   }
 }
 
