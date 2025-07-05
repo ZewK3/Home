@@ -172,7 +172,7 @@ async function handleRegister(event) {
 // Hàm xử lý đăng nhập
 async function handleLogin(event) {
   event.preventDefault();
-  const spinner = document.getElementById("loadingSpinner");
+  const spinner = document.getElementById("form-container");
   spinner.style.display = "block";
 
   const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
