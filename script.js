@@ -172,7 +172,7 @@ async function handleRegister(event) {
 // Hàm xử lý đăng nhập
 async function handleLogin(event) {
   event.preventDefault();
-  loginFormContainer.style.display = "block";
+  loginFormContainer.style.display = "none";
 
   const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
   const loginPassword = document.getElementById("loginPassword").value.trim();
@@ -209,7 +209,7 @@ async function handleLogin(event) {
   } catch (error) {
     console.error("Lỗi xảy ra:", error.message);
     showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error");
-    loginFormContainer.style.display = "none";
+    loginFormContainer.style.display = "block";
   } finally {
     loginFormContainer.style.display = "none";
   }
@@ -220,15 +220,15 @@ function handleLoginErrors(status) {
   switch (status) {
     case 401:
       showNotification("Mật khẩu không đúng", "error");
-      loginFormContainer.style.display = "none";
+      loginFormContainer.style.display = "block";
       break;
     case 404:
       showNotification("Mã nhân viên không tồn tại", "warning");
-      loginFormContainer.style.display = "none";
+      loginFormContainer.style.display = "block";
       break;
     default:
       showNotification("Đăng nhập thất bại! Vui lòng thử lại", "error");
-      loginFormContainer.style.display = "none";
+      loginFormContainer.style.display = "block";
   }
 }
 
