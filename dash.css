@@ -76,6 +76,13 @@ body {
     border: 2px solid #ffffff;
     width: 60%;
 }
+#taskStore {
+    font-size: 12px;
+    background-color: bisque;
+    padding: 5px 5px;
+    border: 2px solid #ffffff;
+    width: 60%;
+}
 .menu-item:hover .submenu {
     display: block;
     opacity: 1;
