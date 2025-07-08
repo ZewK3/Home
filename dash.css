@@ -20,20 +20,41 @@ body {
 /* Submenu */
 .submenu {
     display: none;
-    position: absolute;
+/*     position: absolute;
     left: 100%;
     top: 0;
     background-color: white;
     border: 2px solid #000;
     border-radius: 5px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); */
     min-width: 200px;
-    z-index: 2;
+/*     z-index: 2;
     padding: 5px 0;
     transition: opacity var(--transition-default);
-    opacity: 0;
+    opacity: 0; */
 }
 
+a#openScheduleRegistration {
+    font-size: 12px;
+    background-color: bisque;
+    padding: 5px 5px;
+    border: 2px solid #ffffff;
+    width: 60%;
+}
+a#openScheduleWork {
+    font-size: 12px;
+    background-color: bisque;
+    padding: 5px 5px;
+    border: 2px solid #ffffff;
+    width: 60%;
+}
+a#openOfficialworkschedule {
+    font-size: 12px;
+    background-color: bisque;
+    padding: 5px 5px;
+    border: 2px solid #ffffff;
+    width: 60%;
+}
 .menu-item:hover .submenu {
     display: block;
     opacity: 1;
