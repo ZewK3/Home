@@ -34,42 +34,42 @@ body {
     opacity: 0; */
 }
 
-a#openScheduleRegistration {
+#openScheduleRegistration {
     font-size: 12px;
     background-color: bisque;
     padding: 5px 5px;
     border: 2px solid #ffffff;
     width: 60%;
 }
-a#openScheduleWork {
+#openScheduleWork {
     font-size: 12px;
     background-color: bisque;
     padding: 5px 5px;
     border: 2px solid #ffffff;
     width: 60%;
 }
-a#openOfficialworkschedule {
+#openOfficialworkschedule {
     font-size: 12px;
     background-color: bisque;
     padding: 5px 5px;
     border: 2px solid #ffffff;
     width: 60%;
 }
-a#taskPersonnel {
+#taskPersonnel {
     font-size: 12px;
     background-color: bisque;
     padding: 5px 5px;
     border: 2px solid #ffffff;
     width: 60%;
 }
-a#taskFinance {
+#taskFinance {
     font-size: 12px;
     background-color: bisque;
     padding: 5px 5px;
     border: 2px solid #ffffff;
     width: 60%;
 }
-a#taskApproval {
+#taskApproval {
     font-size: 12px;
     background-color: bisque;
     padding: 5px 5px;
