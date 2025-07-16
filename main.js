@@ -78,29 +78,32 @@ class AuthManager {
     }
 
     updateSubmenuByRole(userRole) {
-        // Kiểm tra submenu cho "Lịch Làm"
-        const scheduleItem = document.querySelector("#openSchedule").closest(".menu-item");
-        if (scheduleItem) {
-            const submenu = scheduleItem.querySelector(".submenu");
-            if (submenu) {
-                submenu.querySelectorAll(".submenu-item").forEach(item => {
-                    const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-                    item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
-                });
-            }
-        }
+    // Danh sách các ID cha cần gán click mở submenu
+        const menuParents = ["openSchedule", "openTaskProcessing"];
+        
+        menuParents.forEach(parentId => {
+            const menuParent = document.querySelector(`#${parentId}`)?.closest(".menu-item");
+            if (menuParent) {
+                const submenu = menuParent.querySelector(".submenu");
+                if (submenu) {
+                    // Ẩn mặc định
+                    submenu.style.display = "none";
+                    // Xóa sự kiện cũ nếu có
+                    menuParent.replaceWith(menuParent.cloneNode(true));
+                    const freshMenuParent = document.querySelector(`#${parentId}`)?.closest(".menu-item");
 
-        // Kiểm tra submenu cho "Xử Lý Yêu Cầu"
-        const taskProcessingItem = document.querySelector("#openTaskProcessing").closest(".menu-item");
-        if (taskProcessingItem) {
-            const submenu = taskProcessingItem.querySelector(".submenu");
-            if (submenu) {
-                submenu.querySelectorAll(".submenu-item").forEach(item => {
-                    const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-                    item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
-                });
+                    freshMenuParent.addEventListener("click", () => {
+                        // Kiểm tra quyền từng submenu-item
+                        submenu.querySelectorAll(".submenu-item").forEach(item => {
+                            const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+                            item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
+                        });
+                        // Toggle hiển thị submenu
+                        submenu.style.display = submenu.style.display === "none" ? "block" : "none";
+                    });
+                }
             }
-        }
+        });
     }
 
     setupLogout() {
