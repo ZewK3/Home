@@ -83,10 +83,10 @@ body {
     border: 2px solid #ffffff;
     width: 60%;
 }
-.menu-item:hover .submenu {
+/* .menu-item:hover .submenu {
     display: block;
     opacity: 1;
-}
+} */
 
 .submenu-item {
     list-style: none;
