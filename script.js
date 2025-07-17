@@ -1,14 +1,30 @@
 // Constants
 const API_URL = "https://zewk.tocotoco.workers.dev";
 const TOKEN_KEY = "authToken";
-const REMEMBER_ME_KEY = "rememberedEmployeeId";
+const REMEMBER_ME_KEY = "loggedInUser";
 const THEME_KEY = "theme";
 const SUCCESS_STATUS = 200;
 const ACCOUNT_EXISTS_STATUS = 209;
 const PHONE_EXISTS_STATUS = 210;
 const EMAIL_EXISTS_STATUS = 211;
 
-
+// Thêm đoạn này vào cuối file hoặc sau khi DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function(){
+    var flag = document.querySelector('.flag-vn');
+    if(flag){
+        var w = flag.offsetWidth;
+        for(var i = 0; i < w; i++){
+            var el = document.createElement('div');
+            el.className = 'flag-element';
+            el.style.backgroundPosition = -i + "px 0";
+            el.style.animationDelay = (i * 10) + "ms";
+            el.style.webkitAnimationDelay = (i * 10) + "ms";
+            el.style.mozAnimationDelay = (i * 10) + "ms";
+            el.style.msAnimationDelay = (i * 10) + "ms";
+            flag.appendChild(el);
+        }
+    }
+});
 // Create stars
 function createStars(count) {
     const stars = document.querySelector('.stars');
