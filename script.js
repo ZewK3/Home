@@ -1,272 +1,314 @@
+// Constants
 const API_URL = "https://zewk.tocotoco.workers.dev";
+const TOKEN_KEY = "authToken";
+const REMEMBER_ME_KEY = "rememberedEmployeeId";
+const THEME_KEY = "theme";
 const SUCCESS_STATUS = 200;
 const ACCOUNT_EXISTS_STATUS = 209;
 const PHONE_EXISTS_STATUS = 210;
 const EMAIL_EXISTS_STATUS = 211;
 
-const loginFormContainer = document.getElementById("loginFormContainer");
-const registerFormContainer = document.getElementById("registerFormContainer");
-const notification = document.getElementById("notification");
 
-document.getElementById("goToRegister").addEventListener("click", showRegisterForm);
-document.getElementById("backToLogin").addEventListener("click", showLoginForm);
-document.getElementById("registerForm").addEventListener("submit", handleRegister);
-document.getElementById("loginForm").addEventListener("submit", handleLogin);
-window.addEventListener("DOMContentLoaded", prefillLoginForm);
-document.addEventListener("keydown", disableDevTools);
-document.addEventListener("contextmenu", disableRightClick);
+// Create stars
+function createStars(count) {
+    const stars = document.querySelector('.stars');
+    
+    for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // Random position
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation duration
+        star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+        
+        stars.appendChild(star);
+    }
+}
 
-// Hàm hiển thị form đăng ký và tải danh sách cửa hàng
+// Create light streaks
+function createLightStreaks(count) {
+    const container = document.querySelector('.light-streaks');
+    
+    for (let i = 0; i < count; i++) {
+        const streak = document.createElement('div');
+        streak.className = 'light-streak';
+        
+        // Random position and delay
+        streak.style.left = `${Math.random() * 100}%`;
+        streak.style.animationDelay = `${Math.random() * 8}s`;
+        streak.style.height = `${Math.random() * 200 + 100}px`;
+        
+        container.appendChild(streak);
+    }
+}
+
+// Initialize background effects
+document.addEventListener('DOMContentLoaded', () => {
+    createStars(100);  // Create 100 stars
+    createLightStreaks(20);  // Create 20 light streaks
+});
+// DOM Elements
+const elements = {
+    loginForm: document.getElementById("loginForm"),
+    registerForm: document.getElementById("registerForm"),
+    loginContainer: document.getElementById("loginFormContainer"),
+    registerContainer: document.getElementById("registerFormContainer"),
+    notification: document.getElementById("notification"),
+    themeSwitch: document.getElementById("themeSwitch"),
+    strengthMeter: document.querySelector(".strength-meter div"),
+    strengthText: document.querySelector(".strength-text")
+};
+
+// Form Transitions
 function showRegisterForm() {
-  loginFormContainer.style.display = "none";
-  registerFormContainer.style.display = "block";
-  loadStoreNames(); // Tải danh sách storeName từ server
+    elements.loginContainer.classList.remove('active');
+    elements.registerContainer.classList.add('active');
+    elements.registerForm.reset();
 }
 
-// Hàm hiển thị form đăng nhập
 function showLoginForm() {
-  registerFormContainer.style.display = "none";
-  loginFormContainer.style.display = "block";
+    elements.registerContainer.classList.remove('active');
+    elements.loginContainer.classList.add('active');
+    elements.loginForm.reset();
 }
 
-// Hàm hiển thị thông báo
+// Notification System
 function showNotification(message, type = "success", duration = 3000) {
-  notification.className = `notification ${type} show`;
-  notification.innerText = message;
-  notification.style.display = "block";
-  setTimeout(() => {
-    notification.classList.remove("show");
+    const icons = {
+        success: "✓",
+        error: "✕",
+        warning: "⚠"
+    };
+
+    elements.notification.innerHTML = `
+        <span class="notification-icon">${icons[type]}</span>
+        <span class="notification-message">${message}</span>
+    `;
+    
+    elements.notification.className = `notification ${type} show`;
+    
     setTimeout(() => {
-      notification.style.display = "none";
-    }, 500);
-  }, duration);
+        elements.notification.classList.remove("show");
+    }, duration);
 }
 
-// Hàm tải danh sách cửa hàng với Select2
-async function loadStoreNames() {
-  const spinner = document.getElementById("loadingSpinner");
-  spinner.style.display = "block";
+// Password Strength Checker
+function checkPasswordStrength(password) {
+    let strength = 0;
+    let message = "";
 
-  try {
-    const response = await fetch(`${API_URL}?action=getStores`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    const checks = {
+        length: password.length >= 8,
+        lowercase: /[a-z]/.test(password),
+        uppercase: /[A-Z]/.test(password),
+        numbers: /\d/.test(password),
+        special: /[^A-Za-z0-9]/.test(password)
+    };
 
-    if (response.ok) {
-      const stores = await response.json();
-      const storeSelect = document.getElementById("storeName");
-      storeSelect.innerHTML = '<option value="" disabled selected>Chọn cửa hàng</option>';
+    Object.values(checks).forEach(check => strength += check ? 1 : 0);
 
-      stores.forEach(store => {
-        const option = document.createElement("option");
-        option.value = store.storeId;
-        option.text = store.storeName;
-        storeSelect.appendChild(option);
-      });
+    const colors = {
+        0: "#ef4444",
+        1: "#f59e0b",
+        2: "#f59e0b",
+        3: "#22c55e",
+        4: "#15803d",
+        5: "#15803d"
+    };
 
-      // Khởi tạo Select2 sau khi điền dữ liệu
-      if (!storeSelect.hasAttribute("data-select2-initialized")) {
-        $(storeSelect).select2({
-          placeholder: "Nhập Cửa Hàng",
-          allowClear: true,
-          width: "100%",
-        });
-        storeSelect.setAttribute("data-select2-initialized", "true");
-      } else {
-        $(storeSelect).trigger("change");
-      }
+    switch (strength) {
+        case 0: message = "Rất yếu"; break;
+        case 1: message = "Yếu"; break;
+        case 2: message = "Trung bình"; break;
+        case 3: message = "Khá"; break;
+        case 4: message = "Mạnh"; break;
+        case 5: message = "Rất mạnh"; break;
+    }
 
-      // Đảm bảo nhãn được cập nhật khi Select2 thay đổi
-      storeSelect.addEventListener("change", () => {
-        if (storeSelect.value) {
-          storeSelect.classList.add("not-empty");
-        } else {
-          storeSelect.classList.remove("not-empty");
+    elements.strengthMeter.style.width = `${(strength / 5) * 100}%`;
+    elements.strengthMeter.style.backgroundColor = colors[strength];
+    elements.strengthText.textContent = message;
+}
+
+// Form Validation
+function isValidForm(data) {
+    const patterns = {
+        employeeId: /^(MC|VP|ADMIN)\d*$/,
+        password: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/,
+        email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        phone: /^[0-9]{10}$/,
+        fullName: /^[A-Za-zÀ-ỹ\s]{2,30}$/
+    };
+
+    const messages = {
+        employeeId: "Mã nhân viên không hợp lệ",
+        password: "Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 chữ thường và 1 số",
+        email: "Email không hợp lệ",
+        phone: "Số điện thoại không hợp lệ",
+        fullName: "Họ tên không hợp lệ"
+    };
+
+    for (const [field, value] of Object.entries(data)) {
+        if (patterns[field] && !patterns[field].test(value)) {
+            showNotification(messages[field], "warning");
+            return false;
         }
-      });
-    } else {
-      showNotification("Không thể tải danh sách cửa hàng!", "error");
     }
-  } catch (error) {
-    console.error("Lỗi khi tải danh sách cửa hàng:", error.message);
-    showNotification("Có lỗi khi tải danh sách cửa hàng!", "error");
-  } finally {
-    spinner.style.display = "none";
-  }
+
+    return true;
 }
 
-// Hàm xử lý đăng ký
-async function handleRegister(event) {
-  event.preventDefault();
-  const spinner = document.getElementById("loadingSpinner");
-  spinner.style.display = "block";
-
-  const employeeId = document.getElementById("employeeId").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const fullName = document.getElementById("fullName").value.trim();
-  const storeName = document.getElementById("storeName").value; // Lấy storeId
-  const position = "NV";
-  const joinDate = document.getElementById("joinDate").value;
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
-
-  if (!isValidName(fullName)) {
-    showNotification("Tên nhân viên không chứa ký tự đặc biệt và không dài quá 30 ký tự", "warning");
-    spinner.style.display = "none";
-    return;
-  }
-  if (!isValidEmployeeId(employeeId)) {
-    showNotification("Mã nhân viên không hợp lệ", "warning");
-    spinner.style.display = "none";
-    return;
-  }
-  if (!isValidPassword(password)) {
-    showNotification("Mật khẩu phải có ít nhất 6 ký tự và chứa chữ cái in hoa", "warning");
-    spinner.style.display = "none";
-    return;
-  }
-
-  // Thêm kiểm tra storeName hợp lệ (tùy chọn)
-  const stores = await (await fetch(`${API_URL}?action=getStores`)).json();
-  if (!stores.some(store => store.storeId === storeName)) {
-    showNotification("Vui lòng chọn cửa hàng hợp lệ!", "warning");
-    spinner.style.display = "none";
-    return;
-  }
-
-  const data = { employeeId, password, fullName, storeName, position, joinDate, phone, email };
-  try {
-    const registerResponse = await fetch(`${API_URL}?action=register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-
-    switch (registerResponse.status) {
-      case ACCOUNT_EXISTS_STATUS:
-        showNotification("Tài khoản đã tồn tại!", "warning");
-        break;
-      case PHONE_EXISTS_STATUS:
-        showNotification("Số điện thoại đã tồn tại!", "warning");
-        break;
-      case EMAIL_EXISTS_STATUS:
-        showNotification("Email đã tồn tại!", "warning");
-        break;
-      case SUCCESS_STATUS:
-        const result = await registerResponse.json();
-        showNotification(result.message, "success");
-        showLoginForm();
-        break;
-      default:
-        showNotification("Đăng ký thất bại, vui lòng thử lại!", "error");
-    }
-  } catch (error) {
-    console.error("Lỗi xảy ra:", error.message);
-    showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error");
-  } finally {
-    spinner.style.display = "none";
-  }
-}
-
-// Hàm xử lý đăng nhập
+// API Calls
 async function handleLogin(event) {
-  event.preventDefault();
-  const spinner = document.getElementById("loadingSpinner");
-  spinner.style.display = "block";
+    event.preventDefault();
+    
+    const button = elements.loginForm.querySelector("button");
+    button.classList.add("loading");
+    
+    const formData = {
+        loginEmployeeId: elements.loginForm.loginEmployeeId.value.trim(),
+        loginPassword: elements.loginForm.loginPassword.value
+    };
 
-  const loginEmployeeId = document.getElementById("loginEmployeeId").value.trim();
-  const loginPassword = document.getElementById("loginPassword").value.trim();
-  const rememberMe = document.getElementById("rememberMe").checked;
-  const data = { loginEmployeeId, loginPassword };
+    try {
+        const response = await fetch(`${API_URL}?action=login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
 
-  try {
-    const loginResponse = await fetch(`${API_URL}?action=login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+        if (response.ok) {
+            const result = await response.json();
+            localStorage.setItem(TOKEN_KEY, result.token);
+            
+            if (elements.loginForm.rememberMe.checked) {
+                localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
+            }
+
+            showNotification("Đăng nhập thành công!");
+            setTimeout(() => window.location.href = "dashboard.html", 1500);
+        } else {
+            throw new Error(response.status === 401 ? "Mật khẩu không đúng" : "Mã nhân viên không tồn tại");
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+    } finally {
+        button.classList.remove("loading");
+    }
+}
+
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const button = elements.registerForm.querySelector("button");
+    button.classList.add("loading");
+    
+    const formData = {
+        employeeId: elements.registerForm.employeeId.value.trim(),
+        password: elements.registerForm.password.value,
+        fullName: elements.registerForm.fullName.value.trim(),
+        phone: elements.registerForm.phone.value.trim(),
+        email: elements.registerForm.email.value.trim(),
+        position: "NV"
+    };
+
+    if (!isValidForm(formData)) {
+        button.classList.remove("loading");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}?action=register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
+
+        switch (response.status) {
+            case SUCCESS_STATUS:
+                showNotification("Đăng ký thành công!");
+                setTimeout(showLoginForm, 1500);
+                break;
+            case ACCOUNT_EXISTS_STATUS:
+                showNotification("Tài khoản đã tồn tại!", "warning");
+                break;
+            case PHONE_EXISTS_STATUS:
+                showNotification("Số điện thoại đã được sử dụng!", "warning");
+                break;
+            case EMAIL_EXISTS_STATUS:
+                showNotification("Email đã được sử dụng!", "warning");
+                break;
+            default:
+                throw new Error("Đăng ký thất bại");
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+    } finally {
+        button.classList.remove("loading");
+    }
+}
+
+// Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+    // Theme toggle
+    document.getElementById("themeSwitch").addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem(THEME_KEY, newTheme);
     });
 
-    if (loginResponse.ok) {
-      const result = await loginResponse.json();
-      if (result.token) {
-        localStorage.setItem("authToken", result.token);
-      }
-      showNotification("Đăng nhập thành công", "success");
-      localStorage.setItem("loggedInUser", JSON.stringify(data));
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmployeeId", loginEmployeeId);
-        localStorage.setItem("rememberedPassword", loginPassword);
-      } else {
-        localStorage.removeItem("rememberedEmployeeId");
-        localStorage.removeItem("rememberedPassword");
-      }
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 3000);
-    } else {
-      handleLoginErrors(loginResponse.status);
+    // Remember me
+    const rememberedId = localStorage.getItem(REMEMBER_ME_KEY);
+    if (rememberedId) {
+        document.getElementById("loginEmployeeId").value = rememberedId;
+        document.getElementById("rememberMe").checked = true;
     }
-  } catch (error) {
-    console.error("Lỗi xảy ra:", error.message);
-    showNotification("Có lỗi khi gửi yêu cầu. Vui lòng thử lại", "error");
-  } finally {
-    spinner.style.display = "none";
-  }
-}
 
-// Hàm xử lý lỗi đăng nhập
-function handleLoginErrors(status) {
-  switch (status) {
-    case 401:
-      showNotification("Mật khẩu không đúng", "error");
-      break;
-    case 404:
-      showNotification("Mã nhân viên không tồn tại", "warning");
-      break;
-    default:
-      showNotification("Đăng nhập thất bại! Vui lòng thử lại", "error");
-  }
-}
+    // Password strength
+    document.getElementById("password").addEventListener("input", (e) => {
+        checkPasswordStrength(e.target.value);
+    });
 
-// Hàm điền thông tin đăng nhập đã lưu
-function prefillLoginForm() {
-  const rememberedEmployeeId = localStorage.getItem("rememberedEmployeeId");
-  const rememberedPassword = localStorage.getItem("rememberedPassword");
+    // Password visibility toggle
+    document.querySelectorAll(".password-toggle").forEach(toggle => {
+        toggle.addEventListener("click", (e) => {
+            const input = e.target.closest(".input-group").querySelector("input");
+            const icon = toggle.querySelector(".material-icons-round");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.textContent = "visibility_off";
+            } else {
+                input.type = "password";
+                icon.textContent = "visibility";
+            }
+        });
+    });
 
-  if (rememberedEmployeeId && rememberedPassword) {
-    document.getElementById("loginEmployeeId").value = rememberedEmployeeId;
-    document.getElementById("loginPassword").value = rememberedPassword;
-    document.getElementById("rememberMe").checked = true;
-  }
-}
+    // Form switching
+    document.getElementById("goToRegister").addEventListener("click", (e) => {
+        e.preventDefault();
+        showRegisterForm();
+    });
 
-// Ngăn chặn mở DevTools
-function disableDevTools(e) {
-  if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-    e.preventDefault();
-  }
-}
+    document.getElementById("backToLogin").addEventListener("click", (e) => {
+        e.preventDefault();
+        showLoginForm();
+    });
 
-// Ngăn chặn click phải
-function disableRightClick(e) {
-  e.preventDefault();
-}
+    // Form submissions
+    elements.loginForm.addEventListener("submit", handleLogin);
+    elements.registerForm.addEventListener("submit", handleRegister);
+});
 
-// Hàm kiểm tra tên hợp lệ
-function isValidName(name) {
-  const trimmedName = name.trim();
-  const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/g;
-  return trimmedName.length > 0 && trimmedName.length <= 30 && !specialCharRegex.test(trimmedName);
-}
+// Security Features
+document.addEventListener("keydown", (e) => {
+    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+        e.preventDefault();
+    }
+});
 
-// Hàm kiểm tra mã nhân viên hợp lệ
-function isValidEmployeeId(employeeId) {
-  return employeeId.includes("CHMN") || employeeId.includes("VP") || employeeId.includes("ADMIN");
-}
-
-// Hàm kiểm tra mật khẩu hợp lệ
-function isValidPassword(password) {
-  const passwordPattern = /^(?=.*[A-Z]).{6,}$/;
-  return passwordPattern.test(password);
-}
+document.addEventListener("contextmenu", (e) => e.preventDefault());
