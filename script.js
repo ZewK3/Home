@@ -1,7 +1,7 @@
 // Constants
 const API_URL = "https://zewk.tocotoco.workers.dev";
 const TOKEN_KEY = "authToken";
-const REMEMBER_ME_KEY = "loggedInUser";
+const REMEMBER_ME_KEY = "rememberedEmployeeId";
 const THEME_KEY = "theme";
 const SUCCESS_STATUS = 200;
 const ACCOUNT_EXISTS_STATUS = 209;
@@ -203,9 +203,10 @@ async function handleLogin(event) {
             if (elements.loginForm.rememberMe.checked) {
                 localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
             }
-
+            localStorage.setItem("loggedInUser", JSON.stringify(formData));
             showNotification("Đăng nhập thành công!");
-            setTimeout(() => window.location.href = "dashboard.html", 1500);
+            
+            setTimeout(() => window.location.href = "dashboard.html", 1000);
         } else {
             throw new Error(response.status === 401 ? "Mật khẩu không đúng" : "Mã nhân viên không tồn tại");
         }
