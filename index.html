@@ -1,17 +1,18 @@
+
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống đăng nhập và đăng ký">
     <meta name="theme-color" content="#4f46e5">
     <title>Đăng nhập & Đăng ký</title>
-    <link rel="stylesheet" href="reg&log.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 <body>
-
+<div class='flag-vn'></div>
 <div class="glass-bg">
     <div class="glass-circle circle-1"></div>
     <div class="glass-circle circle-2"></div>
@@ -34,7 +35,6 @@
         <div id="loginFormContainer" class="form-container active">
             <div class="form-header">
                 <h2>Đăng nhập</h2>
-                <p>Chào mừng trở lại!</p>
             </div>
 
             <form id="loginForm" class="form">
@@ -63,7 +63,6 @@
                         <span class="checkmark"></span>
                         <span>Ghi nhớ tôi</span>
                     </label>
-                    <a href="#" class="form-link">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -72,9 +71,8 @@
                 </button>
 
                 <div class="form-footer">
-                    <p>Chưa có tài khoản? 
-                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
-                    </p>
+                    <a href="#" id="goToRegister" class="form-link">Chưa có tài khoản? </a>
+                    <a href="#" class="form-link">Quên mật khẩu?</a>
                 </div>
             </form>
         </div>
@@ -83,7 +81,6 @@
         <div id="registerFormContainer" class="form-container">
             <div class="form-header">
                 <h2>Đăng ký</h2>
-                <p>Tạo tài khoản mới</p>
             </div>
 
             <form id="registerForm" class="form">
