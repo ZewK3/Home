@@ -1,5 +1,5 @@
 // Constants and Initial Setup
-const loggedInUser = localStorage.getItem("loggedInUser");
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 const menuList = document.getElementById("menuList");
 const token = localStorage.getItem("authToken");
 const mainContent = document.querySelector(".main");
