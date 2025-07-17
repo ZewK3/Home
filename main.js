@@ -45,7 +45,7 @@ const setupSecurity = () => {
 class AuthManager {
     async checkAuthentication() {
         if (!loggedInUser) {
-            window.location.href = "index.html";
+            // window.location.href = "index.html";
             return null;
         }
 
@@ -65,7 +65,7 @@ class AuthManager {
             return user;
         } catch (error) {
             showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning", 3000);
-            window.location.href = "index.html";
+            // window.location.href = "index.html";
             return null;
         }
     }
