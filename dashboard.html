@@ -1,48 +1,22 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard quản lý nhân viên">
+    <meta name="theme-color" content="#da251d">
     <link rel="icon" href="favicon-32x32.png" sizes="32x32">
     <title>Dashboard</title>
     <link rel="stylesheet" href="dash.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 <body>
-    <div id="openChatButton">
-        <span>💬</span>
-    </div>
+    <!-- Theme Switch -->
+    <button id="themeSwitch" class="theme-switch" aria-label="Toggle theme">
+        <span class="material-icons-round">dark_mode</span>
+    </button>
 
-    <div id="chatPopup" class="chat-popup">
-        <div id="chatHeader" class="chat-header">Chat with Support</div>
-        <div id="chatMessages" class="chat-messages"></div>
-        <div id="chatInput" class="chat-input">
-            <input id="messageInput" type="text" placeholder="Type a message..." />
-            <button id="sendButton" class="chat-send-btn">Send</button>
-        </div>
-    </div>
-
-    <!-- Nhạc -->
-    <audio id="audioPlayer" loop>
-        <source src="" type="audio/mpeg">
-        Trình duyệt của bạn không hỗ trợ phát nhạc.
-    </audio>
-    <div id="notification" class="notification hidden"></div>
-
-    <!-- Tuyết rơi -->
-    <div class="snowflakes" aria-hidden="true">
-        <div class="snowflake">❅</div>
-        <div class="snowflake">❅</div>
-        <div class="snowflake">❆</div>
-        <div class="snowflake">❅</div>
-        <div class="snowflake">❆</div>
-        <div class="snowflake">❅</div>
-        <div class="snowflake">❆</div>
-        <div class="snowflake">❅</div>
-        <div class="snowflake">❆</div>
-        <div class="snowflake">❆</div>
-    </div>
-
-    <!-- User -->
+    <!-- User Info Header -->
     <div class="show-user">
         <div id="userInfo" class="user-info"></div>
     </div>
@@ -54,24 +28,46 @@
             <li class="menu-item" data-role="AD,QL,NV">
                 <a href="#" id="openSchedule" class="menu-link">Lịch Làm</a>
                 <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openScheduleRegistration" class="submenu-link">Đăng Ký Lịch Làm</a></li>
-                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="openScheduleWork" class="submenu-link">Xếp Lịch</a></li>
-                    <li class="submenu-item" data-role="AD,QL,NV"><a href="#" id="openOfficialworkschedule" class="submenu-link">Lịch Chính Thức</a></li>
+                    <li class="submenu-item" data-role="AD,QL,NV">
+                        <a href="#" id="openScheduleRegistration" class="submenu-link">Đăng Ký Lịch Làm</a>
+                    </li>
+                    <li class="submenu-item" data-role="AD,QL">
+                        <a href="#" id="openScheduleWork" class="submenu-link">Xếp Lịch</a>
+                    </li>
+                    <li class="submenu-item" data-role="AD,QL,NV">
+                        <a href="#" id="openOfficialworkschedule" class="submenu-link">Lịch Chính Thức</a>
+                    </li>
                 </ul>
             </li>
-            <li class="menu-item" data-role="AD,AM,QL,NV"><a href="#" id="openReward" class="menu-link">Thưởng/Phạt</a></li>
-            <li class="menu-item" data-role="AD,NV"><a href="#" id="openSubmitTask" class="menu-link">Gửi Yêu Cầu</a></li>
+            <li class="menu-item" data-role="AD,AM,QL,NV">
+                <a href="#" id="openReward" class="menu-link">Thưởng/Phạt</a>
+            </li>
+            <li class="menu-item" data-role="AD,NV">
+                <a href="#" id="openSubmitTask" class="menu-link">Gửi Yêu Cầu</a>
+            </li>
             <li class="menu-item" data-role="AD,QL">
                 <a href="#" id="openTaskProcessing" class="menu-link">Xử Lý Yêu Cầu</a>
                 <ul class="submenu">
-                    <li class="submenu-item" data-role="AD"><a href="#" id="taskPersonnel" class="submenu-link">Nhân Sự</a></li>
-                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskStore" class="submenu-link">Cửa Hàng</a></li>
-                    <li class="submenu-item" data-role="AD"><a href="#" id="taskFinance" class="submenu-link">Tài Chính</a></li>
-                    <li class="submenu-item" data-role="AD,QL"><a href="#" id="taskApproval" class="submenu-link">Xét Duyệt</a></li>
+                    <li class="submenu-item" data-role="AD">
+                        <a href="#" id="taskPersonnel" class="submenu-link">Nhân Sự</a>
+                    </li>
+                    <li class="submenu-item" data-role="AD,QL">
+                        <a href="#" id="taskStore" class="submenu-link">Cửa Hàng</a>
+                    </li>
+                    <li class="submenu-item" data-role="AD">
+                        <a href="#" id="taskFinance" class="submenu-link">Tài Chính</a>
+                    </li>
+                    <li class="submenu-item" data-role="AD,QL">
+                        <a href="#" id="taskApproval" class="submenu-link">Xét Duyệt</a>
+                    </li>
                 </ul>
             </li>
-            <li class="menu-item" data-role="AD"><a href="#" id="openGrantAccess" class="menu-link">Phân Quyền</a></li>
-            <li class="menu-item" data-role="AD,QL,AM,NV"><a href="#" id="openPersonalInformation" class="menu-link">Thông Tin Cá Nhân</a></li>
+            <li class="menu-item" data-role="AD">
+                <a href="#" id="openGrantAccess" class="menu-link">Phân Quyền</a>
+            </li>
+            <li class="menu-item" data-role="AD,QL,AM,NV">
+                <a href="#" id="openPersonalInformation" class="menu-link">Thông Tin Cá Nhân</a>
+            </li>
         </ul>
         <button id="logout" class="logout-btn">Đăng xuất</button>
     </div>
@@ -79,12 +75,25 @@
     <!-- Main Content -->
     <div class="main">
         <div id="notification" class="notification hidden"></div>
-        <button id="backButton" class="btn back-btn hidden">Quay lại</button>
         <div id="content" class="content">
             <h1 class="dashboard-title">Dashboard</h1>
         </div>
     </div>
 
-    <script type="module" src="main.js"></script>
+    <!-- Chat Button and Popup -->
+    <div id="openChatButton">
+        <span>💬</span>
+    </div>
+
+    <div id="chatPopup" class="chat-popup">
+        <div class="chat-header">Chat with Support</div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
 </body>
 </html>
