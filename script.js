@@ -203,7 +203,7 @@ async function handleLogin(event) {
             if (elements.loginForm.rememberMe.checked) {
                 localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
             }
-            localStorage.setItem("loggedInUser", JSON.stringify(formData));
+            localStorage.setItem("loggedInUser", elements.loginForm.loginEmployeeId.value.trim());
             showNotification("Đăng nhập thành công!");
             
             setTimeout(() => window.location.href = "dashboard.html", 1000);
