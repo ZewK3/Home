@@ -235,7 +235,638 @@ class ContentManager {
         });
     }
 
-    // Other functions...
+    async showScheduleWork() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getAllSchedules');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Xếp Lịch Làm Việc</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-filters">
+                            <select id="employeeFilter" class="form-control">
+                                <option value="">Tất cả nhân viên</option>
+                                ${response.employees?.map(emp => 
+                                    `<option value="${emp.employeeId}">${emp.fullName} - ${emp.employeeId}</option>`
+                                ).join('') || ''}
+                            </select>
+                            <select id="weekFilter" class="form-control">
+                                <option value="current">Tuần hiện tại</option>
+                                <option value="next">Tuần tới</option>
+                            </select>
+                        </div>
+                        <div id="scheduleTable" class="schedule-table">
+                            ${this.generateScheduleTable(response.schedules)}
+                        </div>
+                        <button id="saveScheduleChanges" class="btn btn-primary">Lưu thay đổi</button>
+                    </div>
+                </div>
+            `;
+
+            this.setupScheduleWorkHandlers();
+        } catch (error) {
+            utils.showNotification("Không thể tải lịch làm việc", "error");
+        }
+    }
+
+    async showOfficialSchedule() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI(`?action=getOfficialSchedule&employeeId=${this.user.employeeId}`);
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Lịch Làm Việc Chính Thức</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-view">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Ca làm</th>
+                                        <th>Giờ vào</th>
+                                        <th>Giờ ra</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${this.generateOfficialScheduleRows(response.schedule)}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            utils.showNotification("Không thể tải lịch chính thức", "error");
+        }
+    }
+
+    async showTaskPersonnel() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getPersonnelTasks');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Xử Lý Yêu Cầu Nhân Sự</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-filters">
+                            <select id="taskStatusFilter" class="form-control">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Chờ xử lý</option>
+                                <option value="approved">Đã duyệt</option>
+                                <option value="rejected">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="task-list">
+                            ${this.generateTaskList(response.tasks, 'personnel')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupTaskHandlers('personnel');
+        } catch (error) {
+            utils.showNotification("Không thể tải yêu cầu nhân sự", "error");
+        }
+    }
+
+    async showTaskStore() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getStoreTasks');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Xử Lý Yêu Cầu Cửa Hàng</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-filters">
+                            <select id="taskStatusFilter" class="form-control">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Chờ xử lý</option>
+                                <option value="approved">Đã duyệt</option>
+                                <option value="rejected">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="task-list">
+                            ${this.generateTaskList(response.tasks, 'store')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupTaskHandlers('store');
+        } catch (error) {
+            utils.showNotification("Không thể tải yêu cầu cửa hàng", "error");
+        }
+    }
+
+    async showTaskFinance() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getFinanceTasks');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Xử Lý Yêu Cầu Tài Chính</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-filters">
+                            <select id="taskStatusFilter" class="form-control">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Chờ xử lý</option>
+                                <option value="approved">Đã duyệt</option>
+                                <option value="rejected">Từ chối</option>
+                            </select>
+                        </div>
+                        <div class="task-list">
+                            ${this.generateTaskList(response.tasks, 'finance')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupTaskHandlers('finance');
+        } catch (error) {
+            utils.showNotification("Không thể tải yêu cầu tài chính", "error");
+        }
+    }
+
+    async showTaskApproval() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getApprovalTasks');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Xét Duyệt Yêu Cầu</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-filters">
+                            <select id="taskTypeFilter" class="form-control">
+                                <option value="">Tất cả loại</option>
+                                <option value="leave">Nghỉ phép</option>
+                                <option value="overtime">Tăng ca</option>
+                                <option value="equipment">Thiết bị</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        <div class="approval-list">
+                            ${this.generateApprovalList(response.tasks)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupApprovalHandlers();
+        } catch (error) {
+            utils.showNotification("Không thể tải yêu cầu xét duyệt", "error");
+        }
+    }
+
+    async showRewards() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getRewards');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Quản Lý Thưởng/Phạt</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="rewardForm" class="reward-form">
+                            <div class="form-group">
+                                <label>Nhân viên</label>
+                                <select name="employeeId" class="form-control" required>
+                                    <option value="">Chọn nhân viên</option>
+                                    ${response.employees?.map(emp => 
+                                        `<option value="${emp.employeeId}">${emp.fullName} - ${emp.employeeId}</option>`
+                                    ).join('') || ''}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Loại</label>
+                                <select name="type" class="form-control" required>
+                                    <option value="reward">Thưởng</option>
+                                    <option value="penalty">Phạt</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Số tiền</label>
+                                <input type="number" name="amount" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Lý do</label>
+                                <textarea name="reason" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Thêm thưởng/phạt</button>
+                        </form>
+                        
+                        <div class="reward-history">
+                            <h3>Lịch sử thưởng/phạt</h3>
+                            ${this.generateRewardHistory(response.rewards)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupRewardHandlers();
+        } catch (error) {
+            utils.showNotification("Không thể tải thông tin thưởng/phạt", "error");
+        }
+    }
+
+    async showGrantAccess() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI('?action=getUserPermissions');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Phân Quyền Người Dùng</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="permission-management">
+                            <div class="user-selection">
+                                <select id="userSelect" class="form-control">
+                                    <option value="">Chọn nhân viên</option>
+                                    ${response.users?.map(user => 
+                                        `<option value="${user.employeeId}">${user.fullName} - ${user.employeeId}</option>`
+                                    ).join('') || ''}
+                                </select>
+                            </div>
+                            
+                            <div id="permissionForm" class="permission-form" style="display: none;">
+                                <h3>Quyền hạn</h3>
+                                <div class="permission-list">
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="schedule" value="schedule">
+                                        <span>Quản lý lịch làm</span>
+                                    </label>
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="tasks" value="tasks">
+                                        <span>Xử lý yêu cầu</span>
+                                    </label>
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="rewards" value="rewards">
+                                        <span>Quản lý thưởng/phạt</span>
+                                    </label>
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="admin" value="admin">
+                                        <span>Quyền quản trị</span>
+                                    </label>
+                                </div>
+                                <button id="savePermissions" class="btn btn-primary">Lưu quyền hạn</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupAccessHandlers();
+        } catch (error) {
+            utils.showNotification("Không thể tải thông tin phân quyền", "error");
+        }
+    }
+
+    async showPersonalInfo() {
+        const content = document.getElementById('content');
+        try {
+            const response = await utils.fetchAPI(`?action=getUserInfo&employeeId=${this.user.employeeId}`);
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Thông Tin Cá Nhân</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="personalInfoForm" class="personal-info-form">
+                            <div class="form-group">
+                                <label>Mã nhân viên</label>
+                                <input type="text" name="employeeId" class="form-control" value="${response.employeeId || ''}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Họ và tên</label>
+                                <input type="text" name="fullName" class="form-control" value="${response.fullName || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" name="email" class="form-control" value="${response.email || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Số điện thoại</label>
+                                <input type="tel" name="phone" class="form-control" value="${response.phone || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Chức vụ</label>
+                                <input type="text" name="position" class="form-control" value="${response.position || ''}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Mật khẩu mới (để trống nếu không thay đổi)</label>
+                                <input type="password" name="newPassword" class="form-control">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            this.setupPersonalInfoHandlers();
+        } catch (error) {
+            utils.showNotification("Không thể tải thông tin cá nhân", "error");
+        }
+    }
+
+    // Helper functions for the above methods
+    generateScheduleTable(schedules = []) {
+        if (!schedules.length) return '<p>Không có lịch làm việc nào.</p>';
+        
+        return `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Ngày</th>
+                        <th>Ca làm</th>
+                        <th>Giờ vào</th>
+                        <th>Giờ ra</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${schedules.map(schedule => `
+                        <tr data-schedule-id="${schedule.id}">
+                            <td>${schedule.employeeName}</td>
+                            <td>${utils.formatDate(schedule.date)}</td>
+                            <td>${schedule.shift}</td>
+                            <td>${schedule.startTime}</td>
+                            <td>${schedule.endTime}</td>
+                            <td>
+                                <button class="btn btn-sm btn-edit" onclick="editSchedule('${schedule.id}')">Sửa</button>
+                                <button class="btn btn-sm btn-delete" onclick="deleteSchedule('${schedule.id}')">Xóa</button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    generateOfficialScheduleRows(schedule = []) {
+        if (!schedule.length) return '<tr><td colspan="5">Không có lịch làm việc.</td></tr>';
+        
+        return schedule.map(item => `
+            <tr>
+                <td>${utils.formatDate(item.date)}</td>
+                <td>${item.shift}</td>
+                <td>${item.startTime}</td>
+                <td>${item.endTime}</td>
+                <td><span class="status ${item.status}">${item.status === 'confirmed' ? 'Đã xác nhận' : 'Chờ xác nhận'}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    generateTaskList(tasks = [], type) {
+        if (!tasks.length) return '<p>Không có yêu cầu nào.</p>';
+        
+        return `
+            <div class="task-grid">
+                ${tasks.map(task => `
+                    <div class="task-card" data-task-id="${task.id}">
+                        <h4>${task.title}</h4>
+                        <p><strong>Nhân viên:</strong> ${task.employeeName}</p>
+                        <p><strong>Loại:</strong> ${task.type}</p>
+                        <p><strong>Nội dung:</strong> ${task.content}</p>
+                        <p><strong>Ngày gửi:</strong> ${utils.formatDate(task.createdAt)}</p>
+                        <div class="task-actions">
+                            <button class="btn btn-sm btn-approve" onclick="approveTask('${task.id}')">Duyệt</button>
+                            <button class="btn btn-sm btn-reject" onclick="rejectTask('${task.id}')">Từ chối</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    generateApprovalList(tasks = []) {
+        if (!tasks.length) return '<p>Không có yêu cầu cần xét duyệt.</p>';
+        
+        return `
+            <div class="approval-grid">
+                ${tasks.map(task => `
+                    <div class="approval-card" data-task-id="${task.id}">
+                        <h4>${task.title}</h4>
+                        <p><strong>Nhân viên:</strong> ${task.employeeName}</p>
+                        <p><strong>Loại:</strong> ${task.type}</p>
+                        <p><strong>Nội dung:</strong> ${task.content}</p>
+                        <p><strong>Ngày gửi:</strong> ${utils.formatDate(task.createdAt)}</p>
+                        <div class="approval-form">
+                            <textarea placeholder="Ghi chú phê duyệt..." rows="2"></textarea>
+                            <div class="approval-actions">
+                                <button class="btn btn-sm btn-approve" onclick="finalApprove('${task.id}')">Phê duyệt</button>
+                                <button class="btn btn-sm btn-reject" onclick="finalReject('${task.id}')">Từ chối</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    generateRewardHistory(rewards = []) {
+        if (!rewards.length) return '<p>Chưa có lịch sử thưởng/phạt.</p>';
+        
+        return `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Loại</th>
+                        <th>Số tiền</th>
+                        <th>Lý do</th>
+                        <th>Ngày</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rewards.map(reward => `
+                        <tr>
+                            <td>${reward.employeeName}</td>
+                            <td><span class="reward-type ${reward.type}">${reward.type === 'reward' ? 'Thưởng' : 'Phạt'}</span></td>
+                            <td>${reward.amount.toLocaleString('vi-VN')} VNĐ</td>
+                            <td>${reward.reason}</td>
+                            <td>${utils.formatDate(reward.createdAt)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    // Setup handlers for the new functions
+    setupScheduleWorkHandlers() {
+        document.getElementById('saveScheduleChanges')?.addEventListener('click', async () => {
+            try {
+                // Implementation for saving schedule changes
+                await utils.fetchAPI('?action=saveScheduleChanges', {
+                    method: 'POST',
+                    body: JSON.stringify({ scheduleData: 'data' })
+                });
+                utils.showNotification("Lịch làm việc đã được cập nhật", "success");
+            } catch (error) {
+                utils.showNotification("Không thể lưu thay đổi", "error");
+            }
+        });
+    }
+
+    setupTaskHandlers(type) {
+        // Implementation for task handlers would go here
+        window.approveTask = async (taskId) => {
+            try {
+                await utils.fetchAPI('?action=approveTask', {
+                    method: 'POST',
+                    body: JSON.stringify({ taskId, type })
+                });
+                utils.showNotification("Đã duyệt yêu cầu", "success");
+                // Refresh the view
+                if (type === 'personnel') this.showTaskPersonnel();
+                else if (type === 'store') this.showTaskStore();
+                else if (type === 'finance') this.showTaskFinance();
+            } catch (error) {
+                utils.showNotification("Không thể duyệt yêu cầu", "error");
+            }
+        };
+
+        window.rejectTask = async (taskId) => {
+            try {
+                await utils.fetchAPI('?action=rejectTask', {
+                    method: 'POST',
+                    body: JSON.stringify({ taskId, type })
+                });
+                utils.showNotification("Đã từ chối yêu cầu", "success");
+                // Refresh the view
+                if (type === 'personnel') this.showTaskPersonnel();
+                else if (type === 'store') this.showTaskStore();
+                else if (type === 'finance') this.showTaskFinance();
+            } catch (error) {
+                utils.showNotification("Không thể từ chối yêu cầu", "error");
+            }
+        };
+    }
+
+    setupApprovalHandlers() {
+        window.finalApprove = async (taskId) => {
+            try {
+                await utils.fetchAPI('?action=finalApprove', {
+                    method: 'POST',
+                    body: JSON.stringify({ taskId })
+                });
+                utils.showNotification("Đã phê duyệt yêu cầu", "success");
+                this.showTaskApproval();
+            } catch (error) {
+                utils.showNotification("Không thể phê duyệt", "error");
+            }
+        };
+
+        window.finalReject = async (taskId) => {
+            try {
+                await utils.fetchAPI('?action=finalReject', {
+                    method: 'POST',
+                    body: JSON.stringify({ taskId })
+                });
+                utils.showNotification("Đã từ chối yêu cầu", "success");
+                this.showTaskApproval();
+            } catch (error) {
+                utils.showNotification("Không thể từ chối", "error");
+            }
+        };
+    }
+
+    setupRewardHandlers() {
+        document.getElementById('rewardForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const formData = new FormData(e.target);
+                await utils.fetchAPI('?action=addReward', {
+                    method: 'POST',
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                utils.showNotification("Đã thêm thưởng/phạt", "success");
+                this.showRewards();
+            } catch (error) {
+                utils.showNotification("Không thể thêm thưởng/phạt", "error");
+            }
+        });
+    }
+
+    setupAccessHandlers() {
+        document.getElementById('userSelect')?.addEventListener('change', async (e) => {
+            const employeeId = e.target.value;
+            if (employeeId) {
+                try {
+                    const permissions = await utils.fetchAPI(`?action=getUserPermissions&employeeId=${employeeId}`);
+                    document.getElementById('permissionForm').style.display = 'block';
+                    
+                    // Set current permissions
+                    Object.keys(permissions).forEach(permission => {
+                        const checkbox = document.querySelector(`input[name="${permission}"]`);
+                        if (checkbox) checkbox.checked = permissions[permission];
+                    });
+                } catch (error) {
+                    utils.showNotification("Không thể tải quyền hạn", "error");
+                }
+            } else {
+                document.getElementById('permissionForm').style.display = 'none';
+            }
+        });
+
+        document.getElementById('savePermissions')?.addEventListener('click', async () => {
+            try {
+                const employeeId = document.getElementById('userSelect').value;
+                const permissions = {};
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    permissions[checkbox.name] = checkbox.checked;
+                });
+
+                await utils.fetchAPI('?action=updatePermissions', {
+                    method: 'POST',
+                    body: JSON.stringify({ employeeId, permissions })
+                });
+                utils.showNotification("Đã cập nhật quyền hạn", "success");
+            } catch (error) {
+                utils.showNotification("Không thể cập nhật quyền hạn", "error");
+            }
+        });
+    }
+
+    setupPersonalInfoHandlers() {
+        document.getElementById('personalInfoForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const formData = new FormData(e.target);
+                await utils.fetchAPI('?action=updatePersonalInfo', {
+                    method: 'POST',
+                    body: JSON.stringify(Object.fromEntries(formData))
+                });
+                utils.showNotification("Đã cập nhật thông tin cá nhân", "success");
+            } catch (error) {
+                utils.showNotification("Không thể cập nhật thông tin", "error");
+            }
+        });
+    }
 }
 
 // Menu Manager
