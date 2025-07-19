@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
 });
-// Create stars
+// Create stars with professional appearance
 function createStars(count) {
     const stars = document.querySelector('.stars');
     
@@ -37,14 +37,14 @@ function createStars(count) {
         star.style.left = `${Math.random() * 100}%`;
         star.style.top = `${Math.random() * 100}%`;
         
-        // Random animation duration
-        star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+        // Professional animation duration
+        star.style.setProperty('--duration', `${Math.random() * 4 + 3}s`);
         
         stars.appendChild(star);
     }
 }
 
-// Create light streaks
+// Create professional light effects
 function createLightStreaks(count) {
     const container = document.querySelector('.light-streaks');
     
@@ -52,19 +52,19 @@ function createLightStreaks(count) {
         const streak = document.createElement('div');
         streak.className = 'light-streak';
         
-        // Random position and delay
+        // Professional positioning and timing
         streak.style.left = `${Math.random() * 100}%`;
-        streak.style.animationDelay = `${Math.random() * 8}s`;
-        streak.style.height = `${Math.random() * 200 + 100}px`;
+        streak.style.animationDelay = `${Math.random() * 12}s`;
+        streak.style.height = `${Math.random() * 150 + 80}px`;
         
         container.appendChild(streak);
     }
 }
 
-// Initialize background effects
+// Initialize professional background effects
 document.addEventListener('DOMContentLoaded', () => {
-    createStars(100);  // Create 100 stars
-    createLightStreaks(20);  // Create 20 light streaks
+    createStars(60);  // Reduced for more professional look
+    createLightStreaks(15);  // Reduced for subtlety
 });
 // DOM Elements
 const elements = {
