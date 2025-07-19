@@ -1,14 +1,23 @@
 const ALLOWED_ORIGIN = "https://zewk.fun";
 
-// Hàm tiện ích trả về JSON response
+// Enhanced utility function for JSON responses with better error handling
 function jsonResponse(body, status, origin = ALLOWED_ORIGIN) {
-  return new Response(JSON.stringify(body), {
+  const responseBody = typeof body === 'string' ? { message: body } : body;
+  
+  return new Response(JSON.stringify({
+    ...responseBody,
+    timestamp: new Date().toISOString(),
+    status: status
+  }), {
     status,
     headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": origin,
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "X-XSS-Protection": "1; mode=block"
     },
   });
 }
@@ -34,26 +43,41 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Middleware kiểm tra phiên người dùng
+// Enhanced session middleware with rate limiting awareness
 async function checkSessionMiddleware(token, db, allowedOrigin) {
-  if (!token) return jsonResponse({ message: "Thiếu token!" }, 401, allowedOrigin);
+  if (!token) {
+    return jsonResponse("Yêu cầu xác thực - vui lòng đăng nhập", 401, allowedOrigin);
+  }
 
   try {
     const session = await db
-      .prepare("SELECT employeeId, expiresAt FROM sessions WHERE token = ?")
+      .prepare("SELECT employeeId, expiresAt, lastAccess FROM sessions WHERE token = ?")
       .bind(token)
       .first();
 
-    if (!session) return jsonResponse({ message: "Phiên không tồn tại!" }, 401, allowedOrigin);
+    if (!session) {
+      return jsonResponse("Phiên làm việc không hợp lệ - vui lòng đăng nhập lại", 401, allowedOrigin);
+    }
 
     const now = new Date();
     const expiresAt = new Date(session.expiresAt);
-    if (now > expiresAt) return jsonResponse({ message: "Phiên đã hết hạn!" }, 401, allowedOrigin);
+    
+    if (now > expiresAt) {
+      // Clean up expired session
+      await db.prepare("DELETE FROM sessions WHERE token = ?").bind(token).run();
+      return jsonResponse("Phiên làm việc đã hết hạn - vui lòng đăng nhập lại", 401, allowedOrigin);
+    }
+
+    // Update last access time for session tracking
+    await db
+      .prepare("UPDATE sessions SET lastAccess = ? WHERE token = ?")
+      .bind(now.toISOString(), token)
+      .run();
 
     return { employeeId: session.employeeId, valid: true };
   } catch (error) {
     console.error("Lỗi kiểm tra phiên:", error);
-    return jsonResponse({ message: "Lỗi kiểm tra phiên!", error: error.message }, 500, allowedOrigin);
+    return jsonResponse("Lỗi hệ thống - vui lòng thử lại sau", 500, allowedOrigin);
   }
 }
 

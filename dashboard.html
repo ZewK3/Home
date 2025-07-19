@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Dashboard quản lý nhân viên">
-    <meta name="theme-color" content="#da251d">
+    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp">
+    <meta name="theme-color" content="#2563eb">
     <link rel="icon" href="favicon-32x32.png" sizes="32x32">
-    <title>Dashboard</title>
+    <title>HR Management System - Dashboard</title>
     <link rel="stylesheet" href="dash.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 <body>
+    <!-- Mobile Menu Toggle -->
+    <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
+        <span>☰</span>
+    </button>
+
     <!-- Theme Switch -->
     <button id="themeSwitch" class="theme-switch" aria-label="Toggle theme">
         <span class="material-icons-round">dark_mode</span>
@@ -18,12 +23,15 @@
 
     <!-- User Info Header -->
     <div class="show-user">
+        <div class="company-logo">
+            <h1>HR Management System</h1>
+        </div>
         <div id="userInfo" class="user-info"></div>
     </div>
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <h2 class="sidebar-title">MENU ©𝕫𝕖𝕨𝕜</h2>
+        <h2 class="sidebar-title">QUẢN LÝ NHÂN SỰ</h2>
         <ul id="menuList" class="menu-list">
             <li class="menu-item" data-role="AD,QL,NV">
                 <a href="#" id="openSchedule" class="menu-link">Lịch Làm</a>
@@ -76,7 +84,39 @@
     <div class="main">
         <div id="notification" class="notification hidden"></div>
         <div id="content" class="content">
-            <h1 class="dashboard-title">Dashboard</h1>
+            <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+            <div class="welcome-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <h3>Tổng Nhân Viên</h3>
+                            <p id="totalEmployees">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-info">
+                            <h3>Lịch Hôm Nay</h3>
+                            <p id="todaySchedule">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <h3>Yêu Cầu Chờ</h3>
+                            <p id="pendingRequests">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <h3>Hoạt Động</h3>
+                            <p id="systemStatus">Online</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

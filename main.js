@@ -1108,6 +1108,12 @@ class AuthManager {
         new ChatManager(user);
         new ContentManager(user);
 
+        // Initialize dashboard stats
+        await initializeDashboardStats();
+
+        // Mobile menu functionality
+        setupMobileMenu();
+
         // Mobile optimization
         if (window.innerWidth <= 768) {
             const sidebar = document.querySelector(".sidebar");
@@ -1120,3 +1126,51 @@ class AuthManager {
         }
     }
 })();
+
+// Dashboard Stats Initialization
+async function initializeDashboardStats() {
+    try {
+        // Update total employees
+        const employees = await utils.fetchAPI('?action=getUsers');
+        document.getElementById('totalEmployees').textContent = employees.length || '0';
+
+        // Update today's schedule count
+        const schedules = await utils.fetchAPI('?action=getTodaySchedule');
+        document.getElementById('todaySchedule').textContent = schedules.length || '0';
+
+        // Update pending requests
+        const pendingRequests = await utils.fetchAPI('?action=getPendingRequests');
+        document.getElementById('pendingRequests').textContent = pendingRequests.length || '0';
+
+        // System status is always online in this context
+        document.getElementById('systemStatus').textContent = 'Hoạt động';
+    } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+        // Set fallback values
+        document.getElementById('totalEmployees').textContent = '-';
+        document.getElementById('todaySchedule').textContent = '-';
+        document.getElementById('pendingRequests').textContent = '-';
+        document.getElementById('systemStatus').textContent = 'Offline';
+    }
+}
+
+// Mobile Menu Setup
+function setupMobileMenu() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+    }
+}
