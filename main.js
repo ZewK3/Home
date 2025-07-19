@@ -15,17 +15,28 @@ const CONFIG = {
 const utils = {
     showNotification(message, type = "success", duration = 3000) {
         const notification = document.getElementById("notification");
-        if (!notification) return;
+        if (!notification) {
+            console.warn("Notification element not found");
+            return;
+        }
+
+        const icons = {
+            success: '✓',
+            error: '✕', 
+            warning: '⚠'
+        };
 
         notification.innerHTML = `
-            <span class="notification-icon">${type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠'}</span>
+            <span class="notification-icon">${icons[type] || '✓'}</span>
             <span class="notification-message">${this.escapeHtml(message)}</span>
         `;
         
         notification.className = `notification ${type} show`;
         
         setTimeout(() => {
-            notification.classList.remove("show");
+            if (notification) {
+                notification.classList.remove("show");
+            }
         }, duration);
     },
 
@@ -1061,8 +1072,10 @@ class AuthManager {
         try {
             const user = await utils.fetchAPI(`?action=getUser&employeeId=${this.userData.loginEmployeeId}`);
             if (user) {
-                document.getElementById("userInfo").textContent = 
-                    `Chào ${user.fullName} - ${user.employeeId}`;
+                const userInfoElement = document.getElementById("userInfo");
+                if (userInfoElement) {
+                    userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
+                }
                 MenuManager.updateMenuByRole(user.position);
                 return user;
             }
@@ -1127,30 +1140,45 @@ class AuthManager {
     }
 })();
 
-// Dashboard Stats Initialization
+// Dashboard Stats Initialization - Fixed with null checks
 async function initializeDashboardStats() {
+    const elements = {
+        totalEmployees: document.getElementById('totalEmployees'),
+        todaySchedule: document.getElementById('todaySchedule'), 
+        pendingRequests: document.getElementById('pendingRequests'),
+        systemStatus: document.getElementById('systemStatus')
+    };
+
     try {
         // Update total employees
         const employees = await utils.fetchAPI('?action=getUsers');
-        document.getElementById('totalEmployees').textContent = employees.length || '0';
+        if (elements.totalEmployees) {
+            elements.totalEmployees.textContent = employees.length || '0';
+        }
 
         // Update today's schedule count
         const schedules = await utils.fetchAPI('?action=getTodaySchedule');
-        document.getElementById('todaySchedule').textContent = schedules.length || '0';
+        if (elements.todaySchedule) {
+            elements.todaySchedule.textContent = schedules.length || '0';
+        }
 
         // Update pending requests
         const pendingRequests = await utils.fetchAPI('?action=getPendingRequests');
-        document.getElementById('pendingRequests').textContent = pendingRequests.length || '0';
+        if (elements.pendingRequests) {
+            elements.pendingRequests.textContent = pendingRequests.length || '0';
+        }
 
         // System status is always online in this context
-        document.getElementById('systemStatus').textContent = 'Hoạt động';
+        if (elements.systemStatus) {
+            elements.systemStatus.textContent = 'Hoạt động';
+        }
     } catch (error) {
         console.error('Failed to load dashboard stats:', error);
-        // Set fallback values
-        document.getElementById('totalEmployees').textContent = '-';
-        document.getElementById('todaySchedule').textContent = '-';
-        document.getElementById('pendingRequests').textContent = '-';
-        document.getElementById('systemStatus').textContent = 'Offline';
+        // Set fallback values only if elements exist
+        if (elements.totalEmployees) elements.totalEmployees.textContent = '-';
+        if (elements.todaySchedule) elements.todaySchedule.textContent = '-';
+        if (elements.pendingRequests) elements.pendingRequests.textContent = '-';
+        if (elements.systemStatus) elements.systemStatus.textContent = 'Offline';
     }
 }
 

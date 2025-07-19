@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     createStars(60);  // Reduced for more professional look
     createLightStreaks(15);  // Reduced for subtlety
 });
-// DOM Elements
+// DOM Elements - with null safety
 const elements = {
     loginForm: document.getElementById("loginForm"),
     registerForm: document.getElementById("registerForm"),
@@ -78,21 +78,34 @@ const elements = {
     strengthText: document.querySelector(".strength-text")
 };
 
-// Form Transitions
+// Form Transitions - Fixed with null checks
 function showRegisterForm() {
-    elements.loginContainer.classList.remove('active');
-    elements.registerContainer.classList.add('active');
-    elements.registerForm.reset();
+    if (elements.loginContainer && elements.registerContainer) {
+        elements.loginContainer.classList.remove('active');
+        elements.registerContainer.classList.add('active');
+        if (elements.registerForm) {
+            elements.registerForm.reset();
+        }
+    }
 }
 
 function showLoginForm() {
-    elements.registerContainer.classList.remove('active');
-    elements.loginContainer.classList.add('active');
-    elements.loginForm.reset();
+    if (elements.registerContainer && elements.loginContainer) {
+        elements.registerContainer.classList.remove('active');
+        elements.loginContainer.classList.add('active');
+        if (elements.loginForm) {
+            elements.loginForm.reset();
+        }
+    }
 }
 
-// Notification System
+// Notification System - Fixed with null checks
 function showNotification(message, type = "success", duration = 3000) {
+    if (!elements.notification) {
+        console.warn("Notification element not found");
+        return;
+    }
+
     const icons = {
         success: "✓",
         error: "✕",
@@ -107,12 +120,19 @@ function showNotification(message, type = "success", duration = 3000) {
     elements.notification.className = `notification ${type} show`;
     
     setTimeout(() => {
-        elements.notification.classList.remove("show");
+        if (elements.notification) {
+            elements.notification.classList.remove("show");
+        }
     }, duration);
 }
 
-// Password Strength Checker
+// Password Strength Checker - Fixed with null checks
 function checkPasswordStrength(password) {
+    if (!elements.strengthMeter || !elements.strengthText) {
+        console.warn("Password strength elements not found");
+        return;
+    }
+
     let strength = 0;
     let message = "";
 
@@ -181,21 +201,31 @@ function isValidForm(data) {
 async function handleLogin(event) {
     event.preventDefault();
     
+    if (!elements.loginForm) {
+        showNotification("Form không tồn tại", "error");
+        return;
+    }
+    
     const button = elements.loginForm.querySelector("button");
-    const buttonText = button.querySelector(".btn-text");
-    button.classList.add("loading");
-    buttonText.textContent = "Đang đăng nhập...";
+    const buttonText = button?.querySelector(".btn-text");
+    
+    if (button) {
+        button.classList.add("loading");
+    }
+    if (buttonText) {
+        buttonText.textContent = "Đang đăng nhập...";
+    }
     
     const formData = {
-        loginEmployeeId: elements.loginForm.loginEmployeeId.value.trim(),
-        loginPassword: elements.loginForm.loginPassword.value
+        loginEmployeeId: elements.loginForm.loginEmployeeId?.value.trim() || "",
+        loginPassword: elements.loginForm.loginPassword?.value || ""
     };
 
     // Validate form data
     if (!formData.loginEmployeeId || !formData.loginPassword) {
         showNotification("Vui lòng nhập đầy đủ thông tin đăng nhập", "warning");
-        button.classList.remove("loading");
-        buttonText.textContent = "Đăng nhập";
+        if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Đăng nhập";
         return;
     }
 
@@ -210,13 +240,14 @@ async function handleLogin(event) {
             const result = await response.json();
             localStorage.setItem(TOKEN_KEY, result.token);
             
-            if (elements.loginForm.rememberMe.checked) {
+            const rememberMe = elements.loginForm.rememberMe;
+            if (rememberMe && rememberMe.checked) {
                 localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
             }
             localStorage.setItem("loggedInUser", JSON.stringify(formData));
             
             showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
-            buttonText.textContent = "Thành công!";
+            if (buttonText) buttonText.textContent = "Thành công!";
             
             setTimeout(() => window.location.href = "dashboard.html", 1500);
         } else {
@@ -230,28 +261,35 @@ async function handleLogin(event) {
     } catch (error) {
         showNotification(error.message, "error");
     } finally {
-        button.classList.remove("loading");
-        buttonText.textContent = "Đăng nhập";
+        if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Đăng nhập";
     }
 }
 
 async function handleRegister(event) {
     event.preventDefault();
     
+    if (!elements.registerForm) {
+        showNotification("Form không tồn tại", "error");
+        return;
+    }
+    
     const button = elements.registerForm.querySelector("button");
-    button.classList.add("loading");
+    if (button) {
+        button.classList.add("loading");
+    }
     
     const formData = {
-        employeeId: elements.registerForm.employeeId.value.trim(),
-        password: elements.registerForm.password.value,
-        fullName: elements.registerForm.fullName.value.trim(),
-        phone: elements.registerForm.phone.value.trim(),
-        email: elements.registerForm.email.value.trim(),
+        employeeId: elements.registerForm.employeeId?.value.trim() || "",
+        password: elements.registerForm.password?.value || "",
+        fullName: elements.registerForm.fullName?.value.trim() || "",
+        phone: elements.registerForm.phone?.value.trim() || "",
+        email: elements.registerForm.email?.value.trim() || "",
         position: "NV"
     };
 
     if (!isValidForm(formData)) {
-        button.classList.remove("loading");
+        if (button) button.classList.remove("loading");
         return;
     }
 
@@ -282,61 +320,88 @@ async function handleRegister(event) {
     } catch (error) {
         showNotification(error.message, "error");
     } finally {
-        button.classList.remove("loading");
+        if (button) button.classList.remove("loading");
     }
 }
 
-// Event Listeners
+// Event Listeners - Fixed with null checks
 document.addEventListener("DOMContentLoaded", () => {
     // Theme toggle
-    document.getElementById("themeSwitch").addEventListener("click", () => {
-        const currentTheme = document.documentElement.getAttribute("data-theme");
-        const newTheme = currentTheme === "light" ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", newTheme);
-        localStorage.setItem(THEME_KEY, newTheme);
-    });
+    const themeSwitch = document.getElementById("themeSwitch");
+    if (themeSwitch) {
+        themeSwitch.addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            const newTheme = currentTheme === "light" ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem(THEME_KEY, newTheme);
+        });
+    }
 
     // Remember me
     const rememberedId = localStorage.getItem(REMEMBER_ME_KEY);
-    if (rememberedId) {
-        document.getElementById("loginEmployeeId").value = rememberedId;
-        document.getElementById("rememberMe").checked = true;
+    const loginEmployeeIdInput = document.getElementById("loginEmployeeId");
+    const rememberMeCheckbox = document.getElementById("rememberMe");
+    
+    if (rememberedId && loginEmployeeIdInput && rememberMeCheckbox) {
+        loginEmployeeIdInput.value = rememberedId;
+        rememberMeCheckbox.checked = true;
     }
 
     // Password strength
-    document.getElementById("password").addEventListener("input", (e) => {
-        checkPasswordStrength(e.target.value);
-    });
+    const passwordInput = document.getElementById("password");
+    if (passwordInput) {
+        passwordInput.addEventListener("input", (e) => {
+            checkPasswordStrength(e.target.value);
+        });
+    }
 
     // Password visibility toggle
     document.querySelectorAll(".password-toggle").forEach(toggle => {
         toggle.addEventListener("click", (e) => {
-            const input = e.target.closest(".input-group").querySelector("input");
+            const inputGroup = e.target.closest(".input-group");
+            if (!inputGroup) return;
+            
+            const input = inputGroup.querySelector("input");
             const icon = toggle.querySelector(".material-icons-round");
-            if (input.type === "password") {
-                input.type = "text";
-                icon.textContent = "visibility_off";
-            } else {
-                input.type = "password";
-                icon.textContent = "visibility";
+            
+            if (input && icon) {
+                if (input.type === "password") {
+                    input.type = "text";
+                    icon.textContent = "visibility_off";
+                } else {
+                    input.type = "password";
+                    icon.textContent = "visibility";
+                }
             }
         });
     });
 
     // Form switching
-    document.getElementById("goToRegister").addEventListener("click", (e) => {
-        e.preventDefault();
-        showRegisterForm();
-    });
+    const goToRegisterBtn = document.getElementById("goToRegister");
+    const backToLoginBtn = document.getElementById("backToLogin");
+    
+    if (goToRegisterBtn) {
+        goToRegisterBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showRegisterForm();
+        });
+    }
 
-    document.getElementById("backToLogin").addEventListener("click", (e) => {
-        e.preventDefault();
-        showLoginForm();
-    });
+    if (backToLoginBtn) {
+        backToLoginBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showLoginForm();
+        });
+    }
 
     // Form submissions
-    elements.loginForm.addEventListener("submit", handleLogin);
-    elements.registerForm.addEventListener("submit", handleRegister);
+    if (elements.loginForm) {
+        elements.loginForm.addEventListener("submit", handleLogin);
+    }
+    
+    if (elements.registerForm) {
+        elements.registerForm.addEventListener("submit", handleRegister);
+    }
 });
 
 // Security Features
