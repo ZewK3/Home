@@ -1,4 +1,4 @@
-const ALLOWED_ORIGIN = "https://zewk.fun";
+const ALLOWED_ORIGIN = "*";
 
 // Enhanced utility function for JSON responses with better error handling
 function jsonResponse(body, status, origin = ALLOWED_ORIGIN) {
