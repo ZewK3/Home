@@ -795,6 +795,62 @@ async function verifyPassword(storedHash, storedSalt, password) {
   return storedHash.length === hash.length && storedHash.every((byte, index) => byte === hash[index]);
 }
 
+// Hàm lấy lịch làm việc hôm nay
+async function handleGetTodaySchedule(db, origin) {
+  try {
+    const today = new Date();
+    const dayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][today.getDay()];
+    
+    const schedules = await db
+      .prepare(`SELECT employeeId, fullName, ${dayName} as todaySchedule FROM workSchedules WHERE ${dayName} IS NOT NULL AND ${dayName} != 'Off'`)
+      .all();
+
+    if (!schedules.results) {
+      return jsonResponse([], 200, origin);
+    }
+
+    const todaySchedules = schedules.results.map(schedule => ({
+      employeeId: schedule.employeeId,
+      fullName: schedule.fullName,
+      schedule: schedule.todaySchedule,
+      day: dayName
+    }));
+
+    return jsonResponse(todaySchedules, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy lịch hôm nay:", error);
+    return jsonResponse([], 200, origin);
+  }
+}
+
+// Hàm lấy yêu cầu đang chờ xử lý
+async function handleGetPendingRequests(db, origin) {
+  try {
+    // Sử dụng bảng messages để lấy các tin nhắn có chứa [YÊU CẦU]
+    const pendingMessages = await db
+      .prepare("SELECT * FROM messages WHERE message LIKE '%[YÊU CẦU]%' ORDER BY time DESC LIMIT 10")
+      .all();
+
+    if (!pendingMessages.results) {
+      return jsonResponse([], 200, origin);
+    }
+
+    const pendingRequests = pendingMessages.results.map(msg => ({
+      id: msg.id,
+      employeeId: msg.employeeId,
+      employeeName: msg.fullName,
+      message: msg.message,
+      time: msg.time,
+      status: 'pending'
+    }));
+
+    return jsonResponse(pendingRequests, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy yêu cầu đang chờ:", error);
+    return jsonResponse([], 200, origin);
+  }
+}
+
 export default {
   async scheduled(event, env, ctx) {
     try {
@@ -904,6 +960,10 @@ export default {
             return await cancelOrder(url, db, ALLOWED_ORIGIN);
           case "getOrderById":
             return await getOrderById(url, db, ALLOWED_ORIGIN);
+          case "getTodaySchedule":
+            return await handleGetTodaySchedule(db, ALLOWED_ORIGIN);
+          case "getPendingRequests":
+            return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
           case "checkTransaction":
             const transactionId = url.searchParams.get("transactionId");
             if (!transactionId) return jsonResponse({ message: "Thiếu transactionId!" }, 400);

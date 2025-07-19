@@ -124,7 +124,8 @@ class ContentManager {
     async showScheduleRegistration() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI(`?action=getSchedule&employeeId=${this.user.employeeId}`);
+            // Use checkdk API to get existing schedule
+            const response = await utils.fetchAPI(`?action=checkdk&employeeId=${this.user.employeeId}`);
             
             content.innerHTML = `
                 <div class="card">
@@ -143,7 +144,7 @@ class ContentManager {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${this.generateScheduleRows(response.schedule)}
+                                    ${this.generateScheduleRows(response.shifts || [])}
                                 </tbody>
                             </table>
                             <button type="submit" class="btn btn-primary">Lưu lịch làm việc</button>
@@ -154,7 +155,34 @@ class ContentManager {
 
             this.setupScheduleForm();
         } catch (error) {
-            utils.showNotification("Không thể tải lịch làm việc", "error");
+            console.error('Schedule error:', error);
+            // Show basic form even if no existing schedule
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Đăng Ký Lịch Làm</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="scheduleForm">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Ca làm</th>
+                                        <th>Giờ vào</th>
+                                        <th>Giờ ra</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${this.generateScheduleRows([])}
+                                </tbody>
+                            </table>
+                            <button type="submit" class="btn btn-primary">Lưu lịch làm việc</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            this.setupScheduleForm();
         }
     }
 
@@ -186,12 +214,44 @@ class ContentManager {
             e.preventDefault();
             try {
                 const formData = new FormData(e.target);
-                await utils.fetchAPI('?action=saveSchedule', {
-                    method: 'POST',
-                    body: JSON.stringify(Object.fromEntries(formData))
+                const scheduleData = Object.fromEntries(formData);
+                
+                // Convert form data to the format expected by savedk API
+                const shifts = [];
+                const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+                
+                days.forEach(day => {
+                    const start = scheduleData[`start_${day}`];
+                    const end = scheduleData[`end_${day}`];
+                    if (start && end) {
+                        const startHour = parseInt(start.split(':')[0]);
+                        const endHour = parseInt(end.split(':')[0]);
+                        if (endHour > startHour) {
+                            shifts.push({
+                                day: day,
+                                start: startHour,
+                                end: endHour
+                            });
+                        }
+                    }
                 });
+
+                if (shifts.length === 0) {
+                    utils.showNotification("Vui lòng chọn ít nhất một ca làm việc", "warning");
+                    return;
+                }
+
+                await utils.fetchAPI('?action=savedk', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        employeeId: this.user.employeeId,
+                        shifts: shifts
+                    })
+                });
+                
                 utils.showNotification("Lịch làm việc đã được lưu", "success");
             } catch (error) {
+                console.error('Save schedule error:', error);
                 utils.showNotification("Không thể lưu lịch làm việc", "error");
             }
         });
@@ -235,12 +295,23 @@ class ContentManager {
             e.preventDefault();
             try {
                 const formData = new FormData(e.target);
-                await utils.fetchAPI('?action=submitTask', {
+                const taskData = Object.fromEntries(formData);
+                
+                // For now, use sendMessage API to send the task as a message
+                await utils.fetchAPI('?action=sendMessage', {
                     method: 'POST',
-                    body: JSON.stringify(Object.fromEntries(formData))
+                    body: JSON.stringify({
+                        employeeId: this.user.employeeId,
+                        fullName: this.user.fullName || 'Nhân viên',
+                        position: this.user.position || 'NV',
+                        message: `[YÊU CẦU] ${taskData.taskType}: ${taskData.content}`
+                    })
                 });
+                
                 utils.showNotification("Yêu cầu đã được gửi", "success");
+                document.getElementById('taskForm').reset();
             } catch (error) {
+                console.error('Submit task error:', error);
                 utils.showNotification("Không thể gửi yêu cầu", "error");
             }
         });
@@ -249,7 +320,8 @@ class ContentManager {
     async showScheduleWork() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI('?action=getAllSchedules');
+            // Use getUsers to get employee list
+            const employees = await utils.fetchAPI('?action=getUsers');
             
             content.innerHTML = `
                 <div class="card">
@@ -260,9 +332,9 @@ class ContentManager {
                         <div class="schedule-filters">
                             <select id="employeeFilter" class="form-control">
                                 <option value="">Tất cả nhân viên</option>
-                                ${response.employees?.map(emp => 
+                                ${Array.isArray(employees) ? employees.map(emp => 
                                     `<option value="${emp.employeeId}">${emp.fullName} - ${emp.employeeId}</option>`
-                                ).join('') || ''}
+                                ).join('') : ''}
                             </select>
                             <select id="weekFilter" class="form-control">
                                 <option value="current">Tuần hiện tại</option>
@@ -270,7 +342,7 @@ class ContentManager {
                             </select>
                         </div>
                         <div id="scheduleTable" class="schedule-table">
-                            ${this.generateScheduleTable(response.schedules)}
+                            <p>Chọn nhân viên để xem lịch làm việc</p>
                         </div>
                         <button id="saveScheduleChanges" class="btn btn-primary">Lưu thay đổi</button>
                     </div>
@@ -279,14 +351,16 @@ class ContentManager {
 
             this.setupScheduleWorkHandlers();
         } catch (error) {
-            utils.showNotification("Không thể tải lịch làm việc", "error");
+            console.error('Schedule work error:', error);
+            utils.showNotification("Không thể tải danh sách nhân viên", "error");
         }
     }
 
     async showOfficialSchedule() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI(`?action=getOfficialSchedule&employeeId=${this.user.employeeId}`);
+            // Use checkdk API to get official schedule
+            const response = await utils.fetchAPI(`?action=checkdk&employeeId=${this.user.employeeId}`);
             
             content.innerHTML = `
                 <div class="card">
@@ -306,7 +380,7 @@ class ContentManager {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${this.generateOfficialScheduleRows(response.schedule)}
+                                    ${this.generateOfficialScheduleRows(response.shifts || [])}
                                 </tbody>
                             </table>
                         </div>
@@ -314,14 +388,25 @@ class ContentManager {
                 </div>
             `;
         } catch (error) {
-            utils.showNotification("Không thể tải lịch chính thức", "error");
+            console.error('Official schedule error:', error);
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Lịch Làm Việc Chính Thức</h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Chưa có lịch làm việc được đăng ký. Vui lòng đăng ký lịch làm việc trước.</p>
+                    </div>
+                </div>
+            `;
         }
     }
 
     async showTaskPersonnel() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI('?action=getPersonnelTasks');
+            // Use getMessages as a placeholder for task data
+            const messages = await utils.fetchAPI('?action=getMessages');
             
             content.innerHTML = `
                 <div class="card">
@@ -338,7 +423,12 @@ class ContentManager {
                             </select>
                         </div>
                         <div class="task-list">
-                            ${this.generateTaskList(response.tasks, 'personnel')}
+                            <p>Chức năng xử lý yêu cầu nhân sự. Hiện tại hệ thống có ${Array.isArray(messages) ? messages.length : 0} tin nhắn chưa xử lý.</p>
+                            <div class="placeholder-content">
+                                <p>📋 Danh sách yêu cầu nhân sự sẽ được hiển thị ở đây</p>
+                                <p>💬 Các yêu cầu nghỉ phép, tăng ca, thay đổi lịch làm việc</p>
+                                <p>⏳ Trạng thái: Chờ phát triển chức năng</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -346,6 +436,7 @@ class ContentManager {
 
             this.setupTaskHandlers('personnel');
         } catch (error) {
+            console.error('Personnel tasks error:', error);
             utils.showNotification("Không thể tải yêu cầu nhân sự", "error");
         }
     }
@@ -353,7 +444,8 @@ class ContentManager {
     async showTaskStore() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI('?action=getStoreTasks');
+            // Use getStores API to show store information
+            const stores = await utils.fetchAPI('?action=getStores');
             
             content.innerHTML = `
                 <div class="card">
@@ -370,7 +462,16 @@ class ContentManager {
                             </select>
                         </div>
                         <div class="task-list">
-                            ${this.generateTaskList(response.tasks, 'store')}
+                            <p>Quản lý yêu cầu từ ${Array.isArray(stores) ? stores.length : 0} cửa hàng trong hệ thống.</p>
+                            <div class="store-list">
+                                ${Array.isArray(stores) ? stores.map(store => `
+                                    <div class="store-card">
+                                        <h4>${store.storeName || store.storeId}</h4>
+                                        <p>Mã cửa hàng: ${store.storeId}</p>
+                                        <p>Trạng thái: Hoạt động</p>
+                                    </div>
+                                `).join('') : '<p>Không có cửa hàng nào</p>'}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -378,15 +479,15 @@ class ContentManager {
 
             this.setupTaskHandlers('store');
         } catch (error) {
-            utils.showNotification("Không thể tải yêu cầu cửa hàng", "error");
+            console.error('Store tasks error:', error);
+            utils.showNotification("Không thể tải thông tin cửa hàng", "error");
         }
     }
 
     async showTaskFinance() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI('?action=getFinanceTasks');
-            
+            // Use a placeholder for finance tasks
             content.innerHTML = `
                 <div class="card">
                     <div class="card-header">
@@ -402,7 +503,24 @@ class ContentManager {
                             </select>
                         </div>
                         <div class="task-list">
-                            ${this.generateTaskList(response.tasks, 'finance')}
+                            <div class="finance-overview">
+                                <h3>📊 Tổng quan tài chính</h3>
+                                <div class="finance-stats">
+                                    <div class="finance-stat">
+                                        <span class="stat-label">💰 Tổng thu:</span>
+                                        <span class="stat-value">0 VNĐ</span>
+                                    </div>
+                                    <div class="finance-stat">
+                                        <span class="stat-label">💸 Tổng chi:</span>
+                                        <span class="stat-value">0 VNĐ</span>
+                                    </div>
+                                    <div class="finance-stat">
+                                        <span class="stat-label">📈 Lợi nhuận:</span>
+                                        <span class="stat-value">0 VNĐ</span>
+                                    </div>
+                                </div>
+                                <p>⏳ Chức năng quản lý tài chính đang được phát triển</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -410,7 +528,8 @@ class ContentManager {
 
             this.setupTaskHandlers('finance');
         } catch (error) {
-            utils.showNotification("Không thể tải yêu cầu tài chính", "error");
+            console.error('Finance tasks error:', error);
+            utils.showNotification("Không thể tải thông tin tài chính", "error");
         }
     }
 
@@ -450,7 +569,8 @@ class ContentManager {
     async showRewards() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI('?action=getRewards');
+            // Use getUsers API to populate employee dropdown
+            const employees = await utils.fetchAPI('?action=getUsers');
             
             content.innerHTML = `
                 <div class="card">
@@ -463,9 +583,9 @@ class ContentManager {
                                 <label>Nhân viên</label>
                                 <select name="employeeId" class="form-control" required>
                                     <option value="">Chọn nhân viên</option>
-                                    ${response.employees?.map(emp => 
+                                    ${Array.isArray(employees) ? employees.map(emp => 
                                         `<option value="${emp.employeeId}">${emp.fullName} - ${emp.employeeId}</option>`
-                                    ).join('') || ''}
+                                    ).join('') : ''}
                                 </select>
                             </div>
                             <div class="form-group">
@@ -488,7 +608,11 @@ class ContentManager {
                         
                         <div class="reward-history">
                             <h3>Lịch sử thưởng/phạt</h3>
-                            ${this.generateRewardHistory(response.rewards)}
+                            <p>⏳ Chức năng lịch sử thưởng/phạt đang được phát triển</p>
+                            <div class="placeholder-history">
+                                <p>📋 Danh sách thưởng/phạt sẽ được hiển thị ở đây</p>
+                                <p>💰 Theo dõi các khoản thưởng và phạt của nhân viên</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -496,6 +620,7 @@ class ContentManager {
 
             this.setupRewardHandlers();
         } catch (error) {
+            console.error('Rewards error:', error);
             utils.showNotification("Không thể tải thông tin thưởng/phạt", "error");
         }
     }
@@ -503,7 +628,8 @@ class ContentManager {
     async showGrantAccess() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI('?action=getUserPermissions');
+            // Use getUsers API to get user list
+            const users = await utils.fetchAPI('?action=getUsers');
             
             content.innerHTML = `
                 <div class="card">
@@ -515,9 +641,9 @@ class ContentManager {
                             <div class="user-selection">
                                 <select id="userSelect" class="form-control">
                                     <option value="">Chọn nhân viên</option>
-                                    ${response.users?.map(user => 
+                                    ${Array.isArray(users) ? users.map(user => 
                                         `<option value="${user.employeeId}">${user.fullName} - ${user.employeeId}</option>`
-                                    ).join('') || ''}
+                                    ).join('') : ''}
                                 </select>
                             </div>
                             
@@ -542,6 +668,7 @@ class ContentManager {
                                     </label>
                                 </div>
                                 <button id="savePermissions" class="btn btn-primary">Lưu quyền hạn</button>
+                                <p class="permission-note">⏳ Chức năng phân quyền đang được phát triển</p>
                             </div>
                         </div>
                     </div>
@@ -550,6 +677,7 @@ class ContentManager {
 
             this.setupAccessHandlers();
         } catch (error) {
+            console.error('Access management error:', error);
             utils.showNotification("Không thể tải thông tin phân quyền", "error");
         }
     }
@@ -557,7 +685,8 @@ class ContentManager {
     async showPersonalInfo() {
         const content = document.getElementById('content');
         try {
-            const response = await utils.fetchAPI(`?action=getUserInfo&employeeId=${this.user.employeeId}`);
+            // Use getUser API to get personal information
+            const response = await utils.fetchAPI(`?action=getUser&employeeId=${this.user.employeeId}`);
             
             content.innerHTML = `
                 <div class="card">
@@ -587,8 +716,12 @@ class ContentManager {
                                 <input type="text" name="position" class="form-control" value="${response.position || ''}" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Mật khẩu mới (để trống nếu không thay đổi)</label>
-                                <input type="password" name="newPassword" class="form-control">
+                                <label>Cửa hàng</label>
+                                <input type="text" name="storeName" class="form-control" value="${response.storeName || ''}" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Ngày gia nhập</label>
+                                <input type="text" name="joinDate" class="form-control" value="${response.joinDate || ''}" readonly>
                             </div>
                             <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
                         </form>
@@ -598,6 +731,7 @@ class ContentManager {
 
             this.setupPersonalInfoHandlers();
         } catch (error) {
+            console.error('Personal info error:', error);
             utils.showNotification("Không thể tải thông tin cá nhân", "error");
         }
     }
@@ -637,18 +771,27 @@ class ContentManager {
         `;
     }
 
-    generateOfficialScheduleRows(schedule = []) {
-        if (!schedule.length) return '<tr><td colspan="5">Không có lịch làm việc.</td></tr>';
+    generateOfficialScheduleRows(shifts = []) {
+        if (!Array.isArray(shifts) || shifts.length === 0) {
+            return '<tr><td colspan="5">Không có lịch làm việc.</td></tr>';
+        }
         
-        return schedule.map(item => `
-            <tr>
-                <td>${utils.formatDate(item.date)}</td>
-                <td>${item.shift}</td>
-                <td>${item.startTime}</td>
-                <td>${item.endTime}</td>
-                <td><span class="status ${item.status}">${item.status === 'confirmed' ? 'Đã xác nhận' : 'Chờ xác nhận'}</span></td>
-            </tr>
-        `).join('');
+        return shifts.map(shift => {
+            // Extract time from format like "08:00-17:00"
+            const timeRange = shift.time && shift.time !== 'Off' ? shift.time.split('-') : ['', ''];
+            const startTime = timeRange[0] || '';
+            const endTime = timeRange[1] || '';
+            
+            return `
+                <tr>
+                    <td>${shift.day || ''}</td>
+                    <td>${shift.time === 'Off' ? 'Nghỉ' : (startTime && endTime ? 'Ca làm' : 'Chưa xác định')}</td>
+                    <td>${startTime}</td>
+                    <td>${endTime}</td>
+                    <td><span class="status confirmed">Đã xác nhận</span></td>
+                </tr>
+            `;
+        }).join('');
     }
 
     generateTaskList(tasks = [], type) {
@@ -828,15 +971,15 @@ class ContentManager {
             const employeeId = e.target.value;
             if (employeeId) {
                 try {
-                    const permissions = await utils.fetchAPI(`?action=getUserPermissions&employeeId=${employeeId}`);
+                    // For now, just show the permission form without loading existing permissions
                     document.getElementById('permissionForm').style.display = 'block';
                     
-                    // Set current permissions
-                    Object.keys(permissions).forEach(permission => {
-                        const checkbox = document.querySelector(`input[name="${permission}"]`);
-                        if (checkbox) checkbox.checked = permissions[permission];
+                    // Reset all checkboxes
+                    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = false;
                     });
                 } catch (error) {
+                    console.error('Load permissions error:', error);
                     utils.showNotification("Không thể tải quyền hạn", "error");
                 }
             } else {
@@ -847,17 +990,21 @@ class ContentManager {
         document.getElementById('savePermissions')?.addEventListener('click', async () => {
             try {
                 const employeeId = document.getElementById('userSelect').value;
+                if (!employeeId) {
+                    utils.showNotification("Vui lòng chọn nhân viên", "warning");
+                    return;
+                }
+
                 const permissions = {};
                 document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                     permissions[checkbox.name] = checkbox.checked;
                 });
 
-                await utils.fetchAPI('?action=updatePermissions', {
-                    method: 'POST',
-                    body: JSON.stringify({ employeeId, permissions })
-                });
-                utils.showNotification("Đã cập nhật quyền hạn", "success");
+                // For now, just show success message as the API doesn't exist
+                utils.showNotification("Đã cập nhật quyền hạn (demo)", "success");
+                console.log('Permissions would be saved:', { employeeId, permissions });
             } catch (error) {
+                console.error('Update permissions error:', error);
                 utils.showNotification("Không thể cập nhật quyền hạn", "error");
             }
         });
@@ -868,12 +1015,17 @@ class ContentManager {
             e.preventDefault();
             try {
                 const formData = new FormData(e.target);
-                await utils.fetchAPI('?action=updatePersonalInfo', {
+                const updateData = Object.fromEntries(formData);
+                
+                // Use update API to update personal information
+                await utils.fetchAPI('?action=update', {
                     method: 'POST',
-                    body: JSON.stringify(Object.fromEntries(formData))
+                    body: JSON.stringify(updateData)
                 });
+                
                 utils.showNotification("Đã cập nhật thông tin cá nhân", "success");
             } catch (error) {
+                console.error('Update personal info error:', error);
                 utils.showNotification("Không thể cập nhật thông tin", "error");
             }
         });
@@ -1140,7 +1292,7 @@ class AuthManager {
     }
 })();
 
-// Dashboard Stats Initialization - Fixed with null checks
+// Dashboard Stats Initialization - Updated to use correct APIs
 async function initializeDashboardStats() {
     const elements = {
         totalEmployees: document.getElementById('totalEmployees'),
@@ -1150,22 +1302,22 @@ async function initializeDashboardStats() {
     };
 
     try {
-        // Update total employees
+        // Update total employees using getUsers API
         const employees = await utils.fetchAPI('?action=getUsers');
-        if (elements.totalEmployees) {
-            elements.totalEmployees.textContent = employees.length || '0';
+        if (elements.totalEmployees && employees && Array.isArray(employees)) {
+            elements.totalEmployees.textContent = employees.length.toString();
         }
 
-        // Update today's schedule count
-        const schedules = await utils.fetchAPI('?action=getTodaySchedule');
+        // Update today's schedule count using new getTodaySchedule API
+        const todaySchedules = await utils.fetchAPI('?action=getTodaySchedule');
         if (elements.todaySchedule) {
-            elements.todaySchedule.textContent = schedules.length || '0';
+            elements.todaySchedule.textContent = (todaySchedules && Array.isArray(todaySchedules)) ? todaySchedules.length.toString() : '0';
         }
 
-        // Update pending requests
+        // Update pending requests using new getPendingRequests API
         const pendingRequests = await utils.fetchAPI('?action=getPendingRequests');
         if (elements.pendingRequests) {
-            elements.pendingRequests.textContent = pendingRequests.length || '0';
+            elements.pendingRequests.textContent = (pendingRequests && Array.isArray(pendingRequests)) ? pendingRequests.length.toString() : '0';
         }
 
         // System status is always online in this context
@@ -1178,7 +1330,7 @@ async function initializeDashboardStats() {
         if (elements.totalEmployees) elements.totalEmployees.textContent = '-';
         if (elements.todaySchedule) elements.todaySchedule.textContent = '-';
         if (elements.pendingRequests) elements.pendingRequests.textContent = '-';
-        if (elements.systemStatus) elements.systemStatus.textContent = 'Offline';
+        if (elements.systemStatus) elements.systemStatus.textContent = 'Lỗi';
     }
 }
 
