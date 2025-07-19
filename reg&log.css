@@ -99,12 +99,35 @@ body {
     animation-delay: -8s;
 }
 
-/* Light Streaks */
+/* Enhanced Light Streaks */
 .light-streak {
     position: absolute;
-    width: 2px;
-    background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: streakAnimation 8s infinite linear;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, rgba(103, 232, 249, 0.4), transparent);
+    animation: streakAnimation 12s infinite linear;
+    border-radius: 50%;
+}
+
+.light-streaks::before {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, rgba(147, 51, 234, 0.3), transparent);
+    animation: streakAnimation 15s infinite linear;
+    animation-delay: -5s;
+    left: 25%;
+}
+
+.light-streaks::after {
+    content: '';
+    position: absolute;
+    width: 1px;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.3), transparent);
+    animation: streakAnimation 18s infinite linear;
+    animation-delay: -10s;
+    right: 30%;
 }
 
 /* Moving Stars */
@@ -118,16 +141,18 @@ body {
     z-index: -1;
 }
 
+/* Stars Effect */
 .star {
     position: absolute;
     width: 2px;
     height: 2px;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.8);
     border-radius: 50%;
-    animation: twinkle var(--duration) infinite ease-in-out;
+    animation: twinkle 3s infinite ease-in-out;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
 }
 
-/* Aurora Effect */
+/* Enhanced Aurora Effect */
 .aurora {
     position: fixed;
     top: 0;
@@ -135,15 +160,17 @@ body {
     width: 100%;
     height: 100%;
     z-index: -2;
-    opacity: 0.5;
+    opacity: 0.3;
     background: 
         linear-gradient(
-            0deg,
+            45deg,
             transparent 0%,
-            rgba(32, 128, 255, 0.2) 20%,
-            rgba(32, 128, 255, 0) 100%
+            rgba(103, 232, 249, 0.1) 25%,
+            rgba(147, 51, 234, 0.08) 50%,
+            rgba(59, 130, 246, 0.1) 75%,
+            transparent 100%
         );
-    animation: auroraAnimation 15s infinite;
+    animation: auroraAnimation 30s infinite;
 }
 
 /* Animations */
@@ -396,7 +423,7 @@ body {
     }
 }
 
-/* Form Header - Cosmic Theme */
+/* Form Header - Enhanced Cosmic Theme */
 .form-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -407,6 +434,18 @@ body {
     color: #ffffff;
     margin-bottom: 0.5rem;
     font-weight: 700;
+    text-shadow: 0 0 20px rgba(103, 232, 249, 0.3);
+}
+
+.form-header::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, rgba(103, 232, 249, 1), rgba(147, 51, 234, 1));
+    margin: 1rem auto 0;
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(103, 232, 249, 0.5);
 }
 
 .form-header p {
@@ -671,19 +710,50 @@ body {
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 640px) {
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    
+    .auth-container {
+        max-width: 100%;
+    }
+    
     .form-container {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem;
+        margin: 0.5rem 0;
     }
 
     .form-header h2 {
-        font-size: 1.5rem;
+        font-size: 1.75rem;
     }
 
     .input-group input {
-        font-size: 0.875rem;
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 0.875rem 1rem 0.875rem 2.75rem;
     }
+    
+    .circle-1, .circle-2 {
+        display: none; /* Hide large circles on mobile */
+    }
+    
+    .circle-3 {
+        width: 200px;
+        height: 200px;
+        opacity: 0.5;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .form-header h2 {
+        font-size: 1.5rem;
+    }
+}
 
     .form-options {
         flex-direction: column;
