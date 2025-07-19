@@ -149,7 +149,7 @@ function checkPasswordStrength(password) {
     elements.strengthText.textContent = message;
 }
 
-// Form Validation
+// Enhanced Form Validation with Professional Messages
 function isValidForm(data) {
     const patterns = {
         employeeId: /^(MC|VP|ADMIN)\d*$/,
@@ -160,16 +160,16 @@ function isValidForm(data) {
     };
 
     const messages = {
-        employeeId: "Mã nhân viên không hợp lệ",
-        password: "Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 chữ thường và 1 số",
-        email: "Email không hợp lệ",
-        phone: "Số điện thoại không hợp lệ",
-        fullName: "Họ tên không hợp lệ"
+        employeeId: "Mã nhân viên phải bắt đầu bằng MC, VP hoặc ADMIN theo sau bởi số",
+        password: "Mật khẩu cần ít nhất 8 ký tự, bao gồm: chữ hoa, chữ thường và số",
+        email: "Vui lòng nhập địa chỉ email hợp lệ",
+        phone: "Số điện thoại phải có đúng 10 chữ số",
+        fullName: "Họ tên chỉ được chứa chữ cái và khoảng trắng (2-30 ký tự)"
     };
 
     for (const [field, value] of Object.entries(data)) {
-        if (patterns[field] && !patterns[field].test(value)) {
-            showNotification(messages[field], "warning");
+        if (patterns[field] && value && !patterns[field].test(value)) {
+            showNotification(messages[field], "warning", 4000);
             return false;
         }
     }
@@ -177,17 +177,27 @@ function isValidForm(data) {
     return true;
 }
 
-// API Calls
+// Enhanced API Calls with Better Error Handling
 async function handleLogin(event) {
     event.preventDefault();
     
     const button = elements.loginForm.querySelector("button");
+    const buttonText = button.querySelector(".btn-text");
     button.classList.add("loading");
+    buttonText.textContent = "Đang đăng nhập...";
     
     const formData = {
         loginEmployeeId: elements.loginForm.loginEmployeeId.value.trim(),
         loginPassword: elements.loginForm.loginPassword.value
     };
+
+    // Validate form data
+    if (!formData.loginEmployeeId || !formData.loginPassword) {
+        showNotification("Vui lòng nhập đầy đủ thông tin đăng nhập", "warning");
+        button.classList.remove("loading");
+        buttonText.textContent = "Đăng nhập";
+        return;
+    }
 
     try {
         const response = await fetch(`${API_URL}?action=login`, {
@@ -204,16 +214,24 @@ async function handleLogin(event) {
                 localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
             }
             localStorage.setItem("loggedInUser", JSON.stringify(formData));
-            showNotification("Đăng nhập thành công!");
             
-            setTimeout(() => window.location.href = "dashboard.html", 1000);
+            showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
+            buttonText.textContent = "Thành công!";
+            
+            setTimeout(() => window.location.href = "dashboard.html", 1500);
         } else {
-            throw new Error(response.status === 401 ? "Mật khẩu không đúng" : "Mã nhân viên không tồn tại");
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+                response.status === 401 ? "Mật khẩu không chính xác" : 
+                response.status === 404 ? "Mã nhân viên không tồn tại" :
+                errorData.message || "Đăng nhập thất bại"
+            );
         }
     } catch (error) {
         showNotification(error.message, "error");
     } finally {
         button.classList.remove("loading");
+        buttonText.textContent = "Đăng nhập";
     }
 }
 
