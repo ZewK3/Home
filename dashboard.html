@@ -70,6 +70,9 @@
                     </li>
                 </ul>
             </li>
+            <li class="menu-item" data-role="AD,QL">
+                <a href="#" id="openRegistrationApproval" class="menu-link">Duyệt Đăng Ký</a>
+            </li>
             <li class="menu-item" data-role="AD">
                 <a href="#" id="openGrantAccess" class="menu-link">Phân Quyền</a>
             </li>
@@ -273,6 +276,27 @@
                             </div>
                             <div class="finance-amount" id="monthlyPayroll">0 ₫</div>
                             <div class="finance-subtitle">Ổn định</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Approval for Admin and Managers -->
+                <div class="registration-approval-section" data-role="AD,QL">
+                    <h2 class="section-title">Duyệt Đăng Ký Nhân Viên</h2>
+                    <div class="approval-container">
+                        <div class="approval-header">
+                            <div class="approval-filters">
+                                <select id="storeFilter" class="filter-select">
+                                    <option value="">Tất cả cửa hàng</option>
+                                </select>
+                                <button id="refreshPendingBtn" class="refresh-btn">
+                                    <span class="material-icons-round">refresh</span>
+                                    Làm mới
+                                </button>
+                            </div>
+                        </div>
+                        <div id="pendingRegistrationsList" class="registrations-list">
+                            <p class="loading-text">Đang tải danh sách...</p>
                         </div>
                     </div>
                 </div>

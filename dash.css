@@ -1980,6 +1980,186 @@ body {
     color: var(--text-muted);
 }
 
+}
+
+/* Registration Approval Section */
+.registration-approval-section {
+    margin-bottom: 40px;
+}
+
+.approval-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.approval-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--bg-glass) 0%, rgba(255, 255, 255, 0.5) 100%);
+}
+
+.approval-filters {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: white;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: var(--transition);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.refresh-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.registrations-list {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.registration-item {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.registration-item:hover {
+    background: rgba(37, 99, 235, 0.02);
+}
+
+.registration-item:last-child {
+    border-bottom: none;
+}
+
+.registration-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.registration-info {
+    flex: 1;
+}
+
+.employee-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.employee-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.detail-icon {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+.registration-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.approve-btn, .reject-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.approve-btn {
+    background: var(--success);
+    color: white;
+}
+
+.approve-btn:hover {
+    background: #15803d;
+    transform: translateY(-1px);
+}
+
+.reject-btn {
+    background: var(--error);
+    color: white;
+}
+
+.reject-btn:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state .empty-text {
+    font-size: 1.125rem;
+    margin-bottom: 8px;
+}
+
+.empty-state .empty-subtext {
+    font-size: 0.875rem;
+}
+
 /* Role-based visibility */
 [data-role] {
     display: none;

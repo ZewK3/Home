@@ -198,6 +198,33 @@ function isValidForm(data) {
 }
 
 // Enhanced API Calls with Better Error Handling
+
+// Load stores for registration form
+async function loadStores() {
+    const storeSelect = document.getElementById("storeName");
+    if (!storeSelect) return;
+    
+    try {
+        const response = await fetch(`${API_URL}?action=getStores`);
+        if (response.ok) {
+            const stores = await response.json();
+            storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
+            
+            stores.forEach(store => {
+                const option = document.createElement("option");
+                option.value = store.storeName;
+                option.textContent = store.storeName;
+                storeSelect.appendChild(option);
+            });
+        } else {
+            storeSelect.innerHTML = '<option value="">Không thể tải danh sách cửa hàng</option>';
+        }
+    } catch (error) {
+        console.error("Error loading stores:", error);
+        storeSelect.innerHTML = '<option value="">Lỗi khi tải cửa hàng</option>';
+    }
+}
+
 async function handleLogin(event) {
     event.preventDefault();
     
@@ -252,6 +279,12 @@ async function handleLogin(event) {
             setTimeout(() => window.location.href = "dashboard.html", 1500);
         } else {
             const errorData = await response.json().catch(() => ({}));
+            
+            // Handle pending approval case
+            if (response.status === 403) {
+                throw new Error("Tài khoản của bạn đang chờ phê duyệt từ quản lý cửa hàng. Vui lòng đợi thông báo.");
+            }
+            
             throw new Error(
                 response.status === 401 ? "Mật khẩu không chính xác" : 
                 response.status === 404 ? "Mã nhân viên không tồn tại" :
@@ -275,8 +308,13 @@ async function handleRegister(event) {
     }
     
     const button = elements.registerForm.querySelector("button");
+    const buttonText = button?.querySelector(".btn-text");
+    
     if (button) {
         button.classList.add("loading");
+    }
+    if (buttonText) {
+        buttonText.textContent = "Đang xử lý...";
     }
     
     const formData = {
@@ -285,11 +323,21 @@ async function handleRegister(event) {
         fullName: elements.registerForm.fullName?.value.trim() || "",
         phone: elements.registerForm.phone?.value.trim() || "",
         email: elements.registerForm.email?.value.trim() || "",
+        storeName: elements.registerForm.storeName?.value || "",
         position: "NV"
     };
 
+    // Validate store selection
+    if (!formData.storeName) {
+        showNotification("Vui lòng chọn cửa hàng", "warning");
+        if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Đăng ký";
+        return;
+    }
+
     if (!isValidForm(formData)) {
         if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Đăng ký";
         return;
     }
 
@@ -302,11 +350,12 @@ async function handleRegister(event) {
 
         switch (response.status) {
             case SUCCESS_STATUS:
-                showNotification("Đăng ký thành công!");
-                setTimeout(showLoginForm, 1500);
+                showNotification("Đăng ký thành công! Yêu cầu của bạn đang chờ phê duyệt từ quản lý cửa hàng.", "success", 5000);
+                if (buttonText) buttonText.textContent = "Chờ phê duyệt";
+                setTimeout(showLoginForm, 2500);
                 break;
             case ACCOUNT_EXISTS_STATUS:
-                showNotification("Tài khoản đã tồn tại!", "warning");
+                showNotification("Mã nhân viên đã tồn tại!", "warning");
                 break;
             case PHONE_EXISTS_STATUS:
                 showNotification("Số điện thoại đã được sử dụng!", "warning");
@@ -315,17 +364,22 @@ async function handleRegister(event) {
                 showNotification("Email đã được sử dụng!", "warning");
                 break;
             default:
-                throw new Error("Đăng ký thất bại");
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || "Đăng ký thất bại");
         }
     } catch (error) {
         showNotification(error.message, "error");
     } finally {
         if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Đăng ký";
     }
 }
 
 // Event Listeners - Fixed with null checks
 document.addEventListener("DOMContentLoaded", () => {
+    // Load stores for registration form
+    loadStores();
+
     // Theme toggle
     const themeSwitch = document.getElementById("themeSwitch");
     if (themeSwitch) {

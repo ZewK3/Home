@@ -427,6 +427,10 @@ class ContentManager {
             this.showGrantAccess());
         document.getElementById('openPersonalInformation')?.addEventListener('click', () => 
             this.showPersonalInfo());
+        
+        // Registration Approval
+        document.getElementById('openRegistrationApproval')?.addEventListener('click', () =>
+            this.showRegistrationApproval());
     }
 
     // Schedule Management Functions
@@ -1338,6 +1342,177 @@ class ContentManager {
                 utils.showNotification("Không thể cập nhật thông tin", "error");
             }
         });
+    }
+
+    // Registration Approval Management
+    async showRegistrationApproval() {
+        const content = document.getElementById('content');
+        try {
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Duyệt Đăng Ký Nhân Viên</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="approval-filters">
+                            <select id="storeFilterSelect" class="form-control">
+                                <option value="">Tất cả cửa hàng</option>
+                            </select>
+                            <button id="refreshPendingRegistrations" class="btn btn-secondary">
+                                <span class="material-icons-round">refresh</span>
+                                Làm mới
+                            </button>
+                        </div>
+                        <div id="pendingRegistrationsList" class="registrations-container">
+                            <p class="loading-text">Đang tải danh sách...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            await this.loadStoresForFilter();
+            await this.loadPendingRegistrations();
+            this.setupRegistrationApprovalHandlers();
+        } catch (error) {
+            console.error('Registration approval error:', error);
+            utils.showNotification("Không thể tải danh sách đăng ký", "error");
+        }
+    }
+
+    async loadStoresForFilter() {
+        try {
+            const stores = await utils.fetchAPI('?action=getStores');
+            const storeFilter = document.getElementById('storeFilterSelect');
+            if (storeFilter && stores.length) {
+                storeFilter.innerHTML = '<option value="">Tất cả cửa hàng</option>' +
+                    stores.map(store => `<option value="${store.storeName}">${store.storeName}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Load stores error:', error);
+        }
+    }
+
+    async loadPendingRegistrations(store = '') {
+        try {
+            const url = store ? `?action=getPendingRegistrations&store=${encodeURIComponent(store)}` : '?action=getPendingRegistrations';
+            const registrations = await utils.fetchAPI(url);
+            
+            const container = document.getElementById('pendingRegistrationsList');
+            if (!registrations.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-text">Không có yêu cầu đăng ký nào</div>
+                        <div class="empty-subtext">Tất cả yêu cầu đăng ký đã được xử lý</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = registrations.map(reg => `
+                <div class="registration-item" data-employee-id="${reg.employeeId}">
+                    <div class="registration-header">
+                        <div class="registration-info">
+                            <div class="employee-name">${reg.fullName}</div>
+                            <div class="employee-details">
+                                <div class="detail-item">
+                                    <span class="detail-icon">🆔</span>
+                                    <span>Mã NV: ${reg.employeeId}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">🏪</span>
+                                    <span>Cửa hàng: ${reg.storeName}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">👔</span>
+                                    <span>Chức vụ: ${reg.position}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">📞</span>
+                                    <span>SĐT: ${reg.phone || 'Chưa có'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">📧</span>
+                                    <span>Email: ${reg.email || 'Chưa có'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">📅</span>
+                                    <span>Ngày gửi: ${utils.formatDate(reg.createdAt)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="registration-actions">
+                            <button class="approve-btn" onclick="window.approveRegistration('${reg.employeeId}')">
+                                <span class="material-icons-round">check</span>
+                                Duyệt
+                            </button>
+                            <button class="reject-btn" onclick="window.rejectRegistration('${reg.employeeId}')">
+                                <span class="material-icons-round">close</span>
+                                Từ chối
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Load pending registrations error:', error);
+            const container = document.getElementById('pendingRegistrationsList');
+            container.innerHTML = '<p class="error-text">Không thể tải danh sách đăng ký</p>';
+        }
+    }
+
+    setupRegistrationApprovalHandlers() {
+        // Filter by store
+        document.getElementById('storeFilterSelect')?.addEventListener('change', (e) => {
+            this.loadPendingRegistrations(e.target.value);
+        });
+
+        // Refresh button
+        document.getElementById('refreshPendingRegistrations')?.addEventListener('click', () => {
+            const store = document.getElementById('storeFilterSelect')?.value || '';
+            this.loadPendingRegistrations(store);
+        });
+
+        // Global functions for approval/rejection
+        window.approveRegistration = async (employeeId) => {
+            if (!confirm('Bạn có chắc chắn muốn duyệt đăng ký này?')) return;
+            
+            try {
+                await utils.fetchAPI('?action=approveRegistration', {
+                    method: 'POST',
+                    body: JSON.stringify({ employeeId, action: 'approve' })
+                });
+                
+                utils.showNotification("Đã duyệt đăng ký thành công!", "success");
+                
+                // Refresh the list
+                const store = document.getElementById('storeFilterSelect')?.value || '';
+                await this.loadPendingRegistrations(store);
+            } catch (error) {
+                console.error('Approve registration error:', error);
+                utils.showNotification("Không thể duyệt đăng ký", "error");
+            }
+        };
+
+        window.rejectRegistration = async (employeeId) => {
+            if (!confirm('Bạn có chắc chắn muốn từ chối đăng ký này?')) return;
+            
+            try {
+                await utils.fetchAPI('?action=approveRegistration', {
+                    method: 'POST',
+                    body: JSON.stringify({ employeeId, action: 'reject' })
+                });
+                
+                utils.showNotification("Đã từ chối đăng ký", "success");
+                
+                // Refresh the list
+                const store = document.getElementById('storeFilterSelect')?.value || '';
+                await this.loadPendingRegistrations(store);
+            } catch (error) {
+                console.error('Reject registration error:', error);
+                utils.showNotification("Không thể từ chối đăng ký", "error");
+            }
+        };
     }
 }
 

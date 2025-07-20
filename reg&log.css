@@ -510,6 +510,49 @@ body {
     font-weight: 600;
 }
 
+/* Select Dropdown Styles */
+.input-group select {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    font-size: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+
+.input-group select:focus {
+    border-color: rgba(103, 232, 249, 0.8);
+    box-shadow: 0 0 20px rgba(103, 232, 249, 0.3);
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.input-group select option {
+    background-color: rgba(30, 30, 50, 0.95);
+    color: #ffffff;
+    padding: 0.5rem;
+}
+
+.input-group select:focus + label,
+.input-group select:valid + label {
+    transform: translateY(-130%) scale(0.85);
+    left: 0.75rem;
+    color: rgba(103, 232, 249, 1);
+    font-weight: 600;
+}
+
 /* Icons - Cosmic Theme */
 .input-icon {
     position: absolute;

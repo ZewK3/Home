@@ -634,6 +634,18 @@ async function handleLogin(body, db, origin) {
     return jsonResponse({ message: "Thiếu mã nhân viên hoặc mật khẩu!" }, 400, origin);
   }
 
+  // First check if user is in the queue (pending approval)
+  const queueUser = await db
+    .prepare("SELECT * FROM queue WHERE employeeId = ?")
+    .bind(employeeId)
+    .first();
+
+  if (queueUser) {
+    if (queueUser.status === "Wait") {
+      return jsonResponse({ message: "Tài khoản của bạn đang chờ phê duyệt từ quản lý cửa hàng. Vui lòng đợi thông báo." }, 403, origin);
+    }
+  }
+
   const user = await db
     .prepare("SELECT password, salt FROM employees WHERE employeeId = ?")
     .bind(employeeId)
@@ -720,23 +732,56 @@ async function handleRegister(body, db, origin) {
     return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
   }
 
+  // Check if employeeId already exists in employees table
   const existingUser = await db
     .prepare("SELECT employeeId FROM employees WHERE employeeId = ?")
     .bind(employeeId)
     .first();
   if (existingUser) return jsonResponse({ message: "Mã nhân viên đã tồn tại!" }, 209, origin);
 
-  const existingPhone = await db
-    .prepare("SELECT employeeId FROM employees WHERE phone = ?")
-    .bind(phone)
+  // Check if employeeId already exists in queue table
+  const existingQueue = await db
+    .prepare("SELECT employeeId, status FROM queue WHERE employeeId = ?")
+    .bind(employeeId)
     .first();
-  if (existingPhone) return jsonResponse({ message: "Số điện thoại đã tồn tại!" }, 210, origin);
+  if (existingQueue) {
+    if (existingQueue.status === "Wait") {
+      return jsonResponse({ message: "Tài khoản của bạn đang chờ phê duyệt từ quản lý cửa hàng." }, 403, origin);
+    }
+    return jsonResponse({ message: "Mã nhân viên đã tồn tại!" }, 209, origin);
+  }
 
-  const existingEmail = await db
-    .prepare("SELECT employeeId FROM employees WHERE email = ?")
-    .bind(email)
-    .first();
-  if (existingEmail) return jsonResponse({ message: "Email đã tồn tại!" }, 211, origin);
+  // Check if phone already exists in employees table
+  if (phone) {
+    const existingPhone = await db
+      .prepare("SELECT employeeId FROM employees WHERE phone = ?")
+      .bind(phone)
+      .first();
+    if (existingPhone) return jsonResponse({ message: "Số điện thoại đã tồn tại!" }, 210, origin);
+
+    // Check if phone already exists in queue table
+    const existingQueuePhone = await db
+      .prepare("SELECT employeeId FROM queue WHERE phone = ?")
+      .bind(phone)
+      .first();
+    if (existingQueuePhone) return jsonResponse({ message: "Số điện thoại đã tồn tại!" }, 210, origin);
+  }
+
+  // Check if email already exists in employees table
+  if (email) {
+    const existingEmail = await db
+      .prepare("SELECT employeeId FROM employees WHERE email = ?")
+      .bind(email)
+      .first();
+    if (existingEmail) return jsonResponse({ message: "Email đã tồn tại!" }, 211, origin);
+
+    // Check if email already exists in queue table
+    const existingQueueEmail = await db
+      .prepare("SELECT employeeId FROM queue WHERE email = ?")
+      .bind(email)
+      .first();
+    if (existingQueueEmail) return jsonResponse({ message: "Email đã tồn tại!" }, 211, origin);
+  }
 
   const { hash, salt } = await hashPasswordPBKDF2(password);
   await db
@@ -757,7 +802,7 @@ async function handleRegister(body, db, origin) {
     )
     .run();
 
-  return jsonResponse({ message: "Yêu cầu của bạn đã được gửi" }, 200, origin);
+  return jsonResponse({ message: "Yêu cầu đăng ký của bạn đã được gửi và đang chờ phê duyệt từ quản lý cửa hàng." }, 200, origin);
 }
 
 // Hàm cập nhật thông tin nhân viên
@@ -1219,6 +1264,108 @@ async function handleUpdatePermissions(body, db, origin) {
   }
 }
 
+// Hàm lấy danh sách yêu cầu đăng ký đang chờ duyệt
+async function handleGetPendingRegistrations(url, db, origin) {
+  try {
+    const store = url.searchParams.get("store");
+    let query = "SELECT * FROM queue WHERE status = 'Wait'";
+    let params = [];
+
+    if (store) {
+      query += " AND storeName = ?";
+      params.push(store);
+    }
+
+    query += " ORDER BY createdAt DESC";
+
+    const registrations = await db.prepare(query).bind(...params).all();
+
+    if (!registrations.results) {
+      return jsonResponse([], 200, origin);
+    }
+
+    // Format response without sensitive data
+    const pendingRequests = registrations.results.map(reg => ({
+      employeeId: reg.employeeId,
+      fullName: reg.fullName,
+      storeName: reg.storeName,
+      position: reg.position,
+      phone: reg.phone,
+      email: reg.email,
+      joinDate: reg.joinDate,
+      createdAt: reg.createdAt,
+      status: reg.status
+    }));
+
+    return jsonResponse(pendingRequests, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy yêu cầu đăng ký:", error);
+    return jsonResponse({ message: "Lỗi lấy yêu cầu đăng ký!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm phê duyệt đăng ký
+async function handleApproveRegistration(body, db, origin) {
+  const { employeeId, action } = body; // action: 'approve' or 'reject'
+  
+  if (!employeeId || !action) {
+    return jsonResponse({ message: "Thiếu thông tin cần thiết!" }, 400, origin);
+  }
+
+  if (!['approve', 'reject'].includes(action)) {
+    return jsonResponse({ message: "Hành động không hợp lệ!" }, 400, origin);
+  }
+
+  try {
+    // Get registration data from queue
+    const registration = await db
+      .prepare("SELECT * FROM queue WHERE employeeId = ? AND status = 'Wait'")
+      .bind(employeeId)
+      .first();
+
+    if (!registration) {
+      return jsonResponse({ message: "Không tìm thấy yêu cầu đăng ký!" }, 404, origin);
+    }
+
+    if (action === 'approve') {
+      // Move from queue to employees table
+      await db
+        .prepare(
+          "INSERT INTO employees (employeeId, password, salt, fullName, storeName, position, joinDate, phone, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        )
+        .bind(
+          registration.employeeId,
+          registration.password,
+          registration.salt,
+          registration.fullName,
+          registration.storeName,
+          registration.position || "NV",
+          registration.joinDate,
+          registration.phone,
+          registration.email
+        )
+        .run();
+
+      // Remove from queue
+      await db.prepare("DELETE FROM queue WHERE employeeId = ?").bind(employeeId).run();
+
+      return jsonResponse({ 
+        message: `Đã phê duyệt đăng ký cho nhân viên ${registration.fullName} (${employeeId})` 
+      }, 200, origin);
+    } else {
+      // Reject - just remove from queue
+      await db.prepare("DELETE FROM queue WHERE employeeId = ?").bind(employeeId).run();
+      
+      return jsonResponse({ 
+        message: `Đã từ chối đăng ký cho ${registration.fullName} (${employeeId})` 
+      }, 200, origin);
+    }
+  } catch (error) {
+    console.error("Lỗi xử lý đăng ký:", error);
+    return jsonResponse({ message: "Lỗi xử lý đăng ký!", error: error.message }, 500, origin);
+  }
+}
+
 // Hàm lấy quyền hạn của nhân viên
 async function handleGetPermissions(url, db, origin) {
   const employeeId = url.searchParams.get("employeeId");
@@ -1337,6 +1484,8 @@ export default {
             return await handleCreateTaskFromMessage(body, db, ALLOWED_ORIGIN);
           case "updatePermissions":
             return await handleUpdatePermissions(body, db, ALLOWED_ORIGIN);
+          case "approveRegistration":
+            return await handleApproveRegistration(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -1382,6 +1531,8 @@ export default {
             return await handleGetTasks(url, db, ALLOWED_ORIGIN);
           case "getPermissions":
             return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
+          case "getPendingRegistrations":
+            return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
           case "checkTransaction":
             const transactionId = url.searchParams.get("transactionId");
             if (!transactionId) return jsonResponse({ message: "Thiếu transactionId!" }, 400);
