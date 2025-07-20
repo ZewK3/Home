@@ -938,6 +938,315 @@ async function handleGetRecentActivities(db, origin) {
   }
 }
 
+// Hàm xóa tin nhắn với kiểm tra thời gian
+async function handleDeleteMessage(body, db, origin) {
+  const { messageId } = body;
+  if (!messageId) {
+    return jsonResponse({ message: "Thiếu messageId!" }, 400, origin);
+  }
+
+  try {
+    // Lấy thông tin tin nhắn
+    const message = await db
+      .prepare("SELECT * FROM messages WHERE id = ?")
+      .bind(messageId)
+      .first();
+
+    if (!message) {
+      return jsonResponse({ message: "Tin nhắn không tồn tại!" }, 404, origin);
+    }
+
+    // Kiểm tra thời gian (chỉ cho phép xóa trong vòng 5 phút)
+    const messageTime = new Date(message.time);
+    const currentTime = new Date();
+    const timeDiff = (currentTime - messageTime) / 1000; // Chuyển sang giây
+
+    if (timeDiff > 300) { // 5 phút = 300 giây
+      return jsonResponse({ message: "Chỉ có thể xóa tin nhắn trong vòng 5 phút!" }, 403, origin);
+    }
+
+    // Xóa tin nhắn
+    await db.prepare("DELETE FROM messages WHERE id = ?").bind(messageId).run();
+    
+    return jsonResponse({ message: "Đã xóa tin nhắn!" }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi xóa tin nhắn:", error);
+    return jsonResponse({ message: "Lỗi xóa tin nhắn!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm thêm thưởng/phạt
+async function handleAddReward(body, db, origin) {
+  const { employeeId, type, amount, reason } = body;
+  
+  if (!employeeId || !type || !amount || !reason) {
+    return jsonResponse({ message: "Thiếu thông tin cần thiết!" }, 400, origin);
+  }
+
+  if (!['reward', 'penalty'].includes(type)) {
+    return jsonResponse({ message: "Loại thưởng/phạt không hợp lệ!" }, 400, origin);
+  }
+
+  try {
+    // Kiểm tra nhân viên tồn tại
+    const employee = await db
+      .prepare("SELECT employeeId, fullName FROM employees WHERE employeeId = ?")
+      .bind(employeeId)
+      .first();
+
+    if (!employee) {
+      return jsonResponse({ message: "Nhân viên không tồn tại!" }, 404, origin);
+    }
+
+    // Thêm bản ghi thưởng/phạt
+    const rewardId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    await db
+      .prepare("INSERT INTO rewards (id, employeeId, employeeName, type, amount, reason, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .bind(rewardId, employeeId, employee.fullName, type, amount, reason, now)
+      .run();
+
+    return jsonResponse({ 
+      message: `Đã thêm ${type === 'reward' ? 'thưởng' : 'phạt'} cho nhân viên ${employee.fullName}`,
+      rewardId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi thêm thưởng/phạt:", error);
+    return jsonResponse({ message: "Lỗi thêm thưởng/phạt!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm lấy lịch sử thưởng/phạt
+async function handleGetRewards(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  const limit = parseInt(url.searchParams.get("limit")) || 50;
+
+  try {
+    let query = "SELECT * FROM rewards ORDER BY createdAt DESC";
+    let params = [];
+
+    if (employeeId) {
+      query = "SELECT * FROM rewards WHERE employeeId = ? ORDER BY createdAt DESC LIMIT ?";
+      params = [employeeId, limit];
+    } else {
+      query += " LIMIT ?";
+      params = [limit];
+    }
+
+    const rewards = await db.prepare(query).bind(...params).all();
+
+    if (!rewards.results || rewards.results.length === 0) {
+      return jsonResponse([], 200, origin);
+    }
+
+    return jsonResponse(rewards.results, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy lịch sử thưởng/phạt:", error);
+    return jsonResponse({ message: "Lỗi lấy lịch sử thưởng/phạt!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm xử lý yêu cầu - duyệt
+async function handleApproveTask(body, db, origin) {
+  const { taskId, note } = body;
+  
+  if (!taskId) {
+    return jsonResponse({ message: "Thiếu taskId!" }, 400, origin);
+  }
+
+  try {
+    // Cập nhật trạng thái yêu cầu (sử dụng bảng tasks nếu có, hoặc tạo mới)
+    const taskExists = await db
+      .prepare("SELECT * FROM tasks WHERE id = ?")
+      .bind(taskId)
+      .first();
+
+    if (taskExists) {
+      await db
+        .prepare("UPDATE tasks SET status = 'approved', note = ?, updatedAt = ? WHERE id = ?")
+        .bind(note || '', new Date().toISOString(), taskId)
+        .run();
+    } else {
+      // Nếu không có bảng tasks riêng, có thể cập nhật trong messages hoặc tạo entry mới
+      return jsonResponse({ message: "Yêu cầu không tồn tại!" }, 404, origin);
+    }
+
+    return jsonResponse({ message: "Đã duyệt yêu cầu!" }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi duyệt yêu cầu:", error);
+    return jsonResponse({ message: "Lỗi duyệt yêu cầu!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm xử lý yêu cầu - từ chối  
+async function handleRejectTask(body, db, origin) {
+  const { taskId, note } = body;
+  
+  if (!taskId) {
+    return jsonResponse({ message: "Thiếu taskId!" }, 400, origin);
+  }
+
+  try {
+    const taskExists = await db
+      .prepare("SELECT * FROM tasks WHERE id = ?")
+      .bind(taskId)
+      .first();
+
+    if (taskExists) {
+      await db
+        .prepare("UPDATE tasks SET status = 'rejected', note = ?, updatedAt = ? WHERE id = ?")
+        .bind(note || '', new Date().toISOString(), taskId)
+        .run();
+    } else {
+      return jsonResponse({ message: "Yêu cầu không tồn tại!" }, 404, origin);
+    }
+
+    return jsonResponse({ message: "Đã từ chối yêu cầu!" }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi từ chối yêu cầu:", error);
+    return jsonResponse({ message: "Lỗi từ chối yêu cầu!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm tạo yêu cầu từ tin nhắn
+async function handleCreateTaskFromMessage(body, db, origin) {
+  const { employeeId, fullName, position, taskType, content } = body;
+  
+  if (!employeeId || !taskType || !content) {
+    return jsonResponse({ message: "Thiếu thông tin cần thiết!" }, 400, origin);
+  }
+
+  try {
+    const taskId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    // Tạo task mới
+    await db
+      .prepare("INSERT INTO tasks (id, employeeId, employeeName, position, type, content, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(taskId, employeeId, fullName || 'Nhân viên', position || 'NV', taskType, content, 'pending', now)
+      .run();
+
+    // Cũng lưu như một tin nhắn để theo dõi
+    await db
+      .prepare("INSERT INTO messages (employeeId, fullName, position, message, time) VALUES (?, ?, ?, ?, ?)")
+      .bind(employeeId, fullName || 'Nhân viên', position || 'NV', `[YÊU CẦU] ${taskType}: ${content}`, now)
+      .run();
+
+    return jsonResponse({ message: "Đã tạo yêu cầu!", taskId }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi tạo yêu cầu:", error);
+    return jsonResponse({ message: "Lỗi tạo yêu cầu!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm lấy danh sách yêu cầu
+async function handleGetTasks(url, db, origin) {
+  const status = url.searchParams.get("status");
+  const type = url.searchParams.get("type");
+  const limit = parseInt(url.searchParams.get("limit")) || 50;
+
+  try {
+    let query = "SELECT * FROM tasks WHERE 1=1";
+    let params = [];
+
+    if (status) {
+      query += " AND status = ?";
+      params.push(status);
+    }
+
+    if (type) {
+      query += " AND type = ?";
+      params.push(type);
+    }
+
+    query += " ORDER BY createdAt DESC LIMIT ?";
+    params.push(limit);
+
+    const tasks = await db.prepare(query).bind(...params).all();
+
+    if (!tasks.results) {
+      return jsonResponse([], 200, origin);
+    }
+
+    return jsonResponse(tasks.results, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách yêu cầu:", error);
+    return jsonResponse([], 200, origin);
+  }
+}
+
+// Hàm cập nhật quyền hạn
+async function handleUpdatePermissions(body, db, origin) {
+  const { employeeId, permissions } = body;
+  
+  if (!employeeId || !permissions) {
+    return jsonResponse({ message: "Thiếu thông tin cần thiết!" }, 400, origin);
+  }
+
+  try {
+    // Kiểm tra nhân viên tồn tại
+    const employee = await db
+      .prepare("SELECT employeeId FROM employees WHERE employeeId = ?")
+      .bind(employeeId)
+      .first();
+
+    if (!employee) {
+      return jsonResponse({ message: "Nhân viên không tồn tại!" }, 404, origin);
+    }
+
+    // Xóa quyền cũ
+    await db
+      .prepare("DELETE FROM permissions WHERE employeeId = ?")
+      .bind(employeeId)
+      .run();
+
+    // Thêm quyền mới
+    const now = new Date().toISOString();
+    for (const [permission, granted] of Object.entries(permissions)) {
+      if (granted) {
+        await db
+          .prepare("INSERT INTO permissions (employeeId, permission, granted, createdAt) VALUES (?, ?, ?, ?)")
+          .bind(employeeId, permission, granted, now)
+          .run();
+      }
+    }
+
+    return jsonResponse({ message: "Đã cập nhật quyền hạn!" }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi cập nhật quyền hạn:", error);
+    return jsonResponse({ message: "Lỗi cập nhật quyền hạn!", error: error.message }, 500, origin);
+  }
+}
+
+// Hàm lấy quyền hạn của nhân viên
+async function handleGetPermissions(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  
+  if (!employeeId) {
+    return jsonResponse({ message: "Thiếu employeeId!" }, 400, origin);
+  }
+
+  try {
+    const permissions = await db
+      .prepare("SELECT permission, granted FROM permissions WHERE employeeId = ?")
+      .bind(employeeId)
+      .all();
+
+    const permissionMap = {};
+    if (permissions.results) {
+      permissions.results.forEach(perm => {
+        permissionMap[perm.permission] = perm.granted;
+      });
+    }
+
+    return jsonResponse(permissionMap, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy quyền hạn:", error);
+    return jsonResponse({}, 200, origin);
+  }
+}
+
 export default {
   async scheduled(event, env, ctx) {
     try {
@@ -994,6 +1303,8 @@ export default {
         switch (action) {
           case "sendMessage":
             return await handleSaveChat(body, db, ALLOWED_ORIGIN);
+          case "deleteMessage":
+            return await handleDeleteMessage(body, db, ALLOWED_ORIGIN);
           case "login":
             return await handleLogin(body, db, ALLOWED_ORIGIN);
           case "register":
@@ -1016,6 +1327,16 @@ export default {
             return await updateUser(body, request.userId, db, ALLOWED_ORIGIN);
           case "adjustUserExp":
             return await adjustUserExp(body, db, ALLOWED_ORIGIN);
+          case "addReward":
+            return await handleAddReward(body, db, ALLOWED_ORIGIN);
+          case "approveTask":
+            return await handleApproveTask(body, db, ALLOWED_ORIGIN);
+          case "rejectTask":
+            return await handleRejectTask(body, db, ALLOWED_ORIGIN);
+          case "createTask":
+            return await handleCreateTaskFromMessage(body, db, ALLOWED_ORIGIN);
+          case "updatePermissions":
+            return await handleUpdatePermissions(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -1055,6 +1376,12 @@ export default {
             return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
           case "getRecentActivities":
             return await handleGetRecentActivities(db, ALLOWED_ORIGIN);
+          case "getRewards":
+            return await handleGetRewards(url, db, ALLOWED_ORIGIN);
+          case "getTasks":
+            return await handleGetTasks(url, db, ALLOWED_ORIGIN);
+          case "getPermissions":
+            return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
           case "checkTransaction":
             const transactionId = url.searchParams.get("transactionId");
             if (!transactionId) return jsonResponse({ message: "Thiếu transactionId!" }, 400);
