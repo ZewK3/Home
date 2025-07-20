@@ -62,13 +62,15 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
     const now = new Date();
     const expiresAt = new Date(session.expiresAt);
     
-    if (now > expiresAt) {
+    // Thêm buffer time 5 phút để tránh lỗi timezone
+    const bufferTime = 5 * 60 * 1000; // 5 phút tính bằng milliseconds
+    if (now.getTime() > (expiresAt.getTime() + bufferTime)) {
       // Clean up expired session
       await db.prepare("DELETE FROM sessions WHERE token = ?").bind(token).run();
       return jsonResponse("Phiên làm việc đã hết hạn - vui lòng đăng nhập lại", 401, allowedOrigin);
     }
 
-    // Update last access time for session tracking
+    // Cập nhật thời gian truy cập cuối để theo dõi session
     await db
       .prepare("UPDATE sessions SET lastAccess = ? WHERE token = ?")
       .bind(now.toISOString(), token)
@@ -85,27 +87,30 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
 async function createSession(employeeId, db, allowedOrigin) {
   const token = crypto.randomUUID();
   const expiresAt = new Date();
-  expiresAt.setHours(expiresAt.getHours() + 1); // Phiên hết hạn sau 1 giờ
+  expiresAt.setHours(expiresAt.getHours() + 8); // Phiên hết hạn sau 8 giờ (tăng thời gian để tránh hết hạn sớm)
+  const now = new Date().toISOString();
 
   try {
-    const existingSession = await db
-      .prepare("SELECT * FROM sessions WHERE employeeId = ?")
-      .bind(employeeId)
-      .first();
+    // Xóa session cũ của user này trước
+    await db.prepare("DELETE FROM sessions WHERE employeeId = ?").bind(employeeId).run();
 
-    const query = existingSession
-      ? "UPDATE sessions SET token = ?, expiresAt = ? WHERE employeeId = ?"
-      : "INSERT INTO sessions (employeeId, token, expiresAt) VALUES (?, ?, ?)";
-    const params = existingSession
-      ? [token, expiresAt.toISOString(), employeeId]
-      : [employeeId, token, expiresAt.toISOString()];
+    // Tạo session mới
+    await db
+      .prepare("INSERT INTO sessions (employeeId, token, expiresAt, lastAccess) VALUES (?, ?, ?, ?)")
+      .bind(employeeId, token, expiresAt.toISOString(), now)
+      .run();
 
-    await db.prepare(query).bind(...params).run();
-
-    return jsonResponse({ token, expiresAt: expiresAt.toISOString() }, 200, allowedOrigin);
+    // Trả về dữ liệu session trực tiếp
+    return {
+      token,
+      employeeId,
+      expiresAt: expiresAt.toISOString(),
+      lastAccess: now,
+      success: true
+    };
   } catch (error) {
     console.error("Lỗi tạo hoặc cập nhật phiên:", error);
-    return jsonResponse({ message: "Lỗi tạo hoặc cập nhật phiên!", error: error.message }, 500, allowedOrigin);
+    return { success: false, message: "Lỗi tạo hoặc cập nhật phiên!", error: error.message };
   }
 }
 
@@ -152,7 +157,12 @@ async function registerUser(body, db, origin) {
     return jsonResponse({ message: "Lỗi tạo người dùng!", error: error.message }, 500, origin);
   }
 
-  return await createSession(id, db, origin);
+  const sessionResult = await createSession(id, db, origin);
+  if (sessionResult.success) {
+    return jsonResponse(sessionResult, 200, origin);
+  } else {
+    return jsonResponse({ message: "Lỗi tạo phiên làm việc!", error: sessionResult.error }, 500, origin);
+  }
 }
 
 // Hàm đăng nhập người dùng (khách hàng)
@@ -176,7 +186,12 @@ async function loginUser(body, db, origin) {
     return jsonResponse({ message: "Mật khẩu không đúng!" }, 401, origin);
   }
 
-  return await createSession(user.id, db, origin);
+  const sessionResult = await createSession(user.id, db, origin);
+  if (sessionResult.success) {
+    return jsonResponse(sessionResult, 200, origin);
+  } else {
+    return jsonResponse({ message: "Lỗi tạo phiên làm việc!", error: sessionResult.error }, 500, origin);
+  }
 }
 
 // Hàm lấy thông tin người dùng (khách hàng)
@@ -632,15 +647,13 @@ async function handleLogin(body, db, origin) {
 
   if (!isPasswordCorrect) return jsonResponse({ message: "Mật khẩu không chính xác!" }, 401, origin);
 
-  const session = await createSession(employeeId, db, origin);
-  if (session instanceof Response && session.status === 200) {
-    const token = await db
-      .prepare("SELECT * FROM sessions WHERE employeeId = ?")
-      .bind(employeeId)
-      .first();
-    return jsonResponse(token, 200, origin);
+  // Tạo session mới
+  const sessionResult = await createSession(employeeId, db, origin);
+  if (sessionResult.success) {
+    return jsonResponse(sessionResult, 200, origin);
+  } else {
+    return jsonResponse({ message: "Lỗi tạo phiên làm việc!", error: sessionResult.error }, 500, origin);
   }
-  return jsonResponse({ message: "Lỗi tạo phiên làm việc!" }, 500, origin);
 }
 
 // Hàm lấy tin nhắn
@@ -851,6 +864,80 @@ async function handleGetPendingRequests(db, origin) {
   }
 }
 
+// Hàm lấy thống kê tổng quan dashboard
+async function handleGetDashboardStats(db, origin) {
+  try {
+    // Đếm tổng số nhân viên
+    const totalEmployees = await db.prepare("SELECT COUNT(*) as count FROM employees").first();
+    
+    // Đếm số nhân viên có lịch hôm nay
+    const today = new Date();
+    const dayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][today.getDay()];
+    const todaySchedules = await db
+      .prepare(`SELECT COUNT(*) as count FROM workSchedules WHERE ${dayName} IS NOT NULL AND ${dayName} != 'Off'`)
+      .first();
+
+    // Đếm tin nhắn chưa đọc (tin nhắn trong 24h qua)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recentMessages = await db
+      .prepare("SELECT COUNT(*) as count FROM messages WHERE time >= ?")
+      .bind(twentyFourHoursAgo)
+      .first();
+
+    // Đếm yêu cầu đang chờ
+    const pendingRequests = await db
+      .prepare("SELECT COUNT(*) as count FROM messages WHERE message LIKE '%[YÊU CẦU]%'")
+      .first();
+
+    const stats = {
+      totalEmployees: totalEmployees?.count || 0,
+      todaySchedules: todaySchedules?.count || 0,
+      recentMessages: recentMessages?.count || 0,
+      pendingRequests: pendingRequests?.count || 0,
+      currentDay: dayName
+    };
+
+    return jsonResponse(stats, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy thống kê dashboard:", error);
+    return jsonResponse({
+      totalEmployees: 0,
+      todaySchedules: 0,
+      recentMessages: 0,
+      pendingRequests: 0,
+      currentDay: 'T2'
+    }, 200, origin);
+  }
+}
+
+// Hàm lấy hoạt động gần đây
+async function handleGetRecentActivities(db, origin) {
+  try {
+    const activities = await db
+      .prepare("SELECT employeeId, fullName, position, message, time FROM messages ORDER BY time DESC LIMIT 15")
+      .all();
+
+    if (!activities.results) {
+      return jsonResponse([], 200, origin);
+    }
+
+    const recentActivities = activities.results.map(activity => ({
+      id: activity.id || Math.random(),
+      employeeId: activity.employeeId,
+      employeeName: activity.fullName,
+      position: activity.position || 'NV',
+      action: activity.message.substring(0, 100) + (activity.message.length > 100 ? '...' : ''),
+      time: activity.time,
+      type: activity.message.includes('[YÊU CẦU]') ? 'request' : 'message'
+    }));
+
+    return jsonResponse(recentActivities, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy hoạt động gần đây:", error);
+    return jsonResponse([], 200, origin);
+  }
+}
+
 export default {
   async scheduled(event, env, ctx) {
     try {
@@ -964,6 +1051,10 @@ export default {
             return await handleGetTodaySchedule(db, ALLOWED_ORIGIN);
           case "getPendingRequests":
             return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
+          case "getDashboardStats":
+            return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
+          case "getRecentActivities":
+            return await handleGetRecentActivities(db, ALLOWED_ORIGIN);
           case "checkTransaction":
             const transactionId = url.searchParams.get("transactionId");
             if (!transactionId) return jsonResponse({ message: "Thiếu transactionId!" }, 400);

@@ -1292,7 +1292,7 @@ class AuthManager {
     }
 })();
 
-// Dashboard Stats Initialization - Updated to use correct APIs
+// Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function initializeDashboardStats() {
     const elements = {
         totalEmployees: document.getElementById('totalEmployees'),
@@ -1302,35 +1302,44 @@ async function initializeDashboardStats() {
     };
 
     try {
-        // Update total employees using getUsers API
-        const employees = await utils.fetchAPI('?action=getUsers');
-        if (elements.totalEmployees && employees && Array.isArray(employees)) {
-            elements.totalEmployees.textContent = employees.length.toString();
-        }
+        // Use the new unified dashboard stats API
+        const stats = await utils.fetchAPI('?action=getDashboardStats');
+        
+        if (stats && typeof stats === 'object') {
+            // Update dashboard statistics
+            if (elements.totalEmployees) {
+                elements.totalEmployees.textContent = stats.totalEmployees?.toString() || '0';
+            }
+            
+            if (elements.todaySchedule) {
+                elements.todaySchedule.textContent = stats.todaySchedules?.toString() || '0';
+            }
+            
+            if (elements.pendingRequests) {
+                elements.pendingRequests.textContent = stats.pendingRequests?.toString() || '0';
+            }
+            
+            // System status is always online in this context
+            if (elements.systemStatus) {
+                elements.systemStatus.textContent = 'Hoạt động';
+                elements.systemStatus.className = 'status-online';
+            }
 
-        // Update today's schedule count using new getTodaySchedule API
-        const todaySchedules = await utils.fetchAPI('?action=getTodaySchedule');
-        if (elements.todaySchedule) {
-            elements.todaySchedule.textContent = (todaySchedules && Array.isArray(todaySchedules)) ? todaySchedules.length.toString() : '0';
-        }
-
-        // Update pending requests using new getPendingRequests API
-        const pendingRequests = await utils.fetchAPI('?action=getPendingRequests');
-        if (elements.pendingRequests) {
-            elements.pendingRequests.textContent = (pendingRequests && Array.isArray(pendingRequests)) ? pendingRequests.length.toString() : '0';
-        }
-
-        // System status is always online in this context
-        if (elements.systemStatus) {
-            elements.systemStatus.textContent = 'Hoạt động';
+            // Update additional info if available
+            const dayInfo = document.getElementById('currentDay');
+            if (dayInfo) {
+                dayInfo.textContent = stats.currentDay || 'T2';
+            }
         }
     } catch (error) {
         console.error('Failed to load dashboard stats:', error);
         // Set fallback values only if elements exist
-        if (elements.totalEmployees) elements.totalEmployees.textContent = '-';
-        if (elements.todaySchedule) elements.todaySchedule.textContent = '-';
-        if (elements.pendingRequests) elements.pendingRequests.textContent = '-';
-        if (elements.systemStatus) elements.systemStatus.textContent = 'Lỗi';
+        Object.values(elements).forEach(element => {
+            if (element) element.textContent = '-';
+        });
+        
+        // Optionally show a user-friendly notification
+        utils.showNotification('Không thể tải thống kê dashboard', 'warning', 5000);
     }
 }
 
