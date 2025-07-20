@@ -1,0 +1,262 @@
+-- D1 Database Table Creation SQL Scripts
+-- Created for HR Management System
+-- All tables required for the application
+
+-- =====================================================
+-- AUTHENTICATION & USER MANAGEMENT
+-- =====================================================
+
+-- Table for customer users (people who place orders)
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    exp INTEGER DEFAULT 0,
+    rank TEXT DEFAULT 'Đồng'
+);
+
+-- Table for authentication sessions
+CREATE TABLE sessions (
+    employeeId TEXT NOT NULL,
+    token TEXT PRIMARY KEY,
+    expiresAt TEXT NOT NULL,
+    lastAccess TEXT NOT NULL
+);
+
+-- Table for employees (staff members)
+CREATE TABLE employees (
+    employeeId TEXT PRIMARY KEY,
+    fullName TEXT NOT NULL,
+    storeName TEXT NOT NULL,
+    position TEXT DEFAULT 'NV',
+    joinDate TEXT,
+    phone TEXT,
+    email TEXT,
+    password TEXT NOT NULL,
+    salt TEXT NOT NULL
+);
+
+-- Table for employee registration queue (pending approvals)
+CREATE TABLE queue (
+    employeeId TEXT PRIMARY KEY,
+    password TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    fullName TEXT NOT NULL,
+    storeName TEXT NOT NULL,
+    position TEXT DEFAULT 'NV',
+    joinDate TEXT,
+    phone TEXT,
+    email TEXT,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'Wait'
+);
+
+-- =====================================================
+-- BUSINESS OPERATIONS
+-- =====================================================
+
+-- Table for store information
+CREATE TABLE stores (
+    storeId TEXT PRIMARY KEY,
+    storeName TEXT UNIQUE NOT NULL
+);
+
+-- Table for customer orders
+CREATE TABLE orders (
+    orderId TEXT PRIMARY KEY,
+    userId TEXT NOT NULL,
+    cart TEXT NOT NULL,  -- JSON string
+    status TEXT NOT NULL,
+    total REAL NOT NULL,
+    createdAt TEXT NOT NULL,
+    deliveryAddress TEXT,
+    distance REAL,
+    duration REAL,
+    FOREIGN KEY (userId) REFERENCES users(id)
+);
+
+-- =====================================================
+-- HR MANAGEMENT
+-- =====================================================
+
+-- Table for work schedules
+CREATE TABLE workSchedules (
+    employeeId TEXT PRIMARY KEY,
+    fullName TEXT NOT NULL,
+    storeName TEXT NOT NULL,
+    T2 TEXT,  -- Monday schedule
+    T3 TEXT,  -- Tuesday schedule
+    T4 TEXT,  -- Wednesday schedule
+    T5 TEXT,  -- Thursday schedule
+    T6 TEXT,  -- Friday schedule
+    T7 TEXT,  -- Saturday schedule
+    CN TEXT,  -- Sunday schedule
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- Table for rewards and penalties
+CREATE TABLE rewards (
+    id TEXT PRIMARY KEY,
+    employeeId TEXT NOT NULL,
+    employeeName TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('reward', 'penalty')),
+    amount REAL NOT NULL,
+    reason TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- Table for task/request management
+CREATE TABLE tasks (
+    id TEXT PRIMARY KEY,
+    employeeId TEXT NOT NULL,
+    employeeName TEXT NOT NULL,
+    position TEXT DEFAULT 'NV',
+    type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT,
+    note TEXT,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- Table for role-based permissions
+CREATE TABLE permissions (
+    employeeId TEXT NOT NULL,
+    permission TEXT NOT NULL,
+    granted INTEGER DEFAULT 1 CHECK (granted IN (0, 1)),
+    createdAt TEXT NOT NULL,
+    PRIMARY KEY (employeeId, permission),
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- =====================================================
+-- COMMUNICATION
+-- =====================================================
+
+-- Table for chat messages
+CREATE TABLE messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    fullName TEXT NOT NULL,
+    position TEXT DEFAULT 'NV',
+    message TEXT NOT NULL,
+    time TEXT NOT NULL,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- =====================================================
+-- FINANCIAL MANAGEMENT
+-- =====================================================
+
+-- Table for payment records
+CREATE TABLE payment (
+    extractedID TEXT PRIMARY KEY,
+    "transaction" REAL NOT NULL,  -- Amount
+    accountNumber TEXT,
+    dateTime TEXT NOT NULL,
+    description TEXT
+);
+
+-- Table for transaction records
+CREATE TABLE "transaction" (
+    id TEXT PRIMARY KEY,
+    amount REAL NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('success', 'failed')),
+    date TEXT NOT NULL
+);
+
+-- =====================================================
+-- INDEXES FOR PERFORMANCE
+-- =====================================================
+
+-- Indexes for better query performance
+CREATE INDEX idx_sessions_employee ON sessions(employeeId);
+CREATE INDEX idx_sessions_expires ON sessions(expiresAt);
+CREATE INDEX idx_orders_user ON orders(userId);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_created ON orders(createdAt);
+CREATE INDEX idx_workSchedules_employee ON workSchedules(employeeId);
+CREATE INDEX idx_messages_employee ON messages(employeeId);
+CREATE INDEX idx_messages_time ON messages(time);
+CREATE INDEX idx_rewards_employee ON rewards(employeeId);
+CREATE INDEX idx_rewards_type ON rewards(type);
+CREATE INDEX idx_rewards_created ON rewards(createdAt);
+CREATE INDEX idx_tasks_employee ON tasks(employeeId);
+CREATE INDEX idx_tasks_status ON tasks(status);
+CREATE INDEX idx_tasks_created ON tasks(createdAt);
+CREATE INDEX idx_permissions_employee ON permissions(employeeId);
+CREATE INDEX idx_payment_datetime ON payment(dateTime);
+CREATE INDEX idx_transaction_date ON transaction(date);
+CREATE INDEX idx_transaction_status ON transaction(status);
+
+-- =====================================================
+-- SAMPLE DATA (OPTIONAL)
+-- =====================================================
+
+-- Sample store data
+INSERT OR IGNORE INTO stores (storeId, storeName) VALUES 
+('ST001', 'Cửa hàng Trung tâm'),
+('ST002', 'Cửa hàng Quận 1'),
+('ST003', 'Cửa hàng Quận 7'),
+('ST004', 'Cửa hàng Thủ Đức');
+
+-- Sample employee positions and default permissions
+-- Admin permissions
+INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
+SELECT 'ADMIN001', 'schedule', 1, datetime('now') WHERE NOT EXISTS (
+    SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'schedule'
+);
+INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
+SELECT 'ADMIN001', 'tasks', 1, datetime('now') WHERE NOT EXISTS (
+    SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'tasks'
+);
+INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
+SELECT 'ADMIN001', 'rewards', 1, datetime('now') WHERE NOT EXISTS (
+    SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'rewards'
+);
+INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
+SELECT 'ADMIN001', 'admin', 1, datetime('now') WHERE NOT EXISTS (
+    SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'admin'
+);
+INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
+SELECT 'ADMIN001', 'finance', 1, datetime('now') WHERE NOT EXISTS (
+    SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'finance'
+);
+
+-- =====================================================
+-- DATABASE MAINTENANCE PROCEDURES
+-- =====================================================
+
+-- Clean up expired sessions (run this periodically)
+-- DELETE FROM sessions WHERE datetime(expiresAt) < datetime('now');
+
+-- Clean up old messages (keep only last 30 days)
+-- DELETE FROM messages WHERE datetime(time) < datetime('now', '-30 days');
+
+-- Archive old orders (move to archive table if needed)
+-- You can create an archive_orders table and move old completed orders there
+
+-- =====================================================
+-- NOTES
+-- =====================================================
+
+-- Role Codes:
+-- AD = Admin (Administrator)
+-- QL = Quản lý (Manager) 
+-- NV = Nhân viên (Employee)
+-- AM = Assistant Manager
+
+-- Permission Types:
+-- schedule = Manage work schedules
+-- tasks = Handle task requests
+-- rewards = Manage rewards/penalties
+-- admin = Administrative functions
+-- finance = Financial management
+
+-- Schedule Time Format: "HH:MM-HH:MM" (e.g., "08:00-17:00")
+-- Days: T2=Monday, T3=Tuesday, T4=Wednesday, T5=Thursday, T6=Friday, T7=Saturday, CN=Sunday

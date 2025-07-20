@@ -85,34 +85,219 @@
         <div id="notification" class="notification hidden"></div>
         <div id="content" class="content">
             <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+            
+            <!-- Enhanced Dashboard Overview -->
             <div class="welcome-section">
+                <!-- Main Statistics Grid -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card primary">
                         <div class="stat-icon">👥</div>
                         <div class="stat-info">
                             <h3>Tổng Nhân Viên</h3>
                             <p id="totalEmployees">-</p>
+                            <span class="stat-trend">+2 tuần này</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card success">
                         <div class="stat-icon">📅</div>
                         <div class="stat-info">
                             <h3>Lịch Hôm Nay</h3>
                             <p id="todaySchedule">-</p>
+                            <span class="stat-trend" id="todayScheduleDay">-</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card warning">
                         <div class="stat-icon">📋</div>
                         <div class="stat-info">
                             <h3>Yêu Cầu Chờ</h3>
                             <p id="pendingRequests">-</p>
+                            <span class="stat-trend">Cần xử lý</span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">✅</div>
+                    <div class="stat-card info">
+                        <div class="stat-icon">💬</div>
                         <div class="stat-info">
-                            <h3>Hoạt Động</h3>
-                            <p id="systemStatus">Online</p>
+                            <h3>Tin Nhắn Mới</h3>
+                            <p id="recentMessages">-</p>
+                            <span class="stat-trend">24h qua</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role-based Quick Actions -->
+                <div class="quick-actions-section" data-role="AD,QL">
+                    <h2 class="section-title">Thao Tác Nhanh</h2>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action-btn" data-action="addEmployee" data-role="AD">
+                            <span class="action-icon">👤</span>
+                            <span class="action-text">Thêm Nhân Viên</span>
+                        </button>
+                        <button class="quick-action-btn" data-action="createSchedule" data-role="AD,QL">
+                            <span class="action-icon">📊</span>
+                            <span class="action-text">Tạo Lịch Làm</span>
+                        </button>
+                        <button class="quick-action-btn" data-action="manageRewards" data-role="AD,QL">
+                            <span class="action-icon">🏆</span>
+                            <span class="action-text">Quản Lý Thưởng</span>
+                        </button>
+                        <button class="quick-action-btn" data-action="viewReports" data-role="AD">
+                            <span class="action-icon">📈</span>
+                            <span class="action-text">Báo Cáo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Analytics Dashboard for Admin -->
+                <div class="analytics-section" data-role="AD">
+                    <h2 class="section-title">Phân Tích Dữ Liệu</h2>
+                    <div class="analytics-grid">
+                        <div class="chart-card">
+                            <h3>Hiệu Suất Nhân Viên</h3>
+                            <div class="chart-placeholder" id="performanceChart">
+                                <p>Đang tải biểu đồ...</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Lịch Làm Theo Tuần</h3>
+                            <div class="chart-placeholder" id="scheduleChart">
+                                <p>Đang tải biểu đồ...</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Thưởng/Phạt</h3>
+                            <div class="chart-placeholder" id="rewardsChart">
+                                <p>Đang tải biểu đồ...</p>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Doanh Thu</h3>
+                            <div class="chart-placeholder" id="revenueChart">
+                                <p>Đang tải biểu đồ...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Store Management for Managers -->
+                <div class="store-management-section" data-role="AD,QL">
+                    <h2 class="section-title">Quản Lý Cửa Hàng</h2>
+                    <div class="store-grid">
+                        <div class="store-card" data-store="ST001">
+                            <div class="store-header">
+                                <h3>Cửa Hàng Trung Tâm</h3>
+                                <span class="store-status active">Hoạt động</span>
+                            </div>
+                            <div class="store-stats">
+                                <div class="store-stat">
+                                    <span class="stat-label">Nhân viên:</span>
+                                    <span class="stat-value" id="store1Employees">-</span>
+                                </div>
+                                <div class="store-stat">
+                                    <span class="stat-label">Ca làm hôm nay:</span>
+                                    <span class="stat-value" id="store1Schedule">-</span>
+                                </div>
+                            </div>
+                            <div class="store-actions">
+                                <button class="btn-sm btn-primary" onclick="manageStore('ST001')">Quản Lý</button>
+                                <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST001')">Xem Lịch</button>
+                            </div>
+                        </div>
+                        <div class="store-card" data-store="ST002">
+                            <div class="store-header">
+                                <h3>Cửa Hàng Quận 1</h3>
+                                <span class="store-status active">Hoạt động</span>
+                            </div>
+                            <div class="store-stats">
+                                <div class="store-stat">
+                                    <span class="stat-label">Nhân viên:</span>
+                                    <span class="stat-value" id="store2Employees">-</span>
+                                </div>
+                                <div class="store-stat">
+                                    <span class="stat-label">Ca làm hôm nay:</span>
+                                    <span class="stat-value" id="store2Schedule">-</span>
+                                </div>
+                            </div>
+                            <div class="store-actions">
+                                <button class="btn-sm btn-primary" onclick="manageStore('ST002')">Quản Lý</button>
+                                <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST002')">Xem Lịch</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="activities-section">
+                    <h2 class="section-title">Hoạt Động Gần Đây</h2>
+                    <div class="activities-container">
+                        <div id="recentActivities" class="activities-list">
+                            <p class="loading-text">Đang tải hoạt động...</p>
+                        </div>
+                        <div class="activities-footer">
+                            <button class="btn-outline" onclick="loadMoreActivities()">Xem thêm</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Finance Overview for Admin -->
+                <div class="finance-section" data-role="AD">
+                    <h2 class="section-title">Tổng Quan Tài Chính</h2>
+                    <div class="finance-grid">
+                        <div class="finance-card revenue">
+                            <div class="finance-header">
+                                <h3>Doanh Thu Tháng</h3>
+                                <span class="finance-trend up">↗ +12%</span>
+                            </div>
+                            <div class="finance-amount" id="monthlyRevenue">0 ₫</div>
+                            <div class="finance-subtitle">So với tháng trước</div>
+                        </div>
+                        <div class="finance-card expense">
+                            <div class="finance-header">
+                                <h3>Chi Phí Tháng</h3>
+                                <span class="finance-trend down">↘ -5%</span>
+                            </div>
+                            <div class="finance-amount" id="monthlyExpense">0 ₫</div>
+                            <div class="finance-subtitle">Tiết kiệm được</div>
+                        </div>
+                        <div class="finance-card profit">
+                            <div class="finance-header">
+                                <h3>Lợi Nhuận</h3>
+                                <span class="finance-trend up">↗ +18%</span>
+                            </div>
+                            <div class="finance-amount" id="monthlyProfit">0 ₫</div>
+                            <div class="finance-subtitle">Tăng trưởng tốt</div>
+                        </div>
+                        <div class="finance-card payroll">
+                            <div class="finance-header">
+                                <h3>Lương Nhân Viên</h3>
+                                <span class="finance-trend neutral">→ 0%</span>
+                            </div>
+                            <div class="finance-amount" id="monthlyPayroll">0 ₫</div>
+                            <div class="finance-subtitle">Ổn định</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Dashboard for Employees -->
+                <div class="personal-section" data-role="NV,AM">
+                    <h2 class="section-title">Thông Tin Cá Nhân</h2>
+                    <div class="personal-grid">
+                        <div class="personal-card schedule">
+                            <h3>Lịch Làm Tuần Này</h3>
+                            <div id="personalSchedule" class="schedule-preview">
+                                <p>Đang tải lịch làm...</p>
+                            </div>
+                        </div>
+                        <div class="personal-card rewards">
+                            <h3>Thưởng/Phạt Gần Đây</h3>
+                            <div id="personalRewards" class="rewards-preview">
+                                <p>Đang tải thông tin...</p>
+                            </div>
+                        </div>
+                        <div class="personal-card tasks">
+                            <h3>Yêu Cầu Của Tôi</h3>
+                            <div id="personalTasks" class="tasks-preview">
+                                <p>Đang tải yêu cầu...</p>
+                            </div>
                         </div>
                     </div>
                 </div>

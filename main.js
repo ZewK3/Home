@@ -1582,11 +1582,8 @@ class AuthManager {
         new ChatManager(user);
         new ContentManager(user);
 
-        // Initialize dashboard stats
-        await initializeDashboardStats();
-
-        // Mobile menu functionality
-        setupMobileMenu();
+        // Initialize enhanced dashboard
+        await initializeEnhancedDashboard();
 
         // Mobile optimization
         if (window.innerWidth <= 768) {
@@ -1607,7 +1604,8 @@ async function initializeDashboardStats() {
         totalEmployees: document.getElementById('totalEmployees'),
         todaySchedule: document.getElementById('todaySchedule'), 
         pendingRequests: document.getElementById('pendingRequests'),
-        systemStatus: document.getElementById('systemStatus')
+        recentMessages: document.getElementById('recentMessages'),
+        todayScheduleDay: document.getElementById('todayScheduleDay')
     };
 
     try {
@@ -1627,17 +1625,18 @@ async function initializeDashboardStats() {
             if (elements.pendingRequests) {
                 elements.pendingRequests.textContent = stats.pendingRequests?.toString() || '0';
             }
-            
-            // System status is always online in this context
-            if (elements.systemStatus) {
-                elements.systemStatus.textContent = 'Hoạt động';
-                elements.systemStatus.className = 'status-online';
-            }
 
-            // Update additional info if available
-            const dayInfo = document.getElementById('currentDay');
-            if (dayInfo) {
-                dayInfo.textContent = stats.currentDay || 'T2';
+            if (elements.recentMessages) {
+                elements.recentMessages.textContent = stats.recentMessages?.toString() || '0';
+            }
+            
+            // Update day info
+            if (elements.todayScheduleDay) {
+                const dayNames = {
+                    'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 
+                    'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7', 'CN': 'Chủ Nhật'
+                };
+                elements.todayScheduleDay.textContent = dayNames[stats.currentDay] || 'Hôm nay';
             }
         }
     } catch (error) {
@@ -1652,7 +1651,225 @@ async function initializeDashboardStats() {
     }
 }
 
-// Mobile Menu Setup
+// Initialize Recent Activities
+async function initializeRecentActivities() {
+    const container = document.getElementById('recentActivities');
+    if (!container) return;
+
+    try {
+        const activities = await utils.fetchAPI('?action=getRecentActivities');
+        
+        if (activities && Array.isArray(activities)) {
+            container.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-avatar">${activity.employeeName?.substring(0, 2) || 'NV'}</div>
+                    <div class="activity-content">
+                        <div class="activity-header">
+                            <span class="activity-author">${activity.employeeName || 'Nhân viên'}</span>
+                            <span class="activity-time">${utils.formatDate(activity.time)}</span>
+                        </div>
+                        <div class="activity-message">${activity.action}</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="loading-text">Không có hoạt động gần đây</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load recent activities:', error);
+        container.innerHTML = '<p class="loading-text">Không thể tải hoạt động</p>';
+    }
+}
+
+// Role-based UI Management
+function initializeRoleBasedUI() {
+    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    const userPosition = loggedInUser.position || 'NV';
+    
+    // Map positions to roles
+    const roleMap = {
+        'AD': ['AD'],
+        'QL': ['QL', 'AD'], 
+        'AM': ['AM', 'QL', 'AD'],
+        'NV': ['NV', 'AM', 'QL', 'AD']
+    };
+    
+    const userRoles = roleMap[userPosition] || ['NV'];
+    
+    // Show/hide elements based on roles
+    document.querySelectorAll('[data-role]').forEach(element => {
+        const requiredRoles = element.dataset.role.split(',');
+        const hasAccess = requiredRoles.some(role => userRoles.includes(role));
+        
+        if (hasAccess) {
+            element.classList.add('role-visible');
+            element.style.display = '';
+        } else {
+            element.classList.remove('role-visible');
+            element.style.display = 'none';
+        }
+    });
+}
+
+// Quick Actions Handler
+function initializeQuickActions() {
+    document.querySelectorAll('.quick-action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const action = btn.dataset.action;
+            handleQuickAction(action);
+        });
+    });
+}
+
+// Handle Quick Actions
+function handleQuickAction(action) {
+    switch (action) {
+        case 'addEmployee':
+            openModal('register');
+            break;
+        case 'createSchedule':
+            openModal('scheduleWork');
+            break;
+        case 'manageRewards':
+            openModal('reward');
+            break;
+        case 'viewReports':
+            generateReports();
+            break;
+        default:
+            utils.showNotification('Tính năng đang phát triển', 'warning');
+    }
+}
+
+// Store Management Functions
+function manageStore(storeId) {
+    utils.showNotification(`Quản lý cửa hàng ${storeId}`, 'info');
+    // Implement store management logic here
+}
+
+function viewStoreSchedule(storeId) {
+    utils.showNotification(`Xem lịch cửa hàng ${storeId}`, 'info');
+    // Implement schedule viewing logic here
+}
+
+// Load More Activities
+function loadMoreActivities() {
+    utils.showNotification('Đang tải thêm hoạt động...', 'info');
+    // Implement load more logic here
+}
+
+// Generate Reports (Admin only)
+function generateReports() {
+    utils.showNotification('Đang tạo báo cáo...', 'info');
+    // Implement report generation logic here
+}
+
+// Initialize Personal Dashboard for Employees
+async function initializePersonalDashboard() {
+    const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    const position = userInfo.position;
+    
+    if (['NV', 'AM'].includes(position)) {
+        await loadPersonalSchedule();
+        await loadPersonalRewards();
+        await loadPersonalTasks();
+    }
+}
+
+// Load Personal Schedule
+async function loadPersonalSchedule() {
+    const container = document.getElementById('personalSchedule');
+    if (!container) return;
+
+    try {
+        const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        const response = await utils.fetchAPI(`?action=checkdk&employeeId=${userInfo.employeeId}`);
+        
+        if (response && response.shifts) {
+            const scheduleHTML = response.shifts.map(shift => `
+                <div class="schedule-day">
+                    <span class="day-name">${shift.day}:</span>
+                    <span class="day-time">${shift.time}</span>
+                </div>
+            `).join('');
+            container.innerHTML = scheduleHTML;
+        } else {
+            container.innerHTML = '<p>Chưa đăng ký lịch làm</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load personal schedule:', error);
+        container.innerHTML = '<p>Không thể tải lịch làm</p>';
+    }
+}
+
+// Load Personal Rewards
+async function loadPersonalRewards() {
+    const container = document.getElementById('personalRewards');
+    if (!container) return;
+
+    try {
+        const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        const rewards = await utils.fetchAPI(`?action=getRewards&employeeId=${userInfo.employeeId}&limit=5`);
+        
+        if (rewards && Array.isArray(rewards) && rewards.length > 0) {
+            const rewardsHTML = rewards.map(reward => `
+                <div class="reward-item ${reward.type}">
+                    <span class="reward-type">${reward.type === 'reward' ? '🏆 Thưởng' : '⚠️ Phạt'}:</span>
+                    <span class="reward-amount">${reward.amount.toLocaleString('vi-VN')} ₫</span>
+                    <span class="reward-reason">${reward.reason}</span>
+                </div>
+            `).join('');
+            container.innerHTML = rewardsHTML;
+        } else {
+            container.innerHTML = '<p>Chưa có thưởng/phạt</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load personal rewards:', error);
+        container.innerHTML = '<p>Không thể tải thưởng/phạt</p>';
+    }
+}
+
+// Load Personal Tasks
+async function loadPersonalTasks() {
+    const container = document.getElementById('personalTasks');
+    if (!container) return;
+
+    try {
+        const tasks = await utils.fetchAPI('?action=getTasks&status=pending&limit=5');
+        
+        if (tasks && Array.isArray(tasks) && tasks.length > 0) {
+            const tasksHTML = tasks.map(task => `
+                <div class="task-item">
+                    <span class="task-type">${task.type}</span>
+                    <span class="task-status status-${task.status}">${task.status}</span>
+                    <span class="task-date">${utils.formatDate(task.createdAt)}</span>
+                </div>
+            `).join('');
+            container.innerHTML = tasksHTML;
+        } else {
+            container.innerHTML = '<p>Không có yêu cầu nào</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load personal tasks:', error);
+        container.innerHTML = '<p>Không thể tải yêu cầu</p>';
+    }
+}
+
+// Initialize Finance Dashboard (Admin only)
+async function initializeFinanceDashboard() {
+    const monthlyRevenue = document.getElementById('monthlyRevenue');
+    const monthlyExpense = document.getElementById('monthlyExpense');
+    const monthlyProfit = document.getElementById('monthlyProfit');
+    const monthlyPayroll = document.getElementById('monthlyPayroll');
+
+    // Mock data for demo - replace with real API calls
+    if (monthlyRevenue) monthlyRevenue.textContent = '125,000,000 ₫';
+    if (monthlyExpense) monthlyExpense.textContent = '85,000,000 ₫';
+    if (monthlyProfit) monthlyProfit.textContent = '40,000,000 ₫';
+    if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
+}
+
+// Enhanced Mobile Menu Setup
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
@@ -1672,3 +1889,63 @@ function setupMobileMenu() {
         });
     }
 }
+
+// Enhanced Theme Switching
+function setupThemeSwitch() {
+    const themeSwitch = document.getElementById('themeSwitch');
+    const html = document.documentElement;
+    
+    // Get saved theme or default to light
+    const currentTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) || 'light';
+    html.setAttribute('data-theme', currentTheme);
+    
+    if (themeSwitch) {
+        // Update icon based on theme
+        updateThemeIcon(currentTheme);
+        
+        themeSwitch.addEventListener('click', () => {
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
+            updateThemeIcon(newTheme);
+        });
+    }
+}
+
+function updateThemeIcon(theme) {
+    const themeSwitch = document.getElementById('themeSwitch');
+    if (themeSwitch) {
+        const icon = themeSwitch.querySelector('.material-icons-round');
+        if (icon) {
+            icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+        }
+    }
+}
+
+// Enhanced Dashboard Initialization
+async function initializeEnhancedDashboard() {
+    try {
+        // Initialize all dashboard components
+        await initializeDashboardStats();
+        await initializeRecentActivities();
+        initializeRoleBasedUI();
+        initializeQuickActions();
+        await initializePersonalDashboard();
+        await initializeFinanceDashboard();
+        
+        // Setup UI enhancements
+        setupMobileMenu();
+        setupThemeSwitch();
+        
+        utils.showNotification('Dashboard đã được tải thành công', 'success');
+    } catch (error) {
+        console.error('Failed to initialize enhanced dashboard:', error);
+        utils.showNotification('Có lỗi khi tải dashboard', 'error');
+    }
+}
+
+// Auto-refresh dashboard stats every 30 seconds
+setInterval(() => {
+    initializeDashboardStats();
+    initializeRecentActivities();
+}, 30000);
