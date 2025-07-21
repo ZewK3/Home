@@ -1786,7 +1786,7 @@ class MenuManager {
     }
 }
 
-// Theme Manager
+// Theme Manager - Single Instance
 class ThemeManager {
     static initialize() {
         const themeSwitch = document.getElementById('themeSwitch');
@@ -1794,6 +1794,12 @@ class ThemeManager {
 
         const savedTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
+        
+        // Update icon based on current theme
+        const icon = themeSwitch.querySelector('.material-icons-round');
+        if (icon) {
+            icon.textContent = savedTheme === 'light' ? 'dark_mode' : 'light_mode';
+        }
 
         themeSwitch.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
@@ -1802,7 +1808,6 @@ class ThemeManager {
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
             
-            const icon = themeSwitch.querySelector('.material-icons-round');
             if (icon) {
                 icon.textContent = newTheme === 'light' ? 'dark_mode' : 'light_mode';
             }
@@ -2183,38 +2188,6 @@ function setupMobileMenu() {
     }
 }
 
-// Enhanced Theme Switching
-function setupThemeSwitch() {
-    const themeSwitch = document.getElementById('themeSwitch');
-    const html = document.documentElement;
-    
-    // Get saved theme or default to light
-    const currentTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) || 'light';
-    html.setAttribute('data-theme', currentTheme);
-    
-    if (themeSwitch) {
-        // Update icon based on theme
-        updateThemeIcon(currentTheme);
-        
-        themeSwitch.addEventListener('click', () => {
-            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
-            updateThemeIcon(newTheme);
-        });
-    }
-}
-
-function updateThemeIcon(theme) {
-    const themeSwitch = document.getElementById('themeSwitch');
-    if (themeSwitch) {
-        const icon = themeSwitch.querySelector('.material-icons-round');
-        if (icon) {
-            icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
-        }
-    }
-}
-
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
@@ -2228,7 +2201,7 @@ async function initializeEnhancedDashboard() {
         
         // Setup UI enhancements
         setupMobileMenu();
-        setupThemeSwitch();
+        // Theme switching is handled by ThemeManager.initialize()
         
         utils.showNotification('Dashboard đã được tải thành công', 'success');
     } catch (error) {

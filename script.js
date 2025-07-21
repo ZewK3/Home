@@ -239,6 +239,7 @@ async function loadStores() {
     storeSelect.disabled = true;
     
     try {
+        console.log("Loading stores from API...");
         const response = await fetch(`${API_URL}?action=getStores`, {
             method: "GET",
             headers: { 
@@ -247,36 +248,55 @@ async function loadStores() {
             }
         });
         
+        console.log("Store API response status:", response.status);
+        
         if (response.ok) {
             const data = await response.json();
             console.log("Stores data received:", data);
             
-            // Check if data is an array or has results property
-            const stores = Array.isArray(data) ? data : (data.results || data);
+            // Check multiple possible data formats
+            let stores = [];
+            if (Array.isArray(data)) {
+                stores = data;
+            } else if (data.results && Array.isArray(data.results)) {
+                stores = data.results;
+            } else if (data.stores && Array.isArray(data.stores)) {
+                stores = data.stores;
+            } else if (data.data && Array.isArray(data.data)) {
+                stores = data.data;
+            }
             
             if (stores && stores.length > 0) {
                 storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
                 
-                stores.forEach(store => {
+                stores.forEach((store, index) => {
                     const option = document.createElement("option");
-                    option.value = store.storeName || store.name;
-                    option.textContent = store.storeName || store.name;
+                    // Try multiple possible property names
+                    const storeName = store.storeName || store.name || store.storeId || `Store ${index + 1}`;
+                    option.value = storeName;
+                    option.textContent = storeName;
                     storeSelect.appendChild(option);
+                    console.log(`Added store: ${storeName}`);
                 });
                 
                 storeSelect.disabled = false;
-                console.log(`Loaded ${stores.length} stores successfully`);
+                console.log(`Successfully loaded ${stores.length} stores`);
+                showNotification(`Đã tải ${stores.length} cửa hàng`, "success", 3000);
             } else {
+                console.warn("No stores found in response");
                 storeSelect.innerHTML = '<option value="">Không có cửa hàng nào</option>';
+                showNotification("Không tìm thấy cửa hàng nào", "warning", 3000);
             }
         } else {
+            const errorText = await response.text();
+            console.error(`Store API error: ${response.status} - ${errorText}`);
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
     } catch (error) {
         console.error("Error loading stores:", error);
-        storeSelect.innerHTML = '<option value="">Lỗi tải danh sách cửa hàng</option>';
+        storeSelect.innerHTML = '<option value="">Lỗi khi tải cửa hàng - Vui lòng thử lại</option>';
+        storeSelect.disabled = false; // Allow user to try again
         showNotification("Không thể tải danh sách cửa hàng. Vui lòng thử lại.", "error", 5000);
-        storeSelect.innerHTML = '<option value="">Lỗi khi tải cửa hàng</option>';
     }
 }
 
