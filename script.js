@@ -70,19 +70,27 @@ document.addEventListener('DOMContentLoaded', () => {
 const elements = {
     loginForm: document.getElementById("loginForm"),
     registerForm: document.getElementById("registerForm"),
+    verificationForm: document.getElementById("verificationForm"),
     loginContainer: document.getElementById("loginFormContainer"),
     registerContainer: document.getElementById("registerFormContainer"),
+    verificationContainer: document.getElementById("verificationFormContainer"),
     notification: document.getElementById("notification"),
     themeSwitch: document.getElementById("themeSwitch"),
     strengthMeter: document.querySelector(".strength-meter div"),
     strengthText: document.querySelector(".strength-text")
 };
 
+// Stored registration data for verification
+let registrationData = null;
+
 // Form Transitions - Fixed with null checks
 function showRegisterForm() {
     if (elements.loginContainer && elements.registerContainer) {
         elements.loginContainer.classList.remove('active');
         elements.registerContainer.classList.add('active');
+        if (elements.verificationContainer) {
+            elements.verificationContainer.classList.remove('active');
+        }
         if (elements.registerForm) {
             elements.registerForm.reset();
         }
@@ -93,9 +101,28 @@ function showLoginForm() {
     if (elements.registerContainer && elements.loginContainer) {
         elements.registerContainer.classList.remove('active');
         elements.loginContainer.classList.add('active');
+        if (elements.verificationContainer) {
+            elements.verificationContainer.classList.remove('active');
+        }
         if (elements.loginForm) {
             elements.loginForm.reset();
         }
+    }
+}
+
+function showVerificationForm() {
+    if (elements.registerContainer && elements.verificationContainer) {
+        elements.registerContainer.classList.remove('active');
+        elements.verificationContainer.classList.add('active');
+        elements.loginContainer.classList.remove('active');
+        
+        // Focus on verification code input
+        setTimeout(() => {
+            const verificationInput = document.getElementById('verificationCode');
+            if (verificationInput) {
+                verificationInput.focus();
+            }
+        }, 300);
     }
 }
 
@@ -202,25 +229,53 @@ function isValidForm(data) {
 // Load stores for registration form
 async function loadStores() {
     const storeSelect = document.getElementById("storeName");
-    if (!storeSelect) return;
+    if (!storeSelect) {
+        console.warn("Store select element not found");
+        return;
+    }
+    
+    // Show loading state
+    storeSelect.innerHTML = '<option value="">Đang tải danh sách cửa hàng...</option>';
+    storeSelect.disabled = true;
     
     try {
-        const response = await fetch(`${API_URL}?action=getStores`);
+        const response = await fetch(`${API_URL}?action=getStores`, {
+            method: "GET",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        });
+        
         if (response.ok) {
-            const stores = await response.json();
-            storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
+            const data = await response.json();
+            console.log("Stores data received:", data);
             
-            stores.forEach(store => {
-                const option = document.createElement("option");
-                option.value = store.storeName;
-                option.textContent = store.storeName;
-                storeSelect.appendChild(option);
-            });
+            // Check if data is an array or has results property
+            const stores = Array.isArray(data) ? data : (data.results || data);
+            
+            if (stores && stores.length > 0) {
+                storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
+                
+                stores.forEach(store => {
+                    const option = document.createElement("option");
+                    option.value = store.storeName || store.name;
+                    option.textContent = store.storeName || store.name;
+                    storeSelect.appendChild(option);
+                });
+                
+                storeSelect.disabled = false;
+                console.log(`Loaded ${stores.length} stores successfully`);
+            } else {
+                storeSelect.innerHTML = '<option value="">Không có cửa hàng nào</option>';
+            }
         } else {
-            storeSelect.innerHTML = '<option value="">Không thể tải danh sách cửa hàng</option>';
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
     } catch (error) {
         console.error("Error loading stores:", error);
+        storeSelect.innerHTML = '<option value="">Lỗi tải danh sách cửa hàng</option>';
+        showNotification("Không thể tải danh sách cửa hàng. Vui lòng thử lại.", "error", 5000);
         storeSelect.innerHTML = '<option value="">Lỗi khi tải cửa hàng</option>';
     }
 }
@@ -348,11 +403,20 @@ async function handleRegister(event) {
             body: JSON.stringify(formData)
         });
 
+        const data = await response.json();
+
         switch (response.status) {
             case SUCCESS_STATUS:
-                showNotification("Đăng ký thành công! Yêu cầu của bạn đang chờ phê duyệt từ quản lý cửa hàng.", "success", 5000);
-                if (buttonText) buttonText.textContent = "Chờ phê duyệt";
-                setTimeout(showLoginForm, 2500);
+                if (data.requiresVerification) {
+                    // Store registration data for verification step
+                    registrationData = formData;
+                    showNotification("Mã xác nhận đã được gửi tới email của bạn!", "success", 5000);
+                    showVerificationForm();
+                } else {
+                    showNotification("Đăng ký thành công! Yêu cầu của bạn đang chờ phê duyệt từ quản lý cửa hàng.", "success", 5000);
+                    if (buttonText) buttonText.textContent = "Chờ phê duyệt";
+                    setTimeout(showLoginForm, 2500);
+                }
                 break;
             case ACCOUNT_EXISTS_STATUS:
                 showNotification("Mã nhân viên đã tồn tại!", "warning");
@@ -364,14 +428,135 @@ async function handleRegister(event) {
                 showNotification("Email đã được sử dụng!", "warning");
                 break;
             default:
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || "Đăng ký thất bại");
+                throw new Error(data.message || "Đăng ký thất bại");
         }
     } catch (error) {
         showNotification(error.message, "error");
     } finally {
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng ký";
+    }
+}
+
+// Handle email verification
+async function handleVerification(event) {
+    event.preventDefault();
+    
+    if (!elements.verificationForm || !registrationData) {
+        showNotification("Dữ liệu xác thực không hợp lệ", "error");
+        return;
+    }
+    
+    const button = elements.verificationForm.querySelector("button[type='submit']");
+    const buttonText = button?.querySelector(".btn-text");
+    
+    if (button) {
+        button.classList.add("loading");
+    }
+    if (buttonText) {
+        buttonText.textContent = "Đang xác thực...";
+    }
+    
+    const verificationCode = elements.verificationForm.verificationCode?.value.trim().toUpperCase() || "";
+    
+    if (!verificationCode || verificationCode.length !== 8) {
+        showNotification("Vui lòng nhập mã xác nhận 8 ký tự", "warning");
+        if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Xác nhận";
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}?action=register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                ...registrationData,
+                verificationCode: verificationCode
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.status === SUCCESS_STATUS) {
+            elements.verificationContainer?.classList.add('verification-success');
+            showNotification("Xác nhận thành công! Tài khoản đang chờ phê duyệt từ quản lý.", "success", 5000);
+            
+            // Clear stored data
+            registrationData = null;
+            
+            // Redirect to login after delay
+            setTimeout(() => {
+                showLoginForm();
+                elements.verificationContainer?.classList.remove('verification-success');
+            }, 2500);
+        } else {
+            throw new Error(data.message || "Xác thực thất bại");
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+    } finally {
+        if (button) button.classList.remove("loading");
+        if (buttonText) buttonText.textContent = "Xác nhận";
+    }
+}
+
+// Resend verification code
+async function resendVerificationCode() {
+    if (!registrationData) {
+        showNotification("Không có dữ liệu để gửi lại mã", "error");
+        return;
+    }
+
+    const button = document.getElementById('resendCodeBtn');
+    const buttonText = button?.querySelector(".btn-text");
+    
+    if (button) {
+        button.disabled = true;
+    }
+    if (buttonText) {
+        buttonText.textContent = "Đang gửi...";
+    }
+
+    try {
+        const response = await fetch(`${API_URL}?action=register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(registrationData)
+        });
+
+        if (response.status === SUCCESS_STATUS) {
+            showNotification("Mã xác nhận mới đã được gửi!", "success");
+            
+            // Start countdown
+            let countdown = 60;
+            const countdownInterval = setInterval(() => {
+                if (buttonText) {
+                    buttonText.textContent = `Gửi lại (${countdown}s)`;
+                }
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    if (button) {
+                        button.disabled = false;
+                    }
+                    if (buttonText) {
+                        buttonText.textContent = "Gửi lại mã";
+                    }
+                }
+            }, 1000);
+        } else {
+            throw new Error("Không thể gửi lại mã xác nhận");
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+        if (button) {
+            button.disabled = false;
+        }
+        if (buttonText) {
+            buttonText.textContent = "Gửi lại mã";
+        }
     }
 }
 
@@ -433,6 +618,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Form switching
     const goToRegisterBtn = document.getElementById("goToRegister");
     const backToLoginBtn = document.getElementById("backToLogin");
+    const backToRegisterBtn = document.getElementById("backToRegister");
+    const resendCodeBtn = document.getElementById("resendCodeBtn");
     
     if (goToRegisterBtn) {
         goToRegisterBtn.addEventListener("click", (e) => {
@@ -448,6 +635,29 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    if (backToRegisterBtn) {
+        backToRegisterBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showRegisterForm();
+        });
+    }
+
+    if (resendCodeBtn) {
+        resendCodeBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            resendVerificationCode();
+        });
+    }
+
+    // Verification code input formatting
+    const verificationCodeInput = document.getElementById("verificationCode");
+    if (verificationCodeInput) {
+        verificationCodeInput.addEventListener("input", (e) => {
+            // Convert to uppercase and limit to 8 characters
+            e.target.value = e.target.value.toUpperCase().slice(0, 8);
+        });
+    }
+
     // Form submissions
     if (elements.loginForm) {
         elements.loginForm.addEventListener("submit", handleLogin);
@@ -455,6 +665,10 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (elements.registerForm) {
         elements.registerForm.addEventListener("submit", handleRegister);
+    }
+
+    if (elements.verificationForm) {
+        elements.verificationForm.addEventListener("submit", handleVerification);
     }
 });
 

@@ -104,7 +104,44 @@ class ChatManager {
         this.chatMessages = document.getElementById("chatMessages");
         this.sendButton = document.getElementById("sendButton");
 
+        // Check if chat elements exist
+        if (!this.openChatButton || !this.chatPopup || !this.messageInput || !this.chatMessages || !this.sendButton) {
+            console.warn("Chat elements not found. Chat functionality may not work properly.");
+            this.createChatElements();
+        }
+
         this.initialize();
+    }
+
+    createChatElements() {
+        // Create missing chat elements if they don't exist
+        if (!this.openChatButton) {
+            this.openChatButton = document.createElement('div');
+            this.openChatButton.id = 'openChatButton';
+            this.openChatButton.innerHTML = '<span>💬</span>';
+            this.openChatButton.className = 'chat-button';
+            document.body.appendChild(this.openChatButton);
+        }
+
+        if (!this.chatPopup) {
+            const chatHTML = `
+                <div id="chatPopup" class="chat-popup" style="display: none;">
+                    <div class="chat-header">Chat with Support</div>
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="messageInput" placeholder="Type a message...">
+                        <button id="sendButton">Send</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', chatHTML);
+            
+            // Re-get references
+            this.chatPopup = document.getElementById("chatPopup");
+            this.messageInput = document.getElementById("messageInput");
+            this.chatMessages = document.getElementById("chatMessages");
+            this.sendButton = document.getElementById("sendButton");
+        }
     }
 
     initialize() {
@@ -1005,38 +1042,95 @@ class ContentManager {
                 <div class="card">
                     <div class="card-header">
                         <h2>Thông Tin Cá Nhân</h2>
+                        <p class="card-subtitle">Bạn chỉ có thể cập nhật Email và Số điện thoại. Các thông tin khác cần gửi yêu cầu để được duyệt.</p>
                     </div>
                     <div class="card-body">
                         <form id="personalInfoForm" class="personal-info-form">
                             <div class="form-group">
                                 <label>Mã nhân viên</label>
-                                <input type="text" name="employeeId" class="form-control" value="${response.employeeId || ''}" readonly>
+                                <input type="text" name="employeeId" class="form-control readonly-field" value="${response.employeeId || ''}" readonly>
+                                <small class="field-note">Không thể thay đổi</small>
                             </div>
                             <div class="form-group">
                                 <label>Họ và tên</label>
-                                <input type="text" name="fullName" class="form-control" value="${response.fullName || ''}" required>
+                                <input type="text" name="fullName" class="form-control request-field" value="${response.fullName || ''}" readonly>
+                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
+                                <button type="button" class="btn-request" data-field="fullName">Gửi yêu cầu thay đổi</button>
                             </div>
-                            <div class="form-group">
-                                <label>Email</label>
+                            <div class="form-group editable-field">
+                                <label>Email <span class="editable-badge">Có thể chỉnh sửa</span></label>
                                 <input type="email" name="email" class="form-control" value="${response.email || ''}" required>
                             </div>
-                            <div class="form-group">
-                                <label>Số điện thoại</label>
+                            <div class="form-group editable-field">
+                                <label>Số điện thoại <span class="editable-badge">Có thể chỉnh sửa</span></label>
                                 <input type="tel" name="phone" class="form-control" value="${response.phone || ''}" required>
                             </div>
                             <div class="form-group">
                                 <label>Chức vụ</label>
-                                <input type="text" name="position" class="form-control" value="${response.position || ''}" readonly>
+                                <input type="text" name="position" class="form-control request-field" value="${response.position || ''}" readonly>
+                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
+                                <button type="button" class="btn-request" data-field="position">Gửi yêu cầu thay đổi</button>
                             </div>
                             <div class="form-group">
                                 <label>Cửa hàng</label>
-                                <input type="text" name="storeName" class="form-control" value="${response.storeName || ''}" readonly>
+                                <input type="text" name="storeName" class="form-control request-field" value="${response.storeName || ''}" readonly>
+                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
+                                <button type="button" class="btn-request" data-field="storeName">Gửi yêu cầu thay đổi</button>
                             </div>
                             <div class="form-group">
                                 <label>Ngày gia nhập</label>
-                                <input type="text" name="joinDate" class="form-control" value="${response.joinDate || ''}" readonly>
+                                <input type="text" name="joinDate" class="form-control request-field" value="${response.joinDate || ''}" readonly>
+                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
+                                <button type="button" class="btn-request" data-field="joinDate">Gửi yêu cầu thay đổi</button>
                             </div>
-                            <button type="submit" class="btn btn-primary">Cập nhật thông tin</button>
+                            
+                            <div class="password-confirmation-section" style="display: none;">
+                                <hr>
+                                <h3>Xác nhận mật khẩu để cập nhật</h3>
+                                <div class="form-group">
+                                    <label>Nhập mật khẩu hiện tại</label>
+                                    <input type="password" id="confirmPassword" class="form-control" required>
+                                    <small class="text-danger">Bắt buộc nhập mật khẩu để xác nhận thay đổi</small>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary" disabled>
+                                    <span class="btn-text">Cập nhật thông tin</span>
+                                    <span class="btn-loader"></span>
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="this.closest('form').reset(); this.updateButtonState()">Hoàn tác</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Request Modal -->
+                <div id="changeRequestModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Gửi yêu cầu thay đổi thông tin</h3>
+                            <button type="button" class="modal-close">&times;</button>
+                        </div>
+                        <form id="changeRequestForm">
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label id="changeFieldLabel">Trường cần thay đổi</label>
+                                    <input type="text" id="currentValue" class="form-control" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Giá trị mới</label>
+                                    <input type="text" id="newValue" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Lý do thay đổi</label>
+                                    <textarea id="changeReason" class="form-control" rows="3" required placeholder="Vui lòng nêu rõ lý do cần thay đổi thông tin này..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeChangeRequestModal()">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -1324,24 +1418,138 @@ class ContentManager {
     }
 
     setupPersonalInfoHandlers() {
-        document.getElementById('personalInfoForm')?.addEventListener('submit', async (e) => {
+        const form = document.getElementById('personalInfoForm');
+        const submitButton = form?.querySelector('button[type="submit"]');
+        const passwordSection = document.querySelector('.password-confirmation-section');
+        
+        // Track if editable fields have changed
+        let hasChanges = false;
+        const originalData = {};
+        
+        // Store original values
+        form?.querySelectorAll('.editable-field input').forEach(input => {
+            originalData[input.name] = input.value;
+        });
+        
+        // Monitor changes in editable fields
+        form?.querySelectorAll('.editable-field input').forEach(input => {
+            input.addEventListener('input', () => {
+                hasChanges = Object.keys(originalData).some(key => {
+                    const currentInput = form.querySelector(`[name="${key}"]`);
+                    return currentInput && currentInput.value !== originalData[key];
+                });
+                
+                if (hasChanges) {
+                    passwordSection.style.display = 'block';
+                    submitButton.disabled = false;
+                } else {
+                    passwordSection.style.display = 'none';
+                    submitButton.disabled = true;
+                }
+            });
+        });
+        
+        // Handle form submission with password confirmation
+        form?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            if (!hasChanges) {
+                utils.showNotification("Không có thay đổi nào để cập nhật", "warning");
+                return;
+            }
+            
+            const confirmPassword = document.getElementById('confirmPassword')?.value;
+            if (!confirmPassword) {
+                utils.showNotification("Vui lòng nhập mật khẩu để xác nhận", "error");
+                return;
+            }
+            
+            const button = submitButton;
+            const buttonText = button?.querySelector('.btn-text');
+            
+            if (button) button.classList.add('loading');
+            if (buttonText) buttonText.textContent = 'Đang cập nhật...';
+            
             try {
                 const formData = new FormData(e.target);
                 const updateData = Object.fromEntries(formData);
                 
+                // Only include editable fields
+                const editableData = {
+                    employeeId: updateData.employeeId,
+                    email: updateData.email,
+                    phone: updateData.phone,
+                    password: confirmPassword // For verification
+                };
+                
                 // Use update API to update personal information
-                await utils.fetchAPI('?action=update', {
+                await utils.fetchAPI('?action=updatePersonalInfo', {
                     method: 'POST',
-                    body: JSON.stringify(updateData)
+                    body: JSON.stringify(editableData)
                 });
                 
                 utils.showNotification("Đã cập nhật thông tin cá nhân", "success");
+                
+                // Reset form state
+                hasChanges = false;
+                passwordSection.style.display = 'none';
+                submitButton.disabled = true;
+                document.getElementById('confirmPassword').value = '';
+                
+                // Update original data
+                Object.keys(originalData).forEach(key => {
+                    const input = form.querySelector(`[name="${key}"]`);
+                    if (input) originalData[key] = input.value;
+                });
+                
             } catch (error) {
                 console.error('Update personal info error:', error);
-                utils.showNotification("Không thể cập nhật thông tin", "error");
+                utils.showNotification(error.message || "Không thể cập nhật thông tin", "error");
+            } finally {
+                if (button) button.classList.remove('loading');
+                if (buttonText) buttonText.textContent = 'Cập nhật thông tin';
             }
         });
+        
+        // Handle change request buttons
+        document.querySelectorAll('.btn-request').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const field = e.target.getAttribute('data-field');
+                const currentValue = form.querySelector(`[name="${field}"]`)?.value;
+                openChangeRequestModal(field, currentValue);
+            });
+        });
+        
+        // Handle change request form submission
+        document.getElementById('changeRequestForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const requestData = {
+                employeeId: this.user.employeeId,
+                field: document.getElementById('changeRequestForm').dataset.field,
+                currentValue: formData.get('currentValue'),
+                newValue: formData.get('newValue'),
+                reason: formData.get('reason'),
+                type: 'personal_info_change'
+            };
+            
+            try {
+                await utils.fetchAPI('?action=createTask', {
+                    method: 'POST',
+                    body: JSON.stringify(requestData)
+                });
+                
+                utils.showNotification("Yêu cầu thay đổi đã được gửi", "success");
+                closeChangeRequestModal();
+            } catch (error) {
+                console.error('Change request error:', error);
+                utils.showNotification("Không thể gửi yêu cầu", "error");
+            }
+        });
+        
+        // Handle modal close
+        document.querySelector('.modal-close')?.addEventListener('click', closeChangeRequestModal);
     }
 
     // Registration Approval Management
@@ -1539,9 +1747,9 @@ class MenuManager {
     }
 
     static setupMenuInteractions() {
-        // Close all submenus initially
-        document.querySelectorAll('.submenu').forEach(submenu => {
-            submenu.style.display = 'none';
+        // Remove active class from all menu items initially
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
         });
 
         // Setup click handlers for menu items
@@ -1553,23 +1761,25 @@ class MenuManager {
                 link.addEventListener("click", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    // Close all other submenus
-                    document.querySelectorAll('.submenu').forEach(other => {
-                        if (other !== submenu) {
-                            other.style.display = 'none';
+                    
+                    // Close all other submenus by removing active class
+                    document.querySelectorAll('.menu-item').forEach(other => {
+                        if (other !== item) {
+                            other.classList.remove('active');
                         }
                     });
-                    // Toggle current submenu
-                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                    
+                    // Toggle current submenu by adding/removing active class
+                    item.classList.toggle('active');
                 });
             }
         });
 
-        // Close submenu when clicking outside
+        // Close submenus when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.menu-item')) {
-                document.querySelectorAll('.submenu').forEach(submenu => {
-                    submenu.style.display = 'none';
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
                 });
             }
         });
@@ -2032,3 +2242,38 @@ setInterval(() => {
     initializeDashboardStats();
     initializeRecentActivities();
 }, 30000);
+
+// Global functions for change request modal
+function openChangeRequestModal(field, currentValue) {
+    const modal = document.getElementById('changeRequestModal');
+    const form = document.getElementById('changeRequestForm');
+    const fieldLabel = document.getElementById('changeFieldLabel');
+    const currentValueInput = document.getElementById('currentValue');
+    const newValueInput = document.getElementById('newValue');
+    const reasonTextarea = document.getElementById('changeReason');
+    
+    // Set field information
+    form.dataset.field = field;
+    fieldLabel.textContent = getFieldDisplayName(field);
+    currentValueInput.value = currentValue;
+    newValueInput.value = '';
+    reasonTextarea.value = '';
+    
+    modal.style.display = 'flex';
+    newValueInput.focus();
+}
+
+function closeChangeRequestModal() {
+    const modal = document.getElementById('changeRequestModal');
+    modal.style.display = 'none';
+}
+
+function getFieldDisplayName(field) {
+    const displayNames = {
+        'fullName': 'Họ và tên',
+        'position': 'Chức vụ',
+        'storeName': 'Cửa hàng',
+        'joinDate': 'Ngày gia nhập'
+    };
+    return displayNames[field] || field;
+}

@@ -1,4 +1,88 @@
 const ALLOWED_ORIGIN = "*";
+const SENDGRID_API_KEY = "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";
+
+// SendGrid Email Verification Function
+async function sendVerificationEmail(email, employeeId, fullName) {
+  const verificationCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+  
+  const emailData = {
+    personalizations: [{
+      to: [{ email: email }],
+      subject: "Xác nhận đăng ký tài khoản HR Management System"
+    }],
+    from: { 
+      email: "noreply@hrmanagementsystem.com",
+      name: "HR Management System"
+    },
+    content: [{
+      type: "text/html",
+      value: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 10px;">
+          <div style="background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); color: white; padding: 30px; border-radius: 8px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">HR Management System</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Xác nhận đăng ký tài khoản</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Xin chào ${fullName}!</h2>
+            
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+              Cảm ơn bạn đã đăng ký tài khoản với HR Management System. Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác nhận dưới đây:
+            </p>
+            
+            <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
+              <p style="color: #6b7280; margin-bottom: 10px; font-size: 14px;">Mã xác nhận của bạn:</p>
+              <div style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 4px; font-family: monospace;">
+                ${verificationCode}
+              </div>
+            </div>
+            
+            <div style="background: #fef3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="color: #92400e; margin: 0; font-size: 14px;">
+                <strong>Lưu ý quan trọng:</strong> Sau khi nhập mã xác nhận, tài khoản của bạn sẽ được gửi tới quản lý cửa hàng để phê duyệt. Bạn sẽ nhận được thông báo khi tài khoản được kích hoạt.
+              </p>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                <strong>Thông tin đăng ký:</strong><br>
+                Mã nhân viên: ${employeeId}<br>
+                Email: ${email}<br>
+                Thời gian đăng ký: ${new Date().toLocaleString('vi-VN')}
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              Nếu bạn không yêu cầu đăng ký này, vui lòng bỏ qua email này.
+            </p>
+          </div>
+        </div>
+      `
+    }]
+  };
+
+  try {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${SENDGRID_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(emailData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`SendGrid API error: ${response.status}`);
+    }
+
+    return verificationCode;
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw error;
+  }
+}
 
 // Enhanced utility function for JSON responses with better error handling
 function jsonResponse(body, status, origin = ALLOWED_ORIGIN) {
@@ -727,9 +811,19 @@ async function handleGetUser(url, db, origin) {
 
 // Hàm đăng ký nhân viên
 async function handleRegister(body, db, origin) {
-  const { employeeId, fullName, storeName, password, phone, email, position, joinDate, pstatus } = body;
+  const { employeeId, fullName, storeName, password, phone, email, position, joinDate, pstatus, verificationCode } = body;
   if (!employeeId || !fullName || !storeName || !password) {
     return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
+  }
+
+  // If verification code is provided, this is step 2 (verification)
+  if (verificationCode) {
+    return await handleVerifyEmail(body, db, origin);
+  }
+
+  // Step 1: Send verification email
+  if (!email) {
+    return jsonResponse({ message: "Email là bắt buộc để xác thực tài khoản!" }, 400, origin);
   }
 
   // Check if employeeId already exists in employees table
@@ -783,26 +877,91 @@ async function handleRegister(body, db, origin) {
     if (existingQueueEmail) return jsonResponse({ message: "Email đã tồn tại!" }, 211, origin);
   }
 
-  const { hash, salt } = await hashPasswordPBKDF2(password);
+  try {
+    // Send verification email and get code
+    const sentVerificationCode = await sendVerificationEmail(email, employeeId, fullName);
+    
+    // Store verification data temporarily
+    const { hash, salt } = await hashPasswordPBKDF2(password);
+    
+    // Clean up any existing verification entries for this email/employeeId
+    await db.prepare("DELETE FROM email_verification WHERE email = ? OR employeeId = ?")
+            .bind(email, employeeId).run();
+    
+    // Store verification data
+    await db
+      .prepare(
+        "INSERT INTO email_verification (employeeId, email, verificationCode, fullName, storeName, position, joinDate, phone, passwordHash, passwordSalt, createdAt, expiresAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now', '+15 minutes'))"
+      )
+      .bind(
+        employeeId,
+        email,
+        sentVerificationCode,
+        fullName,
+        storeName,
+        position || "NV",
+        joinDate || null,
+        phone || null,
+        Array.from(hash).join(","),
+        Array.from(salt).join(",")
+      )
+      .run();
+
+    return jsonResponse({ 
+      message: "Mã xác nhận đã được gửi tới email của bạn. Vui lòng kiểm tra email và nhập mã xác nhận.",
+      requiresVerification: true
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    return jsonResponse({ message: "Lỗi gửi email xác nhận. Vui lòng thử lại sau." }, 500, origin);
+  }
+}
+
+// New function to handle email verification
+async function handleVerifyEmail(body, db, origin) {
+  const { employeeId, verificationCode } = body;
+  
+  if (!employeeId || !verificationCode) {
+    return jsonResponse({ message: "Thiếu mã nhân viên hoặc mã xác nhận!" }, 400, origin);
+  }
+
+  // Get verification data
+  const verification = await db
+    .prepare("SELECT * FROM email_verification WHERE employeeId = ? AND verificationCode = ? AND expiresAt > datetime('now')")
+    .bind(employeeId, verificationCode)
+    .first();
+
+  if (!verification) {
+    return jsonResponse({ message: "Mã xác nhận không hợp lệ hoặc đã hết hạn!" }, 400, origin);
+  }
+
+  // Move to queue for approval
   await db
     .prepare(
       "INSERT INTO queue (employeeId, password, salt, fullName, storeName, position, joinDate, phone, email, createdAt, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)"
     )
     .bind(
-      employeeId,
-      Array.from(hash).join(","),
-      Array.from(salt).join(","),
-      fullName,
-      storeName,
-      position || "NV",
-      joinDate || null,
-      phone || null,
-      email || null,
-      pstatus || "Wait"
+      verification.employeeId,
+      verification.passwordHash,
+      verification.passwordSalt,
+      verification.fullName,
+      verification.storeName,
+      verification.position,
+      verification.joinDate,
+      verification.phone,
+      verification.email,
+      "Wait"
     )
     .run();
 
-  return jsonResponse({ message: "Yêu cầu đăng ký của bạn đã được gửi và đang chờ phê duyệt từ quản lý cửa hàng." }, 200, origin);
+  // Clean up verification data
+  await db.prepare("DELETE FROM email_verification WHERE employeeId = ?")
+          .bind(employeeId).run();
+
+  return jsonResponse({ 
+    message: "Xác nhận email thành công! Yêu cầu đăng ký của bạn đã được gửi và đang chờ phê duyệt từ quản lý cửa hàng." 
+  }, 200, origin);
 }
 
 // Hàm cập nhật thông tin nhân viên
@@ -823,6 +982,66 @@ async function handleUpdate(body, db, origin) {
     return jsonResponse({ message: "Cập nhật thất bại, mã nhân viên không tồn tại!" }, 404, origin);
   }
   return jsonResponse({ message: "Cập nhật thành công!" }, 200, origin);
+}
+
+// Handle personal information update with password verification
+async function handleUpdatePersonalInfo(body, db, origin) {
+  const { employeeId, email, phone, password } = body;
+  
+  if (!employeeId || !password) {
+    return jsonResponse({ message: "Thiếu thông tin cần thiết!" }, 400, origin);
+  }
+
+  // Verify current password first
+  const user = await db
+    .prepare("SELECT password, salt FROM employees WHERE employeeId = ?")
+    .bind(employeeId)
+    .first();
+
+  if (!user) {
+    return jsonResponse({ message: "Mã nhân viên không tồn tại!" }, 404, origin);
+  }
+
+  const storedHash = Uint8Array.from(user.password.split(",").map(Number));
+  const storedSalt = Uint8Array.from(user.salt.split(",").map(Number));
+  const isPasswordCorrect = await verifyPassword(storedHash, storedSalt, password);
+
+  if (!isPasswordCorrect) {
+    return jsonResponse({ message: "Mật khẩu không chính xác!" }, 401, origin);
+  }
+
+  // Check for duplicate email and phone
+  if (email) {
+    const existingEmail = await db
+      .prepare("SELECT employeeId FROM employees WHERE email = ? AND employeeId != ?")
+      .bind(email, employeeId)
+      .first();
+    if (existingEmail) {
+      return jsonResponse({ message: "Email đã được sử dụng bởi nhân viên khác!" }, 409, origin);
+    }
+  }
+
+  if (phone) {
+    const existingPhone = await db
+      .prepare("SELECT employeeId FROM employees WHERE phone = ? AND employeeId != ?")
+      .bind(phone, employeeId)
+      .first();
+    if (existingPhone) {
+      return jsonResponse({ message: "Số điện thoại đã được sử dụng bởi nhân viên khác!" }, 409, origin);
+    }
+  }
+
+  // Update only email and phone
+  const updated = await db
+    .prepare("UPDATE employees SET email = ?, phone = ? WHERE employeeId = ?")
+    .bind(email || null, phone || null, employeeId)
+    .run();
+
+  if (updated.meta.changes === 0) {
+    return jsonResponse({ message: "Cập nhật thất bại!" }, 400, origin);
+  }
+
+  return jsonResponse({ message: "Đã cập nhật thông tin cá nhân thành công!" }, 200, origin);
 }
 
 // Hàm mã hóa mật khẩu (dành cho nhân viên) sử dụng PBKDF2
@@ -1484,6 +1703,8 @@ export default {
             return await handleCreateTaskFromMessage(body, db, ALLOWED_ORIGIN);
           case "updatePermissions":
             return await handleUpdatePermissions(body, db, ALLOWED_ORIGIN);
+          case "updatePersonalInfo":
+            return await handleUpdatePersonalInfo(body, db, ALLOWED_ORIGIN);
           case "approveRegistration":
             return await handleApproveRegistration(body, db, ALLOWED_ORIGIN);
           default:

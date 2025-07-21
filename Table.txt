@@ -53,6 +53,23 @@ CREATE TABLE queue (
     status TEXT DEFAULT 'Wait'
 );
 
+-- Table for email verification during registration
+CREATE TABLE email_verification (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    email TEXT NOT NULL,
+    verificationCode TEXT NOT NULL,
+    fullName TEXT NOT NULL,
+    storeName TEXT NOT NULL,
+    position TEXT DEFAULT 'NV',
+    joinDate TEXT,
+    phone TEXT,
+    passwordHash TEXT NOT NULL,
+    passwordSalt TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    expiresAt TEXT NOT NULL
+);
+
 -- =====================================================
 -- BUSINESS OPERATIONS
 -- =====================================================

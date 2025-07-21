@@ -164,6 +164,44 @@
                 </div>
             </form>
         </div>
+
+        <!-- Email Verification Form -->
+        <div id="verificationFormContainer" class="form-container">
+            <div class="form-header">
+                <h2>Xác nhận Email</h2>
+                <p class="form-subtitle">Vui lòng nhập mã xác nhận được gửi tới email của bạn</p>
+            </div>
+
+            <form id="verificationForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">verified_user</span>
+                        <input type="text" id="verificationCode" name="verificationCode" placeholder=" " required maxlength="8" style="text-transform: uppercase;">
+                        <label for="verificationCode">Mã xác nhận</label>
+                    </div>
+                    <div class="form-hint">
+                        <p>Mã xác nhận có 8 ký tự và có hiệu lực trong 15 phút</p>
+                    </div>
+                </div>
+
+                <div class="verification-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-text">Xác nhận</span>
+                        <span class="btn-loader"></span>
+                    </button>
+                    
+                    <button type="button" id="resendCodeBtn" class="btn btn-outline">
+                        <span class="btn-text">Gửi lại mã</span>
+                    </button>
+                </div>
+
+                <div class="form-footer">
+                    <p>
+                        <a href="#" id="backToRegister" class="form-link">← Quay lại đăng ký</a>
+                    </p>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Notification -->
