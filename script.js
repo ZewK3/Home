@@ -264,6 +264,13 @@ async function loadStores() {
                 stores = data.stores;
             } else if (data.data && Array.isArray(data.data)) {
                 stores = data.data;
+            } else if (typeof data === 'object' && data !== null) {
+                // Handle case where data is object with numeric keys
+                stores = Object.values(data).filter(item => 
+                    item && typeof item === 'object' && 
+                    (item.storeId || item.storeName)
+                );
+                console.log("Converted object to stores array:", stores);
             }
             
             if (stores && stores.length > 0) {
@@ -272,11 +279,12 @@ async function loadStores() {
                 stores.forEach((store, index) => {
                     const option = document.createElement("option");
                     // Try multiple possible property names
-                    const storeName = store.storeName || store.name || store.storeId || `Store ${index + 1}`;
-                    option.value = storeName;
+                    const storeId = store.storeId || store.id || `ST${index + 1}`;
+                    const storeName = store.storeName || store.name || storeId;
+                    option.value = storeId;
                     option.textContent = storeName;
                     storeSelect.appendChild(option);
-                    console.log(`Added store: ${storeName}`);
+                    console.log(`Added store: ${storeName} (ID: ${storeId})`);
                 });
                 
                 storeSelect.disabled = false;

@@ -517,11 +517,23 @@ async function getOrders(url, db, origin) {
 
 // Hàm lấy danh sách cửa hàng
 async function handleGetStores(db, origin) {
-  const stores = await db.prepare("SELECT storeId, storeName FROM stores").all();
-  if (!stores.results || stores.results.length === 0) {
-    return jsonResponse({ message: "Không tìm thấy cửa hàng nào!" }, 404, origin);
+  try {
+    const stores = await db.prepare("SELECT storeId, storeName FROM stores").all();
+    console.log("Raw stores query result:", stores);
+    
+    // D1 database returns {results: [...], success: true}
+    const storesList = stores.results || stores;
+    
+    if (!storesList || storesList.length === 0) {
+      return jsonResponse({ message: "Không tìm thấy cửa hàng nào!" }, 404, origin);
+    }
+    
+    // Return stores in a format that the frontend can parse
+    return jsonResponse(storesList, 200, origin);
+  } catch (error) {
+    console.error("Error getting stores:", error);
+    return jsonResponse({ message: "Lỗi lấy danh sách cửa hàng!", error: error.message }, 500, origin);
   }
-  return jsonResponse(stores.results, 200, origin);
 }
 
 // Hàm lấy danh sách nhân viên
