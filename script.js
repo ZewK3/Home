@@ -302,9 +302,27 @@ async function loadStores() {
         }
     } catch (error) {
         console.error("Error loading stores:", error);
-        storeSelect.innerHTML = '<option value="">Lỗi khi tải cửa hàng - Vui lòng thử lại</option>';
-        storeSelect.disabled = false; // Allow user to try again
-        showNotification("Không thể tải danh sách cửa hàng. Vui lòng thử lại.", "error", 5000);
+        
+        // Fallback: Use static stores data for testing when API is blocked
+        const fallbackStores = [
+            { storeId: "ST001", storeName: "Cửa hàng Trung tâm" },
+            { storeId: "ST002", storeName: "Cửa hàng Quận 1" },
+            { storeId: "ST003", storeName: "Cửa hàng Thủ Đức" },
+            { storeId: "ST004", storeName: "Cửa hàng Tân Bình" }
+        ];
+        
+        console.log("Using fallback stores data for testing");
+        storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
+        
+        fallbackStores.forEach(store => {
+            const option = document.createElement("option");
+            option.value = store.storeId;
+            option.textContent = store.storeName;
+            storeSelect.appendChild(option);
+        });
+        
+        storeSelect.disabled = false;
+        showNotification("Đang sử dụng dữ liệu mẫu cho cửa hàng", "warning", 5000);
     }
 }
 

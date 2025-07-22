@@ -92,167 +92,46 @@ function showNotification(message, type, duration) {
 class ChatManager {
     constructor(user) {
         this.user = user;
-        this.apiUrl = CONFIG.API_URL;
+        this.apiUrl = "https://zewk.tocotoco.workers.dev/";
         this.offset = 0;
         this.limit = 50;
         this.lastId = 0;
         this.loading = false;
-        this.isOpen = false;
 
-        // Get chat elements
         this.openChatButton = document.getElementById("openChatButton");
         this.chatPopup = document.getElementById("chatPopup");
         this.messageInput = document.getElementById("messageInput");
         this.chatMessages = document.getElementById("chatMessages");
         this.sendButton = document.getElementById("sendButton");
-        this.closeChatButton = document.getElementById("closeChatButton");
 
-        console.log("ChatManager initializing...");
-        console.log("Elements found:", {
-            openChatButton: !!this.openChatButton,
-            chatPopup: !!this.chatPopup,
-            messageInput: !!this.messageInput,
-            chatMessages: !!this.chatMessages,
-            sendButton: !!this.sendButton,
-            closeChatButton: !!this.closeChatButton
-        });
-
-        // Ensure elements exist or create them
-        this.ensureChatElements();
         this.initialize();
-    }
-
-    ensureChatElements() {
-        // Force create chat button if it doesn't exist
-        if (!this.openChatButton) {
-            console.log("Creating chat button...");
-            this.openChatButton = document.createElement('button');
-            this.openChatButton.id = 'openChatButton';
-            this.openChatButton.className = 'chat-button';
-            this.openChatButton.innerHTML = '<span class="chat-icon">💬</span>';
-            this.openChatButton.title = 'Mở chat';
-            document.body.appendChild(this.openChatButton);
-        }
-
-        // Force create chat popup if it doesn't exist
-        if (!this.chatPopup) {
-            console.log("Creating chat popup...");
-            const chatHTML = `
-                <div id="chatPopup" class="chat-popup" style="display: none;">
-                    <div class="chat-header">
-                        <span>💬 Chat Hỗ Trợ</span>
-                        <button id="closeChatButton" class="close-chat-btn" title="Đóng chat">✕</button>
-                    </div>
-                    <div id="chatMessages" class="chat-messages">
-                        <div class="welcome-message">
-                            <p>Chào mừng bạn đến với hệ thống chat hỗ trợ!</p>
-                            <p>Nhập tin nhắn của bạn bên dưới.</p>
-                        </div>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." maxlength="500">
-                        <button id="sendButton" class="send-btn" title="Gửi tin nhắn">
-                            <span>📤</span>
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', chatHTML);
-            
-            // Re-get references
-            this.chatPopup = document.getElementById("chatPopup");
-            this.messageInput = document.getElementById("messageInput");
-            this.chatMessages = document.getElementById("chatMessages");
-            this.sendButton = document.getElementById("sendButton");
-            this.closeChatButton = document.getElementById("closeChatButton");
-        }
-
-        // Make sure chat button is visible
-        if (this.openChatButton) {
-            this.openChatButton.style.display = 'flex';
-            this.openChatButton.style.position = 'fixed';
-            this.openChatButton.style.bottom = '20px';
-            this.openChatButton.style.right = '20px';
-            this.openChatButton.style.zIndex = '9999';
-        }
     }
 
     initialize() {
         this.setupEventListeners();
         this.startMessagePolling();
-        console.log("ChatManager initialized successfully!");
     }
 
     setupEventListeners() {
-        // Open chat button
-        this.openChatButton?.addEventListener("click", () => this.toggleChatPopup());
-        
-        // Close chat button
-        this.closeChatButton?.addEventListener("click", () => this.closeChatPopup());
-        
-        // Send button
-        this.sendButton?.addEventListener("click", () => this.sendMessage());
-        
-        // Enter key to send message
-        this.messageInput?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
+        this.openChatButton.addEventListener("click", () => this.toggleChatPopup());
+        this.sendButton.addEventListener("click", () => this.sendMessage());
+        this.messageInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") this.sendMessage();
         });
-
-        // Click outside to close
-        document.addEventListener("click", (e) => {
-            if (this.isOpen && 
-                !this.chatPopup?.contains(e.target) && 
-                !this.openChatButton?.contains(e.target)) {
-                this.closeChatPopup();
-            }
-        });
+        
+        // Add close button functionality
+        const closeChatButton = document.getElementById("closeChatButton");
+        if (closeChatButton) {
+            closeChatButton.addEventListener("click", () => {
+                this.chatPopup.style.display = "none";
+            });
+        }
     }
 
     toggleChatPopup() {
-        console.log("toggleChatPopup called");
-        if (!this.chatPopup) {
-            console.error("chatPopup element not found!");
-            return;
-        }
-        
-        this.isOpen = !this.isOpen;
-        
-        if (this.isOpen) {
-            this.openChatPopup();
-        } else {
-            this.closeChatPopup();
-        }
-    }
-
-    openChatPopup() {
-        if (!this.chatPopup) return;
-        
-        this.chatPopup.style.display = "flex";
-        this.chatPopup.classList.add("show");
-        this.isOpen = true;
-        
-        // Focus on input
-        setTimeout(() => {
-            this.messageInput?.focus();
-        }, 100);
-        
-        // Load messages if first time opening
-        this.loadInitialMessages();
-        
-        console.log("Chat popup opened");
-    }
-
-    closeChatPopup() {
-        if (!this.chatPopup) return;
-        
-        this.chatPopup.style.display = "none";
-        this.chatPopup.classList.remove("show");
-        this.isOpen = false;
-        
-        console.log("Chat popup closed");
+        const isHidden = this.chatPopup.style.display === "none" || this.chatPopup.style.display === "";
+        this.chatPopup.style.display = isHidden ? "flex" : "none";
+        if (isHidden) this.loadInitialMessages();
     }
 
     async sendMessage() {
@@ -275,188 +154,14 @@ class ChatManager {
 
             if (response.ok) {
                 this.messageInput.value = "";
+                this.loadInitialMessages(); // Refresh messages after sending
             } else {
                 throw new Error("Failed to send message");
             }
         } catch (error) {
             console.error("Send message error:", error);
-            showNotification("Không thể gửi tin nhắn", "error", 3000);
+            utils.showNotification("Không thể gửi tin nhắn", "error", 3000);
         }
-    }
-
-    createMessageElement(msg, prepend = false) {
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("message-wrapper");
-
-        if (msg.employeeId !== this.user.employeeId) {
-            const sender = document.createElement("p");
-            sender.textContent = `${msg.position || 'NV'}-${msg.fullName}`;
-            sender.classList.add("message-sender");
-            this.addSenderClickHandler(sender, msg.employeeId);
-            wrapper.appendChild(sender);
-        }
-
-        const container = document.createElement("div");
-        container.classList.add("message-container");
-
-        const content = document.createElement("p");
-        content.textContent = msg.message;
-        content.classList.add(msg.employeeId === this.user.employeeId ? "user-message" : "bot-message");
-        container.appendChild(content);
-
-        if (msg.employeeId === this.user.employeeId) {
-            const deleteBtn = this.createDeleteButton(msg.id, wrapper, msg.time);
-            container.appendChild(deleteBtn);
-            this.addHoverEffects(wrapper, deleteBtn, msg.time);
-        }
-
-        wrapper.appendChild(container);
-
-        const time = document.createElement("p");
-        time.textContent = msg.time;
-        time.classList.add("message-time");
-        wrapper.appendChild(time);
-
-        this.chatMessages[prepend ? "prepend" : "appendChild"](wrapper);
-        if (!prepend) this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-    }
-
-    createDeleteButton(messageId, wrapper, messageTime) {
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Xóa";
-        deleteBtn.classList.add("delete-button");
-        deleteBtn.style.display = "none";
-
-        deleteBtn.addEventListener("click", async () => {
-            if (!confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?")) return;
-
-            try {
-                const response = await fetch(`${this.apiUrl}?action=deleteMessage`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messageId })
-                });
-
-                if (response.ok) {
-                    wrapper.remove();
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || "Delete failed");
-                }
-            } catch (error) {
-                console.error("Delete message error:", error);
-                showNotification(error.message || "Không thể xóa tin nhắn", "error", 3000);
-            }
-        });
-
-        return deleteBtn;
-    }
-
-    addHoverEffects(wrapper, deleteBtn, messageTime) {
-        wrapper.addEventListener("mouseover", () => {
-            // Lấy thời gian hiện tại
-            const currentTime = new Date();
-            
-            // Parse messageTime từ định dạng "yyyy-mm-dd hh:mm:ss" hoặc "dd-mm-yyyy hh:mm"
-            let messageDate;
-            try {
-                if (messageTime.includes('-') && messageTime.includes(' ') && messageTime.includes(':')) {
-                    // Try different date formats
-                    if (messageTime.split('-')[0].length === 4) {
-                        // Format: yyyy-mm-dd hh:mm:ss
-                        messageDate = new Date(messageTime);
-                    } else {
-                        // Format: dd-mm-yyyy hh:mm
-                        const [datePart, timePart] = messageTime.split(' ');
-                        const [day, month, year] = datePart.split('-');
-                        const [hours, minutes] = timePart.split(':');
-                        messageDate = new Date(year, month - 1, day, hours, minutes);
-                    }
-                } else {
-                    messageDate = new Date(messageTime);
-                }
-            } catch (e) {
-                messageDate = new Date();
-            }
-            
-            const timeDiff = (currentTime - messageDate) / 1000; // Chuyển sang giây
-
-            if (timeDiff < 300) { // 5 phút = 300 giây
-                deleteBtn.style.display = "inline-block";
-            }
-        });
-
-        wrapper.addEventListener("mouseleave", () => {
-            deleteBtn.style.display = "none";
-        });
-    }
-
-    async addSenderClickHandler(sender, employeeId) {
-        sender.addEventListener("click", async () => {
-            try {
-                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-                const response = await fetch(
-                    `${this.apiUrl}?action=getUser&employeeId=${employeeId}&token=${token}`,
-                    {
-                        method: "GET",
-                        headers: { "Content-Type": "application/json" }
-                    }
-                );
-
-                if (!response.ok) throw new Error("Failed to fetch user info");
-                const userInfo = await response.json();
-                this.showUserInfoPopup(userInfo);
-            } catch (error) {
-                console.error("Fetch user info error:", error);
-                showNotification("Không thể tải thông tin người dùng", "error", 3000);
-            }
-        });
-    }
-
-    showUserInfoPopup(userInfo) {
-        let infoDiv = document.getElementById("botInfoDiv");
-        if (!infoDiv) {
-            infoDiv = document.createElement("div");
-            infoDiv.id = "botInfoDiv";
-            infoDiv.classList.add("bot-info-div");
-            infoDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: white;
-                border: 2px solid #333;
-                border-radius: 8px;
-                padding: 20px;
-                z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                max-width: 400px;
-                width: 90%;
-            `;
-            document.body.appendChild(infoDiv);
-        }
-
-        infoDiv.innerHTML = `
-            <table class="bot-info-table" style="width: 100%; border-collapse: collapse;">
-                <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: bold;">Tên:</td><td style="padding: 8px;">${userInfo.fullName || "N/A"}</td></tr>
-                <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: bold;">ID:</td><td style="padding: 8px;">${userInfo.employeeId || "N/A"}</td></tr>
-                <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: bold;">Chức vụ:</td><td style="padding: 8px;">${userInfo.position || "N/A"}</td></tr>
-                <tr style="border-bottom: 1px solid #ddd;"><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;">${userInfo.email || "N/A"}</td></tr>
-                <tr><td style="padding: 8px; font-weight: bold;">Số điện thoại:</td><td style="padding: 8px;">${userInfo.phone || "N/A"}</td></tr>
-            </table>
-            <button onclick="this.parentElement.style.display='none'" style="margin-top: 15px; padding: 8px 16px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Đóng</button>
-        `;
-
-        infoDiv.style.display = "block";
-
-        const hidePopup = (e) => {
-            if (!infoDiv.contains(e.target)) {
-                infoDiv.style.display = "none";
-                document.removeEventListener("click", hidePopup);
-            }
-        };
-
-        setTimeout(() => document.addEventListener("click", hidePopup), 0);
     }
 
     async loadInitialMessages() {
@@ -464,60 +169,84 @@ class ChatManager {
         this.loading = true;
 
         try {
-            const url = new URL(this.apiUrl);
-            url.searchParams.append("action", "getMessages");
-            url.searchParams.append("offset", this.offset);
-            url.searchParams.append("limit", this.limit);
-
-            const response = await fetch(url, {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await fetch(`${this.apiUrl}?action=getMessages&token=${token}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" }
             });
 
             if (response.ok) {
                 const messages = await response.json();
-                this.chatMessages.innerHTML = ''; // Clear existing messages
-                if (Array.isArray(messages)) {
-                    messages.forEach(msg => this.createMessageElement(msg, true));
-                    this.offset += messages.length;
-                    this.lastId = messages.length > 0 ? Math.max(...messages.map(m => m.id || 0)) : 0;
+                this.chatMessages.innerHTML = '';
+                if (Array.isArray(messages) && messages.length > 0) {
+                    messages.forEach(msg => this.createMessageElement(msg));
+                    this.lastId = Math.max(...messages.map(m => m.id || 0));
                 }
             }
         } catch (error) {
             console.error("Load messages error:", error);
-            showNotification("Không thể tải tin nhắn", "error", 3000);
+            utils.showNotification("Không thể tải tin nhắn", "error", 3000);
         } finally {
             this.loading = false;
         }
     }
 
+    createMessageElement(msg) {
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("message-wrapper");
+
+        if (msg.employeeId !== this.user.employeeId) {
+            const sender = document.createElement("p");
+            sender.textContent = `${msg.position || 'NV'}-${msg.fullName}`;
+            sender.classList.add("message-sender");
+            sender.style.cursor = "pointer";
+            sender.style.color = "#007bff";
+            sender.addEventListener("click", () => {
+                utils.showNotification(`Thông tin: ${msg.fullName} - ${msg.position}`, "info", 3000);
+            });
+            wrapper.appendChild(sender);
+        }
+
+        const content = document.createElement("p");
+        content.textContent = msg.message;
+        content.classList.add(msg.employeeId === this.user.employeeId ? "user-message" : "bot-message");
+        wrapper.appendChild(content);
+
+        const time = document.createElement("p");
+        time.textContent = msg.time || new Date().toLocaleString('vi-VN');
+        time.classList.add("message-time");
+        wrapper.appendChild(time);
+
+        this.chatMessages.appendChild(wrapper);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+
     startMessagePolling() {
         setInterval(async () => {
-            try {
-                const url = new URL(this.apiUrl);
-                url.searchParams.append("action", "getMessages");
-                url.searchParams.append("lastId", this.lastId);
+            if (this.chatPopup && this.chatPopup.style.display !== "none") {
+                try {
+                    const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                    const response = await fetch(`${this.apiUrl}?action=getMessages&lastId=${this.lastId}&token=${token}`, {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    });
 
-                const response = await fetch(url, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                });
-
-                if (response.ok) {
-                    const newMessages = await response.json();
-                    if (Array.isArray(newMessages) && newMessages.length > 0) {
-                        newMessages.forEach(msg => {
-                            if (msg.id > this.lastId) {
-                                this.createMessageElement(msg);
-                                this.lastId = Math.max(this.lastId, msg.id);
-                            }
-                        });
+                    if (response.ok) {
+                        const newMessages = await response.json();
+                        if (Array.isArray(newMessages) && newMessages.length > 0) {
+                            newMessages.forEach(msg => {
+                                if (msg.id > this.lastId) {
+                                    this.createMessageElement(msg);
+                                    this.lastId = Math.max(this.lastId, msg.id);
+                                }
+                            });
+                        }
                     }
+                } catch (error) {
+                    // Silent fail for polling
                 }
-            } catch (error) {
-                // Silent fail for polling
             }
-        }, CONFIG.POLLING_INTERVAL);
+        }, 3000);
     }
 }
 
