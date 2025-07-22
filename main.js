@@ -91,6 +91,7 @@ function showNotification(message, type, duration) {
 // Enhanced Chat Manager Implementation
 class ChatManager {
     constructor(user) {
+        console.log('Initializing ChatManager for user:', user);
         this.user = user;
         this.apiUrl = "https://zewk.tocotoco.workers.dev/";
         this.offset = 0;
@@ -104,6 +105,14 @@ class ChatManager {
         this.chatMessages = document.getElementById("chatMessages");
         this.sendButton = document.getElementById("sendButton");
 
+        console.log('Chat elements found:', {
+            openChatButton: !!this.openChatButton,
+            chatPopup: !!this.chatPopup,
+            messageInput: !!this.messageInput,
+            chatMessages: !!this.chatMessages,
+            sendButton: !!this.sendButton
+        });
+
         this.initialize();
     }
 
@@ -113,9 +122,15 @@ class ChatManager {
     }
 
     setupEventListeners() {
+        if (!this.openChatButton) {
+            console.error('Chat button not found!');
+            return;
+        }
+        
+        console.log('Setting up chat event listeners');
         this.openChatButton.addEventListener("click", () => this.toggleChatPopup());
-        this.sendButton.addEventListener("click", () => this.sendMessage());
-        this.messageInput.addEventListener("keydown", (e) => {
+        this.sendButton?.addEventListener("click", () => this.sendMessage());
+        this.messageInput?.addEventListener("keydown", (e) => {
             if (e.key === "Enter") this.sendMessage();
         });
         
@@ -126,6 +141,8 @@ class ChatManager {
                 this.chatPopup.style.display = "none";
             });
         }
+        
+        console.log('Chat event listeners set up successfully');
     }
 
     toggleChatPopup() {
@@ -1544,27 +1561,47 @@ class ContentManager {
                 `?action=getPendingRegistrations&store=${encodeURIComponent(store)}&status=${statusFilter}` : 
                 `?action=getPendingRegistrations&status=${statusFilter}`;
             
-            const registrations = await utils.fetchAPI(url);
-            this.allRegistrations = Array.isArray(registrations) ? registrations : [];
+            const response = await utils.fetchAPI(url);
+            console.log('Pending registrations response:', response);
+            
+            // Convert object format {0: {data}, 1: {data}, ...} to array
+            let registrations = [];
+            if (Array.isArray(response)) {
+                registrations = response;
+            } else if (response && typeof response === 'object') {
+                // Check if response has numeric keys (API returns {0: {}, 1: {}, ...})
+                const keys = Object.keys(response).filter(key => !isNaN(key));
+                if (keys.length > 0) {
+                    registrations = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                    console.log('Converted to array:', registrations);
+                }
+            }
+            
+            this.allRegistrations = registrations;
             
             // Update pending count
-            const pendingCount = this.allRegistrations.filter(r => r.status === 'pending').length;
-            document.getElementById('pendingCount').textContent = pendingCount;
+            const pendingCount = this.allRegistrations.filter(r => r.status === 'Wait').length;
+            const pendingCountElement = document.getElementById('pendingCount');
+            if (pendingCountElement) {
+                pendingCountElement.textContent = pendingCount;
+            }
             
             this.filterRegistrations();
         } catch (error) {
             console.error('Load pending registrations error:', error);
             const container = document.getElementById('pendingRegistrationsList');
-            container.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <div class="error-text">Không thể tải danh sách đăng ký</div>
-                    <div class="error-subtext">Vui lòng thử lại sau</div>
-                    <button class="btn btn-primary" onclick="this.closest('.card').querySelector('#refreshPendingRegistrations').click()">
-                        Thử lại
-                    </button>
-                </div>
-            `;
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <div class="error-text">Không thể tải danh sách đăng ký</div>
+                        <div class="error-subtext">Vui lòng thử lại sau</div>
+                        <button class="btn btn-primary" onclick="this.closest('.card').querySelector('#refreshPendingRegistrations').click()">
+                            Thử lại
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -1793,8 +1830,10 @@ class ContentManager {
                 }
             }
 
-            // Status filter
-            const matchesStatus = statusFilter === 'all' || reg.status === statusFilter;
+            // Status filter (API uses 'Wait' for pending)
+            const matchesStatus = statusFilter === 'all' || 
+                (statusFilter === 'pending' && reg.status === 'Wait') ||
+                reg.status === statusFilter;
 
             return matchesSearch && matchesStore && matchesDate && matchesStatus;
         });
