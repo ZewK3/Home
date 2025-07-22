@@ -88,7 +88,7 @@ function showNotification(message, type, duration) {
     utils.showNotification(message, type, duration);
 }
 
-// Advanced Chat Manager Implementation
+// Enhanced Chat Manager Implementation
 class ChatManager {
     constructor(user) {
         this.user = user;
@@ -97,54 +97,63 @@ class ChatManager {
         this.limit = 50;
         this.lastId = 0;
         this.loading = false;
+        this.isOpen = false;
 
+        // Get chat elements
         this.openChatButton = document.getElementById("openChatButton");
         this.chatPopup = document.getElementById("chatPopup");
         this.messageInput = document.getElementById("messageInput");
         this.chatMessages = document.getElementById("chatMessages");
         this.sendButton = document.getElementById("sendButton");
+        this.closeChatButton = document.getElementById("closeChatButton");
 
         console.log("ChatManager initializing...");
-        console.log("openChatButton:", this.openChatButton);
-        console.log("chatPopup:", this.chatPopup);
-        console.log("messageInput:", this.messageInput);
-        console.log("chatMessages:", this.chatMessages);
-        console.log("sendButton:", this.sendButton);
+        console.log("Elements found:", {
+            openChatButton: !!this.openChatButton,
+            chatPopup: !!this.chatPopup,
+            messageInput: !!this.messageInput,
+            chatMessages: !!this.chatMessages,
+            sendButton: !!this.sendButton,
+            closeChatButton: !!this.closeChatButton
+        });
 
-        // Check if chat elements exist
-        if (!this.openChatButton || !this.chatPopup || !this.messageInput || !this.chatMessages || !this.sendButton) {
-            console.warn("Chat elements not found. Chat functionality may not work properly.");
-            console.warn("Missing elements:", {
-                openChatButton: !this.openChatButton,
-                chatPopup: !this.chatPopup,
-                messageInput: !this.messageInput,
-                chatMessages: !this.chatMessages,
-                sendButton: !this.sendButton
-            });
-            this.createChatElements();
-        }
-
+        // Ensure elements exist or create them
+        this.ensureChatElements();
         this.initialize();
     }
 
-    createChatElements() {
-        // Create missing chat elements if they don't exist
+    ensureChatElements() {
+        // Force create chat button if it doesn't exist
         if (!this.openChatButton) {
-            this.openChatButton = document.createElement('div');
+            console.log("Creating chat button...");
+            this.openChatButton = document.createElement('button');
             this.openChatButton.id = 'openChatButton';
-            this.openChatButton.innerHTML = '<span>💬</span>';
             this.openChatButton.className = 'chat-button';
+            this.openChatButton.innerHTML = '<span class="chat-icon">💬</span>';
+            this.openChatButton.title = 'Mở chat';
             document.body.appendChild(this.openChatButton);
         }
 
+        // Force create chat popup if it doesn't exist
         if (!this.chatPopup) {
+            console.log("Creating chat popup...");
             const chatHTML = `
                 <div id="chatPopup" class="chat-popup" style="display: none;">
-                    <div class="chat-header">Chat with Support</div>
-                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-header">
+                        <span>💬 Chat Hỗ Trợ</span>
+                        <button id="closeChatButton" class="close-chat-btn" title="Đóng chat">✕</button>
+                    </div>
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="welcome-message">
+                            <p>Chào mừng bạn đến với hệ thống chat hỗ trợ!</p>
+                            <p>Nhập tin nhắn của bạn bên dưới.</p>
+                        </div>
+                    </div>
                     <div class="chat-input">
-                        <input type="text" id="messageInput" placeholder="Type a message...">
-                        <button id="sendButton">Send</button>
+                        <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." maxlength="500">
+                        <button id="sendButton" class="send-btn" title="Gửi tin nhắn">
+                            <span>📤</span>
+                        </button>
                     </div>
                 </div>
             `;
@@ -155,42 +164,95 @@ class ChatManager {
             this.messageInput = document.getElementById("messageInput");
             this.chatMessages = document.getElementById("chatMessages");
             this.sendButton = document.getElementById("sendButton");
+            this.closeChatButton = document.getElementById("closeChatButton");
+        }
+
+        // Make sure chat button is visible
+        if (this.openChatButton) {
+            this.openChatButton.style.display = 'flex';
+            this.openChatButton.style.position = 'fixed';
+            this.openChatButton.style.bottom = '20px';
+            this.openChatButton.style.right = '20px';
+            this.openChatButton.style.zIndex = '9999';
         }
     }
 
     initialize() {
         this.setupEventListeners();
         this.startMessagePolling();
+        console.log("ChatManager initialized successfully!");
     }
 
     setupEventListeners() {
+        // Open chat button
         this.openChatButton?.addEventListener("click", () => this.toggleChatPopup());
+        
+        // Close chat button
+        this.closeChatButton?.addEventListener("click", () => this.closeChatPopup());
+        
+        // Send button
         this.sendButton?.addEventListener("click", () => this.sendMessage());
+        
+        // Enter key to send message
         this.messageInput?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") this.sendMessage();
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
+            }
+        });
+
+        // Click outside to close
+        document.addEventListener("click", (e) => {
+            if (this.isOpen && 
+                !this.chatPopup?.contains(e.target) && 
+                !this.openChatButton?.contains(e.target)) {
+                this.closeChatPopup();
+            }
         });
     }
 
     toggleChatPopup() {
         console.log("toggleChatPopup called");
-        console.log("chatPopup element:", this.chatPopup);
-        console.log("current display:", this.chatPopup?.style.display);
-        
         if (!this.chatPopup) {
             console.error("chatPopup element not found!");
             return;
         }
         
-        const isHidden = this.chatPopup.style.display === "none" || this.chatPopup.style.display === "";
-        console.log("isHidden:", isHidden);
+        this.isOpen = !this.isOpen;
         
-        this.chatPopup.style.display = isHidden ? "flex" : "none";
-        console.log("new display:", this.chatPopup.style.display);
-        
-        if (isHidden) {
-            console.log("Loading initial messages...");
-            this.loadInitialMessages();
+        if (this.isOpen) {
+            this.openChatPopup();
+        } else {
+            this.closeChatPopup();
         }
+    }
+
+    openChatPopup() {
+        if (!this.chatPopup) return;
+        
+        this.chatPopup.style.display = "flex";
+        this.chatPopup.classList.add("show");
+        this.isOpen = true;
+        
+        // Focus on input
+        setTimeout(() => {
+            this.messageInput?.focus();
+        }, 100);
+        
+        // Load messages if first time opening
+        this.loadInitialMessages();
+        
+        console.log("Chat popup opened");
+    }
+
+    closeChatPopup() {
+        if (!this.chatPopup) return;
+        
+        this.chatPopup.style.display = "none";
+        this.chatPopup.classList.remove("show");
+        this.isOpen = false;
+        
+        console.log("Chat popup closed");
     }
 
     async sendMessage() {
@@ -1589,28 +1651,144 @@ class ContentManager {
             content.innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <h2>Duyệt Đăng Ký Nhân Viên</h2>
+                        <h2>🔍 Quản Lý Đăng Ký Nhân Viên</h2>
+                        <div class="header-stats">
+                            <div class="stat-chip">
+                                <span class="stat-icon">⏳</span>
+                                <span id="pendingCount">0</span> Chờ duyệt
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
-                        <div class="approval-filters">
-                            <select id="storeFilterSelect" class="form-control">
-                                <option value="">Tất cả cửa hàng</option>
-                            </select>
-                            <button id="refreshPendingRegistrations" class="btn btn-secondary">
-                                <span class="material-icons-round">refresh</span>
-                                Làm mới
+                        <!-- Enhanced Filters -->
+                        <div class="approval-filters-enhanced">
+                            <div class="filter-row">
+                                <div class="filter-group">
+                                    <label>🏪 Cửa hàng:</label>
+                                    <select id="storeFilterSelect" class="form-control">
+                                        <option value="">Tất cả cửa hàng</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>📅 Ngày gửi:</label>
+                                    <select id="dateFilterSelect" class="form-control">
+                                        <option value="">Tất cả ngày</option>
+                                        <option value="today">Hôm nay</option>
+                                        <option value="yesterday">Hôm qua</option>
+                                        <option value="week">7 ngày qua</option>
+                                        <option value="month">30 ngày qua</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>🎯 Trạng thái:</label>
+                                    <select id="statusFilterSelect" class="form-control">
+                                        <option value="pending">Chờ duyệt</option>
+                                        <option value="approved">Đã duyệt</option>
+                                        <option value="rejected">Đã từ chối</option>
+                                        <option value="all">Tất cả</option>
+                                    </select>
+                                </div>
+                                <div class="filter-actions">
+                                    <button id="refreshPendingRegistrations" class="btn btn-secondary">
+                                        <span class="material-icons-round">refresh</span>
+                                        Làm mới
+                                    </button>
+                                    <button id="bulkApprovalBtn" class="btn btn-success" style="display: none;">
+                                        <span class="material-icons-round">done_all</span>
+                                        Duyệt hàng loạt
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="search-section">
+                            <div class="search-bar">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, hoặc mã nhân viên..." class="search-input">
+                                <button id="clearSearch" class="clear-search-btn" style="display: none;">✕</button>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div id="bulkActionsBar" class="bulk-actions-bar" style="display: none;">
+                            <div class="bulk-info">
+                                <span id="selectedCount">0</span> mục đã chọn
+                            </div>
+                            <div class="bulk-buttons">
+                                <button id="bulkApprove" class="btn btn-success">
+                                    <span class="material-icons-round">check</span>
+                                    Duyệt tất cả
+                                </button>
+                                <button id="bulkReject" class="btn btn-danger">
+                                    <span class="material-icons-round">close</span>
+                                    Từ chối tất cả
+                                </button>
+                                <button id="clearSelection" class="btn btn-secondary">
+                                    <span class="material-icons-round">clear</span>
+                                    Bỏ chọn
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Registration List -->
+                        <div id="pendingRegistrationsList" class="registrations-container-enhanced">
+                            <div class="loading-state">
+                                <div class="loading-spinner"></div>
+                                <p class="loading-text">Đang tải danh sách đăng ký...</p>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div id="paginationControls" class="pagination-controls" style="display: none;">
+                            <button id="prevPage" class="btn btn-outline">
+                                <span class="material-icons-round">chevron_left</span>
+                                Trang trước
+                            </button>
+                            <span id="pageInfo" class="page-info">Trang 1 / 1</span>
+                            <button id="nextPage" class="btn btn-outline">
+                                Trang sau
+                                <span class="material-icons-round">chevron_right</span>
                             </button>
                         </div>
-                        <div id="pendingRegistrationsList" class="registrations-container">
-                            <p class="loading-text">Đang tải danh sách...</p>
+                    </div>
+                </div>
+
+                <!-- Enhanced Registration Detail Modal -->
+                <div id="registrationDetailModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>📋 Chi Tiết Đăng Ký</h3>
+                            <button class="modal-close" onclick="this.closest('.modal').style.display='none'">✕</button>
+                        </div>
+                        <div class="modal-body" id="registrationDetailContent">
+                            <!-- Content will be filled dynamically -->
+                        </div>
+                        <div class="modal-footer">
+                            <button id="modalApprove" class="btn btn-success">
+                                <span class="material-icons-round">check</span>
+                                Duyệt
+                            </button>
+                            <button id="modalReject" class="btn btn-danger">
+                                <span class="material-icons-round">close</span>
+                                Từ chối
+                            </button>
+                            <button class="btn btn-secondary" onclick="this.closest('.modal').style.display='none'">Đóng</button>
                         </div>
                     </div>
                 </div>
             `;
 
+            // Initialize enhanced functionality
+            this.currentPage = 1;
+            this.pageSize = 10;
+            this.selectedRegistrations = new Set();
+            this.filteredRegistrations = [];
+            this.allRegistrations = [];
+
             await this.loadStoresForFilter();
             await this.loadPendingRegistrations();
-            this.setupRegistrationApprovalHandlers();
+            this.setupEnhancedRegistrationApprovalHandlers();
         } catch (error) {
             console.error('Registration approval error:', error);
             utils.showNotification("Không thể tải danh sách đăng ký", "error");
@@ -1632,100 +1810,111 @@ class ContentManager {
 
     async loadPendingRegistrations(store = '') {
         try {
-            const url = store ? `?action=getPendingRegistrations&store=${encodeURIComponent(store)}` : '?action=getPendingRegistrations';
-            const registrations = await utils.fetchAPI(url);
+            const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
+            const url = store ? 
+                `?action=getPendingRegistrations&store=${encodeURIComponent(store)}&status=${statusFilter}` : 
+                `?action=getPendingRegistrations&status=${statusFilter}`;
             
-            const container = document.getElementById('pendingRegistrationsList');
-            if (!registrations.length) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📝</div>
-                        <div class="empty-text">Không có yêu cầu đăng ký nào</div>
-                        <div class="empty-subtext">Tất cả yêu cầu đăng ký đã được xử lý</div>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = registrations.map(reg => `
-                <div class="registration-item" data-employee-id="${reg.employeeId}">
-                    <div class="registration-header">
-                        <div class="registration-info">
-                            <div class="employee-name">${reg.fullName}</div>
-                            <div class="employee-details">
-                                <div class="detail-item">
-                                    <span class="detail-icon">🆔</span>
-                                    <span>Mã NV: ${reg.employeeId}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-icon">🏪</span>
-                                    <span>Cửa hàng: ${reg.storeName}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-icon">👔</span>
-                                    <span>Chức vụ: ${reg.position}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-icon">📞</span>
-                                    <span>SĐT: ${reg.phone || 'Chưa có'}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-icon">📧</span>
-                                    <span>Email: ${reg.email || 'Chưa có'}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="detail-icon">📅</span>
-                                    <span>Ngày gửi: ${utils.formatDate(reg.createdAt)}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="registration-actions">
-                            <button class="approve-btn" onclick="window.approveRegistration('${reg.employeeId}')">
-                                <span class="material-icons-round">check</span>
-                                Duyệt
-                            </button>
-                            <button class="reject-btn" onclick="window.rejectRegistration('${reg.employeeId}')">
-                                <span class="material-icons-round">close</span>
-                                Từ chối
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            const registrations = await utils.fetchAPI(url);
+            this.allRegistrations = Array.isArray(registrations) ? registrations : [];
+            
+            // Update pending count
+            const pendingCount = this.allRegistrations.filter(r => r.status === 'pending').length;
+            document.getElementById('pendingCount').textContent = pendingCount;
+            
+            this.filterRegistrations();
         } catch (error) {
             console.error('Load pending registrations error:', error);
             const container = document.getElementById('pendingRegistrationsList');
-            container.innerHTML = '<p class="error-text">Không thể tải danh sách đăng ký</p>';
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-text">Không thể tải danh sách đăng ký</div>
+                    <div class="error-subtext">Vui lòng thử lại sau</div>
+                    <button class="btn btn-primary" onclick="this.closest('.card').querySelector('#refreshPendingRegistrations').click()">
+                        Thử lại
+                    </button>
+                </div>
+            `;
         }
     }
 
-    setupRegistrationApprovalHandlers() {
-        // Filter by store
-        document.getElementById('storeFilterSelect')?.addEventListener('change', (e) => {
-            this.loadPendingRegistrations(e.target.value);
+    setupEnhancedRegistrationApprovalHandlers() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+        
+        searchInput?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm) {
+                clearSearch.style.display = 'block';
+            } else {
+                clearSearch.style.display = 'none';
+            }
+            this.filterRegistrations();
+        });
+
+        clearSearch?.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            this.filterRegistrations();
+        });
+
+        // Filter handlers
+        document.getElementById('storeFilterSelect')?.addEventListener('change', () => {
+            this.filterRegistrations();
+        });
+
+        document.getElementById('dateFilterSelect')?.addEventListener('change', () => {
+            this.filterRegistrations();
+        });
+
+        document.getElementById('statusFilterSelect')?.addEventListener('change', () => {
+            this.filterRegistrations();
         });
 
         // Refresh button
         document.getElementById('refreshPendingRegistrations')?.addEventListener('click', () => {
-            const store = document.getElementById('storeFilterSelect')?.value || '';
-            this.loadPendingRegistrations(store);
+            this.loadPendingRegistrations();
         });
 
-        // Global functions for approval/rejection
+        // Bulk actions
+        document.getElementById('bulkApprove')?.addEventListener('click', () => {
+            this.bulkApproveRegistrations();
+        });
+
+        document.getElementById('bulkReject')?.addEventListener('click', () => {
+            this.bulkRejectRegistrations();
+        });
+
+        document.getElementById('clearSelection')?.addEventListener('click', () => {
+            this.clearSelection();
+        });
+
+        // Pagination
+        document.getElementById('prevPage')?.addEventListener('click', () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.renderRegistrations();
+            }
+        });
+
+        document.getElementById('nextPage')?.addEventListener('click', () => {
+            const totalPages = Math.ceil(this.filteredRegistrations.length / this.pageSize);
+            if (this.currentPage < totalPages) {
+                this.currentPage++;
+                this.renderRegistrations();
+            }
+        });
+
+        // Global functions for enhanced approval
         window.approveRegistration = async (employeeId) => {
             if (!confirm('Bạn có chắc chắn muốn duyệt đăng ký này?')) return;
             
             try {
-                await utils.fetchAPI('?action=approveRegistration', {
-                    method: 'POST',
-                    body: JSON.stringify({ employeeId, action: 'approve' })
-                });
-                
+                await this.processRegistration(employeeId, 'approve');
                 utils.showNotification("Đã duyệt đăng ký thành công!", "success");
-                
-                // Refresh the list
-                const store = document.getElementById('storeFilterSelect')?.value || '';
-                await this.loadPendingRegistrations(store);
+                await this.loadPendingRegistrations();
             } catch (error) {
                 console.error('Approve registration error:', error);
                 utils.showNotification("Không thể duyệt đăng ký", "error");
@@ -1736,21 +1925,346 @@ class ContentManager {
             if (!confirm('Bạn có chắc chắn muốn từ chối đăng ký này?')) return;
             
             try {
-                await utils.fetchAPI('?action=approveRegistration', {
-                    method: 'POST',
-                    body: JSON.stringify({ employeeId, action: 'reject' })
-                });
-                
+                await this.processRegistration(employeeId, 'reject');
                 utils.showNotification("Đã từ chối đăng ký", "success");
-                
-                // Refresh the list
-                const store = document.getElementById('storeFilterSelect')?.value || '';
-                await this.loadPendingRegistrations(store);
+                await this.loadPendingRegistrations();
             } catch (error) {
                 console.error('Reject registration error:', error);
                 utils.showNotification("Không thể từ chối đăng ký", "error");
             }
         };
+
+        window.viewRegistrationDetail = (employeeId) => {
+            this.showRegistrationDetail(employeeId);
+        };
+
+        window.toggleRegistrationSelection = (employeeId, checkbox) => {
+            if (checkbox.checked) {
+                this.selectedRegistrations.add(employeeId);
+            } else {
+                this.selectedRegistrations.delete(employeeId);
+            }
+            this.updateBulkActionsBar();
+        };
+    }
+
+    async processRegistration(employeeId, action) {
+        return await utils.fetchAPI('?action=approveRegistration', {
+            method: 'POST',
+            body: JSON.stringify({ employeeId, action })
+        });
+    }
+
+    async bulkApproveRegistrations() {
+        if (this.selectedRegistrations.size === 0) {
+            utils.showNotification("Vui lòng chọn ít nhất một đăng ký", "warning");
+            return;
+        }
+
+        if (!confirm(`Bạn có chắc chắn muốn duyệt ${this.selectedRegistrations.size} đăng ký đã chọn?`)) return;
+
+        const promises = Array.from(this.selectedRegistrations).map(employeeId => 
+            this.processRegistration(employeeId, 'approve')
+        );
+
+        try {
+            await Promise.all(promises);
+            utils.showNotification(`Đã duyệt ${this.selectedRegistrations.size} đăng ký thành công!`, "success");
+            this.clearSelection();
+            await this.loadPendingRegistrations();
+        } catch (error) {
+            console.error('Bulk approve error:', error);
+            utils.showNotification("Có lỗi xảy ra khi duyệt hàng loạt", "error");
+        }
+    }
+
+    async bulkRejectRegistrations() {
+        if (this.selectedRegistrations.size === 0) {
+            utils.showNotification("Vui lòng chọn ít nhất một đăng ký", "warning");
+            return;
+        }
+
+        if (!confirm(`Bạn có chắc chắn muốn từ chối ${this.selectedRegistrations.size} đăng ký đã chọn?`)) return;
+
+        const promises = Array.from(this.selectedRegistrations).map(employeeId => 
+            this.processRegistration(employeeId, 'reject')
+        );
+
+        try {
+            await Promise.all(promises);
+            utils.showNotification(`Đã từ chối ${this.selectedRegistrations.size} đăng ký!`, "success");
+            this.clearSelection();
+            await this.loadPendingRegistrations();
+        } catch (error) {
+            console.error('Bulk reject error:', error);
+            utils.showNotification("Có lỗi xảy ra khi từ chối hàng loạt", "error");
+        }
+    }
+
+    clearSelection() {
+        this.selectedRegistrations.clear();
+        document.querySelectorAll('.registration-checkbox').forEach(cb => cb.checked = false);
+        this.updateBulkActionsBar();
+    }
+
+    updateBulkActionsBar() {
+        const bulkActionsBar = document.getElementById('bulkActionsBar');
+        const selectedCount = document.getElementById('selectedCount');
+        
+        if (this.selectedRegistrations.size > 0) {
+            bulkActionsBar.style.display = 'flex';
+            selectedCount.textContent = this.selectedRegistrations.size;
+        } else {
+            bulkActionsBar.style.display = 'none';
+        }
+    }
+
+    filterRegistrations() {
+        const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        const storeFilter = document.getElementById('storeFilterSelect')?.value || '';
+        const dateFilter = document.getElementById('dateFilterSelect')?.value || '';
+        const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
+
+        this.filteredRegistrations = this.allRegistrations.filter(reg => {
+            // Search filter
+            const matchesSearch = !searchTerm || 
+                reg.fullName?.toLowerCase().includes(searchTerm) ||
+                reg.email?.toLowerCase().includes(searchTerm) ||
+                reg.employeeId?.toLowerCase().includes(searchTerm);
+
+            // Store filter
+            const matchesStore = !storeFilter || reg.storeId === storeFilter;
+
+            // Date filter
+            let matchesDate = true;
+            if (dateFilter && reg.createdAt) {
+                const regDate = new Date(reg.createdAt);
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                switch (dateFilter) {
+                    case 'today':
+                        matchesDate = regDate >= today;
+                        break;
+                    case 'yesterday':
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        matchesDate = regDate >= yesterday && regDate < today;
+                        break;
+                    case 'week':
+                        const weekAgo = new Date(today);
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        matchesDate = regDate >= weekAgo;
+                        break;
+                    case 'month':
+                        const monthAgo = new Date(today);
+                        monthAgo.setDate(monthAgo.getDate() - 30);
+                        matchesDate = regDate >= monthAgo;
+                        break;
+                }
+            }
+
+            // Status filter
+            const matchesStatus = statusFilter === 'all' || reg.status === statusFilter;
+
+            return matchesSearch && matchesStore && matchesDate && matchesStatus;
+        });
+
+        this.currentPage = 1;
+        this.renderRegistrations();
+    }
+
+    renderRegistrations() {
+        const container = document.getElementById('pendingRegistrationsList');
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
+        const pageRegistrations = this.filteredRegistrations.slice(startIndex, endIndex);
+
+        if (!pageRegistrations.length) {
+            container.innerHTML = `
+                <div class="empty-state-enhanced">
+                    <div class="empty-icon">📝</div>
+                    <div class="empty-text">Không có đăng ký nào</div>
+                    <div class="empty-subtext">Thử thay đổi bộ lọc hoặc tìm kiếm</div>
+                </div>
+            `;
+            document.getElementById('paginationControls').style.display = 'none';
+            return;
+        }
+
+        container.innerHTML = pageRegistrations.map(reg => `
+            <div class="registration-card-enhanced" data-employee-id="${reg.employeeId}">
+                <div class="registration-select">
+                    <input type="checkbox" class="registration-checkbox" 
+                           onchange="window.toggleRegistrationSelection('${reg.employeeId}', this)">
+                </div>
+                <div class="registration-avatar">
+                    <div class="avatar-circle">
+                        ${reg.fullName?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div class="status-indicator status-${reg.status || 'pending'}"></div>
+                </div>
+                <div class="registration-info-enhanced">
+                    <div class="registration-header">
+                        <h3 class="registration-name">${reg.fullName || 'N/A'}</h3>
+                        <div class="registration-badges">
+                            <span class="position-badge">${reg.position || 'N/A'}</span>
+                            <span class="store-badge">${reg.storeName || reg.storeId || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <div class="registration-details">
+                        <div class="detail-row">
+                            <span class="detail-label">📧 Email:</span>
+                            <span class="detail-value">${reg.email || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">📱 SĐT:</span>
+                            <span class="detail-value">${reg.phone || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">🆔 Mã NV:</span>
+                            <span class="detail-value">${reg.employeeId}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">📅 Ngày gửi:</span>
+                            <span class="detail-value">${utils.formatDateTime(reg.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="registration-actions-enhanced">
+                    <button class="action-btn view-btn" onclick="window.viewRegistrationDetail('${reg.employeeId}')" title="Xem chi tiết">
+                        <span class="material-icons-round">visibility</span>
+                    </button>
+                    <button class="action-btn approve-btn" onclick="window.approveRegistration('${reg.employeeId}')" title="Duyệt">
+                        <span class="material-icons-round">check</span>
+                    </button>
+                    <button class="action-btn reject-btn" onclick="window.rejectRegistration('${reg.employeeId}')" title="Từ chối">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        this.updatePaginationControls();
+    }
+
+    updatePaginationControls() {
+        const totalPages = Math.ceil(this.filteredRegistrations.length / this.pageSize);
+        const paginationControls = document.getElementById('paginationControls');
+        const pageInfo = document.getElementById('pageInfo');
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+
+        if (totalPages > 1) {
+            paginationControls.style.display = 'flex';
+            pageInfo.textContent = `Trang ${this.currentPage} / ${totalPages}`;
+            prevBtn.disabled = this.currentPage === 1;
+            nextBtn.disabled = this.currentPage === totalPages;
+        } else {
+            paginationControls.style.display = 'none';
+        }
+    }
+
+    async showRegistrationDetail(employeeId) {
+        const registration = this.allRegistrations.find(reg => reg.employeeId === employeeId);
+        if (!registration) return;
+
+        const modal = document.getElementById('registrationDetailModal');
+        const content = document.getElementById('registrationDetailContent');
+
+        content.innerHTML = `
+            <div class="registration-detail-view">
+                <div class="detail-section">
+                    <h4>👤 Thông tin cá nhân</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="label">Họ tên:</span>
+                            <span class="value">${registration.fullName || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Mã nhân viên:</span>
+                            <span class="value">${registration.employeeId}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Email:</span>
+                            <span class="value">${registration.email || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Số điện thoại:</span>
+                            <span class="value">${registration.phone || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Chức vụ:</span>
+                            <span class="value">${registration.position || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>🏪 Thông tin công việc</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="label">Cửa hàng:</span>
+                            <span class="value">${registration.storeName || registration.storeId || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Mã cửa hàng:</span>
+                            <span class="value">${registration.storeId || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4>📅 Thông tin đăng ký</h4>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="label">Ngày gửi:</span>
+                            <span class="value">${utils.formatDateTime(registration.createdAt)}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Trạng thái:</span>
+                            <span class="value status-${registration.status || 'pending'}">
+                                ${this.getStatusText(registration.status || 'pending')}
+                            </span>
+                        </div>
+                        ${registration.processedAt ? `
+                        <div class="detail-item">
+                            <span class="label">Ngày xử lý:</span>
+                            <span class="value">${utils.formatDateTime(registration.processedAt)}</span>
+                        </div>
+                        ` : ''}
+                        ${registration.processedBy ? `
+                        <div class="detail-item">
+                            <span class="label">Người xử lý:</span>
+                            <span class="value">${registration.processedBy}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Set modal action buttons
+        document.getElementById('modalApprove').onclick = () => {
+            modal.style.display = 'none';
+            window.approveRegistration(employeeId);
+        };
+
+        document.getElementById('modalReject').onclick = () => {
+            modal.style.display = 'none';
+            window.rejectRegistration(employeeId);
+        };
+
+        modal.style.display = 'flex';
+    }
+
+    getStatusText(status) {
+        switch (status) {
+            case 'pending': return '⏳ Chờ duyệt';
+            case 'approved': return '✅ Đã duyệt';
+            case 'rejected': return '❌ Đã từ chối';
+            default: return '❓ Không xác định';
+        }
     }
 }
 
