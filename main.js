@@ -104,9 +104,23 @@ class ChatManager {
         this.chatMessages = document.getElementById("chatMessages");
         this.sendButton = document.getElementById("sendButton");
 
+        console.log("ChatManager initializing...");
+        console.log("openChatButton:", this.openChatButton);
+        console.log("chatPopup:", this.chatPopup);
+        console.log("messageInput:", this.messageInput);
+        console.log("chatMessages:", this.chatMessages);
+        console.log("sendButton:", this.sendButton);
+
         // Check if chat elements exist
         if (!this.openChatButton || !this.chatPopup || !this.messageInput || !this.chatMessages || !this.sendButton) {
             console.warn("Chat elements not found. Chat functionality may not work properly.");
+            console.warn("Missing elements:", {
+                openChatButton: !this.openChatButton,
+                chatPopup: !this.chatPopup,
+                messageInput: !this.messageInput,
+                chatMessages: !this.chatMessages,
+                sendButton: !this.sendButton
+            });
             this.createChatElements();
         }
 
@@ -158,9 +172,25 @@ class ChatManager {
     }
 
     toggleChatPopup() {
+        console.log("toggleChatPopup called");
+        console.log("chatPopup element:", this.chatPopup);
+        console.log("current display:", this.chatPopup?.style.display);
+        
+        if (!this.chatPopup) {
+            console.error("chatPopup element not found!");
+            return;
+        }
+        
         const isHidden = this.chatPopup.style.display === "none" || this.chatPopup.style.display === "";
+        console.log("isHidden:", isHidden);
+        
         this.chatPopup.style.display = isHidden ? "flex" : "none";
-        if (isHidden) this.loadInitialMessages();
+        console.log("new display:", this.chatPopup.style.display);
+        
+        if (isHidden) {
+            console.log("Loading initial messages...");
+            this.loadInitialMessages();
+        }
     }
 
     async sendMessage() {
