@@ -1295,20 +1295,47 @@ async function handleAddReward(body, db, origin) {
 
 // Hàm lấy lịch sử thưởng/phạt
 async function handleGetRewards(url, db, origin) {
-  const employeeId = url.searchParams.get("employeeId");
-  const limit = parseInt(url.searchParams.get("limit")) || 50;
-
   try {
-    let query = "SELECT * FROM rewards ORDER BY createdAt DESC";
+    // Check user session and get their role
+    const token = url.searchParams.get("token");
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    // Get current user's position/role and store
+    const currentUser = await db
+      .prepare("SELECT position, storeName FROM employees WHERE employeeId = ?")
+      .bind(session.employeeId)
+      .first();
+
+    if (!currentUser) {
+      return jsonResponse({ message: "Không tìm thấy thông tin người dùng!" }, 404, origin);
+    }
+
+    const employeeId = url.searchParams.get("employeeId");
+    const limit = parseInt(url.searchParams.get("limit")) || 50;
+
+    // Build query with JOIN to get store information  
+    let query = `
+      SELECT r.*, e.storeName 
+      FROM rewards r 
+      JOIN employees e ON r.employeeId = e.employeeId 
+      WHERE 1=1
+    `;
     let params = [];
 
-    if (employeeId) {
-      query = "SELECT * FROM rewards WHERE employeeId = ? ORDER BY createdAt DESC LIMIT ?";
-      params = [employeeId, limit];
-    } else {
-      query += " LIMIT ?";
-      params = [limit];
+    // Only filter by store if user is NOT Admin (AD)
+    if (currentUser.position !== 'AD') {
+      query += " AND e.storeName = ?";
+      params.push(currentUser.storeName);
     }
+
+    if (employeeId) {
+      query += " AND r.employeeId = ?";
+      params.push(employeeId);
+    }
+
+    query += " ORDER BY r.createdAt DESC LIMIT ?";
+    params.push(limit);
 
     const rewards = await db.prepare(query).bind(...params).all();
 
@@ -1418,25 +1445,52 @@ async function handleCreateTaskFromMessage(body, db, origin) {
 
 // Hàm lấy danh sách yêu cầu
 async function handleGetTasks(url, db, origin) {
-  const status = url.searchParams.get("status");
-  const type = url.searchParams.get("type");
-  const limit = parseInt(url.searchParams.get("limit")) || 50;
-
   try {
-    let query = "SELECT * FROM tasks WHERE 1=1";
+    // Check user session and get their role
+    const token = url.searchParams.get("token");
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    // Get current user's position/role and store
+    const currentUser = await db
+      .prepare("SELECT position, storeName FROM employees WHERE employeeId = ?")
+      .bind(session.employeeId)
+      .first();
+
+    if (!currentUser) {
+      return jsonResponse({ message: "Không tìm thấy thông tin người dùng!" }, 404, origin);
+    }
+
+    const status = url.searchParams.get("status");
+    const type = url.searchParams.get("type");
+    const limit = parseInt(url.searchParams.get("limit")) || 50;
+
+    // Build query with JOIN to get store information
+    let query = `
+      SELECT t.*, e.storeName 
+      FROM tasks t 
+      JOIN employees e ON t.employeeId = e.employeeId 
+      WHERE 1=1
+    `;
     let params = [];
 
+    // Only filter by store if user is NOT Admin (AD)
+    if (currentUser.position !== 'AD') {
+      query += " AND e.storeName = ?";
+      params.push(currentUser.storeName);
+    }
+
     if (status) {
-      query += " AND status = ?";
+      query += " AND t.status = ?";
       params.push(status);
     }
 
     if (type) {
-      query += " AND type = ?";
+      query += " AND t.type = ?";
       params.push(type);
     }
 
-    query += " ORDER BY createdAt DESC LIMIT ?";
+    query += " ORDER BY t.createdAt DESC LIMIT ?";
     params.push(limit);
 
     const tasks = await db.prepare(query).bind(...params).all();
@@ -1498,11 +1552,28 @@ async function handleUpdatePermissions(body, db, origin) {
 // Hàm lấy danh sách yêu cầu đăng ký đang chờ duyệt
 async function handleGetPendingRegistrations(url, db, origin) {
   try {
+    // Check user session and get their role
+    const token = url.searchParams.get("token");
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    // Get current user's position/role
+    const currentUser = await db
+      .prepare("SELECT position FROM employees WHERE employeeId = ?")
+      .bind(session.employeeId)
+      .first();
+
+    if (!currentUser) {
+      return jsonResponse({ message: "Không tìm thấy thông tin người dùng!" }, 404, origin);
+    }
+
     const store = url.searchParams.get("store");
     let query = "SELECT * FROM queue WHERE status = 'Wait'";
     let params = [];
 
-    if (store) {
+    // Only apply store filtering if user is NOT Admin (AD)
+    // AD can see all pending registrations from all stores
+    if (currentUser.position !== 'AD' && store) {
       query += " AND storeName = ?";
       params.push(store);
     }
@@ -1663,7 +1734,8 @@ export default {
       const protectedActions = [
         "update", "savedk", "checkdk", "getUser", "getUsers", 
         "saveOrder", "updateOrderStatus", "getOrders", "cancelOrder", 
-        "getOrderById", "updateUser", "adjustUserExp"
+        "getOrderById", "updateUser", "adjustUserExp", "getPendingRegistrations",
+        "getPendingRequests", "getTasks", "getRewards", "getPermissions"
       ];
       if (protectedActions.includes(action)) {
         const session = await checkSessionMiddleware(token, db, ALLOWED_ORIGIN);
