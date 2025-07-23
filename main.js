@@ -2979,11 +2979,12 @@ let lastUserDataHash = null;
 async function checkForChanges() {
     try {
         const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        if (!token) return false;
+        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        if (!token || !loggedInUser.employeeId) return false;
         
         // Check for activity changes (simplified hash check)
-        const activitiesResponse = await fetch(`${CONFIG.API_URL}/getRecentActivities?token=${token}`);
-        const userData = await fetch(`${CONFIG.API_URL}/getUser?token=${token}`);
+        const activitiesResponse = await fetch(`${CONFIG.API_URL}?action=getRecentActivities&token=${token}`);
+        const userData = await fetch(`${CONFIG.API_URL}?action=getUser&employeeId=${loggedInUser.employeeId}&token=${token}`);
         
         if (activitiesResponse.ok && userData.ok) {
             const activities = await activitiesResponse.json();
