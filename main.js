@@ -2934,73 +2934,53 @@ function showWelcomeSection() {
     
     console.log('🔐 Showing welcome section for role:', userPosition);
     
-    // Replace content with welcome section HTML
-    content.innerHTML = `
-        <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+    // Helper function to check if user has access to a role
+    const hasRole = (allowedRoles) => {
+        return allowedRoles.split(',').includes(userPosition);
+    };
+    
+    // Build role-specific content
+    let roleSpecificSections = '';
+    
+    // Quick Actions (AD, QL only)
+    if (hasRole('AD,QL')) {
+        let quickActions = '';
+        if (hasRole('AD')) {
+            quickActions += `
+                <button class="quick-action-btn" data-action="addEmployee">
+                    <span class="action-icon">👤</span>
+                    <span class="action-text">Thêm Nhân Viên</span>
+                </button>
+                <button class="quick-action-btn" data-action="viewReports">
+                    <span class="action-icon">📈</span>
+                    <span class="action-text">Báo Cáo</span>
+                </button>`;
+        }
+        if (hasRole('AD,QL')) {
+            quickActions += `
+                <button class="quick-action-btn" data-action="createSchedule">
+                    <span class="action-icon">📊</span>
+                    <span class="action-text">Tạo Lịch Làm</span>
+                </button>
+                <button class="quick-action-btn" data-action="manageRewards">
+                    <span class="action-icon">🏆</span>
+                    <span class="action-text">Quản Lý Thưởng</span>
+                </button>`;
+        }
         
-        <!-- Enhanced Dashboard Overview -->
-        <div class="welcome-section">
-            <!-- Main Statistics Grid -->
-            <div class="stats-grid">
-                <div class="stat-card primary">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-info">
-                        <h3>Tổng Nhân Viên</h3>
-                        <p id="totalEmployees">-</p>
-                        <span class="stat-trend">+2 tuần này</span>
-                    </div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-info">
-                        <h3>Lịch Hôm Nay</h3>
-                        <p id="todaySchedule">-</p>
-                        <span class="stat-trend" id="todayScheduleDay">-</span>
-                    </div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-icon">📋</div>
-                    <div class="stat-info">
-                        <h3>Yêu Cầu Chờ</h3>
-                        <p id="pendingRequests">-</p>
-                        <span class="stat-trend">Cần xử lý</span>
-                    </div>
-                </div>
-                <div class="stat-card info">
-                    <div class="stat-icon">💬</div>
-                    <div class="stat-info">
-                        <h3>Tin Nhắn Mới</h3>
-                        <p id="recentMessages">-</p>
-                        <span class="stat-trend">24h qua</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Role-based Quick Actions -->
-            <div class="quick-actions-section" data-role="AD,QL">
+        roleSpecificSections += `
+            <div class="quick-actions-section">
                 <h2 class="section-title">Thao Tác Nhanh</h2>
                 <div class="quick-actions-grid">
-                    <button class="quick-action-btn" data-action="addEmployee" data-role="AD">
-                        <span class="action-icon">👤</span>
-                        <span class="action-text">Thêm Nhân Viên</span>
-                    </button>
-                    <button class="quick-action-btn" data-action="createSchedule" data-role="AD,QL">
-                        <span class="action-icon">📊</span>
-                        <span class="action-text">Tạo Lịch Làm</span>
-                    </button>
-                    <button class="quick-action-btn" data-action="manageRewards" data-role="AD,QL">
-                        <span class="action-icon">🏆</span>
-                        <span class="action-text">Quản Lý Thưởng</span>
-                    </button>
-                    <button class="quick-action-btn" data-action="viewReports" data-role="AD">
-                        <span class="action-icon">📈</span>
-                        <span class="action-text">Báo Cáo</span>
-                    </button>
+                    ${quickActions}
                 </div>
-            </div>
-
-            <!-- Advanced Analytics Dashboard for Admin -->
-            <div class="analytics-section" data-role="AD">
+            </div>`;
+    }
+    
+    // Analytics Dashboard (AD only)
+    if (hasRole('AD')) {
+        roleSpecificSections += `
+            <div class="analytics-section">
                 <h2 class="section-title">Phân Tích Dữ Liệu</h2>
                 <div class="analytics-grid">
                     <div class="chart-card">
@@ -3028,10 +3008,13 @@ function showWelcomeSection() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Store Management for Managers -->
-            <div class="store-management-section" data-role="AD,QL">
+            </div>`;
+    }
+    
+    // Store Management (AD, QL)
+    if (hasRole('AD,QL')) {
+        roleSpecificSections += `
+            <div class="store-management-section">
                 <h2 class="section-title">Quản Lý Cửa Hàng</h2>
                 <div class="store-grid">
                     <div class="store-card" data-store="ST001">
@@ -3075,23 +3058,13 @@ function showWelcomeSection() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Recent Activities -->
-            <div class="activities-section">
-                <h2 class="section-title">Hoạt Động Gần Đây</h2>
-                <div class="activities-container">
-                    <div id="recentActivities" class="activities-list">
-                        <p class="loading-text">Đang tải hoạt động...</p>
-                    </div>
-                    <div class="activities-footer">
-                        <button class="btn-outline" onclick="loadMoreActivities()">Xem thêm</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Finance Overview for Admin -->
-            <div class="finance-section" data-role="AD">
+            </div>`;
+    }
+    
+    // Finance Overview (AD only)
+    if (hasRole('AD')) {
+        roleSpecificSections += `
+            <div class="finance-section">
                 <h2 class="section-title">Tổng Quan Tài Chính</h2>
                 <div class="finance-grid">
                     <div class="finance-card revenue">
@@ -3127,10 +3100,13 @@ function showWelcomeSection() {
                         <div class="finance-subtitle">Ổn định</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Registration Approval for Admin and Managers -->
-            <div class="registration-approval-section" data-role="AD,QL">
+            </div>`;
+    }
+    
+    // Registration Approval (AD, QL)
+    if (hasRole('AD,QL')) {
+        roleSpecificSections += `
+            <div class="registration-approval-section">
                 <h2 class="section-title">Duyệt Đăng Ký Nhân Viên</h2>
                 <div class="approval-container">
                     <div class="approval-header">
@@ -3148,10 +3124,13 @@ function showWelcomeSection() {
                         <p class="loading-text">Đang tải danh sách...</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Personal Dashboard for Employees -->
-            <div class="personal-section" data-role="NV,AM">
+            </div>`;
+    }
+    
+    // Personal Dashboard (NV, AM)
+    if (hasRole('NV,AM')) {
+        roleSpecificSections += `
+            <div class="personal-section">
                 <h2 class="section-title">Thông Tin Cá Nhân</h2>
                 <div class="personal-grid">
                     <div class="personal-card schedule">
@@ -3173,16 +3152,73 @@ function showWelcomeSection() {
                         </div>
                     </div>
                 </div>
+            </div>`;
+    }
+    
+    // Replace content with welcome section HTML including only relevant role-based sections
+    content.innerHTML = `
+        <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+        
+        <!-- Enhanced Dashboard Overview -->
+        <div class="welcome-section">
+            <!-- Main Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Tổng Nhân Viên</h3>
+                        <p id="totalEmployees">-</p>
+                        <span class="stat-trend">+2 tuần này</span>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <h3>Lịch Hôm Nay</h3>
+                        <p id="todaySchedule">-</p>
+                        <span class="stat-trend" id="todayScheduleDay">-</span>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-info">
+                        <h3>Yêu Cầu Chờ</h3>
+                        <p id="pendingRequests">-</p>
+                        <span class="stat-trend">Cần xử lý</span>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-info">
+                        <h3>Tin Nhắn Mới</h3>
+                        <p id="recentMessages">-</p>
+                        <span class="stat-trend">24h qua</span>
+                    </div>
+                </div>
+            </div>
+
+            ${roleSpecificSections}
+
+            <!-- Recent Activities (available to all users) -->
+            <div class="activities-section">
+                <h2 class="section-title">Hoạt Động Gần Đây</h2>
+                <div class="activities-container">
+                    <div id="recentActivities" class="activities-list">
+                        <p class="loading-text">Đang tải hoạt động...</p>
+                    </div>
+                    <div class="activities-footer">
+                        <button class="btn-outline" onclick="loadMoreActivities()">Xem thêm</button>
+                    </div>
+                </div>
             </div>
         </div>
     `;
     
-    console.log('✅ Welcome section HTML replaced');
+    console.log('✅ Welcome section HTML replaced with role-specific content for:', userPosition);
     
-    // Re-initialize dashboard stats and role-based UI
+    // Re-initialize dashboard stats and quick actions
     setTimeout(() => {
         getDashboardStats();
-        initializeRoleBasedUI(); // Apply role-based visibility
         initializeQuickActions(); // Re-setup quick action handlers
         refreshUserRoleAndPermissions();
     }, 100);
