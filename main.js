@@ -2254,7 +2254,12 @@ class AuthManager {
 }
 
 // Initialize Application
-(async () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🌟 DOM Content Loaded - Starting application initialization');
+    
+    // Wait a moment for all elements to be rendered
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     // Setup security
     document.addEventListener("keydown", (e) => {
         if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
@@ -2290,10 +2295,31 @@ class AuthManager {
             });
         }
     }
-})();
+});
 
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function initializeDashboardStats() {
+    console.log('🔄 Starting dashboard stats initialization...');
+    
+    // First, ensure the welcome section is visible
+    const welcomeSection = document.querySelector('.welcome-section');
+    const content = document.getElementById('content');
+    
+    if (welcomeSection) {
+        welcomeSection.style.display = 'block';
+        console.log('✅ Welcome section made visible');
+    } else {
+        console.warn('⚠️ Welcome section not found in DOM');
+    }
+    
+    if (content) {
+        content.style.display = 'block';
+        console.log('✅ Content section made visible');
+    }
+    
+    // Wait a moment for DOM to be ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const elements = {
         totalEmployees: document.getElementById('totalEmployees'),
         todaySchedule: document.getElementById('todaySchedule'), 
@@ -2302,26 +2328,47 @@ async function initializeDashboardStats() {
         todayScheduleDay: document.getElementById('todayScheduleDay')
     };
 
+    console.log('📊 Stats elements found:', {
+        totalEmployees: !!elements.totalEmployees,
+        todaySchedule: !!elements.todaySchedule,
+        pendingRequests: !!elements.pendingRequests,
+        recentMessages: !!elements.recentMessages,
+        todayScheduleDay: !!elements.todayScheduleDay
+    });
+
     try {
+        console.log('🌐 Fetching dashboard stats from API...');
         // Use the new unified dashboard stats API
         const stats = await utils.fetchAPI('?action=getDashboardStats');
         
+        console.log('📈 Dashboard stats response:', stats);
+        
         if (stats && typeof stats === 'object') {
+            console.log('✅ Valid stats response received, updating elements...');
+            
             // Update dashboard statistics
             if (elements.totalEmployees) {
-                elements.totalEmployees.textContent = stats.totalEmployees?.toString() || '0';
+                const value = stats.totalEmployees?.toString() || '0';
+                elements.totalEmployees.textContent = value;
+                console.log(`Updated totalEmployees: ${value}`);
             }
             
             if (elements.todaySchedule) {
-                elements.todaySchedule.textContent = stats.todaySchedules?.toString() || '0';
+                const value = stats.todaySchedules?.toString() || '0';
+                elements.todaySchedule.textContent = value;
+                console.log(`Updated todaySchedule: ${value}`);
             }
             
             if (elements.pendingRequests) {
-                elements.pendingRequests.textContent = stats.pendingRequests?.toString() || '0';
+                const value = stats.pendingRequests?.toString() || '0';
+                elements.pendingRequests.textContent = value;
+                console.log(`Updated pendingRequests: ${value}`);
             }
 
             if (elements.recentMessages) {
-                elements.recentMessages.textContent = stats.recentMessages?.toString() || '0';
+                const value = stats.recentMessages?.toString() || '0';
+                elements.recentMessages.textContent = value;
+                console.log(`Updated recentMessages: ${value}`);
             }
             
             // Update day info
@@ -2330,24 +2377,51 @@ async function initializeDashboardStats() {
                     'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 
                     'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7', 'CN': 'Chủ Nhật'
                 };
-                elements.todayScheduleDay.textContent = dayNames[stats.currentDay] || 'Hôm nay';
+                const value = dayNames[stats.currentDay] || 'Hôm nay';
+                elements.todayScheduleDay.textContent = value;
+                console.log(`Updated todayScheduleDay: ${value}`);
             }
+            
+            console.log('✅ All dashboard stats updated successfully');
+        } else {
+            console.warn('⚠️ Invalid or empty stats response');
+            // Set loading state
+            Object.keys(elements).forEach(key => {
+                if (elements[key] && key !== 'todayScheduleDay') {
+                    elements[key].textContent = '-';
+                }
+            });
         }
-        
-        console.log('✅ Dashboard stats loaded successfully');
         
         // Always run role checking after stats are loaded to ensure proper permissions
         await refreshUserRoleAndPermissions();
         
     } catch (error) {
-        console.error('Failed to load dashboard stats:', error);
-        // Set fallback values only if elements exist
-        Object.values(elements).forEach(element => {
-            if (element) element.textContent = '-';
-        });
+        console.error('❌ Failed to load dashboard stats:', error);
+        // Set default values on error
+        if (elements.totalEmployees) {
+            elements.totalEmployees.textContent = '0';
+            console.log('Set totalEmployees default: 0');
+        }
+        if (elements.todaySchedule) {
+            elements.todaySchedule.textContent = '0';
+            console.log('Set todaySchedule default: 0');
+        }
+        if (elements.pendingRequests) {
+            elements.pendingRequests.textContent = '0';
+            console.log('Set pendingRequests default: 0');
+        }
+        if (elements.recentMessages) {
+            elements.recentMessages.textContent = '0';
+            console.log('Set recentMessages default: 0');
+        }
+        if (elements.todayScheduleDay) {
+            elements.todayScheduleDay.textContent = 'Hôm nay';
+            console.log('Set todayScheduleDay default: Hôm nay');
+        }
         
-        // Optionally show a user-friendly notification
-        utils.showNotification('Không thể tải thống kê dashboard', 'warning', 5000);
+        // Show error notification
+        utils.showNotification('Không thể tải thống kê dashboard', 'warning');
     }
 }
 
@@ -2728,9 +2802,55 @@ function setupMobileMenu() {
     }
 }
 
+// Function to ensure dashboard content is visible
+function showDashboardContent() {
+    console.log('📱 Ensuring dashboard content is visible...');
+    
+    const content = document.getElementById('content');
+    const welcomeSection = document.querySelector('.welcome-section');
+    const statsGrid = document.querySelector('.stats-grid');
+    
+    // Make sure main content is visible
+    if (content) {
+        content.style.display = 'block';
+        content.style.visibility = 'visible';
+        console.log('✅ Main content made visible');
+    }
+    
+    // Make sure welcome section is visible
+    if (welcomeSection) {
+        welcomeSection.style.display = 'block';
+        welcomeSection.style.visibility = 'visible';
+        console.log('✅ Welcome section made visible');
+    }
+    
+    // Make sure stats grid is visible
+    if (statsGrid) {
+        statsGrid.style.display = 'grid';
+        statsGrid.style.visibility = 'visible';
+        console.log('✅ Stats grid made visible');
+    }
+    
+    // Log element existence
+    console.log('📊 Dashboard elements status:', {
+        content: !!content,
+        welcomeSection: !!welcomeSection,
+        statsGrid: !!statsGrid,
+        totalEmployees: !!document.getElementById('totalEmployees'),
+        todaySchedule: !!document.getElementById('todaySchedule'),
+        pendingRequests: !!document.getElementById('pendingRequests'),
+        recentMessages: !!document.getElementById('recentMessages')
+    });
+}
+
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
+        console.log('🚀 Enhanced dashboard initialization started');
+        
+        // First ensure content is visible
+        showDashboardContent();
+        
         // Get fresh user data from API instead of localStorage
         const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
         if (!loggedInUser.employeeId) {
@@ -2874,6 +2994,9 @@ function getFieldDisplayName(field) {
 // Function to show welcome section when clicking HR Management System title
 function showWelcomeSection() {
     console.log('📍 Attempting to show welcome section');
+    
+    // Ensure dashboard content is visible first
+    showDashboardContent();
     
     // Trigger the enhanced dashboard initialization to show default view
     initializeEnhancedDashboard();
