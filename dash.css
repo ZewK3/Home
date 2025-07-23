@@ -3007,8 +3007,75 @@ body {
 }
 
 .registrations-list {
-    max-height: 500px;
+    max-height: 800px;
     overflow-y: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced status styling */
+.status-text-wait {
+    color: #f59e0b !important;
+    font-weight: bold;
+}
+
+.status-text-approved {
+    color: #10b981 !important;
+    font-weight: bold;
+}
+
+.status-text-rejected {
+    color: #ef4444 !important;
+    font-weight: bold;
+}
+
+.loading-text {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    padding: 40px;
+}
+
+.empty-state-enhanced {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.empty-state-enhanced .empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.6;
+}
+
+.empty-state-enhanced .empty-text {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.empty-state-enhanced .empty-subtext {
+    font-size: 16px;
+    opacity: 0.7;
+    margin-bottom: 20px;
+}
+
+.btn-secondary {
+    background: rgba(107, 114, 128, 0.2);
+    color: white;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(107, 114, 128, 0.3);
+    transform: translateY(-1px);
 }
 
 .registration-item {

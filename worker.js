@@ -1,5 +1,5 @@
 const ALLOWED_ORIGIN = "*";
-const SENDGRID_API_KEY = "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";
+const SENDGRID_API_KEY = "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";
 
 // SendGrid Email Verification Function
 async function sendVerificationEmail(email, employeeId, fullName) {
@@ -11,7 +11,7 @@ async function sendVerificationEmail(email, employeeId, fullName) {
       subject: "Xác nhận đăng ký tài khoản HR Management System"
     }],
     from: { 
-      email: "noreply@hrmanagementsystem.com",
+      email: "noreply@zewk.fun",
       name: "HR Management System"
     },
     content: [{

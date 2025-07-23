@@ -1,6 +1,6 @@
 // Constants and Configuration
 const CONFIG = {
-    API_URL: "https://zewk.tocotoco.workers.dev",
+    API_URL: "https://zewk.fun/Worker",
     STORAGE_KEYS: {
         AUTH_TOKEN: "authToken",
         USER_DATA: "loggedInUser",
@@ -93,7 +93,7 @@ class ChatManager {
     constructor(user) {
         console.log('Initializing ChatManager for user:', user);
         this.user = user;
-        this.apiUrl = "https://zewk.tocotoco.workers.dev/";
+        this.apiUrl = "https://zewk.fun/Worker/";
         this.offset = 0;
         this.limit = 50;
         this.lastId = 0;
@@ -1559,26 +1559,44 @@ class ContentManager {
         try {
             const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const url = store ? 
-                `?action=getPendingRegistrations&store=${encodeURIComponent(store)}&status=${statusFilter}&token=${token}` : 
-                `?action=getPendingRegistrations&status=${statusFilter}&token=${token}`;
             
+            // Improved URL construction 
+            let url = `?action=getPendingRegistrations&token=${token}`;
+            if (store) {
+                url += `&store=${encodeURIComponent(store)}`;
+            }
+            if (statusFilter && statusFilter !== 'pending') {
+                url += `&status=${statusFilter}`;
+            }
+            
+            console.log('Loading pending registrations from:', CONFIG.API_URL + url);
             const response = await utils.fetchAPI(url);
-            console.log('Pending registrations response:', response);
+            console.log('Full API response:', response);
             
             // Convert object format {0: {data}, 1: {data}, ...} to array
             let registrations = [];
             if (Array.isArray(response)) {
                 registrations = response;
+                console.log('Response is already an array:', registrations);
             } else if (response && typeof response === 'object') {
                 // Check if response has numeric keys (API returns {0: {}, 1: {}, ...})
-                const keys = Object.keys(response).filter(key => !isNaN(key));
+                const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                console.log('Numeric keys found:', keys);
                 if (keys.length > 0) {
                     registrations = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
                     console.log('Converted to array:', registrations);
+                } else {
+                    console.log('No numeric keys found, checking for data property');
+                    if (response.data && Array.isArray(response.data)) {
+                        registrations = response.data;
+                    } else if (response.data && typeof response.data === 'object') {
+                        const dataKeys = Object.keys(response.data).filter(key => !isNaN(key));
+                        registrations = dataKeys.map(key => response.data[key]).filter(item => item && typeof item === 'object');
+                    }
                 }
             }
             
+            console.log('Final registrations array:', registrations);
             this.allRegistrations = registrations;
             
             // Update pending count
@@ -1587,6 +1605,10 @@ class ContentManager {
             if (pendingCountElement) {
                 pendingCountElement.textContent = pendingCount;
             }
+            
+            // Show detailed debug info
+            console.log(`Found ${this.allRegistrations.length} total registrations`);
+            console.log(`${pendingCount} are pending (status: 'Wait')`);
             
             this.filterRegistrations();
         } catch (error) {
@@ -1597,8 +1619,9 @@ class ContentManager {
                     <div class="error-state">
                         <div class="error-icon">⚠️</div>
                         <div class="error-text">Không thể tải danh sách đăng ký</div>
-                        <div class="error-subtext">Vui lòng thử lại sau</div>
-                        <button class="btn btn-primary" onclick="this.closest('.card').querySelector('#refreshPendingRegistrations').click()">
+                        <div class="error-subtext">Lỗi: ${error.message}</div>
+                        <div class="error-subtext">API URL: ${CONFIG.API_URL}</div>
+                        <button class="btn btn-primary" onclick="window.registrationApproval.loadPendingRegistrations()">
                             Thử lại
                         </button>
                     </div>
@@ -1792,6 +1815,9 @@ class ContentManager {
         const storeFilter = document.getElementById('storeFilterSelect')?.value || '';
         const dateFilter = document.getElementById('dateFilterSelect')?.value || '';
         const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
+        
+        console.log('Filtering with:', { searchTerm, storeFilter, dateFilter, statusFilter });
+        console.log('All registrations before filter:', this.allRegistrations);
 
         this.filteredRegistrations = this.allRegistrations.filter(reg => {
             // Search filter
@@ -1800,8 +1826,10 @@ class ContentManager {
                 reg.email?.toLowerCase().includes(searchTerm) ||
                 reg.employeeId?.toLowerCase().includes(searchTerm);
 
-            // Store filter
-            const matchesStore = !storeFilter || reg.storeId === storeFilter;
+            // Store filter - check both storeId and storeName 
+            const matchesStore = !storeFilter || 
+                reg.storeId === storeFilter || 
+                reg.storeName === storeFilter;
 
             // Date filter
             let matchesDate = true;
@@ -1835,10 +1863,24 @@ class ContentManager {
             // Status filter (API uses 'Wait' for pending)
             const matchesStatus = statusFilter === 'all' || 
                 (statusFilter === 'pending' && reg.status === 'Wait') ||
+                (statusFilter === 'approved' && reg.status === 'Approved') ||
+                (statusFilter === 'rejected' && reg.status === 'Rejected') ||
                 reg.status === statusFilter;
 
-            return matchesSearch && matchesStore && matchesDate && matchesStatus;
+            const result = matchesSearch && matchesStore && matchesDate && matchesStatus;
+            
+            // Debug individual filter results
+            if (this.allRegistrations.length > 0) {
+                console.log(`Registration ${reg.employeeId}:`, {
+                    matchesSearch, matchesStore, matchesDate, matchesStatus, result,
+                    status: reg.status, storeName: reg.storeName, storeId: reg.storeId
+                });
+            }
+            
+            return result;
         });
+        
+        console.log('Filtered registrations:', this.filteredRegistrations);
 
         this.currentPage = 1;
         this.renderRegistrations();
@@ -1846,19 +1888,31 @@ class ContentManager {
 
     renderRegistrations() {
         const container = document.getElementById('pendingRegistrationsList');
+        if (!container) {
+            console.error('Container pendingRegistrationsList not found');
+            return;
+        }
+        
         const startIndex = (this.currentPage - 1) * this.pageSize;
         const endIndex = startIndex + this.pageSize;
         const pageRegistrations = this.filteredRegistrations.slice(startIndex, endIndex);
+        
+        console.log(`Rendering page ${this.currentPage}, showing ${pageRegistrations.length} of ${this.filteredRegistrations.length} registrations`);
 
         if (!pageRegistrations.length) {
+            const hasData = this.allRegistrations.length > 0;
             container.innerHTML = `
                 <div class="empty-state-enhanced">
                     <div class="empty-icon">📝</div>
-                    <div class="empty-text">Không có đăng ký nào</div>
-                    <div class="empty-subtext">Thử thay đổi bộ lọc hoặc tìm kiếm</div>
+                    <div class="empty-text">${hasData ? 'Không có kết quả phù hợp' : 'Không có đăng ký nào'}</div>
+                    <div class="empty-subtext">${hasData ? 'Thử thay đổi bộ lọc hoặc tìm kiếm' : 'Chưa có đăng ký nào được gửi'}</div>
+                    ${hasData ? `<button class="btn btn-secondary" onclick="document.getElementById('searchInput').value = ''; document.getElementById('statusFilterSelect').value = 'pending'; window.registrationApproval.filterRegistrations();">Xóa bộ lọc</button>` : ''}
                 </div>
             `;
-            document.getElementById('paginationControls').style.display = 'none';
+            const paginationElement = document.getElementById('paginationControls');
+            if (paginationElement) {
+                paginationElement.style.display = 'none';
+            }
             return;
         }
 
@@ -1899,23 +1953,38 @@ class ContentManager {
                             <span class="detail-label">📅 Ngày gửi:</span>
                             <span class="detail-value">${utils.formatDateTime(reg.createdAt)}</span>
                         </div>
+                        <div class="detail-row">
+                            <span class="detail-label">📊 Trạng thái:</span>
+                            <span class="detail-value status-text-${reg.status?.toLowerCase() || 'wait'}">${this.getStatusText(reg.status)}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="registration-actions-enhanced">
                     <button class="action-btn view-btn" onclick="window.viewRegistrationDetail('${reg.employeeId}')" title="Xem chi tiết">
                         <span class="material-icons-round">visibility</span>
                     </button>
-                    <button class="action-btn approve-btn" onclick="window.approveRegistration('${reg.employeeId}')" title="Duyệt">
-                        <span class="material-icons-round">check</span>
-                    </button>
-                    <button class="action-btn reject-btn" onclick="window.rejectRegistration('${reg.employeeId}')" title="Từ chối">
-                        <span class="material-icons-round">close</span>
-                    </button>
+                    ${reg.status === 'Wait' ? `
+                        <button class="action-btn approve-btn" onclick="window.approveRegistration('${reg.employeeId}')" title="Duyệt">
+                            <span class="material-icons-round">check</span>
+                        </button>
+                        <button class="action-btn reject-btn" onclick="window.rejectRegistration('${reg.employeeId}')" title="Từ chối">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
 
         this.updatePaginationControls();
+    }
+    
+    getStatusText(status) {
+        const statusMap = {
+            'Wait': 'Chờ duyệt',
+            'Approved': 'Đã duyệt', 
+            'Rejected': 'Từ chối'
+        };
+        return statusMap[status] || status || 'Chờ duyệt';
     }
 
     updatePaginationControls() {

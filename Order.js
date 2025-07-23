@@ -1,5 +1,5 @@
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRxseIrDGsm0EN5t6GWCi8-lHO-WJccNl3pR5s2DzSrLRxf5nYje9xUdLlOT0ZkGxlmw0tMZZNKFa8a/pub?output=csv';
-const API_BASE = "https://zewk.tocotoco.workers.dev/";
+const API_BASE = "https://zewk.fun/Worker/";
 const STORE_COORDS = { lng: 106.650467, lat: 10.782461 };
 const MAPBOX_TOKEN = "pk.eyJ1IjoiemV3azExMDYiLCJhIjoiY205d3MwYjI5MHZzaTJtcjBmajl5dWI5diJ9.dP89zeG92u7AeHigH4tJwg";
 const GEOCODE_BASE = "https://api.mapbox.com/geocoding/v5/mapbox.places";
