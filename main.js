@@ -593,8 +593,9 @@ class ContentManager {
     async showTaskPersonnel() {
         const content = document.getElementById('content');
         try {
-            // Use getMessages as a placeholder for task data
-            const messages = await utils.fetchAPI('?action=getMessages');
+            // Load task data for dashboard
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const messages = await utils.fetchAPI(`?action=getMessages&token=${token}`);
             
             content.innerHTML = `
                 <div class="card">
@@ -1557,9 +1558,10 @@ class ContentManager {
     async loadPendingRegistrations(store = '') {
         try {
             const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const url = store ? 
-                `?action=getPendingRegistrations&store=${encodeURIComponent(store)}&status=${statusFilter}` : 
-                `?action=getPendingRegistrations&status=${statusFilter}`;
+                `?action=getPendingRegistrations&store=${encodeURIComponent(store)}&status=${statusFilter}&token=${token}` : 
+                `?action=getPendingRegistrations&status=${statusFilter}&token=${token}`;
             
             const response = await utils.fetchAPI(url);
             console.log('Pending registrations response:', response);
@@ -2419,7 +2421,8 @@ async function loadPersonalRewards() {
 
     try {
         const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const rewards = await utils.fetchAPI(`?action=getRewards&employeeId=${userInfo.employeeId}&limit=5`);
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        const rewards = await utils.fetchAPI(`?action=getRewards&employeeId=${userInfo.employeeId}&limit=5&token=${token}`);
         
         if (rewards && Array.isArray(rewards) && rewards.length > 0) {
             const rewardsHTML = rewards.map(reward => `
@@ -2445,7 +2448,8 @@ async function loadPersonalTasks() {
     if (!container) return;
 
     try {
-        const tasks = await utils.fetchAPI('?action=getTasks&status=pending&limit=5');
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        const tasks = await utils.fetchAPI(`?action=getTasks&status=pending&limit=5&token=${token}`);
         
         if (tasks && Array.isArray(tasks) && tasks.length > 0) {
             const tasksHTML = tasks.map(task => `
