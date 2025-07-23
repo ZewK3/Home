@@ -2235,86 +2235,29 @@ class ContentManager {
 // Menu Manager
 class MenuManager {
     static updateMenuByRole(userRole) {
-        console.log('🔧 MenuManager: Updating menu visibility for role:', userRole);
-        
-        // Use hierarchical permission system - same as initializeRoleBasedUI
-        const roleMap = {
-            'AD': ['AD', 'QL', 'AM', 'NV'],  // Admin can access all functions
-            'QL': ['QL', 'AM', 'NV'],        // Manager can access manager, assistant manager, and employee functions
-            'AM': ['AM', 'NV'],              // Assistant Manager can access assistant manager and employee functions
-            'NV': ['NV']                     // Employee can only access employee functions
-        };
-        
-        const userRoles = roleMap[userRole] || ['NV'];
-        console.log('🎯 User accessible roles:', userRoles);
-        
-        let visibleMenus = 0;
-        let hiddenMenus = 0;
-        const expectedADMenus = [
-            'Lịch Làm', 'Thưởng/Phạt', 'Gửi Yêu Cầu', 'Quản Lý', 'Phân Quyền', 'Thông Tin Cá Nhân', 'Duyệt Đăng Ký'
-        ];
-        
         document.querySelectorAll("#menuList .menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-            const hasAccess = allowedRoles.some(role => userRoles.includes(role));
-            const menuText = item.querySelector('.menu-link')?.textContent?.trim() || 'Unknown';
-            
-            if (hasAccess) {
-                item.style.display = "block";
-                item.classList.remove('role-hidden');
-                item.classList.add('role-visible');
-                visibleMenus++;
-                console.log('✅ Showing menu:', menuText, 'for roles:', allowedRoles);
-            } else {
-                item.style.display = "none";
-                item.classList.add('role-hidden');
-                item.classList.remove('role-visible');
-                hiddenMenus++;
-                console.log('❌ Hiding menu:', menuText, 'for roles:', allowedRoles);
-            }
+            item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
         });
-        
-        console.log('📊 MenuManager Summary for', userRole, ':', {
-            visible: visibleMenus,
-            hidden: hiddenMenus,
-            expectedForAD: userRole === 'AD' ? expectedADMenus.length : 'N/A'
-        });
-        
-        // For AD role, warn if expected menus are not all visible
-        if (userRole === 'AD' && visibleMenus < expectedADMenus.length) {
-            console.warn('⚠️ AD role should have', expectedADMenus.length, 'menus but only', visibleMenus, 'are visible');
-        }
-        
         this.updateSubmenusByRole(userRole);
     }
 
     static updateSubmenusByRole(userRole) {
-        // Use hierarchical permission system
-        const roleMap = {
-            'AD': ['AD', 'QL', 'AM', 'NV'],
-            'QL': ['QL', 'AM', 'NV'],
-            'AM': ['AM', 'NV'],
-            'NV': ['NV']
-        };
-        
-        const userRoles = roleMap[userRole] || ['NV'];
-        
         ['#openSchedule', '#openTaskProcessing'].forEach(selector => {
             const menuItem = document.querySelector(selector)?.closest('.menu-item');
             if (menuItem) {
                 menuItem.querySelectorAll('.submenu-item').forEach(item => {
                     const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-                    const hasAccess = allowedRoles.some(role => userRoles.includes(role));
-                    item.style.display = hasAccess ? "block" : "none";
+                    item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
                 });
             }
         });
     }
 
     static setupMenuInteractions() {
-        // Remove active class from all menu items initially
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.classList.remove('active');
+        // Close all submenus initially
+        document.querySelectorAll('.submenu').forEach(submenu => {
+            submenu.style.display = 'none';
         });
 
         // Setup click handlers for menu items
@@ -2326,25 +2269,23 @@ class MenuManager {
                 link.addEventListener("click", (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    
-                    // Close all other submenus by removing active class
-                    document.querySelectorAll('.menu-item').forEach(other => {
-                        if (other !== item) {
-                            other.classList.remove('active');
+                    // Close all other submenus
+                    document.querySelectorAll('.submenu').forEach(other => {
+                        if (other !== submenu) {
+                            other.style.display = 'none';
                         }
                     });
-                    
-                    // Toggle current submenu by adding/removing active class
-                    item.classList.toggle('active');
+                    // Toggle current submenu
+                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
                 });
             }
         });
 
-        // Close submenus when clicking outside
+        // Close submenu when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.menu-item')) {
-                document.querySelectorAll('.menu-item').forEach(item => {
-                    item.classList.remove('active');
+                document.querySelectorAll('.submenu').forEach(submenu => {
+                    submenu.style.display = 'none';
                 });
             }
         });
@@ -2559,52 +2500,33 @@ async function initializeRecentActivities() {
     }
 }
 
-// Role-based UI Management
+// Role-based UI Management  
 function initializeRoleBasedUI() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
     const userPosition = loggedInUser.position || 'NV';
     
     console.log('🔐 Initializing role-based UI for position:', userPosition);
     
-    // Map positions to accessible roles (hierarchical - higher roles can access lower role functions)
-    const roleMap = {
-        'AD': ['AD', 'QL', 'AM', 'NV'],  // Admin can access all functions
-        'QL': ['QL', 'AM', 'NV'],        // Manager can access manager, assistant manager, and employee functions
-        'AM': ['AM', 'NV'],              // Assistant Manager can access assistant manager and employee functions
-        'NV': ['NV']                     // Employee can only access employee functions
-    };
-    
-    const userRoles = roleMap[userPosition] || ['NV'];
-    console.log('🎯 User roles accessible:', userRoles);
-    
-    // Show/hide elements based on roles (excluding menu items which are handled by MenuManager)
-    let visibleCount = 0;
-    let hiddenCount = 0;
-    
+    // Show/hide elements based on role (simple direct matching like original)
     document.querySelectorAll('[data-role]').forEach(element => {
         // Skip menu items as they are handled by MenuManager
         if (element.closest('#menuList')) {
             return;
         }
         
-        const requiredRoles = element.dataset.role.split(',');
-        const hasAccess = requiredRoles.some(role => userRoles.includes(role));
-        const elementDescription = element.className || element.tagName || 'unknown';
+        const allowedRoles = element.dataset.role.split(',');
+        const hasAccess = allowedRoles.includes(userPosition);
         
         if (hasAccess) {
             element.classList.add('role-visible');
             element.style.display = '';
-            visibleCount++;
-            console.log('✅ Showing element:', elementDescription, 'for roles:', requiredRoles);
         } else {
             element.classList.remove('role-visible');
             element.style.display = 'none';
-            hiddenCount++;
-            console.log('❌ Hiding element:', elementDescription, 'for roles:', requiredRoles);
         }
     });
     
-    console.log(`✅ Role UI initialized: ${visibleCount} visible, ${hiddenCount} hidden elements (excluding menus)`);
+    console.log(`✅ Role UI initialized for position: ${userPosition}`);
 }
 
 // Quick Actions Handler
