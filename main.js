@@ -2447,26 +2447,34 @@ function initializeRoleBasedUI() {
     const userRoles = roleMap[userPosition] || ['NV'];
     console.log('🎯 User roles accessible:', userRoles);
     
-    // Show/hide elements based on roles
+    // Show/hide elements based on roles (excluding menu items which are handled by MenuManager)
     let visibleCount = 0;
     let hiddenCount = 0;
     
     document.querySelectorAll('[data-role]').forEach(element => {
+        // Skip menu items as they are handled by MenuManager
+        if (element.closest('#menuList')) {
+            return;
+        }
+        
         const requiredRoles = element.dataset.role.split(',');
         const hasAccess = requiredRoles.some(role => userRoles.includes(role));
+        const elementDescription = element.className || element.tagName || 'unknown';
         
         if (hasAccess) {
             element.classList.add('role-visible');
             element.style.display = '';
             visibleCount++;
+            console.log('✅ Showing element:', elementDescription, 'for roles:', requiredRoles);
         } else {
             element.classList.remove('role-visible');
             element.style.display = 'none';
             hiddenCount++;
+            console.log('❌ Hiding element:', elementDescription, 'for roles:', requiredRoles);
         }
     });
     
-    console.log(`✅ Role UI initialized: ${visibleCount} visible, ${hiddenCount} hidden elements`);
+    console.log(`✅ Role UI initialized: ${visibleCount} visible, ${hiddenCount} hidden elements (excluding menus)`);
 }
 
 // Quick Actions Handler
