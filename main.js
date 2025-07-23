@@ -2379,12 +2379,12 @@ function initializeRoleBasedUI() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
     const userPosition = loggedInUser.position || 'NV';
     
-    // Map positions to roles
+    // Map positions to accessible roles (hierarchical - higher roles can access lower role functions)
     const roleMap = {
-        'AD': ['AD'],
-        'QL': ['QL', 'AD'], 
-        'AM': ['AM', 'QL', 'AD'],
-        'NV': ['NV', 'AM', 'QL', 'AD']
+        'AD': ['AD', 'QL', 'AM', 'NV'],  // Admin can access all functions
+        'QL': ['QL', 'AM', 'NV'],        // Manager can access manager, assistant manager, and employee functions
+        'AM': ['AM', 'NV'],              // Assistant Manager can access assistant manager and employee functions
+        'NV': ['NV']                     // Employee can only access employee functions
     };
     
     const userRoles = roleMap[userPosition] || ['NV'];
