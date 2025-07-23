@@ -100,301 +100,95 @@ function showNotification(message, type, duration) {
     utils.showNotification(message, type, duration);
 }
 
-// Person-to-Person Chat Manager Implementation  
+// Chat Manager - Original structure as requested
 class ChatManager {
     constructor(user) {
         this.user = user;
-        this.apiUrl = "https://zewk.tocotoco.workers.dev/";
-        this.activeChats = new Map(); // Store active conversations
-        this.currentChatWith = null; // Currently selected chat partner
-        this.createChatButton();
-        this.createChatPopup(); 
+        this.lastMessageId = 0;
+        
+        this.elements = {
+            openButton: document.getElementById("openChatButton"),
+            popup: document.getElementById("chatPopup"),
+            messages: document.getElementById("chatMessages"),
+            input: document.getElementById("messageInput"),
+            sendButton: document.getElementById("sendButton")
+        };
+
         this.initialize();
-        this.loadUserList();
-    }
-
-    createChatButton() {
-        // Remove existing button
-        const existing = document.getElementById('openChatButton');
-        if (existing) existing.remove();
-
-        const button = document.createElement('button');
-        button.id = 'openChatButton';
-        button.className = 'chat-button';
-        button.innerHTML = '💬 Tin Nhắn';
-        button.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            z-index: 9999;
-            font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            transition: all 0.3s ease;
-        `;
-        
-        button.addEventListener('mouseenter', () => {
-            button.style.transform = 'scale(1.05)';
-            button.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.4)';
-        });
-        
-        button.addEventListener('mouseleave', () => {
-            button.style.transform = 'scale(1)';
-            button.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.3)';
-        });
-        
-        document.body.appendChild(button);
-        return button;
-    }
-
-    createChatPopup() {
-        // Remove existing popup
-        const existing = document.getElementById('chatPopup');
-        if (existing) existing.remove();
-
-        const popup = document.createElement('div');
-        popup.id = 'chatPopup';
-        popup.className = 'chat-popup';
-        popup.style.cssText = `
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 380px;
-            height: 500px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            display: none;
-            z-index: 9998;
-            border: 1px solid rgba(37, 99, 235, 0.2);
-            overflow: hidden;
-        `;
-
-        popup.innerHTML = `
-            <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">💬 Trò Chuyện</h3>
-                <button id="closeChatButton" style="background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; font-size: 16px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" title="Đóng chat">✕</button>
-            </div>
-            
-            <div style="display: flex; height: 420px;">
-                <!-- User List Panel -->
-                <div id="userListPanel" style="width: 130px; background: #f8fafc; border-right: 1px solid #e2e8f0; overflow-y: auto;">
-                    <div style="padding: 12px 8px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0;">
-                        Danh Sách
-                    </div>
-                    <div id="userList">
-                        <div style="padding: 20px; text-align: center; color: #64748b; font-size: 12px;">
-                            Đang tải...
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Chat Area -->
-                <div style="flex: 1; display: flex; flex-direction: column;">
-                    <div id="chatHeader" style="padding: 12px 16px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; color: #475569;">
-                        Chọn người để chat
-                    </div>
-                    <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 12px; background: white;">
-                        <div id="chatWelcome" style="text-align: center; color: #64748b; margin: 40px 0; font-size: 14px;">
-                            Chọn một người trong danh sách để bắt đầu trò chuyện
-                        </div>
-                    </div>
-                    <div id="chatInput" style="padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: none;">
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." 
-                                   style="flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 20px; outline: none; font-size: 14px;">
-                            <button id="sendButton" style="background: #2563eb; color: white; border: none; padding: 10px 12px; border-radius: 50%; cursor: pointer; min-width: 40px;">
-                                📤
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(popup);
-        return popup;
-    }
-
-    async loadUserList() {
-        try {
-            const response = await utils.fetchAPI('?action=getEmployees');
-            const users = Array.isArray(response) ? response : 
-                         (response && typeof response === 'object') ? Object.values(response).filter(item => item && item.employeeId) : [];
-            
-            const userList = document.getElementById('userList');
-            if (!userList) return;
-            
-            if (users.length === 0) {
-                userList.innerHTML = '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 12px;">Không có người dùng</div>';
-                return;
-            }
-            
-            userList.innerHTML = users
-                .filter(user => user.employeeId !== this.user.employeeId) // Exclude self
-                .map(user => `
-                    <div class="user-item" data-user-id="${user.employeeId}" style="
-                        padding: 8px;
-                        cursor: pointer;
-                        border-bottom: 1px solid #e2e8f0;
-                        transition: background 0.2s;
-                        font-size: 12px;
-                    " onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">
-                        <div style="font-weight: 600; color: #374151; margin-bottom: 2px;">${user.fullName || user.employeeId}</div>
-                        <div style="color: #64748b; font-size: 10px;">${user.position || 'NV'}</div>
-                    </div>
-                `).join('');
-                
-            // Add click listeners
-            userList.querySelectorAll('.user-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const userId = item.dataset.userId;
-                    const userName = item.querySelector('div').textContent;
-                    this.selectChat(userId, userName);
-                });
-            });
-            
-        } catch (error) {
-            console.error('Failed to load user list:', error);
-            const userList = document.getElementById('userList');
-            if (userList) {
-                userList.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444; font-size: 12px;">Lỗi tải danh sách</div>';
-            }
-        }
-    }
-
-    selectChat(userId, userName) {
-        this.currentChatWith = userId;
-        
-        // Update header
-        const chatHeader = document.getElementById('chatHeader');
-        if (chatHeader) {
-            chatHeader.textContent = `Chat với ${userName}`;
-        }
-        
-        // Show input area
-        const chatInput = document.getElementById('chatInput');
-        const chatWelcome = document.getElementById('chatWelcome');
-        if (chatInput) chatInput.style.display = 'block';
-        if (chatWelcome) chatWelcome.style.display = 'none';
-        
-        // Highlight selected user
-        document.querySelectorAll('.user-item').forEach(item => {
-            item.style.background = item.dataset.userId === userId ? '#dbeafe' : 'transparent';
-        });
-        
-        // Load chat history (for now, show welcome message)
-        this.displayChatMessages(userId);
-    }
-
-    displayChatMessages(userId) {
-        const chatMessages = document.getElementById('chatMessages');
-        if (!chatMessages) return;
-        
-        // For now, show a simple welcome message
-        // In a real implementation, you would load chat history from the server
-        chatMessages.innerHTML = `
-            <div style="text-align: center; color: #64748b; margin: 20px 0; font-size: 14px;">
-                Bắt đầu cuộc trò chuyện với ${userId}
-            </div>
-        `;
-    }
-
-    sendMessage() {
-        const input = document.getElementById('messageInput');
-        const chatMessages = document.getElementById('chatMessages');
-        
-        if (!input || !chatMessages || !this.currentChatWith) return;
-        
-        const message = input.value.trim();
-        if (!message) return;
-        
-        // Add message to chat (simplified - in real app, send to server)
-        const messageDiv = document.createElement('div');
-        messageDiv.style.cssText = `
-            margin: 8px 0;
-            padding: 8px 12px;
-            background: #2563eb;
-            color: white;
-            border-radius: 12px;
-            max-width: 80%;
-            margin-left: auto;
-            font-size: 14px;
-            word-wrap: break-word;
-        `;
-        messageDiv.textContent = message;
-        
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        input.value = '';
-        
-        // In a real implementation, you would send the message to the server here
-        console.log(`Sending message to ${this.currentChatWith}: ${message}`);
-        
-        // Simulate reply (for demo purposes)
-        setTimeout(() => {
-            const replyDiv = document.createElement('div');
-            replyDiv.style.cssText = `
-                margin: 8px 0;
-                padding: 8px 12px;
-                background: #f1f5f9;
-                color: #374151;
-                border-radius: 12px;
-                max-width: 80%;
-                margin-right: auto;
-                font-size: 14px;
-                word-wrap: break-word;
-            `;
-            replyDiv.textContent = `Đã nhận tin nhắn: "${message}"`;
-            chatMessages.appendChild(replyDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 1000);
     }
 
     initialize() {
-        const button = document.getElementById('openChatButton');
-        const popup = document.getElementById('chatPopup');
-        const closeBtn = document.getElementById('closeChatButton');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
+        if (!this.elements.openButton || !this.elements.popup) return;
+        this.setupEventListeners();
+    }
 
-        // Toggle chat popup
-        button?.addEventListener('click', () => {
-            const isVisible = popup.style.display === 'block';
-            popup.style.display = isVisible ? 'none' : 'block';
-        });
-
-        // Close chat popup
-        closeBtn?.addEventListener('click', () => {
-            popup.style.display = 'none';
-        });
-
-        // Send message on Enter
-        messageInput?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+    setupEventListeners() {
+        this.elements.openButton.addEventListener("click", () => this.toggleChat());
+        this.elements.sendButton?.addEventListener("click", () => this.sendMessage());
+        this.elements.input?.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
                 this.sendMessage();
             }
         });
+    }
 
-        // Send message on button click
-        sendButton?.addEventListener('click', () => {
-            this.sendMessage();
-        });
+    toggleChat() {
+        const isVisible = this.elements.popup.style.display === "flex";
+        this.elements.popup.style.display = isVisible ? "none" : "flex";
+        
+        if (!isVisible) {
+            this.elements.input?.focus();
+            this.loadMessages();
+        }
+    }
 
-        // Close when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!popup.contains(e.target) && !button.contains(e.target)) {
-                popup.style.display = 'none';
-            }
-        });
+    async sendMessage() {
+        const message = this.elements.input?.value.trim();
+        if (!message) return;
+
+        try {
+            await utils.fetchAPI('?action=sendMessage', {
+                method: 'POST',
+                body: JSON.stringify({
+                    message,
+                    employeeId: this.user.employeeId
+                })
+            });
+
+            this.elements.input.value = "";
+            this.appendMessage({
+                message,
+                sender: this.user.fullName,
+                time: new Date()
+            });
+        } catch (error) {
+            utils.showNotification("Không thể gửi tin nhắn", "error");
+        }
+    }
+
+    async loadMessages() {
+        try {
+            const messages = await utils.fetchAPI('?action=getMessages');
+            this.elements.messages.innerHTML = '';
+            messages.forEach(msg => this.appendMessage(msg));
+        } catch (error) {
+            console.error('Failed to load messages:', error);
+        }
+    }
+
+    appendMessage(msg) {
+        const messageEl = document.createElement("div");
+        messageEl.className = `message ${msg.sender === this.user.fullName ? 'user-message' : 'other-message'}`;
+        messageEl.innerHTML = `
+            <div class="message-content">${utils.escapeHtml(msg.message)}</div>
+            <div class="message-info">
+                <span class="message-sender">${utils.escapeHtml(msg.sender)}</span>
+                <span class="message-time">${utils.formatDate(msg.time)}</span>
+            </div>
+        `;
+        this.elements.messages.appendChild(messageEl);
+        this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
     }
 }
 
@@ -3160,6 +2954,12 @@ function showWelcomeSection() {
         return;
     }
     
+    // Get user role to show appropriate content
+    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    const userPosition = loggedInUser.position || 'NV';
+    
+    console.log('🔐 Showing welcome section for role:', userPosition);
+    
     // Replace content with welcome section HTML
     content.innerHTML = `
         <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
@@ -3225,22 +3025,177 @@ function showWelcomeSection() {
                 </div>
             </div>
 
-            <!-- Analytics Dashboard for Admin role -->
+            <!-- Advanced Analytics Dashboard for Admin -->
             <div class="analytics-section" data-role="AD">
                 <h2 class="section-title">Phân Tích Dữ Liệu</h2>
                 <div class="analytics-grid">
-                    <div class="chart-container">
-                        <h3 class="chart-title">Hiệu Suất Nhân Viên</h3>
-                        <div class="chart-placeholder">
-                            <span class="material-icons-round">bar_chart</span>
-                            <p>AD Analytics - Should be visible</p>
+                    <div class="chart-card">
+                        <h3>Hiệu Suất Nhân Viên</h3>
+                        <div class="chart-placeholder" id="performanceChart">
+                            <p>Đang tải biểu đồ...</p>
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <h3 class="chart-title">Xu Hướng Lương</h3>
-                        <div class="chart-placeholder">
-                            <span class="material-icons-round">trending_up</span>
-                            <p>Biểu đồ xu hướng lương theo tháng</p>
+                    <div class="chart-card">
+                        <h3>Lịch Làm Theo Tuần</h3>
+                        <div class="chart-placeholder" id="scheduleChart">
+                            <p>Đang tải biểu đồ...</p>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Thưởng/Phạt</h3>
+                        <div class="chart-placeholder" id="rewardsChart">
+                            <p>Đang tải biểu đồ...</p>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Doanh Thu</h3>
+                        <div class="chart-placeholder" id="revenueChart">
+                            <p>Đang tải biểu đồ...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Management for Managers -->
+            <div class="store-management-section" data-role="AD,QL">
+                <h2 class="section-title">Quản Lý Cửa Hàng</h2>
+                <div class="store-grid">
+                    <div class="store-card" data-store="ST001">
+                        <div class="store-header">
+                            <h3>Cửa Hàng Trung Tâm</h3>
+                            <span class="store-status active">Hoạt động</span>
+                        </div>
+                        <div class="store-stats">
+                            <div class="store-stat">
+                                <span class="stat-label">Nhân viên:</span>
+                                <span class="stat-value" id="store1Employees">-</span>
+                            </div>
+                            <div class="store-stat">
+                                <span class="stat-label">Ca làm hôm nay:</span>
+                                <span class="stat-value" id="store1Schedule">-</span>
+                            </div>
+                        </div>
+                        <div class="store-actions">
+                            <button class="btn-sm btn-primary" onclick="manageStore('ST001')">Quản Lý</button>
+                            <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST001')">Xem Lịch</button>
+                        </div>
+                    </div>
+                    <div class="store-card" data-store="ST002">
+                        <div class="store-header">
+                            <h3>Cửa Hàng Quận 1</h3>
+                            <span class="store-status active">Hoạt động</span>
+                        </div>
+                        <div class="store-stats">
+                            <div class="store-stat">
+                                <span class="stat-label">Nhân viên:</span>
+                                <span class="stat-value" id="store2Employees">-</span>
+                            </div>
+                            <div class="store-stat">
+                                <span class="stat-label">Ca làm hôm nay:</span>
+                                <span class="stat-value" id="store2Schedule">-</span>
+                            </div>
+                        </div>
+                        <div class="store-actions">
+                            <button class="btn-sm btn-primary" onclick="manageStore('ST002')">Quản Lý</button>
+                            <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST002')">Xem Lịch</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="activities-section">
+                <h2 class="section-title">Hoạt Động Gần Đây</h2>
+                <div class="activities-container">
+                    <div id="recentActivities" class="activities-list">
+                        <p class="loading-text">Đang tải hoạt động...</p>
+                    </div>
+                    <div class="activities-footer">
+                        <button class="btn-outline" onclick="loadMoreActivities()">Xem thêm</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Finance Overview for Admin -->
+            <div class="finance-section" data-role="AD">
+                <h2 class="section-title">Tổng Quan Tài Chính</h2>
+                <div class="finance-grid">
+                    <div class="finance-card revenue">
+                        <div class="finance-header">
+                            <h3>Doanh Thu Tháng</h3>
+                            <span class="finance-trend up">↗ +12%</span>
+                        </div>
+                        <div class="finance-amount" id="monthlyRevenue">0 ₫</div>
+                        <div class="finance-subtitle">So với tháng trước</div>
+                    </div>
+                    <div class="finance-card expense">
+                        <div class="finance-header">
+                            <h3>Chi Phí Tháng</h3>
+                            <span class="finance-trend down">↘ -5%</span>
+                        </div>
+                        <div class="finance-amount" id="monthlyExpense">0 ₫</div>
+                        <div class="finance-subtitle">Tiết kiệm được</div>
+                    </div>
+                    <div class="finance-card profit">
+                        <div class="finance-header">
+                            <h3>Lợi Nhuận</h3>
+                            <span class="finance-trend up">↗ +18%</span>
+                        </div>
+                        <div class="finance-amount" id="monthlyProfit">0 ₫</div>
+                        <div class="finance-subtitle">Tăng trưởng tốt</div>
+                    </div>
+                    <div class="finance-card payroll">
+                        <div class="finance-header">
+                            <h3>Lương Nhân Viên</h3>
+                            <span class="finance-trend neutral">→ 0%</span>
+                        </div>
+                        <div class="finance-amount" id="monthlyPayroll">0 ₫</div>
+                        <div class="finance-subtitle">Ổn định</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Approval for Admin and Managers -->
+            <div class="registration-approval-section" data-role="AD,QL">
+                <h2 class="section-title">Duyệt Đăng Ký Nhân Viên</h2>
+                <div class="approval-container">
+                    <div class="approval-header">
+                        <div class="approval-filters">
+                            <select id="storeFilter" class="filter-select">
+                                <option value="">Tất cả cửa hàng</option>
+                            </select>
+                            <button id="refreshPendingBtn" class="refresh-btn">
+                                <span class="material-icons-round">refresh</span>
+                                Làm mới
+                            </button>
+                        </div>
+                    </div>
+                    <div id="pendingRegistrationsList" class="registrations-list">
+                        <p class="loading-text">Đang tải danh sách...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Dashboard for Employees -->
+            <div class="personal-section" data-role="NV,AM">
+                <h2 class="section-title">Thông Tin Cá Nhân</h2>
+                <div class="personal-grid">
+                    <div class="personal-card schedule">
+                        <h3>Lịch Làm Tuần Này</h3>
+                        <div id="personalSchedule" class="schedule-preview">
+                            <p>Đang tải lịch làm...</p>
+                        </div>
+                    </div>
+                    <div class="personal-card rewards">
+                        <h3>Thưởng/Phạt Gần Đây</h3>
+                        <div id="personalRewards" class="rewards-preview">
+                            <p>Đang tải thông tin...</p>
+                        </div>
+                    </div>
+                    <div class="personal-card tasks">
+                        <h3>Yêu Cầu Của Tôi</h3>
+                        <div id="personalTasks" class="tasks-preview">
+                            <p>Đang tải yêu cầu...</p>
                         </div>
                     </div>
                 </div>
@@ -3253,6 +3208,8 @@ function showWelcomeSection() {
     // Re-initialize dashboard stats and role-based UI
     setTimeout(() => {
         getDashboardStats();
+        initializeRoleBasedUI(); // Apply role-based visibility
+        initializeQuickActions(); // Re-setup quick action handlers
         refreshUserRoleAndPermissions();
     }, 100);
 }
