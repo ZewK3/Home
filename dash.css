@@ -3580,3 +3580,257 @@ body {
 [data-theme="dark"] .message-time {
     color: #94a3b8;
 }
+
+/* Original Chat Button and Popup Styles */
+/* Nút mở chat */
+.message-sender:hover {
+    text-decoration: underline;
+    color: #ff6b6b;
+    transition: color var(--transition-default);
+}
+
+#botInfoDiv {
+    position: fixed;
+    top: 45%;
+    right: 5%;
+    max-width: 300px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+    display: none;
+}
+
+.bot-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bot-info-table th,
+.bot-info-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.bot-info-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+/* Original Chat Button Override */
+#openChatButton {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    background-color: var(--primary-color, #2563eb) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 24px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    z-index: 9999 !important;
+    transition: all var(--transition, 0.3s) !important;
+    animation: pulse 2s infinite !important;
+}
+
+#openChatButton:hover {
+    background-color: #357abd !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3) !important;
+}
+
+#openChatButton:active {
+    transform: scale(0.95) !important;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Original Chat Popup Override */
+#chatPopup {
+    position: fixed !important;
+    bottom: 90px !important;
+    right: 20px !important;
+    width: 350px !important;
+    height: 450px !important;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    display: none !important;
+    flex-direction: column !important;
+    z-index: 9998 !important;
+    border: 1px solid #e0e0e0 !important;
+    overflow: hidden !important;
+}
+
+#chatPopup.show {
+    display: flex !important;
+    animation: slideUpChat 0.3s ease-out !important;
+}
+
+@keyframes slideUpChat {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-header,
+#chatHeader {
+    background: linear-gradient(135deg, var(--primary-color, #2563eb), #1e40af) !important;
+    color: white !important;
+    padding: 15px !important;
+    text-align: center !important;
+    font-weight: 600 !important;
+    position: relative !important;
+}
+
+.chat-header .close-button,
+#chatHeader .close-button {
+    position: absolute !important;
+    right: 15px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: none !important;
+    border: none !important;
+    color: white !important;
+    font-size: 18px !important;
+    cursor: pointer !important;
+    opacity: 0.8 !important;
+    transition: opacity 0.2s !important;
+}
+
+.chat-header .close-button:hover,
+#chatHeader .close-button:hover {
+    opacity: 1 !important;
+}
+
+.chat-messages,
+#chatMessages {
+    flex: 1 !important;
+    padding: 15px !important;
+    overflow-y: auto !important;
+    background: #f8f9fa !important;
+    max-height: 300px !important;
+}
+
+.chat-input,
+#chatInput {
+    padding: 15px !important;
+    border-top: 1px solid #e0e0e0 !important;
+    display: flex !important;
+    gap: 10px !important;
+    background: white !important;
+}
+
+.chat-input input,
+#chatInput input,
+#messageInput {
+    flex: 1 !important;
+    padding: 10px 15px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 25px !important;
+    outline: none !important;
+    font-size: 14px !important;
+}
+
+.chat-input input:focus,
+#chatInput input:focus,
+#messageInput:focus {
+    border-color: var(--primary-color, #2563eb) !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important;
+}
+
+.chat-send-btn,
+#sendButton {
+    background: var(--primary-color, #2563eb) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 25px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: background-color 0.2s !important;
+}
+
+.chat-send-btn:hover,
+#sendButton:hover {
+    background: #1e40af !important;
+}
+
+/* Dark theme support for original chat */
+[data-theme="dark"] #chatPopup {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+[data-theme="dark"] .chat-messages,
+[data-theme="dark"] #chatMessages {
+    background: #0f172a !important;
+}
+
+[data-theme="dark"] .chat-input,
+[data-theme="dark"] #chatInput {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+[data-theme="dark"] .chat-input input,
+[data-theme="dark"] #chatInput input,
+[data-theme="dark"] #messageInput {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: white !important;
+}
+
+[data-theme="dark"] .other-message {
+    background: #334155 !important;
+    color: white !important;
+    border-color: #475569 !important;
+}
+
+/* Mobile responsive for original chat */
+@media (max-width: 768px) {
+    #chatPopup {
+        width: calc(100vw - 40px) !important;
+        right: 20px !important;
+        left: 20px !important;
+        max-width: 350px !important;
+        margin: 0 auto !important;
+    }
+    
+    #openChatButton {
+        bottom: 10px !important;
+        right: 10px !important;
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 20px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #chatPopup {
+        bottom: 70px !important;
+        height: 350px !important;
+        width: calc(100vw - 20px) !important;
+        left: 10px !important;
+        right: 10px !important;
+    }
+}

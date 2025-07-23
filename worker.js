@@ -300,13 +300,22 @@ async function getUser(url, db, origin) {
   if (session instanceof Response) return session;
 
   const user = await db
-    .prepare("SELECT name, email, exp, rank FROM users WHERE id = ?")
+    .prepare("SELECT employeeId, fullName, storeName, position, phone, email, joinDate FROM employees WHERE employeeId = ?")
     .bind(session.employeeId)
     .first();
 
   if (!user) return jsonResponse({ message: "Người dùng không tồn tại!" }, 404, origin);
 
-  return jsonResponse({ name: user.name, email: user.email, exp: user.exp, rank: user.rank }, 200, origin);
+  return jsonResponse({ 
+    employeeId: user.employeeId,
+    fullName: user.fullName,
+    storeName: user.storeName,
+    position: user.position,
+    phone: user.phone,
+    email: user.email,
+    joinDate: user.joinDate,
+    status: 'active' // Default status for compatibility
+  }, 200, origin);
 }
 
 // Hàm cập nhật thông tin người dùng (khách hàng)
@@ -1202,8 +1211,12 @@ async function handleGetDashboardStats(db, origin) {
 }
 
 // Hàm lấy hoạt động gần đây
-async function handleGetRecentActivities(db, origin) {
+async function handleGetRecentActivities(url, db, origin) {
   try {
+    const token = url.searchParams.get("token");
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
     const activities = await db
       .prepare("SELECT employeeId, fullName, position, message, time FROM messages ORDER BY time DESC LIMIT 15")
       .all();
@@ -1844,7 +1857,7 @@ export default {
           case "getDashboardStats":
             return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
           case "getRecentActivities":
-            return await handleGetRecentActivities(db, ALLOWED_ORIGIN);
+            return await handleGetRecentActivities(url, db, ALLOWED_ORIGIN);
           case "getRewards":
             return await handleGetRewards(url, db, ALLOWED_ORIGIN);
           case "getTasks":
