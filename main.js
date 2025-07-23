@@ -103,7 +103,7 @@ function showNotification(message, type, duration) {
 // Enhanced Chat Manager Implementation
 class ChatManager {
     constructor(user) {
-        console.log('Initializing ChatManager for user:', user);
+        console.log('💬 ChatManager: Initializing chat system for user:', user.fullName);
         this.user = user;
         this.apiUrl = "https://zewk.tocotoco.workers.dev/";
         this.offset = 0;
@@ -117,7 +117,7 @@ class ChatManager {
         this.chatMessages = document.getElementById("chatMessages");
         this.sendButton = document.getElementById("sendButton");
 
-        console.log('Chat elements found:', {
+        console.log('💬 Chat elements found:', {
             openChatButton: !!this.openChatButton,
             chatPopup: !!this.chatPopup,
             messageInput: !!this.messageInput,
@@ -125,7 +125,25 @@ class ChatManager {
             sendButton: !!this.sendButton
         });
 
+        if (!this.openChatButton) {
+            console.error('❌ ChatManager: Chat button not found in DOM!');
+            // Try to create chat button if it doesn't exist
+            this.createChatButton();
+        }
+
         this.initialize();
+    }
+
+    createChatButton() {
+        console.log('🔧 ChatManager: Creating missing chat button');
+        const chatButton = document.createElement('button');
+        chatButton.id = 'openChatButton';
+        chatButton.className = 'chat-button';
+        chatButton.title = 'Mở chat';
+        chatButton.innerHTML = '<span class="chat-icon">💬</span>';
+        document.body.appendChild(chatButton);
+        this.openChatButton = chatButton;
+        console.log('✅ ChatManager: Chat button created successfully');
     }
 
     initialize() {
@@ -2122,6 +2140,8 @@ class ContentManager {
 // Menu Manager
 class MenuManager {
     static updateMenuByRole(userRole) {
+        console.log('🔧 MenuManager: Updating menu visibility for role:', userRole);
+        
         // Use hierarchical permission system - same as initializeRoleBasedUI
         const roleMap = {
             'AD': ['AD', 'QL', 'AM', 'NV'],  // Admin can access all functions
@@ -2131,12 +2151,25 @@ class MenuManager {
         };
         
         const userRoles = roleMap[userRole] || ['NV'];
+        console.log('🎯 User accessible roles:', userRoles);
         
+        let visibleMenus = 0;
         document.querySelectorAll("#menuList .menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
             const hasAccess = allowedRoles.some(role => userRoles.includes(role));
-            item.style.display = hasAccess ? "block" : "none";
+            const menuText = item.querySelector('.menu-link')?.textContent || 'Unknown';
+            
+            if (hasAccess) {
+                item.style.display = "block";
+                visibleMenus++;
+                console.log('✅ Showing menu:', menuText, 'for roles:', allowedRoles);
+            } else {
+                item.style.display = "none";
+                console.log('❌ Hiding menu:', menuText, 'for roles:', allowedRoles);
+            }
         });
+        
+        console.log(`📊 Total visible menus for ${userRole}:`, visibleMenus);
         this.updateSubmenusByRole(userRole);
     }
 
@@ -2620,10 +2653,20 @@ function setupMobileMenu() {
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
+        // Get user data to initialize role-based features
+        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        const userPosition = loggedInUser.position || 'NV';
+        
+        console.log('🚀 Initializing enhanced dashboard for role:', userPosition);
+        
         // Initialize all dashboard components
         await initializeDashboardStats();
         await initializeRecentActivities();
+        
+        // Initialize role-based UI and menu visibility
         initializeRoleBasedUI();
+        MenuManager.updateMenuByRole(userPosition);
+        
         initializeQuickActions();
         await initializePersonalDashboard();
         await initializeFinanceDashboard();
@@ -2633,6 +2676,7 @@ async function initializeEnhancedDashboard() {
         // Theme switching is handled by ThemeManager.initialize()
         
         utils.showNotification('Dashboard đã được tải thành công', 'success');
+        console.log('✅ Dashboard initialization complete for role:', userPosition);
     } catch (error) {
         console.error('Failed to initialize enhanced dashboard:', error);
         utils.showNotification('Có lỗi khi tải dashboard', 'error');
