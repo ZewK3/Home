@@ -100,15 +100,17 @@ function showNotification(message, type, duration) {
     utils.showNotification(message, type, duration);
 }
 
-// Enhanced Chat Manager Implementation
-// Simple Chat Manager based on user's original code
+// Person-to-Person Chat Manager Implementation  
 class ChatManager {
     constructor(user) {
         this.user = user;
         this.apiUrl = "https://zewk.tocotoco.workers.dev/";
+        this.activeChats = new Map(); // Store active conversations
+        this.currentChatWith = null; // Currently selected chat partner
         this.createChatButton();
         this.createChatPopup(); 
         this.initialize();
+        this.loadUserList();
     }
 
     createChatButton() {
@@ -119,7 +121,7 @@ class ChatManager {
         const button = document.createElement('button');
         button.id = 'openChatButton';
         button.className = 'chat-button';
-        button.innerHTML = '💬 Chat Hỗ Trợ';
+        button.innerHTML = '💬 Tin Nhắn';
         button.style.cssText = `
             position: fixed;
             bottom: 20px;
@@ -137,6 +139,16 @@ class ChatManager {
             transition: all 0.3s ease;
         `;
         
+        button.addEventListener('mouseenter', () => {
+            button.style.transform = 'scale(1.05)';
+            button.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.4)';
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.3)';
+        });
+        
         document.body.appendChild(button);
         return button;
     }
@@ -153,41 +165,198 @@ class ChatManager {
             position: fixed;
             bottom: 80px;
             right: 20px;
-            width: 350px;
-            height: 400px;
+            width: 380px;
+            height: 500px;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             display: none;
             z-index: 9998;
             border: 1px solid rgba(37, 99, 235, 0.2);
+            overflow: hidden;
         `;
 
         popup.innerHTML = `
-            <div style="background: #2563eb; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; font-size: 16px;">💬 Chat Hỗ Trợ</h3>
-                <button id="closeChatButton" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Đóng chat">✕</button>
+            <div style="background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600;">💬 Trò Chuyện</h3>
+                <button id="closeChatButton" style="background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; font-size: 16px; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;" title="Đóng chat">✕</button>
             </div>
-            <div id="chatMessages" style="height: 280px; overflow-y: auto; padding: 15px; background: white;">
-                <div style="text-align: center; color: #666; margin: 20px 0;">
-                    Chào mừng bạn đến với hệ thống chat hỗ trợ!<br>
-                    Nhập tin nhắn của bạn bên dưới.
+            
+            <div style="display: flex; height: 420px;">
+                <!-- User List Panel -->
+                <div id="userListPanel" style="width: 130px; background: #f8fafc; border-right: 1px solid #e2e8f0; overflow-y: auto;">
+                    <div style="padding: 12px 8px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #e2e8f0;">
+                        Danh Sách
+                    </div>
+                    <div id="userList">
+                        <div style="padding: 20px; text-align: center; color: #64748b; font-size: 12px;">
+                            Đang tải...
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div style="padding: 15px; background: white; border-radius: 0 0 12px 12px; border-top: 1px solid #eee;">
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." 
-                           style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
-                    <button id="sendButton" style="background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 50%; cursor: pointer;">
-                        📤
-                    </button>
+                
+                <!-- Chat Area -->
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div id="chatHeader" style="padding: 12px 16px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-size: 14px; font-weight: 600; color: #475569;">
+                        Chọn người để chat
+                    </div>
+                    <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 12px; background: white;">
+                        <div id="chatWelcome" style="text-align: center; color: #64748b; margin: 40px 0; font-size: 14px;">
+                            Chọn một người trong danh sách để bắt đầu trò chuyện
+                        </div>
+                    </div>
+                    <div id="chatInput" style="padding: 12px; background: white; border-top: 1px solid #e2e8f0; display: none;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." 
+                                   style="flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 20px; outline: none; font-size: 14px;">
+                            <button id="sendButton" style="background: #2563eb; color: white; border: none; padding: 10px 12px; border-radius: 50%; cursor: pointer; min-width: 40px;">
+                                📤
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
 
         document.body.appendChild(popup);
         return popup;
+    }
+
+    async loadUserList() {
+        try {
+            const response = await utils.fetchAPI('?action=getEmployees');
+            const users = Array.isArray(response) ? response : 
+                         (response && typeof response === 'object') ? Object.values(response).filter(item => item && item.employeeId) : [];
+            
+            const userList = document.getElementById('userList');
+            if (!userList) return;
+            
+            if (users.length === 0) {
+                userList.innerHTML = '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 12px;">Không có người dùng</div>';
+                return;
+            }
+            
+            userList.innerHTML = users
+                .filter(user => user.employeeId !== this.user.employeeId) // Exclude self
+                .map(user => `
+                    <div class="user-item" data-user-id="${user.employeeId}" style="
+                        padding: 8px;
+                        cursor: pointer;
+                        border-bottom: 1px solid #e2e8f0;
+                        transition: background 0.2s;
+                        font-size: 12px;
+                    " onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">
+                        <div style="font-weight: 600; color: #374151; margin-bottom: 2px;">${user.fullName || user.employeeId}</div>
+                        <div style="color: #64748b; font-size: 10px;">${user.position || 'NV'}</div>
+                    </div>
+                `).join('');
+                
+            // Add click listeners
+            userList.querySelectorAll('.user-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const userId = item.dataset.userId;
+                    const userName = item.querySelector('div').textContent;
+                    this.selectChat(userId, userName);
+                });
+            });
+            
+        } catch (error) {
+            console.error('Failed to load user list:', error);
+            const userList = document.getElementById('userList');
+            if (userList) {
+                userList.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444; font-size: 12px;">Lỗi tải danh sách</div>';
+            }
+        }
+    }
+
+    selectChat(userId, userName) {
+        this.currentChatWith = userId;
+        
+        // Update header
+        const chatHeader = document.getElementById('chatHeader');
+        if (chatHeader) {
+            chatHeader.textContent = `Chat với ${userName}`;
+        }
+        
+        // Show input area
+        const chatInput = document.getElementById('chatInput');
+        const chatWelcome = document.getElementById('chatWelcome');
+        if (chatInput) chatInput.style.display = 'block';
+        if (chatWelcome) chatWelcome.style.display = 'none';
+        
+        // Highlight selected user
+        document.querySelectorAll('.user-item').forEach(item => {
+            item.style.background = item.dataset.userId === userId ? '#dbeafe' : 'transparent';
+        });
+        
+        // Load chat history (for now, show welcome message)
+        this.displayChatMessages(userId);
+    }
+
+    displayChatMessages(userId) {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        // For now, show a simple welcome message
+        // In a real implementation, you would load chat history from the server
+        chatMessages.innerHTML = `
+            <div style="text-align: center; color: #64748b; margin: 20px 0; font-size: 14px;">
+                Bắt đầu cuộc trò chuyện với ${userId}
+            </div>
+        `;
+    }
+
+    sendMessage() {
+        const input = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        if (!input || !chatMessages || !this.currentChatWith) return;
+        
+        const message = input.value.trim();
+        if (!message) return;
+        
+        // Add message to chat (simplified - in real app, send to server)
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: #2563eb;
+            color: white;
+            border-radius: 12px;
+            max-width: 80%;
+            margin-left: auto;
+            font-size: 14px;
+            word-wrap: break-word;
+        `;
+        messageDiv.textContent = message;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        input.value = '';
+        
+        // In a real implementation, you would send the message to the server here
+        console.log(`Sending message to ${this.currentChatWith}: ${message}`);
+        
+        // Simulate reply (for demo purposes)
+        setTimeout(() => {
+            const replyDiv = document.createElement('div');
+            replyDiv.style.cssText = `
+                margin: 8px 0;
+                padding: 8px 12px;
+                background: #f1f5f9;
+                color: #374151;
+                border-radius: 12px;
+                max-width: 80%;
+                margin-right: auto;
+                font-size: 14px;
+                word-wrap: break-word;
+            `;
+            replyDiv.textContent = `Đã nhận tin nhắn: "${message}"`;
+            chatMessages.appendChild(replyDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1000);
     }
 
     initialize() {
@@ -226,64 +395,6 @@ class ChatManager {
                 popup.style.display = 'none';
             }
         });
-
-        // Add hover effects
-        button?.addEventListener('mouseenter', () => {
-            button.style.transform = 'scale(1.05)';
-            button.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.4)';
-        });
-
-        button?.addEventListener('mouseleave', () => {
-            button.style.transform = 'scale(1)';
-            button.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.3)';
-        });
-    }
-
-    sendMessage() {
-        const messageInput = document.getElementById('messageInput');
-        const chatMessages = document.getElementById('chatMessages');
-        
-        if (!messageInput || !chatMessages) return;
-        
-        const message = messageInput.value.trim();
-        if (!message) return;
-
-        // Add message to chat
-        const messageDiv = document.createElement('div');
-        messageDiv.style.cssText = `
-            background: #2563eb;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 15px;
-            margin: 5px 0;
-            max-width: 80%;
-            margin-left: auto;
-            text-align: right;
-        `;
-        messageDiv.textContent = message;
-        chatMessages.appendChild(messageDiv);
-
-        // Clear input
-        messageInput.value = '';
-
-        // Auto-scroll
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        // Auto-reply (simulated)
-        setTimeout(() => {
-            const replyDiv = document.createElement('div');
-            replyDiv.style.cssText = `
-                background: #f3f4f6;
-                color: #374151;
-                padding: 8px 12px;
-                border-radius: 15px;
-                margin: 5px 0;
-                max-width: 80%;
-            `;
-            replyDiv.textContent = "Cảm ơn bạn đã gửi tin nhắn: \"" + message + "\". Đây là một tin nhắn test tự động.";
-            chatMessages.appendChild(replyDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }, 1000);
     }
 }
 
@@ -3041,33 +3152,107 @@ function getFieldDisplayName(field) {
 
 // Function to show welcome section when clicking HR Management System title
 function showWelcomeSection() {
-    console.log('📍 Attempting to show welcome section');
+    console.log('📍 Displaying welcome section content');
     
-    // Ensure dashboard content is visible first
-    showDashboardContent();
+    const content = document.getElementById('content');
+    if (!content) {
+        console.error('Content element not found');
+        return;
+    }
     
-    // Trigger the enhanced dashboard initialization to show default view
-    initializeEnhancedDashboard();
+    // Replace content with welcome section HTML
+    content.innerHTML = `
+        <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+        
+        <!-- Enhanced Dashboard Overview -->
+        <div class="welcome-section">
+            <!-- Main Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Tổng Nhân Viên</h3>
+                        <p id="totalEmployees">-</p>
+                        <span class="stat-trend">+2 tuần này</span>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <h3>Lịch Hôm Nay</h3>
+                        <p id="todaySchedule">-</p>
+                        <span class="stat-trend" id="todayScheduleDay">-</span>
+                    </div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-info">
+                        <h3>Yêu Cầu Chờ</h3>
+                        <p id="pendingRequests">-</p>
+                        <span class="stat-trend">Cần xử lý</span>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-info">
+                        <h3>Tin Nhắn Mới</h3>
+                        <p id="recentMessages">-</p>
+                        <span class="stat-trend">24h qua</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role-based Quick Actions -->
+            <div class="quick-actions-section" data-role="AD,QL">
+                <h2 class="section-title">Thao Tác Nhanh</h2>
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn" data-action="addEmployee" data-role="AD">
+                        <span class="action-icon">👤</span>
+                        <span class="action-text">Thêm Nhân Viên</span>
+                    </button>
+                    <button class="quick-action-btn" data-action="createSchedule" data-role="AD,QL">
+                        <span class="action-icon">📊</span>
+                        <span class="action-text">Tạo Lịch Làm</span>
+                    </button>
+                    <button class="quick-action-btn" data-action="manageRewards" data-role="AD,QL">
+                        <span class="action-icon">🏆</span>
+                        <span class="action-text">Quản Lý Thưởng</span>
+                    </button>
+                    <button class="quick-action-btn" data-action="viewReports" data-role="AD">
+                        <span class="action-icon">📈</span>
+                        <span class="action-text">Báo Cáo</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Analytics Dashboard for Admin role -->
+            <div class="analytics-section" data-role="AD">
+                <h2 class="section-title">Phân Tích Dữ Liệu</h2>
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Hiệu Suất Nhân Viên</h3>
+                        <div class="chart-placeholder">
+                            <span class="material-icons-round">bar_chart</span>
+                            <p>AD Analytics - Should be visible</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Xu Hướng Lương</h3>
+                        <div class="chart-placeholder">
+                            <span class="material-icons-round">trending_up</span>
+                            <p>Biểu đồ xu hướng lương theo tháng</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
     
-    // After a brief delay, scroll to the welcome section
+    console.log('✅ Welcome section HTML replaced');
+    
+    // Re-initialize dashboard stats and role-based UI
     setTimeout(() => {
-        const content = document.getElementById('content');
-        if (content) {
-            const welcomeSection = content.querySelector('.welcome-section');
-            if (welcomeSection) {
-                welcomeSection.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-                console.log('✅ Welcome section displayed and scrolled to');
-            } else {
-                // Just scroll to top of content
-                content.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-                console.log('✅ Scrolled to top of content');
-            }
-        }
+        getDashboardStats();
+        refreshUserRoleAndPermissions();
     }, 100);
 }
