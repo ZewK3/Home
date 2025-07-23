@@ -2281,6 +2281,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         new ChatManager(user);
         new ContentManager(user);
 
+        // Load dashboard stats immediately when page loads
+        console.log('🔄 Loading dashboard stats on page load...');
+        await getDashboardStats();
+        
+        // Ensure stats-grid is visible and updated
+        await updateStatsGrid();
+
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
 
@@ -2298,11 +2305,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
-async function initializeDashboardStats() {
+async function getDashboardStats() {
     console.log('🔄 Starting dashboard stats initialization...');
     
-    // First, ensure the welcome section is visible
+    // First, ensure the welcome section and stats-grid are visible
     const welcomeSection = document.querySelector('.welcome-section');
+    const statsGrid = document.querySelector('.stats-grid');
     const content = document.getElementById('content');
     
     if (welcomeSection) {
@@ -2310,6 +2318,13 @@ async function initializeDashboardStats() {
         console.log('✅ Welcome section made visible');
     } else {
         console.warn('⚠️ Welcome section not found in DOM');
+    }
+    
+    if (statsGrid) {
+        statsGrid.style.display = 'grid';
+        console.log('✅ Stats grid made visible');
+    } else {
+        console.warn('⚠️ Stats grid not found in DOM');
     }
     
     if (content) {
@@ -2423,6 +2438,39 @@ async function initializeDashboardStats() {
         // Show error notification
         utils.showNotification('Không thể tải thống kê dashboard', 'warning');
     }
+}
+
+// Function to specifically ensure stats-grid is visible and updated
+async function updateStatsGrid() {
+    console.log('📊 Updating stats-grid visibility and content...');
+    
+    const statsGrid = document.querySelector('.stats-grid');
+    const welcomeSection = document.querySelector('.welcome-section');
+    
+    if (statsGrid) {
+        statsGrid.style.display = 'grid';
+        statsGrid.style.visibility = 'visible';
+        console.log('✅ Stats-grid made visible');
+        
+        // Ensure all stat cards are visible
+        const statCards = statsGrid.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.display = 'block';
+            console.log(`✅ Stat card ${index + 1} made visible`);
+        });
+    } else {
+        console.warn('⚠️ Stats-grid not found in DOM');
+    }
+    
+    if (welcomeSection) {
+        welcomeSection.style.display = 'block';
+        welcomeSection.style.visibility = 'visible';
+        console.log('✅ Welcome section made visible');
+    }
+    
+    // Force a re-layout
+    await new Promise(resolve => setTimeout(resolve, 50));
+    console.log('✅ Stats-grid update complete');
 }
 
 // Initialize Recent Activities - Display static sample data instead of API call
@@ -2604,7 +2652,7 @@ function generateReports() {
 async function refreshDashboardStats() {
     try {
         utils.showNotification('Đang làm mới dữ liệu...', 'info');
-        await initializeDashboardStats();
+        await getDashboardStats();
         await loadReportData();
         
         // Ensure role permissions are refreshed after stats update
@@ -2877,7 +2925,7 @@ async function initializeEnhancedDashboard() {
         
         // Initialize all dashboard components
         console.log('📊 Initializing dashboard stats and role checking...');
-        await initializeDashboardStats(); // This will also call refreshUserRoleAndPermissions
+        await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
         await initializeRecentActivities();
         
         // Initialize role-based UI and menu visibility with fresh API data
