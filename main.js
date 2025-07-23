@@ -2443,6 +2443,12 @@ async function initializeDashboardStats() {
                 elements.todayScheduleDay.textContent = dayNames[stats.currentDay] || 'Hôm nay';
             }
         }
+        
+        console.log('✅ Dashboard stats loaded successfully');
+        
+        // Always run role checking after stats are loaded to ensure proper permissions
+        await refreshUserRoleAndPermissions();
+        
     } catch (error) {
         console.error('Failed to load dashboard stats:', error);
         // Set fallback values only if elements exist
@@ -2636,6 +2642,10 @@ async function refreshDashboardStats() {
         utils.showNotification('Đang làm mới dữ liệu...', 'info');
         await initializeDashboardStats();
         await loadReportData();
+        
+        // Ensure role permissions are refreshed after stats update
+        await refreshUserRoleAndPermissions();
+        
         utils.showNotification('Dữ liệu đã được cập nhật', 'success');
     } catch (error) {
         console.error('Error refreshing dashboard stats:', error);
@@ -2856,7 +2866,8 @@ async function initializeEnhancedDashboard() {
         });
         
         // Initialize all dashboard components
-        await initializeDashboardStats();
+        console.log('📊 Initializing dashboard stats and role checking...');
+        await initializeDashboardStats(); // This will also call refreshUserRoleAndPermissions
         await initializeRecentActivities();
         
         // Initialize role-based UI and menu visibility with fresh API data
@@ -2968,4 +2979,21 @@ function getFieldDisplayName(field) {
         'joinDate': 'Ngày gia nhập'
     };
     return displayNames[field] || field;
+}
+
+// Function to show welcome section when clicking HR Management System title
+function showWelcomeSection() {
+    const content = document.getElementById('content');
+    if (content) {
+        // Find the welcome section in the current content
+        const welcomeSection = content.querySelector('.welcome-section');
+        if (welcomeSection) {
+            // If welcome section exists, scroll to it
+            welcomeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            // If not, trigger the enhanced dashboard initialization to show default view
+            initializeEnhancedDashboard();
+        }
+        console.log('📍 Navigated to welcome section');
+    }
 }
