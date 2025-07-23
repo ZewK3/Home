@@ -442,7 +442,7 @@ body {
     width: 60px !important;
     height: 60px !important;
     border-radius: 50% !important;
-    background: var(--primary) !important;
+    background: var(--primary, #2563eb) !important;
     color: white !important;
     border: none !important;
     cursor: pointer !important;
@@ -451,8 +451,6 @@ body {
     justify-content: center !important;
     font-size: 24px !important;
     box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3) !important;
-    z-index: 9999 !important;
-    transition: all 0.3s ease !important;
     z-index: 9999 !important;
     transition: all 0.3s ease !important;
 }

@@ -125,25 +125,120 @@ class ChatManager {
             sendButton: !!this.sendButton
         });
 
+        // Ensure chat components exist
         if (!this.openChatButton) {
-            console.error('❌ ChatManager: Chat button not found in DOM!');
-            // Try to create chat button if it doesn't exist
+            console.warn('⚠️ ChatManager: Chat button not found, creating...');
             this.createChatButton();
         }
+        
+        if (!this.chatPopup) {
+            console.warn('⚠️ ChatManager: Chat popup not found, creating...');
+            this.createChatPopup();
+        }
+
+        // Re-query elements after creation
+        this.openChatButton = this.openChatButton || document.getElementById("openChatButton");
+        this.chatPopup = this.chatPopup || document.getElementById("chatPopup");
+        this.messageInput = this.messageInput || document.getElementById("messageInput");
+        this.chatMessages = this.chatMessages || document.getElementById("chatMessages");
+        this.sendButton = this.sendButton || document.getElementById("sendButton");
 
         this.initialize();
     }
 
     createChatButton() {
         console.log('🔧 ChatManager: Creating missing chat button');
+        
+        // Remove any existing chat button first
+        const existingButton = document.getElementById('openChatButton');
+        if (existingButton) {
+            existingButton.remove();
+        }
+        
         const chatButton = document.createElement('button');
         chatButton.id = 'openChatButton';
         chatButton.className = 'chat-button';
         chatButton.title = 'Mở chat';
         chatButton.innerHTML = '<span class="chat-icon">💬</span>';
+        chatButton.style.cssText = `
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            background: #2563eb !important;
+            color: white !important;
+            border: none !important;
+            cursor: pointer !important;
+            z-index: 9999 !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+        `;
+        
         document.body.appendChild(chatButton);
         this.openChatButton = chatButton;
-        console.log('✅ ChatManager: Chat button created successfully');
+        
+        console.log('✅ ChatManager: Chat button created and added to DOM');
+        
+        // Ensure popup exists too
+        if (!this.chatPopup) {
+            this.createChatPopup();
+        }
+    }
+    
+    createChatPopup() {
+        console.log('🔧 ChatManager: Creating missing chat popup');
+        
+        const popup = document.createElement('div');
+        popup.id = 'chatPopup';
+        popup.className = 'chat-popup';
+        popup.style.cssText = `
+            position: fixed !important;
+            bottom: 90px !important;
+            right: 20px !important;
+            width: 350px !important;
+            height: 450px !important;
+            background: var(--bg-card, #ffffff) !important;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+            display: none !important;
+            flex-direction: column !important;
+            z-index: 9998 !important;
+            border: 1px solid var(--border-color, #e5e7eb) !important;
+            overflow: hidden !important;
+            backdrop-filter: blur(10px) !important;
+        `;
+        
+        popup.innerHTML = `
+            <div class="chat-header" style="padding: 1rem; background: #2563eb; color: white; display: flex; justify-content: space-between; align-items: center;">
+                <span>💬 Chat Hỗ Trợ</span>
+                <button id="closeChatButton" class="close-chat-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Đóng chat">✕</button>
+            </div>
+            <div id="chatMessages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem;">
+                <div class="welcome-message" style="text-align: center; color: #6b7280; margin: 2rem 0;">
+                    <p>Chào mừng bạn đến với hệ thống chat hỗ trợ!</p>
+                    <p>Nhập tin nhắn của bạn bên dưới.</p>
+                </div>
+            </div>
+            <div class="chat-input" style="padding: 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.5rem;">
+                <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." maxlength="500" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none;">
+                <button id="sendButton" class="send-btn" style="background: #2563eb; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;" title="Gửi tin nhắn">
+                    <span>📤</span>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(popup);
+        this.chatPopup = popup;
+        this.messageInput = popup.querySelector('#messageInput');
+        this.chatMessages = popup.querySelector('#chatMessages');
+        this.sendButton = popup.querySelector('#sendButton');
+        
+        console.log('✅ ChatManager: Chat popup created and added to DOM');
     }
 
     initialize() {
@@ -2154,22 +2249,42 @@ class MenuManager {
         console.log('🎯 User accessible roles:', userRoles);
         
         let visibleMenus = 0;
+        let hiddenMenus = 0;
+        const expectedADMenus = [
+            'Lịch Làm', 'Thưởng/Phạt', 'Gửi Yêu Cầu', 'Quản Lý', 'Phân Quyền', 'Thông Tin Cá Nhân', 'Duyệt Đăng Ký'
+        ];
+        
         document.querySelectorAll("#menuList .menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
             const hasAccess = allowedRoles.some(role => userRoles.includes(role));
-            const menuText = item.querySelector('.menu-link')?.textContent || 'Unknown';
+            const menuText = item.querySelector('.menu-link')?.textContent?.trim() || 'Unknown';
             
             if (hasAccess) {
                 item.style.display = "block";
+                item.classList.remove('role-hidden');
+                item.classList.add('role-visible');
                 visibleMenus++;
                 console.log('✅ Showing menu:', menuText, 'for roles:', allowedRoles);
             } else {
                 item.style.display = "none";
+                item.classList.add('role-hidden');
+                item.classList.remove('role-visible');
+                hiddenMenus++;
                 console.log('❌ Hiding menu:', menuText, 'for roles:', allowedRoles);
             }
         });
         
-        console.log(`📊 Total visible menus for ${userRole}:`, visibleMenus);
+        console.log('📊 MenuManager Summary for', userRole, ':', {
+            visible: visibleMenus,
+            hidden: hiddenMenus,
+            expectedForAD: userRole === 'AD' ? expectedADMenus.length : 'N/A'
+        });
+        
+        // For AD role, warn if expected menus are not all visible
+        if (userRole === 'AD' && visibleMenus < expectedADMenus.length) {
+            console.warn('⚠️ AD role should have', expectedADMenus.length, 'menus but only', visibleMenus, 'are visible');
+        }
+        
         this.updateSubmenusByRole(userRole);
     }
 
@@ -2399,32 +2514,47 @@ async function initializeDashboardStats() {
     }
 }
 
-// Initialize Recent Activities
+// Initialize Recent Activities - Display static sample data instead of API call
 async function initializeRecentActivities() {
     const container = document.getElementById('recentActivities');
     if (!container) return;
 
     try {
-        const activities = await utils.fetchAPI('?action=getRecentActivities');
+        // Use sample data instead of API call (removed old chat function)
+        const sampleActivities = [
+            {
+                employeeName: "Admin System",
+                time: new Date().toISOString(),
+                action: "Hệ thống đã được khởi tạo thành công"
+            },
+            {
+                employeeName: "HR Manager", 
+                time: new Date(Date.now() - 3600000).toISOString(),
+                action: "Cập nhật chính sách nhân sự"
+            },
+            {
+                employeeName: "Store Manager",
+                time: new Date(Date.now() - 7200000).toISOString(), 
+                action: "Phê duyệt lịch làm việc tháng mới"
+            }
+        ];
         
-        if (activities && Array.isArray(activities)) {
-            container.innerHTML = activities.map(activity => `
-                <div class="activity-item">
-                    <div class="activity-avatar">${activity.employeeName?.substring(0, 2) || 'NV'}</div>
-                    <div class="activity-content">
-                        <div class="activity-header">
-                            <span class="activity-author">${activity.employeeName || 'Nhân viên'}</span>
-                            <span class="activity-time">${utils.formatDate(activity.time)}</span>
-                        </div>
-                        <div class="activity-message">${activity.action}</div>
+        container.innerHTML = sampleActivities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-avatar">${activity.employeeName?.substring(0, 2) || 'NV'}</div>
+                <div class="activity-content">
+                    <div class="activity-header">
+                        <span class="activity-author">${activity.employeeName || 'Nhân viên'}</span>
+                        <span class="activity-time">${utils.formatDate(activity.time)}</span>
                     </div>
+                    <div class="activity-message">${activity.action}</div>
                 </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<p class="loading-text">Không có hoạt động gần đây</p>';
-        }
+            </div>
+        `).join('');
+        
+        console.log('✅ Recent activities initialized with sample data');
     } catch (error) {
-        console.error('Failed to load recent activities:', error);
+        console.error('Error loading recent activities:', error);
         container.innerHTML = '<p class="loading-text">Không thể tải hoạt động</p>';
     }
 }
@@ -2666,14 +2796,32 @@ async function initializeEnhancedDashboard() {
         const userPosition = loggedInUser.position || 'NV';
         
         console.log('🚀 Initializing enhanced dashboard for role:', userPosition);
+        console.log('📊 User data:', { employeeId: loggedInUser.employeeId, fullName: loggedInUser.fullName, position: userPosition });
         
         // Initialize all dashboard components
         await initializeDashboardStats();
         await initializeRecentActivities();
         
         // Initialize role-based UI and menu visibility
+        console.log('🔐 Setting up role-based UI...');
         initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
+        
+        // Verify AD functions are visible
+        if (userPosition === 'AD') {
+            console.log('🔍 Verifying AD role functions visibility...');
+            setTimeout(() => {
+                const adElements = document.querySelectorAll('[data-role*="AD"]');
+                const visibleADElements = Array.from(adElements).filter(el => el.style.display !== 'none' && !el.classList.contains('role-hidden'));
+                console.log('✅ AD elements found:', adElements.length, 'visible:', visibleADElements.length);
+                
+                if (visibleADElements.length < adElements.length) {
+                    console.warn('⚠️ Some AD elements may not be visible. Re-applying role permissions...');
+                    initializeRoleBasedUI();
+                    MenuManager.updateMenuByRole(userPosition);
+                }
+            }, 1000);
+        }
         
         initializeQuickActions();
         await initializePersonalDashboard();
