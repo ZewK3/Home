@@ -1,6 +1,6 @@
 // Constants and Configuration
 const CONFIG = {
-    API_URL: "https://zewk.fun/Worker",
+    API_URL: "https://zewk.tocotoco.workers.dev",
     STORAGE_KEYS: {
         AUTH_TOKEN: "authToken",
         USER_DATA: "loggedInUser",
@@ -93,7 +93,7 @@ class ChatManager {
     constructor(user) {
         console.log('Initializing ChatManager for user:', user);
         this.user = user;
-        this.apiUrl = "https://zewk.fun/Worker/";
+        this.apiUrl = "https://zewk.tocotoco.workers.dev/";
         this.offset = 0;
         this.limit = 50;
         this.lastId = 0;
