@@ -3198,6 +3198,26 @@ body {
     display: block !important;
 }
 
+/* Specific display types for role-visible elements */
+.role-visible.quick-actions-section,
+.role-visible.analytics-section,
+.role-visible.store-management-section,
+.role-visible.finance-section {
+    display: block !important;
+}
+
+.role-visible.menu-item {
+    display: block !important;
+}
+
+.role-visible.submenu-item {
+    display: block !important;
+}
+
+.role-visible.quick-action-btn {
+    display: inline-flex !important;
+}
+
 /* Enhanced responsive design */
 @media (max-width: 1200px) {
     .analytics-grid {
