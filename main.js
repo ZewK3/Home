@@ -101,294 +101,189 @@ function showNotification(message, type, duration) {
 }
 
 // Enhanced Chat Manager Implementation
+// Simple Chat Manager based on user's original code
 class ChatManager {
     constructor(user) {
-        console.log('💬 ChatManager: Initializing chat system for user:', user.fullName);
         this.user = user;
         this.apiUrl = "https://zewk.tocotoco.workers.dev/";
-        this.offset = 0;
-        this.limit = 50;
-        this.lastId = 0;
-        this.loading = false;
-
-        this.openChatButton = document.getElementById("openChatButton");
-        this.chatPopup = document.getElementById("chatPopup");
-        this.messageInput = document.getElementById("messageInput");
-        this.chatMessages = document.getElementById("chatMessages");
-        this.sendButton = document.getElementById("sendButton");
-
-        console.log('💬 Chat elements found:', {
-            openChatButton: !!this.openChatButton,
-            chatPopup: !!this.chatPopup,
-            messageInput: !!this.messageInput,
-            chatMessages: !!this.chatMessages,
-            sendButton: !!this.sendButton
-        });
-
-        // Ensure chat components exist
-        if (!this.openChatButton) {
-            console.warn('⚠️ ChatManager: Chat button not found, creating...');
-            this.createChatButton();
-        }
-        
-        if (!this.chatPopup) {
-            console.warn('⚠️ ChatManager: Chat popup not found, creating...');
-            this.createChatPopup();
-        }
-
-        // Re-query elements after creation
-        this.openChatButton = this.openChatButton || document.getElementById("openChatButton");
-        this.chatPopup = this.chatPopup || document.getElementById("chatPopup");
-        this.messageInput = this.messageInput || document.getElementById("messageInput");
-        this.chatMessages = this.chatMessages || document.getElementById("chatMessages");
-        this.sendButton = this.sendButton || document.getElementById("sendButton");
-
+        this.createChatButton();
+        this.createChatPopup(); 
         this.initialize();
     }
 
     createChatButton() {
-        console.log('🔧 ChatManager: Creating missing chat button');
-        
-        // Remove any existing chat button first
-        const existingButton = document.getElementById('openChatButton');
-        if (existingButton) {
-            existingButton.remove();
-        }
-        
-        const chatButton = document.createElement('button');
-        chatButton.id = 'openChatButton';
-        chatButton.className = 'chat-button';
-        chatButton.title = 'Mở chat';
-        chatButton.innerHTML = '<span class="chat-icon">💬</span>';
-        chatButton.style.cssText = `
-            position: fixed !important;
-            bottom: 20px !important;
-            right: 20px !important;
-            width: 60px !important;
-            height: 60px !important;
-            border-radius: 50% !important;
-            background: #2563eb !important;
-            color: white !important;
-            border: none !important;
-            cursor: pointer !important;
-            z-index: 9999 !important;
-            transition: all 0.3s ease !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+        // Remove existing button
+        const existing = document.getElementById('openChatButton');
+        if (existing) existing.remove();
+
+        const button = document.createElement('button');
+        button.id = 'openChatButton';
+        button.className = 'chat-button';
+        button.innerHTML = '💬 Chat Hỗ Trợ';
+        button.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            z-index: 9999;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.3s ease;
         `;
         
-        document.body.appendChild(chatButton);
-        this.openChatButton = chatButton;
-        
-        console.log('✅ ChatManager: Chat button created and added to DOM');
-        
-        // Ensure popup exists too
-        if (!this.chatPopup) {
-            this.createChatPopup();
-        }
+        document.body.appendChild(button);
+        return button;
     }
-    
+
     createChatPopup() {
-        console.log('🔧 ChatManager: Creating missing chat popup');
-        
+        // Remove existing popup
+        const existing = document.getElementById('chatPopup');
+        if (existing) existing.remove();
+
         const popup = document.createElement('div');
         popup.id = 'chatPopup';
         popup.className = 'chat-popup';
         popup.style.cssText = `
-            position: fixed !important;
-            bottom: 90px !important;
-            right: 20px !important;
-            width: 350px !important;
-            height: 450px !important;
-            background: var(--bg-card, #ffffff) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
-            display: none !important;
-            flex-direction: column !important;
-            z-index: 9998 !important;
-            border: 1px solid var(--border-color, #e5e7eb) !important;
-            overflow: hidden !important;
-            backdrop-filter: blur(10px) !important;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 350px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            display: none;
+            z-index: 9998;
+            border: 1px solid rgba(37, 99, 235, 0.2);
         `;
-        
+
         popup.innerHTML = `
-            <div class="chat-header" style="padding: 1rem; background: #2563eb; color: white; display: flex; justify-content: space-between; align-items: center;">
-                <span>💬 Chat Hỗ Trợ</span>
-                <button id="closeChatButton" class="close-chat-btn" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Đóng chat">✕</button>
+            <div style="background: #2563eb; color: white; padding: 15px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px;">💬 Chat Hỗ Trợ</h3>
+                <button id="closeChatButton" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Đóng chat">✕</button>
             </div>
-            <div id="chatMessages" class="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem;">
-                <div class="welcome-message" style="text-align: center; color: #6b7280; margin: 2rem 0;">
-                    <p>Chào mừng bạn đến với hệ thống chat hỗ trợ!</p>
-                    <p>Nhập tin nhắn của bạn bên dưới.</p>
+            <div id="chatMessages" style="height: 280px; overflow-y: auto; padding: 15px; background: white;">
+                <div style="text-align: center; color: #666; margin: 20px 0;">
+                    Chào mừng bạn đến với hệ thống chat hỗ trợ!<br>
+                    Nhập tin nhắn của bạn bên dưới.
                 </div>
             </div>
-            <div class="chat-input" style="padding: 1rem; border-top: 1px solid #e5e7eb; display: flex; gap: 0.5rem;">
-                <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." maxlength="500" style="flex: 1; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none;">
-                <button id="sendButton" class="send-btn" style="background: #2563eb; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;" title="Gửi tin nhắn">
-                    <span>📤</span>
-                </button>
+            <div style="padding: 15px; background: white; border-radius: 0 0 12px 12px; border-top: 1px solid #eee;">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." 
+                           style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
+                    <button id="sendButton" style="background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 50%; cursor: pointer;">
+                        📤
+                    </button>
+                </div>
             </div>
         `;
-        
+
         document.body.appendChild(popup);
-        this.chatPopup = popup;
-        this.messageInput = popup.querySelector('#messageInput');
-        this.chatMessages = popup.querySelector('#chatMessages');
-        this.sendButton = popup.querySelector('#sendButton');
-        
-        console.log('✅ ChatManager: Chat popup created and added to DOM');
+        return popup;
     }
 
     initialize() {
-        this.setupEventListeners();
-        this.startMessagePolling();
-    }
+        const button = document.getElementById('openChatButton');
+        const popup = document.getElementById('chatPopup');
+        const closeBtn = document.getElementById('closeChatButton');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
 
-    setupEventListeners() {
-        if (!this.openChatButton) {
-            console.error('Chat button not found!');
-            return;
-        }
-        
-        console.log('Setting up chat event listeners');
-        this.openChatButton.addEventListener("click", () => this.toggleChatPopup());
-        this.sendButton?.addEventListener("click", () => this.sendMessage());
-        this.messageInput?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") this.sendMessage();
+        // Toggle chat popup
+        button?.addEventListener('click', () => {
+            const isVisible = popup.style.display === 'block';
+            popup.style.display = isVisible ? 'none' : 'block';
         });
-        
-        // Add close button functionality
-        const closeChatButton = document.getElementById("closeChatButton");
-        if (closeChatButton) {
-            closeChatButton.addEventListener("click", () => {
-                this.chatPopup.style.display = "none";
-            });
-        }
-        
-        console.log('Chat event listeners set up successfully');
+
+        // Close chat popup
+        closeBtn?.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        // Send message on Enter
+        messageInput?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendMessage();
+            }
+        });
+
+        // Send message on button click
+        sendButton?.addEventListener('click', () => {
+            this.sendMessage();
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!popup.contains(e.target) && !button.contains(e.target)) {
+                popup.style.display = 'none';
+            }
+        });
+
+        // Add hover effects
+        button?.addEventListener('mouseenter', () => {
+            button.style.transform = 'scale(1.05)';
+            button.style.boxShadow = '0 6px 16px rgba(37, 99, 235, 0.4)';
+        });
+
+        button?.addEventListener('mouseleave', () => {
+            button.style.transform = 'scale(1)';
+            button.style.boxShadow = '0 4px 12px rgba(37, 99, 235, 0.3)';
+        });
     }
 
-    toggleChatPopup() {
-        const isHidden = this.chatPopup.style.display === "none" || this.chatPopup.style.display === "";
-        this.chatPopup.style.display = isHidden ? "flex" : "none";
-        if (isHidden) this.loadInitialMessages();
-    }
-
-    async sendMessage() {
-        const message = this.messageInput.value.trim();
+    sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        if (!messageInput || !chatMessages) return;
+        
+        const message = messageInput.value.trim();
         if (!message) return;
 
-        const payload = {
-            employeeId: this.user.employeeId,
-            fullName: this.user.fullName,
-            position: this.user.position,
-            message
-        };
+        // Add message to chat
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
+            background: #2563eb;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 15px;
+            margin: 5px 0;
+            max-width: 80%;
+            margin-left: auto;
+            text-align: right;
+        `;
+        messageDiv.textContent = message;
+        chatMessages.appendChild(messageDiv);
 
-        try {
-            const response = await fetch(`${this.apiUrl}?action=sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
+        // Clear input
+        messageInput.value = '';
 
-            if (response.ok) {
-                this.messageInput.value = "";
-                this.loadInitialMessages(); // Refresh messages after sending
-            } else {
-                throw new Error("Failed to send message");
-            }
-        } catch (error) {
-            console.error("Send message error:", error);
-            utils.showNotification("Không thể gửi tin nhắn", "error", 3000);
-        }
-    }
+        // Auto-scroll
+        chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    async loadInitialMessages() {
-        if (this.loading) return;
-        this.loading = true;
-
-        try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const response = await fetch(`${this.apiUrl}?action=getMessages&token=${token}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
-
-            if (response.ok) {
-                const messages = await response.json();
-                this.chatMessages.innerHTML = '';
-                if (Array.isArray(messages) && messages.length > 0) {
-                    messages.forEach(msg => this.createMessageElement(msg));
-                    this.lastId = Math.max(...messages.map(m => m.id || 0));
-                }
-            }
-        } catch (error) {
-            console.error("Load messages error:", error);
-            utils.showNotification("Không thể tải tin nhắn", "error", 3000);
-        } finally {
-            this.loading = false;
-        }
-    }
-
-    createMessageElement(msg) {
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("message-wrapper");
-
-        if (msg.employeeId !== this.user.employeeId) {
-            const sender = document.createElement("p");
-            sender.textContent = `${msg.position || 'NV'}-${msg.fullName}`;
-            sender.classList.add("message-sender");
-            sender.style.cursor = "pointer";
-            sender.style.color = "#007bff";
-            sender.addEventListener("click", () => {
-                utils.showNotification(`Thông tin: ${msg.fullName} - ${msg.position}`, "info", 3000);
-            });
-            wrapper.appendChild(sender);
-        }
-
-        const content = document.createElement("p");
-        content.textContent = msg.message;
-        content.classList.add(msg.employeeId === this.user.employeeId ? "user-message" : "bot-message");
-        wrapper.appendChild(content);
-
-        const time = document.createElement("p");
-        time.textContent = msg.time || new Date().toLocaleString('vi-VN');
-        time.classList.add("message-time");
-        wrapper.appendChild(time);
-
-        this.chatMessages.appendChild(wrapper);
-        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-    }
-
-    startMessagePolling() {
-        setInterval(async () => {
-            if (this.chatPopup && this.chatPopup.style.display !== "none") {
-                try {
-                    const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-                    const response = await fetch(`${this.apiUrl}?action=getMessages&lastId=${this.lastId}&token=${token}`, {
-                        method: "GET",
-                        headers: { "Content-Type": "application/json" }
-                    });
-
-                    if (response.ok) {
-                        const newMessages = await response.json();
-                        if (Array.isArray(newMessages) && newMessages.length > 0) {
-                            newMessages.forEach(msg => {
-                                if (msg.id > this.lastId) {
-                                    this.createMessageElement(msg);
-                                    this.lastId = Math.max(this.lastId, msg.id);
-                                }
-                            });
-                        }
-                    }
-                } catch (error) {
-                    // Silent fail for polling
-                }
-            }
-        }, 3000);
+        // Auto-reply (simulated)
+        setTimeout(() => {
+            const replyDiv = document.createElement('div');
+            replyDiv.style.cssText = `
+                background: #f3f4f6;
+                color: #374151;
+                padding: 8px 12px;
+                border-radius: 15px;
+                margin: 5px 0;
+                max-width: 80%;
+            `;
+            replyDiv.textContent = "Cảm ơn bạn đã gửi tin nhắn: \"" + message + "\". Đây là một tin nhắn test tự động.";
+            chatMessages.appendChild(replyDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 1000);
     }
 }
 
@@ -2255,11 +2150,6 @@ class MenuManager {
     }
 
     static setupMenuInteractions() {
-        // Close all submenus initially
-        document.querySelectorAll('.submenu').forEach(submenu => {
-            submenu.style.display = 'none';
-        });
-
         // Setup click handlers for menu items
         document.querySelectorAll(".menu-item").forEach(item => {
             const link = item.querySelector(".menu-link");
@@ -2270,13 +2160,13 @@ class MenuManager {
                     e.preventDefault();
                     e.stopPropagation();
                     // Close all other submenus
-                    document.querySelectorAll('.submenu').forEach(other => {
-                        if (other !== submenu) {
-                            other.style.display = 'none';
+                    document.querySelectorAll('.menu-item').forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('active');
                         }
                     });
                     // Toggle current submenu
-                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                    item.classList.toggle('active');
                 });
             }
         });
@@ -2284,8 +2174,8 @@ class MenuManager {
         // Close submenu when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.menu-item')) {
-                document.querySelectorAll('.submenu').forEach(submenu => {
-                    submenu.style.display = 'none';
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
                 });
             }
         });
@@ -2983,17 +2873,30 @@ function getFieldDisplayName(field) {
 
 // Function to show welcome section when clicking HR Management System title
 function showWelcomeSection() {
-    const content = document.getElementById('content');
-    if (content) {
-        // Find the welcome section in the current content
-        const welcomeSection = content.querySelector('.welcome-section');
-        if (welcomeSection) {
-            // If welcome section exists, scroll to it
-            welcomeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } else {
-            // If not, trigger the enhanced dashboard initialization to show default view
-            initializeEnhancedDashboard();
+    console.log('📍 Attempting to show welcome section');
+    
+    // Trigger the enhanced dashboard initialization to show default view
+    initializeEnhancedDashboard();
+    
+    // After a brief delay, scroll to the welcome section
+    setTimeout(() => {
+        const content = document.getElementById('content');
+        if (content) {
+            const welcomeSection = content.querySelector('.welcome-section');
+            if (welcomeSection) {
+                welcomeSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+                console.log('✅ Welcome section displayed and scrolled to');
+            } else {
+                // Just scroll to top of content
+                content.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+                console.log('✅ Scrolled to top of content');
+            }
         }
-        console.log('📍 Navigated to welcome section');
-    }
+    }, 100);
 }

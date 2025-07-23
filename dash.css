@@ -3412,3 +3412,96 @@ body {
         align-self: flex-end;
     }
 }
+
+/* =====================================================
+   CHAT SYSTEM STYLES
+   ===================================================== */
+
+/* Chat Button Styles */
+.chat-button {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 20px !important;
+    border-radius: 25px !important;
+    cursor: pointer !important;
+    z-index: 9999 !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.chat-button:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4) !important;
+}
+
+/* Chat Popup Styles */
+.chat-popup {
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 20px !important;
+    width: 350px !important;
+    height: 400px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    display: none !important;
+    z-index: 9998 !important;
+    border: 1px solid rgba(37, 99, 235, 0.2) !important;
+    animation: slideInUp 0.3s ease-out !important;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark theme support for chat */
+[data-theme="dark"] .chat-popup {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: rgba(96, 165, 250, 0.3) !important;
+}
+
+[data-theme="dark"] .chat-popup #chatMessages {
+    background: #1e293b !important;
+    color: var(--text-primary) !important;
+}
+
+/* Mobile responsive for chat */
+@media (max-width: 768px) {
+    .chat-popup {
+        width: calc(100vw - 40px) !important;
+        right: 20px !important;
+        left: 20px !important;
+        max-width: 350px !important;
+    }
+    
+    .chat-button {
+        bottom: 10px !important;
+        right: 10px !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-popup {
+        bottom: 70px !important;
+        height: 350px !important;
+    }
+}
