@@ -1,9 +1,24 @@
 const ALLOWED_ORIGIN = "*";
-const SENDGRID_API_KEY = "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";
+
+// Get SendGrid API key from KV storage
+async function getSendGridApiKey(env) {
+  try {
+    return await env.KV_STORE.get("SENDGRID_API_KEY");
+  } catch (error) {
+    console.error("Failed to get SendGrid API key from KV:", error);
+    return null;
+  }
+}
 
 // SendGrid Email Verification Function
-async function sendVerificationEmail(email, employeeId, fullName) {
+async function sendVerificationEmail(email, employeeId, fullName, env) {
   const verificationCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+  
+  // Get SendGrid API key from KV storage
+  const SENDGRID_API_KEY = await getSendGridApiKey(env);
+  if (!SENDGRID_API_KEY) {
+    throw new Error("SendGrid API key not found in KV storage");
+  }
   
   const emailData = {
     personalizations: [{
@@ -822,7 +837,7 @@ async function handleGetUser(url, db, origin) {
 }
 
 // Hàm đăng ký nhân viên
-async function handleRegister(body, db, origin) {
+async function handleRegister(body, db, origin, env) {
   const { employeeId, fullName, storeName, password, phone, email, position, joinDate, pstatus, verificationCode } = body;
   if (!employeeId || !fullName || !storeName || !password) {
     return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
@@ -830,7 +845,7 @@ async function handleRegister(body, db, origin) {
 
   // If verification code is provided, this is step 2 (verification)
   if (verificationCode) {
-    return await handleVerifyEmail(body, db, origin);
+    return await handleVerifyEmail(body, db, origin, env);
   }
 
   // Step 1: Send verification email
@@ -891,7 +906,7 @@ async function handleRegister(body, db, origin) {
 
   try {
     // Send verification email and get code
-    const sentVerificationCode = await sendVerificationEmail(email, employeeId, fullName);
+    const sentVerificationCode = await sendVerificationEmail(email, employeeId, fullName, env);
     
     // Store verification data temporarily
     const { hash, salt } = await hashPasswordPBKDF2(password);
@@ -931,7 +946,7 @@ async function handleRegister(body, db, origin) {
 }
 
 // New function to handle email verification
-async function handleVerifyEmail(body, db, origin) {
+async function handleVerifyEmail(body, db, origin, env) {
   const { employeeId, verificationCode } = body;
   
   if (!employeeId || !verificationCode) {
@@ -1758,7 +1773,7 @@ export default {
           case "login":
             return await handleLogin(body, db, ALLOWED_ORIGIN);
           case "register":
-            return await handleRegister(body, db, ALLOWED_ORIGIN);
+            return await handleRegister(body, db, ALLOWED_ORIGIN, env);
           case "update":
             return await handleUpdate(body, db, ALLOWED_ORIGIN);
           case "savedk":
