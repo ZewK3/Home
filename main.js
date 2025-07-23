@@ -2578,8 +2578,126 @@ function loadMoreActivities() {
 
 // Generate Reports (Admin only)
 function generateReports() {
-    utils.showNotification('Đang tạo báo cáo...', 'info');
-    // Implement report generation logic here
+    // Stay on dashboard and show reports interface instead of redirecting
+    const content = document.getElementById('content');
+    if (!content) return;
+    
+    content.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <h2>📈 Báo Cáo Hệ Thống</h2>
+                <button onclick="location.reload()" class="btn btn-secondary">Quay lại Dashboard</button>
+            </div>
+            <div class="card-body">
+                <div class="reports-grid">
+                    <div class="report-section">
+                        <h3>Báo Cáo Nhân Viên</h3>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Tổng nhân viên:</span>
+                                <span class="stat-value" id="reportTotalEmployees">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Hoạt động hôm nay:</span>
+                                <span class="stat-value" id="reportTodayActive">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Báo Cáo Yêu Cầu</h3>
+                        <div class="report-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Yêu cầu chờ xử lý:</span>
+                                <span class="stat-value" id="reportPendingRequests">-</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Đã xử lý tuần này:</span>
+                                <span class="stat-value" id="reportWeeklyProcessed">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="report-actions">
+                    <button onclick="refreshDashboardStats()" class="btn btn-primary">🔄 Làm mới dữ liệu</button>
+                    <button onclick="exportReports()" class="btn btn-success">📊 Xuất báo cáo</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Load report data
+    loadReportData();
+    utils.showNotification('Đang tải báo cáo...', 'info');
+}
+
+// Refresh dashboard stats manually when requested
+async function refreshDashboardStats() {
+    try {
+        utils.showNotification('Đang làm mới dữ liệu...', 'info');
+        await initializeDashboardStats();
+        await loadReportData();
+        utils.showNotification('Dữ liệu đã được cập nhật', 'success');
+    } catch (error) {
+        console.error('Error refreshing dashboard stats:', error);
+        utils.showNotification('Lỗi khi làm mới dữ liệu', 'error');
+    }
+}
+
+// Load report data
+async function loadReportData() {
+    try {
+        const stats = await utils.fetchAPI('?action=getDashboardStats');
+        if (stats) {
+            document.getElementById('reportTotalEmployees').textContent = stats.totalEmployees || '0';
+            document.getElementById('reportTodayActive').textContent = stats.todaySchedules || '0';
+            document.getElementById('reportPendingRequests').textContent = stats.pendingRequests || '0';
+            document.getElementById('reportWeeklyProcessed').textContent = stats.weeklyProcessed || '0';
+        }
+    } catch (error) {
+        console.error('Error loading report data:', error);
+    }
+}
+
+// Export reports functionality
+function exportReports() {
+    utils.showNotification('Tính năng xuất báo cáo đang được phát triển', 'warning');
+}
+
+// Refresh user role and permissions using fresh API data
+async function refreshUserRoleAndPermissions() {
+    try {
+        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        if (!loggedInUser.employeeId) return;
+
+        // Get fresh user data from API
+        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+        if (freshUserData && freshUserData.position) {
+            console.log('🔄 Refreshing role permissions for:', freshUserData.position);
+            
+            // Update role-based UI with fresh data
+            initializeRoleBasedUI();
+            MenuManager.updateMenuByRole(freshUserData.position);
+            
+            // Verify AD functions are visible if user is AD
+            if (freshUserData.position === 'AD') {
+                setTimeout(() => {
+                    const adElements = document.querySelectorAll('[data-role*="AD"]');
+                    const visibleADElements = Array.from(adElements).filter(el => 
+                        el.style.display !== 'none' && !el.classList.contains('role-hidden')
+                    );
+                    console.log('✅ AD functions check - Total:', adElements.length, 'Visible:', visibleADElements.length);
+                    
+                    if (visibleADElements.length < adElements.length) {
+                        console.warn('⚠️ Re-applying AD permissions...');
+                        initializeRoleBasedUI();
+                        MenuManager.updateMenuByRole(freshUserData.position);
+                    }
+                }, 500);
+            }
+        }
+    } catch (error) {
+        console.error('Error refreshing user role:', error);
+    }
 }
 
 // Initialize Personal Dashboard for Employees
@@ -2713,34 +2831,79 @@ function setupMobileMenu() {
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
-        // Get user data to initialize role-based features
+        // Get fresh user data from API instead of localStorage
         const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const userPosition = loggedInUser.position || 'NV';
+        if (!loggedInUser.employeeId) {
+            console.error('No employee ID found in localStorage');
+            return;
+        }
+
+        console.log('🚀 Initializing enhanced dashboard for employee:', loggedInUser.employeeId);
         
-        console.log('🚀 Initializing enhanced dashboard for role:', userPosition);
-        console.log('📊 User data:', { employeeId: loggedInUser.employeeId, fullName: loggedInUser.fullName, position: userPosition });
+        // Fetch fresh user data from API
+        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+        if (!freshUserData || !freshUserData.position) {
+            console.error('Failed to fetch fresh user data from API');
+            return;
+        }
+
+        const userPosition = freshUserData.position;
+        console.log('📊 Fresh user data from API:', { 
+            employeeId: freshUserData.employeeId, 
+            fullName: freshUserData.fullName, 
+            position: userPosition,
+            storeName: freshUserData.storeName
+        });
         
         // Initialize all dashboard components
         await initializeDashboardStats();
         await initializeRecentActivities();
         
-        // Initialize role-based UI and menu visibility
-        console.log('🔐 Setting up role-based UI...');
+        // Initialize role-based UI and menu visibility with fresh API data
+        console.log('🔐 Setting up role-based UI with fresh data...');
         initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
         
-        // Verify AD functions are visible
+        // Comprehensive AD functions verification
         if (userPosition === 'AD') {
             console.log('🔍 Verifying AD role functions visibility...');
+            
+            // Force show all AD elements immediately
+            const adElements = document.querySelectorAll('[data-role*="AD"]');
+            console.log(`Found ${adElements.length} AD elements to show`);
+            
+            adElements.forEach((element, index) => {
+                element.style.display = 'block';
+                element.classList.add('role-visible');
+                element.classList.remove('role-hidden');
+                console.log(`AD Element ${index + 1}: ${element.tagName}.${element.className} - Made visible`);
+            });
+            
+            // Special handling for quick action buttons
+            const quickActionBtns = document.querySelectorAll('.quick-action-btn[data-role*="AD"]');
+            quickActionBtns.forEach((btn, index) => {
+                btn.style.display = 'flex';
+                btn.classList.add('role-visible');
+                console.log(`AD Quick Action ${index + 1}: ${btn.dataset.action} - Made visible`);
+            });
+            
+            // Verification check after a short delay
             setTimeout(() => {
-                const adElements = document.querySelectorAll('[data-role*="AD"]');
-                const visibleADElements = Array.from(adElements).filter(el => el.style.display !== 'none' && !el.classList.contains('role-hidden'));
-                console.log('✅ AD elements found:', adElements.length, 'visible:', visibleADElements.length);
+                const visibleADElements = Array.from(adElements).filter(el => 
+                    el.style.display !== 'none' && !el.classList.contains('role-hidden')
+                );
+                console.log('✅ AD visibility verification:', {
+                    total: adElements.length,
+                    visible: visibleADElements.length,
+                    success: visibleADElements.length === adElements.length
+                });
                 
                 if (visibleADElements.length < adElements.length) {
-                    console.warn('⚠️ Some AD elements may not be visible. Re-applying role permissions...');
-                    initializeRoleBasedUI();
-                    MenuManager.updateMenuByRole(userPosition);
+                    console.warn('⚠️ Some AD elements still not visible. Re-applying...');
+                    adElements.forEach(el => {
+                        el.style.display = 'block';
+                        el.classList.add('role-visible');
+                    });
                 }
             }, 1000);
         }
@@ -2761,19 +2924,15 @@ async function initializeEnhancedDashboard() {
     }
 }
 
-// Auto-refresh dashboard stats every 30 seconds
+// Auto-refresh only recent activities every 30 seconds (not dashboard stats)
 setInterval(async () => {
-    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-    const userPosition = loggedInUser.position || 'NV';
-    
-    await initializeDashboardStats();
+    // Only refresh recent activities, not dashboard stats
     await initializeRecentActivities();
     
-    // Re-initialize role-based UI to ensure AD functions remain visible
-    initializeRoleBasedUI();
-    MenuManager.updateMenuByRole(userPosition);
+    // Re-initialize role-based UI to ensure AD functions remain visible using fresh API data
+    await refreshUserRoleAndPermissions();
     
-    console.log('🔄 Dashboard auto-refresh completed for role:', userPosition);
+    console.log('🔄 Auto-refresh completed (activities only)');
 }, 30000);
 
 // Global functions for change request modal
