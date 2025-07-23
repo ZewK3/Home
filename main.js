@@ -100,171 +100,7 @@ function showNotification(message, type, duration) {
     utils.showNotification(message, type, duration);
 }
 
-// Chat Manager - Original structure as requested
-class ChatManager {
-    constructor(user) {
-        this.user = user;
-        this.lastMessageId = 0;
-        
-        this.elements = {
-            openButton: document.getElementById("openChatButton"),
-            popup: document.getElementById("chatPopup"),
-            header: document.getElementById("chatHeader"),
-            messages: document.getElementById("chatMessages"),
-            input: document.getElementById("messageInput"),
-            sendButton: document.getElementById("sendButton")
-        };
 
-        this.initialize();
-    }
-
-    initialize() {
-        if (!this.elements.openButton || !this.elements.popup) {
-            console.log('⚠️ Chat elements not found, creating fallback...');
-            this.createChatElements();
-        }
-        this.setupEventListeners();
-        this.addCloseButton();
-    }
-
-    createChatElements() {
-        // Create chat button if not exists
-        if (!this.elements.openButton) {
-            const chatButton = document.createElement("button");
-            chatButton.id = "openChatButton";
-            chatButton.className = "chat-button";
-            chatButton.title = "Mở chat";
-            chatButton.innerHTML = '<span>💬</span>';
-            document.body.appendChild(chatButton);
-            this.elements.openButton = chatButton;
-        }
-
-        // Create chat popup if not exists
-        if (!this.elements.popup) {
-            const chatPopup = document.createElement("div");
-            chatPopup.id = "chatPopup";
-            chatPopup.className = "chat-popup";
-            chatPopup.style.display = "none";
-            chatPopup.innerHTML = `
-                <div id="chatHeader" class="chat-header">Chat with Support</div>
-                <div id="chatMessages" class="chat-messages"></div>
-                <div id="chatInput" class="chat-input">
-                    <input id="messageInput" type="text" placeholder="Type a message...">
-                    <button id="sendButton" class="chat-send-btn">Send</button>
-                </div>
-            `;
-            document.body.appendChild(chatPopup);
-            
-            // Update element references
-            this.elements.popup = chatPopup;
-            this.elements.header = document.getElementById("chatHeader");
-            this.elements.messages = document.getElementById("chatMessages");
-            this.elements.input = document.getElementById("messageInput");
-            this.elements.sendButton = document.getElementById("sendButton");
-        }
-    }
-
-    addCloseButton() {
-        if (this.elements.header && !this.elements.header.querySelector('.close-chat-btn')) {
-            const closeBtn = document.createElement("button");
-            closeBtn.className = "close-chat-btn";
-            closeBtn.innerHTML = "✕";
-            closeBtn.title = "Đóng chat";
-            closeBtn.addEventListener("click", () => this.closeChat());
-            this.elements.header.appendChild(closeBtn);
-        }
-    }
-
-    setupEventListeners() {
-        this.elements.openButton?.addEventListener("click", () => this.toggleChat());
-        this.elements.sendButton?.addEventListener("click", () => this.sendMessage());
-        this.elements.input?.addEventListener("keypress", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
-        });
-    }
-
-    toggleChat() {
-        const isVisible = this.elements.popup.style.display === "flex";
-        this.elements.popup.style.display = isVisible ? "none" : "flex";
-        
-        if (!isVisible) {
-            this.elements.input?.focus();
-            this.loadMessages();
-        }
-    }
-
-    closeChat() {
-        this.elements.popup.style.display = "none";
-    }
-
-    async sendMessage() {
-        const message = this.elements.input?.value.trim();
-        if (!message) return;
-
-        try {
-            await utils.fetchAPI('?action=sendMessage', {
-                method: 'POST',
-                body: JSON.stringify({
-                    message,
-                    employeeId: this.user.employeeId
-                })
-            });
-
-            this.elements.input.value = "";
-            this.appendMessage({
-                message,
-                sender: this.user.fullName,
-                time: new Date()
-            });
-        } catch (error) {
-            utils.showNotification("Không thể gửi tin nhắn", "error");
-        }
-    }
-
-    async loadMessages() {
-        try {
-            const messages = await utils.fetchAPI('?action=getMessages');
-            this.elements.messages.innerHTML = '';
-            if (messages && messages.length > 0) {
-                messages.forEach(msg => this.appendMessage(msg));
-            } else {
-                // Show welcome message if no messages
-                this.elements.messages.innerHTML = `
-                    <div class="welcome-message">
-                        <p>Chào mừng bạn đến với hệ thống chat!</p>
-                        <p>Nhập tin nhắn của bạn bên dưới để bắt đầu.</p>
-                    </div>
-                `;
-            }
-        } catch (error) {
-            console.error('Failed to load messages:', error);
-            // Show fallback message
-            this.elements.messages.innerHTML = `
-                <div class="welcome-message">
-                    <p>Chào mừng bạn đến với hệ thống chat!</p>
-                    <p>Nhập tin nhắn của bạn bên dưới để bắt đầu.</p>
-                </div>
-            `;
-        }
-    }
-
-    appendMessage(msg) {
-        const messageEl = document.createElement("div");
-        messageEl.className = `message ${msg.sender === this.user.fullName ? 'user-message' : 'other-message'}`;
-        messageEl.innerHTML = `
-            <div class="message-content">${utils.escapeHtml(msg.message)}</div>
-            <div class="message-info">
-                <span class="message-sender">${utils.escapeHtml(msg.sender)}</span>
-                <span class="message-time">${utils.formatDate(msg.time)}</span>
-            </div>
-        `;
-        this.elements.messages.appendChild(messageEl);
-        this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
-    }
-}
 
 // Content Manager - Handles all menu functionality
 class ContentManager {
@@ -1408,42 +1244,40 @@ class ContentManager {
                     <div class="card-body">
                         <!-- Enhanced Filters -->
                         <div class="approval-filters-enhanced">
-                            <div class="filter-row">
-                                <div class="filter-group">
-                                    <label>🏪 Cửa hàng:</label>
-                                    <select id="storeFilterSelect" class="form-control">
-                                        <option value="">Tất cả cửa hàng</option>
-                                    </select>
-                                </div>
-                                <div class="filter-group">
-                                    <label>📅 Ngày gửi:</label>
-                                    <select id="dateFilterSelect" class="form-control">
-                                        <option value="">Tất cả ngày</option>
-                                        <option value="today">Hôm nay</option>
-                                        <option value="yesterday">Hôm qua</option>
-                                        <option value="week">7 ngày qua</option>
-                                        <option value="month">30 ngày qua</option>
-                                    </select>
-                                </div>
-                                <div class="filter-group">
-                                    <label>🎯 Trạng thái:</label>
-                                    <select id="statusFilterSelect" class="form-control">
-                                        <option value="pending">Chờ duyệt</option>
-                                        <option value="approved">Đã duyệt</option>
-                                        <option value="rejected">Đã từ chối</option>
-                                        <option value="all">Tất cả</option>
-                                    </select>
-                                </div>
-                                <div class="filter-actions">
-                                    <button id="refreshPendingRegistrations" class="btn btn-secondary">
-                                        <span class="material-icons-round">refresh</span>
-                                        Làm mới
-                                    </button>
-                                    <button id="bulkApprovalBtn" class="btn btn-success" style="display: none;">
-                                        <span class="material-icons-round">done_all</span>
-                                        Duyệt hàng loạt
-                                    </button>
-                                </div>
+                            <div class="filter-group">
+                                <label>🏪 Cửa hàng:</label>
+                                <select id="storeFilterSelect" class="form-control">
+                                    <option value="">Tất cả cửa hàng</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>📅 Ngày gửi:</label>
+                                <select id="dateFilterSelect" class="form-control">
+                                    <option value="">Tất cả ngày</option>
+                                    <option value="today">Hôm nay</option>
+                                    <option value="yesterday">Hôm qua</option>
+                                    <option value="week">7 ngày qua</option>
+                                    <option value="month">30 ngày qua</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>🎯 Trạng thái:</label>
+                                <select id="statusFilterSelect" class="form-control">
+                                    <option value="pending">Chờ duyệt</option>
+                                    <option value="approved">Đã duyệt</option>
+                                    <option value="rejected">Đã từ chối</option>
+                                    <option value="all">Tất cả</option>
+                                </select>
+                            </div>
+                            <div class="filter-actions">
+                                <button id="refreshPendingRegistrations" class="btn btn-secondary">
+                                    <span class="material-icons-round">refresh</span>
+                                    Làm mới
+                                </button>
+                                <button id="bulkApprovalBtn" class="btn btn-success" style="display: none;">
+                                    <span class="material-icons-round">done_all</span>
+                                    Duyệt hàng loạt
+                                </button>
                             </div>
                         </div>
 
@@ -1543,14 +1377,35 @@ class ContentManager {
 
     async loadStoresForFilter() {
         try {
-            const stores = await utils.fetchAPI('?action=getStores');
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            console.log('Stores API response:', response);
+            
+            let stores = [];
+            if (Array.isArray(response)) {
+                stores = response;
+            } else if (response && typeof response === 'object') {
+                // Handle object format with numeric keys
+                const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    stores = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                } else if (response.data && Array.isArray(response.data)) {
+                    stores = response.data;
+                }
+            }
+            
+            console.log('Parsed stores:', stores);
             const storeFilter = document.getElementById('storeFilterSelect');
-            if (storeFilter && stores.length) {
+            if (storeFilter && stores.length > 0) {
                 storeFilter.innerHTML = '<option value="">Tất cả cửa hàng</option>' +
-                    stores.map(store => `<option value="${store.storeName}">${store.storeName}</option>`).join('');
+                    stores.map(store => `<option value="${store.storeName || store.name || store.storeId}">${store.storeName || store.name || store.storeId}</option>`).join('');
+                console.log('✅ Store filter updated with', stores.length, 'stores');
+            } else {
+                console.log('⚠️ No stores found or storeFilter element missing');
             }
         } catch (error) {
             console.error('Load stores error:', error);
+            utils.showNotification('Không thể tải danh sách cửa hàng', 'warning');
         }
     }
 
@@ -2257,7 +2112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         ThemeManager.initialize();
 
         // Initialize features
-        new ChatManager(user);
         new ContentManager(user);
 
         // Load dashboard stats immediately when page loads
