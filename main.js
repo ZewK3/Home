@@ -109,6 +109,7 @@ class ChatManager {
         this.elements = {
             openButton: document.getElementById("openChatButton"),
             popup: document.getElementById("chatPopup"),
+            header: document.getElementById("chatHeader"),
             messages: document.getElementById("chatMessages"),
             input: document.getElementById("messageInput"),
             sendButton: document.getElementById("sendButton")
@@ -118,12 +119,64 @@ class ChatManager {
     }
 
     initialize() {
-        if (!this.elements.openButton || !this.elements.popup) return;
+        if (!this.elements.openButton || !this.elements.popup) {
+            console.log('⚠️ Chat elements not found, creating fallback...');
+            this.createChatElements();
+        }
         this.setupEventListeners();
+        this.addCloseButton();
+    }
+
+    createChatElements() {
+        // Create chat button if not exists
+        if (!this.elements.openButton) {
+            const chatButton = document.createElement("button");
+            chatButton.id = "openChatButton";
+            chatButton.className = "chat-button";
+            chatButton.title = "Mở chat";
+            chatButton.innerHTML = '<span>💬</span>';
+            document.body.appendChild(chatButton);
+            this.elements.openButton = chatButton;
+        }
+
+        // Create chat popup if not exists
+        if (!this.elements.popup) {
+            const chatPopup = document.createElement("div");
+            chatPopup.id = "chatPopup";
+            chatPopup.className = "chat-popup";
+            chatPopup.style.display = "none";
+            chatPopup.innerHTML = `
+                <div id="chatHeader" class="chat-header">Chat with Support</div>
+                <div id="chatMessages" class="chat-messages"></div>
+                <div id="chatInput" class="chat-input">
+                    <input id="messageInput" type="text" placeholder="Type a message...">
+                    <button id="sendButton" class="chat-send-btn">Send</button>
+                </div>
+            `;
+            document.body.appendChild(chatPopup);
+            
+            // Update element references
+            this.elements.popup = chatPopup;
+            this.elements.header = document.getElementById("chatHeader");
+            this.elements.messages = document.getElementById("chatMessages");
+            this.elements.input = document.getElementById("messageInput");
+            this.elements.sendButton = document.getElementById("sendButton");
+        }
+    }
+
+    addCloseButton() {
+        if (this.elements.header && !this.elements.header.querySelector('.close-chat-btn')) {
+            const closeBtn = document.createElement("button");
+            closeBtn.className = "close-chat-btn";
+            closeBtn.innerHTML = "✕";
+            closeBtn.title = "Đóng chat";
+            closeBtn.addEventListener("click", () => this.closeChat());
+            this.elements.header.appendChild(closeBtn);
+        }
     }
 
     setupEventListeners() {
-        this.elements.openButton.addEventListener("click", () => this.toggleChat());
+        this.elements.openButton?.addEventListener("click", () => this.toggleChat());
         this.elements.sendButton?.addEventListener("click", () => this.sendMessage());
         this.elements.input?.addEventListener("keypress", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -141,6 +194,10 @@ class ChatManager {
             this.elements.input?.focus();
             this.loadMessages();
         }
+    }
+
+    closeChat() {
+        this.elements.popup.style.display = "none";
     }
 
     async sendMessage() {
@@ -171,9 +228,26 @@ class ChatManager {
         try {
             const messages = await utils.fetchAPI('?action=getMessages');
             this.elements.messages.innerHTML = '';
-            messages.forEach(msg => this.appendMessage(msg));
+            if (messages && messages.length > 0) {
+                messages.forEach(msg => this.appendMessage(msg));
+            } else {
+                // Show welcome message if no messages
+                this.elements.messages.innerHTML = `
+                    <div class="welcome-message">
+                        <p>Chào mừng bạn đến với hệ thống chat!</p>
+                        <p>Nhập tin nhắn của bạn bên dưới để bắt đầu.</p>
+                    </div>
+                `;
+            }
         } catch (error) {
             console.error('Failed to load messages:', error);
+            // Show fallback message
+            this.elements.messages.innerHTML = `
+                <div class="welcome-message">
+                    <p>Chào mừng bạn đến với hệ thống chat!</p>
+                    <p>Nhập tin nhắn của bạn bên dưới để bắt đầu.</p>
+                </div>
+            `;
         }
     }
 
@@ -2898,15 +2972,60 @@ async function initializeEnhancedDashboard() {
     }
 }
 
-// Auto-refresh only recent activities every 30 seconds (not dashboard stats)
+// Enhanced polling system - only refresh when there are actual changes
+let lastActivityHash = null;
+let lastUserDataHash = null;
+
+async function checkForChanges() {
+    try {
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) return false;
+        
+        // Check for activity changes (simplified hash check)
+        const activitiesResponse = await fetch(`${CONFIG.API_URL}/getRecentActivities?token=${token}`);
+        const userData = await fetch(`${CONFIG.API_URL}/getUser?token=${token}`);
+        
+        if (activitiesResponse.ok && userData.ok) {
+            const activities = await activitiesResponse.json();
+            const user = await userData.json();
+            
+            // Create simple hash of important data
+            const currentActivityHash = JSON.stringify(activities).length;
+            const currentUserHash = JSON.stringify(user.position + user.status).length;
+            
+            // Check if anything changed
+            const activitiesChanged = lastActivityHash !== null && lastActivityHash !== currentActivityHash;
+            const userDataChanged = lastUserDataHash !== null && lastUserDataHash !== currentUserHash;
+            
+            // Update stored hashes
+            lastActivityHash = currentActivityHash;
+            lastUserDataHash = currentUserHash;
+            
+            return activitiesChanged || userDataChanged;
+        }
+    } catch (error) {
+        console.log('⚠️ Change detection failed:', error.message);
+    }
+    return false;
+}
+
+// Smart polling system - only refresh when changes detected
 setInterval(async () => {
-    // Only refresh recent activities, not dashboard stats
-    await initializeRecentActivities();
+    const hasChanges = await checkForChanges();
     
-    // Re-initialize role-based UI to ensure AD functions remain visible using fresh API data
-    await refreshUserRoleAndPermissions();
-    
-    console.log('🔄 Auto-refresh completed (activities only)');
+    if (hasChanges) {
+        console.log('🔄 Changes detected - refreshing data...');
+        
+        // Only refresh recent activities, not dashboard stats  
+        await initializeRecentActivities();
+        
+        // Re-initialize role-based UI to ensure AD functions remain visible using fresh API data
+        await refreshUserRoleAndPermissions();
+        
+        console.log('✅ Auto-refresh completed (changes detected)');
+    } else {
+        console.log('📊 No changes detected - skipping refresh');
+    }
 }, 30000);
 
 // Global functions for change request modal

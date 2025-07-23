@@ -329,27 +329,17 @@
         </div>
     </div>
 
-    <!-- Enhanced Chat System -->
+    <!-- Chat System - Original Structure -->
     <button id="openChatButton" class="chat-button" title="Mở chat">
-        <span class="chat-icon">💬</span>
+        <span>💬</span>
     </button>
 
     <div id="chatPopup" class="chat-popup" style="display: none;">
-        <div class="chat-header">
-            <span>💬 Chat Hỗ Trợ</span>
-            <button id="closeChatButton" class="close-chat-btn" title="Đóng chat">✕</button>
-        </div>
-        <div id="chatMessages" class="chat-messages">
-            <div class="welcome-message">
-                <p>Chào mừng bạn đến với hệ thống chat hỗ trợ!</p>
-                <p>Nhập tin nhắn của bạn bên dưới.</p>
-            </div>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." maxlength="500">
-            <button id="sendButton" class="send-btn" title="Gửi tin nhắn">
-                <span>📤</span>
-            </button>
+        <div id="chatHeader" class="chat-header">Chat with Support</div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div id="chatInput" class="chat-input">
+            <input id="messageInput" type="text" placeholder="Type a message...">
+            <button id="sendButton" class="chat-send-btn">Send</button>
         </div>
     </div>
 
