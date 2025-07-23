@@ -2692,9 +2692,18 @@ async function initializeEnhancedDashboard() {
 }
 
 // Auto-refresh dashboard stats every 30 seconds
-setInterval(() => {
-    initializeDashboardStats();
-    initializeRecentActivities();
+setInterval(async () => {
+    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    const userPosition = loggedInUser.position || 'NV';
+    
+    await initializeDashboardStats();
+    await initializeRecentActivities();
+    
+    // Re-initialize role-based UI to ensure AD functions remain visible
+    initializeRoleBasedUI();
+    MenuManager.updateMenuByRole(userPosition);
+    
+    console.log('🔄 Dashboard auto-refresh completed for role:', userPosition);
 }, 30000);
 
 // Global functions for change request modal
