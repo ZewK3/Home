@@ -583,67 +583,88 @@ body {
     gap: 4px;
 }
 
+/* Enhanced Professional Registration Approval Filters */
 .approval-filters-enhanced {
-    margin-bottom: 25px;
-    background: var(--bg-card);
-    padding: 20px;
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(248,250,252,0.95) 100%);
+    padding: 2rem;
     border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
+    border: 2px solid transparent;
+    box-shadow: var(--shadow-lg), 0 0 30px rgba(37, 99, 235, 0.1);
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: 1.5rem;
     align-items: end;
-    backdrop-filter: var(--glass-blur);
+    backdrop-filter: blur(20px);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    position: relative;
+}
+
+.approval-filters-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--secondary) 100%);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .filter-group {
     flex: 1;
-    min-width: 200px;
-    max-width: 250px;
+    min-width: 220px;
+    max-width: 280px;
+    position: relative;
 }
 
 .filter-group label {
     display: block;
-    font-weight: 600;
-    margin-bottom: 8px;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 1rem;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 16px;
+    padding: 1rem 1.25rem;
     border: 2px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    background: white;
+    background: rgba(255,255,255,0.9);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
-    transition: var(--transition);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(10px);
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), var(--shadow);
+    transform: translateY(-2px);
+    background: rgba(255,255,255,1);
 }
 
 .form-control:hover {
-    border-color: var(--border-hover);
+    border-color: var(--primary-light);
     box-shadow: var(--shadow);
+    transform: translateY(-1px);
 }
 
 .filter-actions {
     display: flex;
-    gap: 12px;
+    gap: 1rem;
     align-items: end;
+    flex-shrink: 0;
 }
 
 .btn {
@@ -1238,25 +1259,83 @@ body {
 
 /* Enhanced Mobile Responsive for Registration Approval */
 @media (max-width: 768px) {
-    /* Fix card header size for mobile */
+    /* Professional card header for mobile */
     .card-header {
-        padding: 15px 20px;
-        font-size: 1.1rem;
+        padding: 1.25rem 1.5rem;
+        font-size: 1.2rem;
     }
     
+    .card-header h2 {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+    
+    /* Enhanced mobile approval filters - horizontal layout */
     .approval-filters-enhanced {
         flex-direction: row;
-        gap: 15px;
-        padding: 15px;
-        margin-bottom: 15px;
+        gap: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        /* Enhanced scrollbar for mobile */
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) transparent;
+    }
+    
+    .approval-filters-enhanced::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .approval-filters-enhanced::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.05);
+        border-radius: 2px;
+    }
+    
+    .approval-filters-enhanced::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 2px;
     }
     
     .filter-group {
-        min-width: 150px;
-        max-width: 180px;
+        min-width: 180px;
+        max-width: 200px;
         flex: 0 0 auto;
+    }
+    
+    .filter-group label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .filter-actions {
+        gap: 0.75rem;
+        min-width: 100px;
+        flex: 0 0 auto;
+    }
+    
+    .filter-actions .btn {
+        padding: 0.875rem 1rem;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    
+    /* Mobile touch improvements */
+    .approval-filters-enhanced {
+        touch-action: pan-x;
+    }
+    
+    .form-control:focus {
+        /* Prevent zoom on iOS */
+        font-size: 16px;
+    }
+}
     }
     
     .filter-group label {
@@ -3828,56 +3907,102 @@ body {
     padding: 0;
     max-width: 100%;
     overflow: hidden;
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255,255,255,0.95) 100%);
+    border: 2px solid transparent;
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg), 0 0 30px rgba(37, 99, 235, 0.1);
+    backdrop-filter: blur(20px);
+    position: relative;
+}
+
+.permission-management-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: inherit;
+    z-index: -1;
+    padding: 2px;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
 }
 
 .permission-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary-dark) 100%);
     color: white;
-    padding: 25px;
+    padding: 2rem 2.5rem;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.permission-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .permission-header h2 {
-    margin: 0 0 8px 0;
+    margin: 0 0 1rem 0;
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 1.5rem;
-    font-weight: 700;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 2rem;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 0.5px;
 }
 
 .header-subtitle {
     margin: 0;
-    opacity: 0.9;
-    font-size: 0.95rem;
+    opacity: 0.95;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.6;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* Permission Statistics Grid */
+/* Permission Statistics Grid - Enhanced Professional Design */
 .permission-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 25px;
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border-color);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(248,250,252,0.9) 100%);
+    border-bottom: 2px solid var(--border-color);
 }
 
 .permission-stat-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248,250,252,0.9) 100%);
+    border: 2px solid transparent;
     border-radius: var(--border-radius);
-    padding: 20px;
+    padding: 2rem 1.5rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 15px;
-    transition: var(--transition);
+    text-align: center;
+    gap: 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+    backdrop-filter: blur(20px);
 }
 
 .permission-stat-card::before {
@@ -3886,68 +4011,247 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 5px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+    transition: height 0.3s ease;
 }
 
-.permission-stat-card.admin::before { background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%); }
-.permission-stat-card.manager::before { background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%); }
-.permission-stat-card.assistant::before { background: linear-gradient(90deg, #059669 0%, #10b981 100%); }
-.permission-stat-card.employee::before { background: linear-gradient(90deg, #7c3aed 0%, #8b5cf6 100%); }
+.permission-stat-card.admin::before { 
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 50%, #f87171 100%); 
+}
+.permission-stat-card.manager::before { 
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #60a5fa 100%); 
+}
+.permission-stat-card.assistant::before { 
+    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%); 
+}
+.permission-stat-card.employee::before { 
+    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a78bfa 100%); 
+}
 
 .permission-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 30px rgba(37, 99, 235, 0.2);
+    border-color: var(--primary-light);
+}
+
+.permission-stat-card:hover::before {
+    height: 8px;
 }
 
 .permission-stat-card .stat-icon {
-    font-size: 2rem;
-    width: 50px;
-    height: 50px;
+    font-size: 3.5rem;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(37, 99, 235, 0.1);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
     border-radius: 50%;
     flex-shrink: 0;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.2);
+}
+
+.permission-stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(10deg);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
 }
 
 .stat-details h3 {
-    margin: 0 0 4px 0;
-    font-size: 1rem;
-    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    font-weight: 700;
     color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .stat-details .stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: 900;
     color: var(--primary);
-    margin: 0;
+    margin: 0.5rem 0;
     line-height: 1;
+    text-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    transition: all 0.3s ease;
+}
+
+.permission-stat-card:hover .stat-details .stat-value {
+    transform: scale(1.1);
+    color: var(--primary-dark);
 }
 
 .stat-details .stat-label {
-    font-size: 0.8rem;
+    font-size: 1rem;
     color: var(--text-muted);
     margin: 0;
+    font-weight: 600;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
 }
 
-/* Permission Main Content */
+/* Permission Main Content - Enhanced Professional Layout */
 .permission-main-content {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1.2fr 350px;
     gap: 0;
-    min-height: 600px;
+    min-height: 700px;
     background: var(--bg-card);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     overflow: hidden;
 }
 
-/* User Selection Panel */
+/* User Selection Panel - Enhanced Professional Design */
 .user-selection-panel {
-    background: var(--bg-card);
-    border-right: 1px solid var(--border-color);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(248,250,252,0.95) 100%);
+    border-right: 2px solid var(--border-color);
+    padding: 2rem;
+    overflow-y: auto;
+    max-height: 700px;
+}
+
+.user-selection-panel .search-section {
+    margin-bottom: 2rem;
+}
+
+.user-selection-panel .search-section h3 {
+    color: var(--text-primary);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.search-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-controls .form-control {
+    background: rgba(255,255,255,0.9);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.search-controls .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: rgba(255,255,255,1);
+}
+
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.user-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-list::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 3px;
+}
+
+.user-list::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+.user-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 100%);
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-sm);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.user-card:hover {
+    transform: translateX(5px);
+    border-color: var(--primary-light);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1), 0 0 20px rgba(37, 99, 235, 0.15);
+}
+
+.user-card:hover::before {
+    transform: scaleY(1);
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: all 0.3s ease;
+}
+
+.user-card:hover .user-avatar {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-info h4 {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.3rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-id {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4316,44 +4620,163 @@ body {
 }
 
 @media (max-width: 768px) {
+    /* Enhanced mobile responsiveness for permission management */
+    .permission-management-container {
+        margin: 0.5rem;
+        border-radius: var(--border-radius-sm);
+    }
+    
+    .permission-header {
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .permission-header h2 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .header-subtitle {
+        font-size: 1rem;
+    }
+    
     .permission-stats-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        padding: 20px;
+        gap: 1rem;
+        padding: 1.5rem;
     }
     
     .permission-stat-card {
-        padding: 15px;
+        padding: 1.25rem 1rem;
     }
     
     .permission-stat-card .stat-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1.5rem;
+        width: 60px;
+        height: 60px;
+        font-size: 2.5rem;
+    }
+    
+    .stat-details h3 {
+        font-size: 1rem;
     }
     
     .stat-details .stat-value {
-        font-size: 1.5rem;
+        font-size: 2.2rem;
+    }
+    
+    .stat-details .stat-label {
+        font-size: 0.9rem;
+    }
+    
+    .user-selection-panel {
+        padding: 1.5rem;
+        max-height: 400px;
+    }
+    
+    .user-selection-panel .search-section h3 {
+        font-size: 1.2rem;
     }
     
     .search-controls {
-        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .search-controls .form-control {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .user-list {
+        gap: 0.75rem;
+        max-height: 250px;
     }
     
     .user-card {
-        padding: 12px;
+        padding: 1rem;
+        gap: 0.75rem;
     }
     
     .user-avatar {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.1rem;
+    }
+    
+    .user-info h4 {
+        font-size: 1rem;
+    }
+    
+    .user-id {
+        font-size: 0.85rem;
+    }
+    
+    .role-editor-panel {
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        padding: 1.5rem;
+    }
+    
+    .role-editor-header h3 {
+        font-size: 1.2rem;
     }
     
     .role-cards {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .role-card {
+        padding: 1.25rem;
+    }
+    
+    .role-card .role-icon {
+        font-size: 2rem;
+    }
+    
+    .role-card h5 {
+        font-size: 1.1rem;
     }
     
     .role-actions {
         flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .role-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .permission-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .permission-header {
+        padding: 1rem;
+    }
+    
+    .permission-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .user-selection-panel {
+        padding: 1rem;
+    }
+    
+    .user-card {
+        padding: 0.875rem;
+    }
+    
+    .user-avatar {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .role-editor-panel {
+        padding: 1rem;
     }
 }

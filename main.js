@@ -652,8 +652,40 @@ class ContentManager {
     async showGrantAccess() {
         const content = document.getElementById('content');
         try {
-            // Use getUsers API to get user list
+            // Show loading state
+            content.innerHTML = `
+                <div class="loading-container" style="display: flex; justify-content: center; align-items: center; height: 400px;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-left: 1rem; color: var(--text-muted);">Đang tải danh sách người dùng...</p>
+                </div>
+            `;
+
+            // Use getUsers API to get user list with enhanced error handling
             const users = await utils.fetchAPI('?action=getUsers');
+            
+            console.log('Users data received:', users); // Debug log
+            
+            // Validate users data
+            if (!Array.isArray(users)) {
+                throw new Error('Dữ liệu người dùng không hợp lệ');
+            }
+
+            if (users.length === 0) {
+                content.innerHTML = `
+                    <div class="permission-management-container">
+                        <div class="permission-header">
+                            <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
+                            <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
+                        </div>
+                        <div class="no-data-state" style="text-align: center; padding: 3rem;">
+                            <span style="font-size: 4rem; color: var(--text-muted);">👥</span>
+                            <h3 style="color: var(--text-muted); margin: 1rem 0;">Không có dữ liệu người dùng</h3>
+                            <p style="color: var(--text-muted);">Vui lòng thêm người dùng vào hệ thống trước.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
             
             content.innerHTML = `
                 <div class="permission-management-container">
@@ -716,21 +748,29 @@ class ContentManager {
                             </div>
 
                             <div class="user-list" id="userList">
-                                ${Array.isArray(users) ? users.map(user => `
-                                    <div class="user-card" data-user-id="${user.employeeId}" data-role="${user.position || 'NV'}">
-                                        <div class="user-avatar">${user.fullName?.substring(0, 2) || 'NV'}</div>
-                                        <div class="user-info">
-                                            <h4>${user.fullName || 'Không rõ'}</h4>
-                                            <p class="user-id">ID: ${user.employeeId}</p>
-                                            <p class="user-role role-${user.position?.toLowerCase() || 'nv'}">${this.getRoleDisplayName(user.position || 'NV')}</p>
+                                ${users.map(user => {
+                                    const userRole = user.position || 'NV';
+                                    const userName = user.fullName || 'Không rõ';
+                                    const userId = user.employeeId || 'Unknown';
+                                    
+                                    console.log('Rendering user:', { userId, userName, userRole }); // Debug log
+                                    
+                                    return `
+                                        <div class="user-card" data-user-id="${userId}" data-role="${userRole}">
+                                            <div class="user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
+                                            <div class="user-info">
+                                                <h4>${userName}</h4>
+                                                <p class="user-id">ID: ${userId}</p>
+                                                <p class="user-role role-${userRole.toLowerCase()}">${this.getRoleDisplayName(userRole)}</p>
+                                            </div>
+                                            <div class="user-actions">
+                                                <button class="btn-edit-role" onclick="window.editUserRole('${userId}')" title="Chỉnh sửa phân quyền">
+                                                    <span class="material-icons-round">edit</span>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="user-actions">
-                                            <button class="btn-edit-role" onclick="window.editUserRole('${user.employeeId}')">
-                                                <span class="material-icons-round">edit</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                `).join('') : '<p class="no-users">Không có dữ liệu người dùng</p>'}
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
 
@@ -815,10 +855,30 @@ class ContentManager {
                 </div>
             `;
 
+            // Setup permission management functionality
             this.setupPermissionManagement();
+            
+            console.log('Permission management setup completed'); // Debug log
         } catch (error) {
             console.error('Access management error:', error);
-            utils.showNotification("Không thể tải thông tin phân quyền", "error");
+            content.innerHTML = `
+                <div class="permission-management-container">
+                    <div class="permission-header">
+                        <h2><span class="material-icons-round">error</span>Lỗi Hệ Thống</h2>
+                        <p class="header-subtitle">Không thể tải thông tin phân quyền</p>
+                    </div>
+                    <div class="error-state" style="text-align: center; padding: 3rem;">
+                        <span style="font-size: 4rem; color: var(--error);">⚠️</span>
+                        <h3 style="color: var(--error); margin: 1rem 0;">Lỗi: ${error.message}</h3>
+                        <p style="color: var(--text-muted);">Vui lòng thử lại sau hoặc liên hệ quản trị viên.</p>
+                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 1rem;">
+                            <span class="material-icons-round">refresh</span>
+                            Thử lại
+                        </button>
+                    </div>
+                </div>
+            `;
+            utils.showNotification("Không thể tải thông tin phân quyền: " + error.message, "error");
         }
     }
 
@@ -1174,8 +1234,12 @@ class ContentManager {
     }
 
     setupPermissionManagement() {
-        // Count roles and update statistics
-        this.updateRoleStatistics();
+        console.log('Setting up permission management...'); // Debug log
+        
+        // Count roles and update statistics - with delay to ensure DOM is ready
+        setTimeout(() => {
+            this.updateRoleStatistics();
+        }, 100);
 
         // Setup search functionality
         const searchInput = document.getElementById('userSearch');
@@ -1201,26 +1265,48 @@ class ContentManager {
         window.editUserRole = (userId) => this.editUserRole(userId);
         window.closeRoleEditor = () => this.closeRoleEditor();
         window.saveUserRole = () => this.saveUserRole();
+        
+        console.log('Permission management setup completed'); // Debug log
     }
 
     updateRoleStatistics() {
+        console.log('Updating role statistics...'); // Debug log
+        
         const userCards = document.querySelectorAll('.user-card');
         const counts = { AD: 0, QL: 0, AM: 0, NV: 0 };
+        
+        console.log('Found user cards:', userCards.length); // Debug log
         
         userCards.forEach(card => {
             const role = card.dataset.role || 'NV';
             counts[role] = (counts[role] || 0) + 1;
+            console.log('User role:', role, 'Current counts:', counts); // Debug log
         });
 
+        // Update the display elements
         const adminCountEl = document.getElementById('adminCount');
         const managerCountEl = document.getElementById('managerCount');
         const assistantCountEl = document.getElementById('assistantCount');
         const employeeCountEl = document.getElementById('employeeCount');
 
-        if (adminCountEl) adminCountEl.textContent = counts.AD;
-        if (managerCountEl) managerCountEl.textContent = counts.QL;
-        if (assistantCountEl) assistantCountEl.textContent = counts.AM;
-        if (employeeCountEl) employeeCountEl.textContent = counts.NV;
+        if (adminCountEl) {
+            adminCountEl.textContent = counts.AD;
+            console.log('Updated adminCount:', counts.AD); // Debug log
+        }
+        if (managerCountEl) {
+            managerCountEl.textContent = counts.QL;
+            console.log('Updated managerCount:', counts.QL); // Debug log
+        }
+        if (assistantCountEl) {
+            assistantCountEl.textContent = counts.AM;
+            console.log('Updated assistantCount:', counts.AM); // Debug log
+        }
+        if (employeeCountEl) {
+            employeeCountEl.textContent = counts.NV;
+            console.log('Updated employeeCount:', counts.NV); // Debug log
+        }
+
+        console.log('Role statistics updated successfully:', counts); // Debug log
     }
 
     filterUsers() {
