@@ -2883,7 +2883,7 @@ async function initializeRoleBasedUI() {
     if (userPosition === 'AD') {
         console.log(`🔍 AD Role Summary: Found ${adElementsFound} AD elements, Shown ${adElementsShown} elements`);
         
-        // Additional verification for all AD-specific sections
+        // Additional verification for all AD-specific sections - with improved error handling
         const adSections = [
             '.quick-actions-section',
             '.analytics-section', 
@@ -2892,14 +2892,42 @@ async function initializeRoleBasedUI() {
             '.store-management-section'
         ];
         
+        // Wait for DOM to be fully ready before checking sections
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         adSections.forEach(selector => {
+            // Use more flexible selector approach
             const section = document.querySelector(selector);
             if (section) {
                 section.style.display = 'block';
                 section.style.visibility = 'visible';
+                section.classList.add('role-visible');
+                section.classList.remove('role-hidden');
                 console.log(`✅ AD Section forced visible: ${selector}`);
             } else {
-                console.warn(`⚠️ AD Section not found: ${selector}`);
+                // Try without the dot prefix in case of selector issues
+                const altSelector = selector.startsWith('.') ? selector.substring(1) : '.' + selector;
+                const altSection = document.querySelector(altSelector);
+                if (altSection) {
+                    altSection.style.display = 'block';
+                    altSection.style.visibility = 'visible';
+                    altSection.classList.add('role-visible');
+                    altSection.classList.remove('role-hidden');
+                    console.log(`✅ AD Section found with alternative selector ${altSelector}: ${selector}`);
+                } else {
+                    // Final check: look for class name in any div
+                    const className = selector.replace('.', '');
+                    const classSection = document.querySelector(`div.${className}`);
+                    if (classSection) {
+                        classSection.style.display = 'block';
+                        classSection.style.visibility = 'visible';
+                        classSection.classList.add('role-visible');
+                        classSection.classList.remove('role-hidden');
+                        console.log(`✅ AD Section found by class: div.${className}`);
+                    } else {
+                        console.log(`ℹ️ AD Section ${selector} not found - likely due to DOM timing or authentication`);
+                    }
+                }
             }
         });
     }
