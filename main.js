@@ -665,7 +665,7 @@ class ContentManager {
             
             console.log('Users response received:', response); // Debug log
             
-            // Extract users data - the API returns data directly as an array
+            // Extract users data - handle multiple response formats
             let users = [];
             if (Array.isArray(response)) {
                 users = response;
@@ -673,6 +673,16 @@ class ContentManager {
                 users = response.results;
             } else if (response && Array.isArray(response.data)) {
                 users = response.data;
+            } else if (response && typeof response === 'object') {
+                // Handle object with numbered keys (0, 1, 2, 3, etc.) + timestamp/status
+                const userKeys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (userKeys.length > 0) {
+                    users = userKeys.map(key => response[key]).filter(user => user && typeof user === 'object');
+                    console.log('Converted object-with-numbered-keys to array:', users);
+                } else {
+                    console.error('Unexpected response format:', response);
+                    throw new Error('Định dạng dữ liệu người dùng không đúng');
+                }
             } else {
                 console.error('Unexpected response format:', response);
                 throw new Error('Định dạng dữ liệu người dùng không đúng');
