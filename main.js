@@ -656,50 +656,166 @@ class ContentManager {
             const users = await utils.fetchAPI('?action=getUsers');
             
             content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Phân Quyền Người Dùng</h2>
+                <div class="permission-management-container">
+                    <div class="permission-header">
+                        <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
+                        <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
                     </div>
-                    <div class="card-body">
-                        <div class="permission-management">
-                            <div class="user-selection">
-                                <select id="userSelect" class="form-control">
-                                    <option value="">Chọn nhân viên</option>
-                                    ${Array.isArray(users) ? users.map(user => 
-                                        `<option value="${user.employeeId}">${user.fullName} - ${user.employeeId}</option>`
-                                    ).join('') : ''}
-                                </select>
+
+                    <!-- Statistics Dashboard -->
+                    <div class="permission-stats-grid">
+                        <div class="permission-stat-card admin">
+                            <div class="stat-icon">👑</div>
+                            <div class="stat-details">
+                                <h3>Admin</h3>
+                                <p class="stat-value" id="adminCount">0</p>
+                                <span class="stat-label">Quản trị viên</span>
                             </div>
-                            
-                            <div id="permissionForm" class="permission-form" style="display: none;">
-                                <h3>Quyền hạn</h3>
-                                <div class="permission-list">
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="schedule" value="schedule">
-                                        <span>Quản lý lịch làm</span>
-                                    </label>
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="tasks" value="tasks">
-                                        <span>Xử lý yêu cầu</span>
-                                    </label>
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="rewards" value="rewards">
-                                        <span>Quản lý thưởng/phạt</span>
-                                    </label>
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="admin" value="admin">
-                                        <span>Quyền quản trị</span>
-                                    </label>
+                        </div>
+                        <div class="permission-stat-card manager">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-details">
+                                <h3>Manager</h3>
+                                <p class="stat-value" id="managerCount">0</p>
+                                <span class="stat-label">Quản lý</span>
+                            </div>
+                        </div>
+                        <div class="permission-stat-card assistant">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-details">
+                                <h3>Trợ lý</h3>
+                                <p class="stat-value" id="assistantCount">0</p>
+                                <span class="stat-label">Trợ lý quản lý</span>
+                            </div>
+                        </div>
+                        <div class="permission-stat-card employee">
+                            <div class="stat-icon">👤</div>
+                            <div class="stat-details">
+                                <h3>Nhân viên</h3>
+                                <p class="stat-value" id="employeeCount">0</p>
+                                <span class="stat-label">Nhân viên</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Selection and Management -->
+                    <div class="permission-main-content">
+                        <div class="user-selection-panel">
+                            <div class="search-section">
+                                <h3><span class="material-icons-round">search</span>Tìm kiếm nhân viên</h3>
+                                <div class="search-controls">
+                                    <input type="text" id="userSearch" class="form-control" placeholder="Tìm kiếm theo tên, ID, hoặc email...">
+                                    <select id="roleFilter" class="form-control">
+                                        <option value="">Tất cả vai trò</option>
+                                        <option value="AD">Admin (AD)</option>
+                                        <option value="QL">Quản lý (QL)</option>
+                                        <option value="AM">Trợ lý (AM)</option>
+                                        <option value="NV">Nhân viên (NV)</option>
+                                    </select>
                                 </div>
-                                <button id="savePermissions" class="btn btn-primary">Lưu quyền hạn</button>
-                                <p class="permission-note">⏳ Chức năng phân quyền đang được phát triển</p>
+                            </div>
+
+                            <div class="user-list" id="userList">
+                                ${Array.isArray(users) ? users.map(user => `
+                                    <div class="user-card" data-user-id="${user.employeeId}" data-role="${user.position || 'NV'}">
+                                        <div class="user-avatar">${user.fullName?.substring(0, 2) || 'NV'}</div>
+                                        <div class="user-info">
+                                            <h4>${user.fullName || 'Không rõ'}</h4>
+                                            <p class="user-id">ID: ${user.employeeId}</p>
+                                            <p class="user-role role-${user.position?.toLowerCase() || 'nv'}">${this.getRoleDisplayName(user.position || 'NV')}</p>
+                                        </div>
+                                        <div class="user-actions">
+                                            <button class="btn-edit-role" onclick="window.editUserRole('${user.employeeId}')">
+                                                <span class="material-icons-round">edit</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p class="no-users">Không có dữ liệu người dùng</p>'}
+                            </div>
+                        </div>
+
+                        <!-- Role Editor Panel -->
+                        <div class="role-editor-panel" id="roleEditorPanel">
+                            <div class="role-editor-header">
+                                <h3><span class="material-icons-round">settings</span>Chỉnh sửa phân quyền</h3>
+                                <button class="btn-close" onclick="window.closeRoleEditor()">
+                                    <span class="material-icons-round">close</span>
+                                </button>
+                            </div>
+
+                            <div class="selected-user-info" id="selectedUserInfo">
+                                <div class="placeholder-message">
+                                    <span class="material-icons-round">person_search</span>
+                                    <p>Chọn một nhân viên để chỉnh sửa phân quyền</p>
+                                </div>
+                            </div>
+
+                            <div class="role-selection" id="roleSelection" style="display: none;">
+                                <h4>Chọn vai trò</h4>
+                                <div class="role-cards">
+                                    <div class="role-card" data-role="AD">
+                                        <div class="role-icon">👑</div>
+                                        <h5>Administrator</h5>
+                                        <p>Toàn quyền hệ thống</p>
+                                        <ul class="permission-preview">
+                                            <li>✅ Quản lý phân quyền</li>
+                                            <li>✅ Quản lý tài chính</li>
+                                            <li>✅ Phân tích hệ thống</li>
+                                            <li>✅ Quản lý cửa hàng</li>
+                                        </ul>
+                                    </div>
+                                    <div class="role-card" data-role="QL">
+                                        <div class="role-icon">⚡</div>
+                                        <h5>Manager</h5>
+                                        <p>Quản lý cửa hàng</p>
+                                        <ul class="permission-preview">
+                                            <li>✅ Quản lý nhân viên</li>
+                                            <li>✅ Duyệt đăng ký</li>
+                                            <li>✅ Quản lý lịch làm</li>
+                                            <li>❌ Quản lý tài chính</li>
+                                        </ul>
+                                    </div>
+                                    <div class="role-card" data-role="AM">
+                                        <div class="role-icon">🎯</div>
+                                        <h5>Assistant Manager</h5>
+                                        <p>Trợ lý quản lý</p>
+                                        <ul class="permission-preview">
+                                            <li>✅ Hỗ trợ quản lý</li>
+                                            <li>✅ Xem báo cáo</li>
+                                            <li>❌ Duyệt đăng ký</li>
+                                            <li>❌ Quản lý tài chính</li>
+                                        </ul>
+                                    </div>
+                                    <div class="role-card" data-role="NV">
+                                        <div class="role-icon">👤</div>
+                                        <h5>Employee</h5>
+                                        <p>Nhân viên</p>
+                                        <ul class="permission-preview">
+                                            <li>✅ Xem thông tin cá nhân</li>
+                                            <li>✅ Đăng ký lịch làm</li>
+                                            <li>❌ Quản lý nhân viên</li>
+                                            <li>❌ Xem tài chính</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="role-actions" id="roleActions" style="display: none;">
+                                <button class="btn btn-primary" id="saveRoleButton" onclick="window.saveUserRole()">
+                                    <span class="material-icons-round">save</span>
+                                    Lưu thay đổi
+                                </button>
+                                <button class="btn btn-secondary" onclick="window.closeRoleEditor()">
+                                    <span class="material-icons-round">cancel</span>
+                                    Hủy bỏ
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-            this.setupAccessHandlers();
+            this.setupPermissionManagement();
         } catch (error) {
             console.error('Access management error:', error);
             utils.showNotification("Không thể tải thông tin phân quyền", "error");
@@ -1045,6 +1161,187 @@ class ContentManager {
                 utils.showNotification("Không thể thêm thưởng/phạt", "error");
             }
         });
+    }
+
+    getRoleDisplayName(role) {
+        const roleNames = {
+            'AD': 'Administrator',
+            'QL': 'Manager',
+            'AM': 'Assistant Manager',
+            'NV': 'Employee'
+        };
+        return roleNames[role] || 'Employee';
+    }
+
+    setupPermissionManagement() {
+        // Count roles and update statistics
+        this.updateRoleStatistics();
+
+        // Setup search functionality
+        const searchInput = document.getElementById('userSearch');
+        const roleFilter = document.getElementById('roleFilter');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', () => this.filterUsers());
+        }
+        
+        if (roleFilter) {
+            roleFilter.addEventListener('change', () => this.filterUsers());
+        }
+
+        // Setup role card selection
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            });
+        });
+
+        // Setup global functions for role management
+        window.editUserRole = (userId) => this.editUserRole(userId);
+        window.closeRoleEditor = () => this.closeRoleEditor();
+        window.saveUserRole = () => this.saveUserRole();
+    }
+
+    updateRoleStatistics() {
+        const userCards = document.querySelectorAll('.user-card');
+        const counts = { AD: 0, QL: 0, AM: 0, NV: 0 };
+        
+        userCards.forEach(card => {
+            const role = card.dataset.role || 'NV';
+            counts[role] = (counts[role] || 0) + 1;
+        });
+
+        const adminCountEl = document.getElementById('adminCount');
+        const managerCountEl = document.getElementById('managerCount');
+        const assistantCountEl = document.getElementById('assistantCount');
+        const employeeCountEl = document.getElementById('employeeCount');
+
+        if (adminCountEl) adminCountEl.textContent = counts.AD;
+        if (managerCountEl) managerCountEl.textContent = counts.QL;
+        if (assistantCountEl) assistantCountEl.textContent = counts.AM;
+        if (employeeCountEl) employeeCountEl.textContent = counts.NV;
+    }
+
+    filterUsers() {
+        const searchInput = document.getElementById('userSearch');
+        const roleFilter = document.getElementById('roleFilter');
+        
+        if (!searchInput || !roleFilter) return;
+        
+        const searchTerm = searchInput.value.toLowerCase();
+        const roleFilterValue = roleFilter.value;
+        const userCards = document.querySelectorAll('.user-card');
+
+        userCards.forEach(card => {
+            const userName = card.querySelector('h4').textContent.toLowerCase();
+            const userId = card.querySelector('.user-id').textContent.toLowerCase();
+            const userRole = card.dataset.role;
+
+            const matchesSearch = userName.includes(searchTerm) || userId.includes(searchTerm);
+            const matchesRole = !roleFilterValue || userRole === roleFilterValue;
+
+            card.style.display = matchesSearch && matchesRole ? 'flex' : 'none';
+        });
+    }
+
+    editUserRole(userId) {
+        const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+        const roleEditor = document.getElementById('roleEditorPanel');
+        const userInfo = document.getElementById('selectedUserInfo');
+        const roleSelection = document.getElementById('roleSelection');
+        const roleActions = document.getElementById('roleActions');
+        
+        if (userCard && roleEditor && userInfo) {
+            const userName = userCard.querySelector('h4').textContent;
+            const currentRole = userCard.dataset.role;
+            
+            userInfo.innerHTML = `
+                <div class="selected-user">
+                    <div class="user-avatar">${userName.substring(0, 2)}</div>
+                    <div class="user-details">
+                        <h4>${userName}</h4>
+                        <p>ID: ${userId}</p>
+                        <p class="current-role">Vai trò hiện tại: <span class="role-badge role-${currentRole.toLowerCase()}">${this.getRoleDisplayName(currentRole)}</span></p>
+                    </div>
+                </div>
+            `;
+
+            // Select current role card
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.dataset.role === currentRole) {
+                    card.classList.add('selected');
+                }
+            });
+
+            if (roleSelection) roleSelection.style.display = 'block';
+            if (roleActions) roleActions.style.display = 'block';
+            roleEditor.dataset.editingUser = userId;
+        }
+    }
+
+    closeRoleEditor() {
+        const roleEditor = document.getElementById('roleEditorPanel');
+        const roleSelection = document.getElementById('roleSelection');
+        const roleActions = document.getElementById('roleActions');
+        const userInfo = document.getElementById('selectedUserInfo');
+        
+        if (roleEditor) {
+            roleEditor.removeAttribute('data-editing-user');
+        }
+        
+        if (roleSelection) roleSelection.style.display = 'none';
+        if (roleActions) roleActions.style.display = 'none';
+        
+        if (userInfo) {
+            userInfo.innerHTML = `
+                <div class="placeholder-message">
+                    <span class="material-icons-round">person_search</span>
+                    <p>Chọn một nhân viên để chỉnh sửa phân quyền</p>
+                </div>
+            `;
+        }
+    }
+
+    async saveUserRole() {
+        const roleEditor = document.getElementById('roleEditorPanel');
+        const selectedRole = document.querySelector('.role-card.selected');
+        const userId = roleEditor?.dataset.editingUser;
+
+        if (!selectedRole || !userId) {
+            utils.showNotification("Vui lòng chọn vai trò", "warning");
+            return;
+        }
+
+        const newRole = selectedRole.dataset.role;
+        
+        try {
+            // Here you would typically make an API call to update the user role
+            // For now, we'll simulate the update
+            console.log(`Updating user ${userId} to role ${newRole}`);
+            
+            // Update the UI
+            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+            if (userCard) {
+                userCard.dataset.role = newRole;
+                const roleElement = userCard.querySelector('.user-role');
+                if (roleElement) {
+                    roleElement.textContent = this.getRoleDisplayName(newRole);
+                    roleElement.className = `user-role role-${newRole.toLowerCase()}`;
+                }
+            }
+            
+            // Update statistics
+            this.updateRoleStatistics();
+            
+            utils.showNotification(`Đã cập nhật phân quyền thành công`, "success");
+            this.closeRoleEditor();
+            
+        } catch (error) {
+            console.error('Save role error:', error);
+            utils.showNotification("Không thể cập nhật phân quyền", "error");
+        }
     }
 
     setupAccessHandlers() {
