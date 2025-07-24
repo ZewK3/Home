@@ -2823,9 +2823,25 @@ async function initializeRecentActivities() {
 }
 
 // Role-based UI Management  
-function initializeRoleBasedUI() {
+async function initializeRoleBasedUI() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-    const userPosition = loggedInUser.position || 'NV';
+    let userPosition = 'NV'; // Default fallback
+    
+    // Get fresh user data from API to ensure accurate role
+    try {
+        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
+        if (employeeId) {
+            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            if (freshUserData && freshUserData.position) {
+                userPosition = freshUserData.position;
+                console.log('🔐 Using fresh role from API for UI initialization:', userPosition);
+            }
+        } else {
+            console.warn('⚠️ No employee ID found, using default role NV');
+        }
+    } catch (error) {
+        console.warn('⚠️ Using default role due to API error:', error);
+    }
     
     console.log('🔐 Initializing role-based UI for position:', userPosition);
     
@@ -3204,12 +3220,12 @@ async function refreshUserRoleAndPermissions() {
             console.log('🔄 Refreshing role permissions for:', freshUserData.position);
             
             // Update role-based UI with fresh data
-            initializeRoleBasedUI();
+            await initializeRoleBasedUI();
             MenuManager.updateMenuByRole(freshUserData.position);
             
             // Verify AD functions are visible if user is AD
             if (freshUserData.position === 'AD') {
-                setTimeout(() => {
+                setTimeout(async () => {
                     const adElements = document.querySelectorAll('[data-role*="AD"]');
                     const visibleADElements = Array.from(adElements).filter(el => 
                         el.style.display !== 'none' && !el.classList.contains('role-hidden')
@@ -3218,7 +3234,7 @@ async function refreshUserRoleAndPermissions() {
                     
                     if (visibleADElements.length < adElements.length) {
                         console.warn('⚠️ Re-applying AD permissions...');
-                        initializeRoleBasedUI();
+                        await initializeRoleBasedUI();
                         MenuManager.updateMenuByRole(freshUserData.position);
                     }
                 }, 500);
@@ -3440,7 +3456,7 @@ async function initializeEnhancedDashboard() {
                             await initializeRecentActivities();
                             
                             console.log('🔐 Setting up role-based UI with fresh data...');
-                            initializeRoleBasedUI();
+                            await initializeRoleBasedUI();
                             MenuManager.updateMenuByRole(userPosition);
                             return;
                         }
@@ -3478,7 +3494,7 @@ async function initializeEnhancedDashboard() {
         
         // Initialize role-based UI and menu visibility with fresh API data
         console.log('🔐 Setting up role-based UI with fresh data...');
-        initializeRoleBasedUI();
+        await initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
         
         // Comprehensive AD functions verification
