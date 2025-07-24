@@ -656,49 +656,130 @@ class ContentManager {
             const users = await utils.fetchAPI('?action=getUsers');
             
             content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Phân Quyền Người Dùng</h2>
+                <div class="grant-access-container">
+                    <div class="grant-access-header">
+                        <h2><i class="fas fa-user-shield"></i> Hệ Thống Phân Quyền</h2>
+                        <p class="subtitle">Quản lý phân quyền và kiểm soát truy cập cho nhân viên</p>
                     </div>
-                    <div class="card-body">
-                        <div class="permission-management">
-                            <div class="user-selection">
-                                <select id="userSelect" class="form-control">
-                                    <option value="">Chọn nhân viên</option>
-                                    ${Array.isArray(users) ? users.map(user => 
-                                        `<option value="${user.employeeId}">${user.fullName} - ${user.employeeId}</option>`
-                                    ).join('') : ''}
-                                </select>
-                            </div>
-                            
-                            <div id="permissionForm" class="permission-form" style="display: none;">
-                                <h3>Quyền hạn</h3>
-                                <div class="permission-list">
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="schedule" value="schedule">
-                                        <span>Quản lý lịch làm</span>
-                                    </label>
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="tasks" value="tasks">
-                                        <span>Xử lý yêu cầu</span>
-                                    </label>
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="rewards" value="rewards">
-                                        <span>Quản lý thưởng/phạt</span>
-                                    </label>
-                                    <label class="permission-item">
-                                        <input type="checkbox" name="admin" value="admin">
-                                        <span>Quyền quản trị</span>
-                                    </label>
+                    
+                    <div class="permission-dashboard">
+                        <!-- Quick Stats -->
+                        <div class="permission-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon admin-icon">
+                                    <i class="fas fa-crown"></i>
                                 </div>
-                                <button id="savePermissions" class="btn btn-primary">Lưu quyền hạn</button>
-                                <p class="permission-note">⏳ Chức năng phân quyền đang được phát triển</p>
+                                <div class="stat-info">
+                                    <h4>Quản trị viên</h4>
+                                    <span id="adminCount">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon manager-icon">
+                                    <i class="fas fa-users-cog"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Quản lý</h4>
+                                    <span id="managerCount">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon employee-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Nhân viên</h4>
+                                    <span id="employeeCount">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon total-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h4>Tổng cộng</h4>
+                                    <span id="totalCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Content Grid -->
+                        <div class="permission-grid">
+                            <!-- User Selection Panel -->
+                            <div class="user-panel">
+                                <div class="panel-header">
+                                    <h3><i class="fas fa-user-edit"></i> Chọn Nhân Viên</h3>
+                                    <div class="search-container">
+                                        <input type="text" id="userSearch" class="search-input" placeholder="Tìm kiếm nhân viên...">
+                                        <i class="fas fa-search search-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="user-list" id="userList">
+                                    ${Array.isArray(users) ? users.map(user => `
+                                        <div class="user-item" data-employee-id="${user.employeeId}" data-position="${user.position || 'NV'}">
+                                            <div class="user-avatar">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div class="user-info">
+                                                <h4>${user.fullName}</h4>
+                                                <p>ID: ${user.employeeId}</p>
+                                                <span class="position-badge ${(user.position || 'NV').toLowerCase()}">${this.getPositionName(user.position || 'NV')}</span>
+                                            </div>
+                                            <div class="user-actions">
+                                                <button class="btn-select" onclick="manager.selectUser('${user.employeeId}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('') : '<p class="no-users">Không có dữ liệu nhân viên</p>'}
+                                </div>
+                            </div>
+
+                            <!-- Permission Management Panel -->
+                            <div class="permission-panel">
+                                <div class="panel-header">
+                                    <h3><i class="fas fa-key"></i> Phân Quyền</h3>
+                                    <div class="selected-user-info" id="selectedUserInfo" style="display: none;">
+                                        <span>Đang chỉnh sửa: <strong id="selectedUserName"></strong></span>
+                                    </div>
+                                </div>
+                                
+                                <div id="permissionContent" class="permission-content">
+                                    <div class="no-selection">
+                                        <i class="fas fa-hand-pointer"></i>
+                                        <h4>Chọn nhân viên để phân quyền</h4>
+                                        <p>Hãy chọn một nhân viên từ danh sách bên trái để bắt đầu phân quyền</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Permission History -->
+                        <div class="permission-history">
+                            <div class="panel-header">
+                                <h3><i class="fas fa-history"></i> Lịch Sử Thay Đổi</h3>
+                                <button class="btn-refresh" onclick="manager.refreshHistory()">
+                                    <i class="fas fa-sync-alt"></i> Làm mới
+                                </button>
+                            </div>
+                            <div class="history-content" id="historyContent">
+                                <div class="history-item">
+                                    <div class="history-icon">
+                                        <i class="fas fa-user-plus"></i>
+                                    </div>
+                                    <div class="history-info">
+                                        <h5>Hệ thống khởi tạo</h5>
+                                        <p>Phân quyền cơ bản được thiết lập</p>
+                                        <span class="history-time">Hôm nay</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
+            this.calculatePermissionStats(users);
             this.setupAccessHandlers();
         } catch (error) {
             console.error('Access management error:', error);
@@ -1048,47 +1129,434 @@ class ContentManager {
     }
 
     setupAccessHandlers() {
-        document.getElementById('userSelect')?.addEventListener('change', async (e) => {
-            const employeeId = e.target.value;
-            if (employeeId) {
-                try {
-                    // For now, just show the permission form without loading existing permissions
-                    document.getElementById('permissionForm').style.display = 'block';
-                    
-                    // Reset all checkboxes
-                    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                        checkbox.checked = false;
-                    });
-                } catch (error) {
-                    console.error('Load permissions error:', error);
-                    utils.showNotification("Không thể tải quyền hạn", "error");
-                }
-            } else {
-                document.getElementById('permissionForm').style.display = 'none';
-            }
+        // User search functionality
+        document.getElementById('userSearch')?.addEventListener('input', (e) => {
+            this.filterUsers(e.target.value);
         });
+    }
 
-        document.getElementById('savePermissions')?.addEventListener('click', async () => {
-            try {
-                const employeeId = document.getElementById('userSelect').value;
-                if (!employeeId) {
-                    utils.showNotification("Vui lòng chọn nhân viên", "warning");
-                    return;
+    // Helper function to get position name in Vietnamese
+    getPositionName(position) {
+        const positions = {
+            'AD': 'Quản trị viên',
+            'QL': 'Quản lý',
+            'NV': 'Nhân viên',
+            'AM': 'Trợ lý quản lý'
+        };
+        return positions[position] || 'Nhân viên';
+    }
+
+    // Calculate permission statistics
+    calculatePermissionStats(users) {
+        const stats = {
+            AD: 0, // Admin
+            QL: 0, // Manager
+            NV: 0, // Employee
+            AM: 0  // Assistant Manager
+        };
+
+        if (Array.isArray(users)) {
+            users.forEach(user => {
+                const position = user.position || 'NV';
+                if (stats.hasOwnProperty(position)) {
+                    stats[position]++;
                 }
+            });
+        }
 
-                const permissions = {};
-                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    permissions[checkbox.name] = checkbox.checked;
+        // Update stats display
+        document.getElementById('adminCount').textContent = stats.AD;
+        document.getElementById('managerCount').textContent = stats.QL + stats.AM;
+        document.getElementById('employeeCount').textContent = stats.NV;
+        document.getElementById('totalCount').textContent = users.length;
+    }
+
+    // Filter users based on search
+    filterUsers(searchTerm) {
+        const userItems = document.querySelectorAll('.user-item');
+        userItems.forEach(item => {
+            const name = item.querySelector('h4').textContent.toLowerCase();
+            const id = item.querySelector('p').textContent.toLowerCase();
+            const shouldShow = name.includes(searchTerm.toLowerCase()) || 
+                             id.includes(searchTerm.toLowerCase());
+            item.style.display = shouldShow ? 'flex' : 'none';
+        });
+    }
+
+    // Select user for permission editing
+    async selectUser(employeeId) {
+        try {
+            // Highlight selected user
+            document.querySelectorAll('.user-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`[data-employee-id="${employeeId}"]`).classList.add('selected');
+
+            // Get user details
+            const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            
+            // Update selected user info
+            document.getElementById('selectedUserInfo').style.display = 'block';
+            document.getElementById('selectedUserName').textContent = user.fullName;
+
+            // Build permission form
+            this.buildPermissionForm(user);
+            
+        } catch (error) {
+            console.error('Select user error:', error);
+            utils.showNotification("Không thể tải thông tin người dùng", "error");
+        }
+    }
+
+    // Build detailed permission form
+    buildPermissionForm(user) {
+        const permissionContent = document.getElementById('permissionContent');
+        const currentPosition = user.position || 'NV';
+        
+        permissionContent.innerHTML = `
+            <div class="permission-form">
+                <div class="user-details">
+                    <div class="user-summary">
+                        <div class="user-avatar-large">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-basic-info">
+                            <h4>${user.fullName}</h4>
+                            <p>ID: ${user.employeeId}</p>
+                            <p>Email: ${user.email || 'Chưa cập nhật'}</p>
+                            <p>Điện thoại: ${user.phone || 'Chưa cập nhật'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="position-selection">
+                    <h4><i class="fas fa-briefcase"></i> Phân Quyền Chức Vụ</h4>
+                    <div class="position-grid">
+                        <label class="position-card ${currentPosition === 'AD' ? 'selected' : ''}">
+                            <input type="radio" name="position" value="AD" ${currentPosition === 'AD' ? 'checked' : ''}>
+                            <div class="position-icon admin-icon">
+                                <i class="fas fa-crown"></i>
+                            </div>
+                            <h5>Quản trị viên</h5>
+                            <p>Toàn quyền hệ thống</p>
+                            <ul class="permission-preview">
+                                <li>✓ Quản lý tài chính</li>
+                                <li>✓ Phân tích dữ liệu</li>
+                                <li>✓ Quản lý cửa hàng</li>
+                                <li>✓ Duyệt đăng ký</li>
+                                <li>✓ Phân quyền</li>
+                            </ul>
+                        </label>
+
+                        <label class="position-card ${currentPosition === 'QL' ? 'selected' : ''}">
+                            <input type="radio" name="position" value="QL" ${currentPosition === 'QL' ? 'checked' : ''}>
+                            <div class="position-icon manager-icon">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <h5>Quản lý</h5>
+                            <p>Quản lý cửa hàng và nhân viên</p>
+                            <ul class="permission-preview">
+                                <li>✓ Quản lý cửa hàng</li>
+                                <li>✓ Duyệt đăng ký</li>
+                                <li>✓ Quản lý nhân viên</li>
+                                <li>✓ Báo cáo</li>
+                                <li>✗ Tài chính</li>
+                            </ul>
+                        </label>
+
+                        <label class="position-card ${currentPosition === 'AM' ? 'selected' : ''}">
+                            <input type="radio" name="position" value="AM" ${currentPosition === 'AM' ? 'checked' : ''}>
+                            <div class="position-icon assistant-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h5>Trợ lý quản lý</h5>
+                            <p>Hỗ trợ quản lý vận hành</p>
+                            <ul class="permission-preview">
+                                <li>✓ Hỗ trợ quản lý</li>
+                                <li>✓ Xử lý yêu cầu</li>
+                                <li>✓ Báo cáo cơ bản</li>
+                                <li>✗ Duyệt đăng ký</li>
+                                <li>✗ Tài chính</li>
+                            </ul>
+                        </label>
+
+                        <label class="position-card ${currentPosition === 'NV' ? 'selected' : ''}">
+                            <input type="radio" name="position" value="NV" ${currentPosition === 'NV' ? 'checked' : ''}>
+                            <div class="position-icon employee-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h5>Nhân viên</h5>
+                            <p>Quyền cơ bản</p>
+                            <ul class="permission-preview">
+                                <li>✓ Thông tin cá nhân</li>
+                                <li>✓ Lịch làm việc</li>
+                                <li>✓ Gửi yêu cầu</li>
+                                <li>✗ Quản lý</li>
+                                <li>✗ Duyệt</li>
+                            </ul>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="advanced-permissions">
+                    <h4><i class="fas fa-cogs"></i> Quyền Chi Tiết</h4>
+                    <div class="permission-categories">
+                        <div class="category">
+                            <h5>Quản lý hệ thống</h5>
+                            <div class="permission-list">
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_user_management" ${this.hasPermission(currentPosition, 'user_management') ? 'checked' : ''}>
+                                    <span>Quản lý người dùng</span>
+                                </label>
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_system_config" ${this.hasPermission(currentPosition, 'system_config') ? 'checked' : ''}>
+                                    <span>Cấu hình hệ thống</span>
+                                </label>
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_backup" ${this.hasPermission(currentPosition, 'backup') ? 'checked' : ''}>
+                                    <span>Sao lưu dữ liệu</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="category">
+                            <h5>Quản lý cửa hàng</h5>
+                            <div class="permission-list">
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_store_management" ${this.hasPermission(currentPosition, 'store_management') ? 'checked' : ''}>
+                                    <span>Quản lý cửa hàng</span>
+                                </label>
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_inventory" ${this.hasPermission(currentPosition, 'inventory') ? 'checked' : ''}>
+                                    <span>Quản lý kho</span>
+                                </label>
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_sales_report" ${this.hasPermission(currentPosition, 'sales_report') ? 'checked' : ''}>
+                                    <span>Báo cáo bán hàng</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="category">
+                            <h5>Tài chính</h5>
+                            <div class="permission-list">
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_finance_view" ${this.hasPermission(currentPosition, 'finance_view') ? 'checked' : ''}>
+                                    <span>Xem báo cáo tài chính</span>
+                                </label>
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_finance_edit" ${this.hasPermission(currentPosition, 'finance_edit') ? 'checked' : ''}>
+                                    <span>Chỉnh sửa tài chính</span>
+                                </label>
+                                <label class="permission-item">
+                                    <input type="checkbox" name="perm_payroll" ${this.hasPermission(currentPosition, 'payroll') ? 'checked' : ''}>
+                                    <span>Quản lý lương</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="manager.savePermissions('${user.employeeId}')">
+                        <i class="fas fa-save"></i> Lưu phân quyền
+                    </button>
+                    <button class="btn-secondary" onclick="manager.resetPermissions('${user.employeeId}')">
+                        <i class="fas fa-undo"></i> Khôi phục mặc định
+                    </button>
+                    <button class="btn-danger" onclick="manager.clearSelection()">
+                        <i class="fas fa-times"></i> Hủy bỏ
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Setup form handlers
+        this.setupPermissionFormHandlers();
+    }
+
+    // Check if position has specific permission
+    hasPermission(position, permission) {
+        const permissions = {
+            'AD': ['user_management', 'system_config', 'backup', 'store_management', 'inventory', 'sales_report', 'finance_view', 'finance_edit', 'payroll'],
+            'QL': ['store_management', 'inventory', 'sales_report', 'finance_view'],
+            'AM': ['sales_report'],
+            'NV': []
+        };
+        
+        return permissions[position]?.includes(permission) || false;
+    }
+
+    // Setup permission form handlers
+    setupPermissionFormHandlers() {
+        // Position radio button handlers
+        document.querySelectorAll('input[name="position"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Update position cards
+                document.querySelectorAll('.position-card').forEach(card => {
+                    card.classList.remove('selected');
                 });
-
-                // For now, just show success message as the API doesn't exist
-                utils.showNotification("Đã cập nhật quyền hạn (demo)", "success");
-                console.log('Permissions would be saved:', { employeeId, permissions });
-            } catch (error) {
-                console.error('Update permissions error:', error);
-                utils.showNotification("Không thể cập nhật quyền hạn", "error");
-            }
+                e.target.closest('.position-card').classList.add('selected');
+                
+                // Update detailed permissions based on position
+                this.updateDetailedPermissions(e.target.value);
+            });
         });
+    }
+
+    // Update detailed permissions based on selected position
+    updateDetailedPermissions(position) {
+        document.querySelectorAll('input[type="checkbox"][name^="perm_"]').forEach(checkbox => {
+            const permission = checkbox.name.replace('perm_', '');
+            checkbox.checked = this.hasPermission(position, permission);
+        });
+    }
+
+    // Save permissions
+    async savePermissions(employeeId) {
+        try {
+            const selectedPosition = document.querySelector('input[name="position"]:checked')?.value;
+            if (!selectedPosition) {
+                utils.showNotification("Vui lòng chọn chức vụ", "warning");
+                return;
+            }
+
+            const detailedPermissions = {};
+            document.querySelectorAll('input[type="checkbox"][name^="perm_"]').forEach(checkbox => {
+                detailedPermissions[checkbox.name] = checkbox.checked;
+            });
+
+            // For now, just update position via existing API
+            const updateData = {
+                employeeId: employeeId,
+                position: selectedPosition
+            };
+
+            // Show loading state
+            const saveButton = event.target;
+            const originalText = saveButton.innerHTML;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            saveButton.disabled = true;
+
+            // Simulate API call (replace with actual API when available)
+            setTimeout(async () => {
+                try {
+                    utils.showNotification(`Đã cập nhật chức vụ thành ${this.getPositionName(selectedPosition)}`, "success");
+                    
+                    // Update user list display
+                    const userItem = document.querySelector(`[data-employee-id="${employeeId}"]`);
+                    if (userItem) {
+                        userItem.setAttribute('data-position', selectedPosition);
+                        userItem.querySelector('.position-badge').textContent = this.getPositionName(selectedPosition);
+                        userItem.querySelector('.position-badge').className = `position-badge ${selectedPosition.toLowerCase()}`;
+                    }
+                    
+                    // Add to history
+                    this.addToHistory(employeeId, selectedPosition);
+                    
+                    // Recalculate stats
+                    const users = await utils.fetchAPI('?action=getUsers');
+                    this.calculatePermissionStats(users);
+                    
+                } catch (error) {
+                    console.error('Save permissions error:', error);
+                    utils.showNotification("Không thể lưu phân quyền", "error");
+                } finally {
+                    saveButton.innerHTML = originalText;
+                    saveButton.disabled = false;
+                }
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Save permissions error:', error);
+            utils.showNotification("Không thể lưu phân quyền", "error");
+        }
+    }
+
+    // Reset permissions to default
+    resetPermissions(employeeId) {
+        if (confirm('Bạn có chắc muốn khôi phục phân quyền mặc định cho nhân viên này?')) {
+            // Set to employee (NV) by default
+            document.querySelector('input[name="position"][value="NV"]').checked = true;
+            document.querySelectorAll('.position-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector('input[name="position"][value="NV"]').closest('.position-card').classList.add('selected');
+            
+            this.updateDetailedPermissions('NV');
+            utils.showNotification("Đã khôi phục phân quyền mặc định", "info");
+        }
+    }
+
+    // Clear selection
+    clearSelection() {
+        document.querySelectorAll('.user-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        document.getElementById('selectedUserInfo').style.display = 'none';
+        document.getElementById('permissionContent').innerHTML = `
+            <div class="no-selection">
+                <i class="fas fa-hand-pointer"></i>
+                <h4>Chọn nhân viên để phân quyền</h4>
+                <p>Hãy chọn một nhân viên từ danh sách bên trái để bắt đầu phân quyền</p>
+            </div>
+        `;
+    }
+
+    // Add to permission history
+    addToHistory(employeeId, newPosition) {
+        const historyContent = document.getElementById('historyContent');
+        const userName = document.getElementById('selectedUserName').textContent;
+        const positionName = this.getPositionName(newPosition);
+        
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+            <div class="history-icon">
+                <i class="fas fa-user-edit"></i>
+            </div>
+            <div class="history-info">
+                <h5>Cập nhật phân quyền</h5>
+                <p>${userName} được phân quyền ${positionName}</p>
+                <span class="history-time">Vừa xong</span>
+            </div>
+        `;
+        
+        historyContent.insertBefore(historyItem, historyContent.firstChild);
+    }
+
+    // Refresh permission history
+    refreshHistory() {
+        const historyContent = document.getElementById('historyContent');
+        historyContent.innerHTML = `
+            <div class="history-item">
+                <div class="history-icon">
+                    <i class="fas fa-sync-alt fa-spin"></i>
+                </div>
+                <div class="history-info">
+                    <h5>Đang tải...</h5>
+                    <p>Đang cập nhật lịch sử thay đổi</p>
+                    <span class="history-time">Vừa xong</span>
+                </div>
+            </div>
+        `;
+        
+        // Simulate refresh
+        setTimeout(() => {
+            historyContent.innerHTML = `
+                <div class="history-item">
+                    <div class="history-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="history-info">
+                        <h5>Hệ thống khởi tạo</h5>
+                        <p>Phân quyền cơ bản được thiết lập</p>
+                        <span class="history-time">Hôm nay</span>
+                    </div>
+                </div>
+            `;
+        }, 1000);
     }
 
     setupPersonalInfoHandlers() {
@@ -2146,6 +2614,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// Global permission management functions for HTML access
+window.manager = {
+    selectUser: function(employeeId) {
+        return hrManager.selectUser(employeeId);
+    },
+    savePermissions: function(employeeId) {
+        return hrManager.savePermissions(employeeId);
+    },
+    resetPermissions: function(employeeId) {
+        return hrManager.resetPermissions(employeeId);
+    },
+    clearSelection: function() {
+        return hrManager.clearSelection();
+    },
+    refreshHistory: function() {
+        return hrManager.refreshHistory();
+    }
+};
+
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function getDashboardStats() {
     console.log('🔄 Starting dashboard stats initialization...');
@@ -2477,6 +2964,7 @@ async function applyRoleBasedSectionVisibility() {
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
+    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     
     // Role-based section visibility map
     const sectionVisibility = {
@@ -2518,7 +3006,6 @@ async function applyRoleBasedSectionVisibility() {
         }
     };
     
-    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
     console.log('🔧 Role configuration for', userRole, ':', roleConfig);
     
