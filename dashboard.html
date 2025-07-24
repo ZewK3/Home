@@ -128,31 +128,44 @@
                 </div>
 
                 <!-- Role-based Quick Actions -->
-                <div class="quick-actions-section">
+                <div class="quick-actions-section" data-roles="AD,QL">
                     <h2 class="section-title">Thao Tác Nhanh</h2>
                     <div class="quick-actions-grid">
-                        <button class="quick-action-btn" data-action="addEmployee">
+                        <button class="quick-action-btn role-admin" data-action="addEmployee" data-permission="manage_employees">
                             <span class="action-icon">👤</span>
                             <span class="action-text">Thêm Nhân Viên</span>
+                            <div class="permission-indicator admin">AD</div>
                         </button>
-                        <button class="quick-action-btn" data-action="createSchedule">
+                        <button class="quick-action-btn role-manager" data-action="createSchedule" data-permission="manage_schedules">
                             <span class="action-icon">📊</span>
                             <span class="action-text">Tạo Lịch Làm</span>
+                            <div class="permission-indicator manager">QL</div>
                         </button>
-                        <button class="quick-action-btn" data-action="manageRewards">
+                        <button class="quick-action-btn role-manager" data-action="manageRewards" data-permission="manage_rewards">
                             <span class="action-icon">🏆</span>
                             <span class="action-text">Quản Lý Thưởng</span>
+                            <div class="permission-indicator manager">QL</div>
                         </button>
-                        <button class="quick-action-btn" data-action="viewReports">
+                        <button class="quick-action-btn role-admin" data-action="viewReports" data-permission="view_analytics">
                             <span class="action-icon">📈</span>
                             <span class="action-text">Báo Cáo</span>
+                            <div class="permission-indicator admin">AD</div>
+                        </button>
+                        <button class="quick-action-btn role-admin" data-action="managePermissions" data-permission="grant_permissions">
+                            <span class="action-icon">🔐</span>
+                            <span class="action-text">Phân Quyền</span>
+                            <div class="permission-indicator admin">AD</div>
                         </button>
                     </div>
                 </div>
 
                 <!-- Advanced Analytics Dashboard for Admin -->
-                <div class="analytics-section">
-                    <h2 class="section-title">Phân Tích Dữ Liệu</h2>
+                <div class="analytics-section admin-only-section" data-roles="AD">
+                    <div class="section-header">
+                        <span class="material-icons-round">analytics</span>
+                        <h2 class="section-title">Phân Tích Dữ Liệu</h2>
+                        <div class="permission-indicator admin">ADMIN ONLY</div>
+                    </div>
                     <div class="analytics-grid">
                         <div class="chart-card">
                             <h3>Hiệu Suất Nhân Viên</h3>
@@ -182,10 +195,14 @@
                 </div>
 
                 <!-- Store Management for Managers -->
-                <div class="store-management-section">
-                    <h2 class="section-title">Quản Lý Cửa Hàng</h2>
+                <div class="store-management-section manager-section" data-roles="AD,QL">
+                    <div class="section-header">
+                        <span class="material-icons-round">store</span>
+                        <h2 class="section-title">Quản Lý Cửa Hàng</h2>
+                        <div class="permission-indicator manager">MANAGER+</div>
+                    </div>
                     <div class="store-grid">
-                        <div class="store-card" data-store="ST001">
+                        <div class="store-card" data-store="ST001" data-permission="manage_stores">
                             <div class="store-header">
                                 <h3>Cửa Hàng Trung Tâm</h3>
                                 <span class="store-status active">Hoạt động</span>
@@ -201,11 +218,11 @@
                                 </div>
                             </div>
                             <div class="store-actions">
-                                <button class="btn-sm btn-primary" onclick="manageStore('ST001')">Quản Lý</button>
+                                <button class="btn-sm btn-primary" onclick="manageStore('ST001')" data-permission="manage_stores">Quản Lý</button>
                                 <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST001')">Xem Lịch</button>
                             </div>
                         </div>
-                        <div class="store-card" data-store="ST002">
+                        <div class="store-card" data-store="ST002" data-permission="manage_stores">
                             <div class="store-header">
                                 <h3>Cửa Hàng Quận 1</h3>
                                 <span class="store-status active">Hoạt động</span>
@@ -221,7 +238,7 @@
                                 </div>
                             </div>
                             <div class="store-actions">
-                                <button class="btn-sm btn-primary" onclick="manageStore('ST002')">Quản Lý</button>
+                                <button class="btn-sm btn-primary" onclick="manageStore('ST002')" data-permission="manage_stores">Quản Lý</button>
                                 <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST002')">Xem Lịch</button>
                             </div>
                         </div>
@@ -242,10 +259,14 @@
                 </div>
 
                 <!-- Finance Overview for Admin -->
-                <div class="finance-section">
-                    <h2 class="section-title">Tổng Quan Tài Chính</h2>
+                <div class="finance-section admin-only-section" data-roles="AD">
+                    <div class="section-header">
+                        <span class="material-icons-round">account_balance</span>
+                        <h2 class="section-title">Tổng Quan Tài Chính</h2>
+                        <div class="permission-indicator admin">ADMIN ONLY</div>
+                    </div>
                     <div class="finance-grid">
-                        <div class="finance-card revenue">
+                        <div class="finance-card revenue" data-permission="manage_finances">
                             <div class="finance-header">
                                 <h3>Doanh Thu Tháng</h3>
                                 <span class="finance-trend up">↗ +12%</span>
@@ -253,7 +274,7 @@
                             <div class="finance-amount" id="monthlyRevenue">0 ₫</div>
                             <div class="finance-subtitle">So với tháng trước</div>
                         </div>
-                        <div class="finance-card expense">
+                        <div class="finance-card expense" data-permission="manage_finances">
                             <div class="finance-header">
                                 <h3>Chi Phí Tháng</h3>
                                 <span class="finance-trend down">↘ -5%</span>
@@ -261,7 +282,7 @@
                             <div class="finance-amount" id="monthlyExpense">0 ₫</div>
                             <div class="finance-subtitle">Tiết kiệm được</div>
                         </div>
-                        <div class="finance-card profit">
+                        <div class="finance-card profit" data-permission="manage_finances">
                             <div class="finance-header">
                                 <h3>Lợi Nhuận</h3>
                                 <span class="finance-trend up">↗ +18%</span>
@@ -269,7 +290,7 @@
                             <div class="finance-amount" id="monthlyProfit">0 ₫</div>
                             <div class="finance-subtitle">Tăng trưởng tốt</div>
                         </div>
-                        <div class="finance-card payroll">
+                        <div class="finance-card payroll" data-permission="manage_finances">
                             <div class="finance-header">
                                 <h3>Lương Nhân Viên</h3>
                                 <span class="finance-trend neutral">→ 0%</span>
@@ -281,12 +302,16 @@
                 </div>
 
                 <!-- Registration Approval for Admin and Managers -->
-                <div class="registration-approval-section">
-                    <h2 class="section-title">Duyệt Đăng Ký Nhân Viên</h2>
+                <div class="registration-approval-section manager-section" data-roles="AD,QL">
+                    <div class="section-header">
+                        <span class="material-icons-round">how_to_reg</span>
+                        <h2 class="section-title">Duyệt Đăng Ký Nhân Viên</h2>
+                        <div class="permission-indicator manager">MANAGER+</div>
+                    </div>
                     <div class="approval-container">
                         <div class="approval-header">
                             <div class="approval-filters">
-                                <select id="storeFilter" class="filter-select">
+                                <select id="storeFilter" class="filter-select" data-permission="approve_registrations">
                                     <option value="">Tất cả cửa hàng</option>
                                 </select>
                                 <button id="refreshPendingBtn" class="refresh-btn">
@@ -302,8 +327,12 @@
                 </div>
 
                 <!-- Personal Dashboard for Employees -->
-                <div class="personal-section">
-                    <h2 class="section-title">Thông Tin Cá Nhân</h2>
+                <div class="personal-section employee-section" data-roles="NV,AM">
+                    <div class="section-header">
+                        <span class="material-icons-round">person</span>
+                        <h2 class="section-title">Thông Tin Cá Nhân</h2>
+                        <div class="permission-indicator employee">EMPLOYEE</div>
+                    </div>
                     <div class="personal-grid">
                         <div class="personal-card schedule">
                             <h3>Lịch Làm Tuần Này</h3>
@@ -325,6 +354,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Permission Management Modal -->
+    <div id="permissionModal" class="permission-modal">
+        <div class="permission-modal-content">
+            <div class="permission-modal-header">
+                <h2 class="permission-modal-title">🔐 Quản Lý Phân Quyền</h2>
+                <button class="permission-modal-close" onclick="closePermissionModal()">&times;</button>
+            </div>
+            <div id="permissionModalBody" class="permission-modal-body">
+                <!-- Content will be populated by JavaScript -->
             </div>
         </div>
     </div>
