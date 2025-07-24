@@ -223,47 +223,6 @@ function calculateRank(exp) {
 }
 
 // Hàm đăng ký người dùng (khách hàng)
-async function registerUser(body, db, origin) {
-  const { name, email, password } = body;
-  if (!name || name.trim() === "" || !email || email.trim() === "" || !password || password.trim() === "") {
-    return jsonResponse({ message: "Thiếu thông tin hoặc thông tin không hợp lệ!" }, 400, origin);
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[0-9]{10,11}$/;
-  if (!emailRegex.test(email) && !phoneRegex.test(email)) {
-    return jsonResponse({ message: "Email hoặc số điện thoại không hợp lệ!" }, 400, origin);
-  }
-
-  if (password.length < 6) {
-    return jsonResponse({ message: "Mật khẩu phải có ít nhất 6 ký tự!" }, 400, origin);
-  }
-
-  const existing = await db.prepare("SELECT * FROM users WHERE email = ?").bind(email).first();
-  if (existing) return jsonResponse({ message: "Email đã tồn tại!" }, 409, origin);
-
-  const hashedPassword = await hashPassword(password);
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-
-  try {
-    await db
-      .prepare("INSERT INTO users (id, name, email, password, createdAt, exp, rank) VALUES (?, ?, ?, ?, ?, ?, ?)")
-      .bind(id, name, email, hashedPassword, now, 0, "Đồng")
-      .run();
-  } catch (error) {
-    console.error("Lỗi khi tạo người dùng:", error);
-    return jsonResponse({ message: "Lỗi tạo người dùng!", error: error.message }, 500, origin);
-  }
-
-  const sessionResult = await createSession(id, db, origin);
-  if (sessionResult.success) {
-    return jsonResponse(sessionResult, 200, origin);
-  } else {
-    return jsonResponse({ message: "Lỗi tạo phiên làm việc!", error: sessionResult.error }, 500, origin);
-  }
-}
-
 // Hàm đăng nhập người dùng (khách hàng)
 async function loginUser(body, db, origin) {
   const { email, password } = body;
@@ -361,32 +320,6 @@ async function updateUser(body, userId, db, origin) {
   } catch (error) {
     console.error("Lỗi cập nhật thông tin người dùng:", error);
     return jsonResponse({ message: "Lỗi cập nhật thông tin!", error: error.message }, 500, origin);
-  }
-}
-
-// Hàm điều chỉnh điểm kinh nghiệm người dùng (dành cho admin)
-async function adjustUserExp(body, db, origin) {
-  const { userId, expChange } = body;
-
-  if (!userId || typeof expChange !== "number") {
-    return jsonResponse({ message: "Thiếu userId hoặc expChange không hợp lệ!" }, 400, origin);
-  }
-
-  const user = await db.prepare("SELECT exp FROM users WHERE id = ?").bind(userId).first();
-  if (!user) return jsonResponse({ message: "Người dùng không tồn tại!" }, 404, origin);
-
-  const newExp = Math.max(0, (user.exp || 0) + expChange); // Đảm bảo điểm không âm
-  const newRank = calculateRank(newExp);
-
-  try {
-    await db
-      .prepare("UPDATE users SET exp = ?, rank = ? WHERE id = ?")
-      .bind(newExp, newRank, userId)
-      .run();
-    return jsonResponse({ success: true, newExp, newRank }, 200, origin);
-  } catch (error) {
-    console.error("Lỗi điều chỉnh điểm:", error);
-    return jsonResponse({ message: "Lỗi điều chỉnh điểm!", error: error.message }, 500, origin);
   }
 }
 
@@ -585,71 +518,6 @@ async function handleCheckId(url, db, origin) {
   return user
     ? jsonResponse({ message: "Tài Khoản Đã Tồn Tại!" }, 400, origin)
     : jsonResponse({ message: "Tài Khoản Hợp Lệ!" }, 200, origin);
-}
-
-// Hàm lấy giao dịch
-async function handleGetTransaction(url, db, origin) {
-  const startDate = url.searchParams.get("startDate");
-  if (!startDate) return jsonResponse({ message: "Thiếu startDate!" }, 400, origin);
-
-  try {
-    const transactions = await db
-      .prepare("SELECT id, amount, status FROM 'transaction' WHERE date = ?")
-      .bind(startDate)
-      .all();
-
-    if (transactions.results.length === 0) {
-      return jsonResponse({ message: "Không tìm thấy giao dịch trong ngày này" }, 404, origin);
-    }
-    return jsonResponse(transactions.results, 200, origin);
-  } catch (error) {
-    console.error("Lỗi khi lấy giao dịch:", error);
-    return jsonResponse({ message: "Lỗi server", error: error.message }, 500, origin);
-  }
-}
-
-// Hàm kiểm tra trạng thái giao dịch
-async function checkTransactionStatus(transactionId, db) {
-  if (!transactionId) {
-    console.error("Thiếu transactionId!");
-    return { success: false, message: "Thiếu transactionId!" };
-  }
-
-  const payment = await db
-    .prepare('SELECT extractedID, "transaction", dateTime, description FROM payment WHERE extractedID = ?')
-    .bind(transactionId)
-    .first();
-
-  if (!payment) {
-    console.log(`Không tìm thấy giao dịch với extractedID: ${transactionId}`);
-    return { success: false, message: "Giao dịch không tồn tại!" };
-  }
-
-  return {
-    success: true,
-    id: payment.extractedID,
-    amount: payment.transaction,
-    dateTime: payment.dateTime,
-    description: payment.description,
-  };
-}
-
-// Hàm lưu thanh toán
-async function handleSavePayment(body, db, origin) {
-  const { emails } = body;
-  if (!emails || !Array.isArray(emails) || emails.length === 0) {
-    return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
-  }
-
-  const stmt = db.prepare(
-    'INSERT INTO payment ("transaction", accountNumber, dateTime, description, extractedID) VALUES (?, ?, ?, ?, ?)'
-  );
-  const inserts = emails.map(email =>
-    stmt.bind(email.transaction, email.accountNumber, email.dateTime, email.description, email.extractedID)
-  );
-
-  await db.batch(inserts);
-  return jsonResponse({ message: "Dữ liệu đã được lưu thành công!" }, 200, origin);
 }
 
 // Hàm lưu giao dịch
@@ -1762,7 +1630,7 @@ export default {
       const protectedActions = [
         "update", "savedk", "checkdk", "getUser", "getUsers", 
         "saveOrder", "updateOrderStatus", "getOrders", "cancelOrder", 
-        "getOrderById", "updateUser", "adjustUserExp", "getPendingRegistrations",
+        "getOrderById", "updateUser", "getPendingRegistrations",
         "getPendingRequests", "getTasks", "getRewards", "getPermissions"
       ];
       if (protectedActions.includes(action)) {
@@ -1793,18 +1661,12 @@ export default {
             return await handleSaveSchedule(body, db, ALLOWED_ORIGIN);
           case "saveTransaction":
             return await handleSaveTransaction(body, db, ALLOWED_ORIGIN);
-          case "savePayment":
-            return await handleSavePayment(body, db, ALLOWED_ORIGIN);
-          case "registerUser":
-            return await registerUser(body, db, ALLOWED_ORIGIN);
           case "loginUser":
             return await loginUser(body, db, ALLOWED_ORIGIN);
           case "saveOrder":
             return await saveOrder(body, request.userId, db, ALLOWED_ORIGIN);
           case "updateUser":
             return await updateUser(body, request.userId, db, ALLOWED_ORIGIN);
-          case "adjustUserExp":
-            return await adjustUserExp(body, db, ALLOWED_ORIGIN);
           case "addReward":
             return await handleAddReward(body, db, ALLOWED_ORIGIN);
           case "approveTask":
@@ -1832,8 +1694,6 @@ export default {
             return await handleGetChat(url, db, ALLOWED_ORIGIN);
           case "checkId":
             return await handleCheckId(url, db, ALLOWED_ORIGIN);
-          case "getTransaction":
-            return await handleGetTransaction(url, db, ALLOWED_ORIGIN);
           case "getUser":
             return await handleGetUser(url, db, ALLOWED_ORIGIN);
           case "getUsers":
@@ -1866,11 +1726,6 @@ export default {
             return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
           case "getPendingRegistrations":
             return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
-          case "checkTransaction":
-            const transactionId = url.searchParams.get("transactionId");
-            if (!transactionId) return jsonResponse({ message: "Thiếu transactionId!" }, 400);
-            const result = await checkTransactionStatus(transactionId, db);
-            return jsonResponse(result, result.success !== undefined ? 200 : 500);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
