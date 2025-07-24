@@ -214,15 +214,6 @@ async function createSession(employeeId, db, allowedOrigin) {
 }
 
 // Hàm tính rank dựa trên điểm kinh nghiệm
-function calculateRank(exp) {
-  if (exp >= 5000) return "Kim Cương";
-  if (exp >= 2000) return "Bạch Kim";
-  if (exp >= 1000) return "Vàng";
-  if (exp >= 500) return "Bạc";
-  return "Đồng";
-}
-
-// Hàm đăng ký người dùng (khách hàng)
 // Hàm đăng nhập người dùng (khách hàng)
 async function loginUser(body, db, origin) {
   const { email, password } = body;
@@ -323,155 +314,6 @@ async function updateUser(body, userId, db, origin) {
   }
 }
 
-// Hàm lưu đơn hàng (cập nhật để thêm thông tin giao hàng)
-async function saveOrder(body, userId, db, origin) {
-  const { cart, status, total, deliveryAddress, distance, duration } = body;
-  
-  if (!Array.isArray(cart) || cart.length === 0 || !status || typeof total !== "number") {
-    return jsonResponse({ message: "Dữ liệu đơn hàng không hợp lệ!" }, 400, origin);
-  }
-
-  // Kiểm tra dữ liệu cart chi tiết
-  for (const item of cart) {
-    if (!item.name || typeof item.price !== "number" || typeof item.quantity !== "number") {
-      return jsonResponse({ message: "Dữ liệu sản phẩm trong giỏ hàng không hợp lệ!" }, 400, origin);
-    }
-  }
-
-  const user = await db.prepare("SELECT id FROM users WHERE id = ?").bind(userId).first();
-  if (!user) return jsonResponse({ message: "Người dùng không tồn tại!" }, 404, origin);
-
-  const orderId = `ORDER_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  const now = new Date().toISOString();
-
-  try {
-    await db
-      .prepare("INSERT INTO orders (orderId, userId, cart, status, total, createdAt, deliveryAddress, distance, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(orderId, userId, JSON.stringify(cart), status, total, now, deliveryAddress || null, distance || null, duration || null)
-      .run();
-  } catch (error) {
-    console.error("Lỗi khi lưu đơn hàng:", error);
-    return jsonResponse({ message: "Lỗi lưu đơn hàng!", error: error.message }, 500, origin);
-  }
-
-  return jsonResponse({ orderId }, 200, origin);
-}
-
-// Hàm hủy đơn hàng
-async function cancelOrder(url, db, origin) {
-  const token = url.searchParams.get("token");
-  const orderId = url.searchParams.get("orderId");
-
-  if (!orderId) return jsonResponse({ message: "Thiếu orderId!" }, 400, origin);
-
-  const session = await checkSessionMiddleware(token, db, origin);
-  if (session instanceof Response) return session;
-
-  const order = await db.prepare("SELECT * FROM orders WHERE orderId = ? AND userId = ?").bind(orderId, session.employeeId).first();
-  if (!order) return jsonResponse({ message: "Đơn hàng không tồn tại hoặc không thuộc về bạn!" }, 404, origin);
-
-  if (order.status !== "pending") {
-    return jsonResponse({ message: "Chỉ có thể hủy đơn hàng ở trạng thái 'pending'!" }, 400, origin);
-  }
-
-  try {
-    await db.prepare("UPDATE orders SET status = 'canceled' WHERE orderId = ?").bind(orderId).run();
-    return jsonResponse({ success: true, message: "Đơn hàng đã được hủy!" }, 200, origin);
-  } catch (error) {
-    console.error("Lỗi hủy đơn hàng:", error);
-    return jsonResponse({ message: "Lỗi hủy đơn hàng!", error: error.message }, 500, origin);
-  }
-}
-
-// Hàm lấy chi tiết đơn hàng theo ID
-async function getOrderById(url, db, origin) {
-  const token = url.searchParams.get("token");
-  const orderId = url.searchParams.get("orderId");
-
-  if (!orderId) return jsonResponse({ message: "Thiếu orderId!" }, 400, origin);
-
-  const session = await checkSessionMiddleware(token, db, origin);
-  if (session instanceof Response) return session;
-
-  const order = await db.prepare("SELECT * FROM orders WHERE orderId = ? AND userId = ?").bind(orderId, session.employeeId).first();
-  if (!order) return jsonResponse({ message: "Đơn hàng không tồn tại hoặc không thuộc về bạn!" }, 404, origin);
-
-  return jsonResponse({
-    orderId: order.orderId,
-    cart: JSON.parse(order.cart),
-    status: order.status,
-    total: Number(order.total),
-    createdAt: order.createdAt,
-    deliveryAddress: order.deliveryAddress,
-    distance: order.distance,
-    duration: order.duration
-  }, 200, origin);
-}
-
-// Hàm cập nhật trạng thái đơn hàng và tính điểm
-async function updateOrderStatus(url, db, origin) {
-  const token = url.searchParams.get("token");
-  const orderId = url.searchParams.get("orderId");
-  const status = url.searchParams.get("status");
-
-  if (!orderId || !status) return jsonResponse({ message: "Thiếu orderId hoặc status!" }, 400, origin);
-  if (!["pending", "success", "canceled"].includes(status)) {
-    return jsonResponse({ message: "Trạng thái không hợp lệ!" }, 400, origin);
-  }
-
-  const session = await checkSessionMiddleware(token, db, origin);
-  if (session instanceof Response) return session;
-
-  const order = await db.prepare("SELECT * FROM orders WHERE orderId = ? AND userId = ?").bind(orderId, session.employeeId).first();
-  if (!order) return jsonResponse({ message: "Đơn hàng không tồn tại hoặc không thuộc về bạn!" }, 404, origin);
-
-  await db.prepare("UPDATE orders SET status = ? WHERE orderId = ?").bind(status, orderId).run();
-
-  if (status === "success") {
-    const total = Number(order.total);
-    const expGain = Math.floor(total / 1000);
-    const user = await db.prepare("SELECT exp FROM users WHERE id = ?").bind(session.employeeId).first();
-    if (!user) return jsonResponse({ message: "Người dùng không tồn tại!" }, 404, origin);
-
-    const newExp = (user.exp || 0) + expGain;
-    const newRank = calculateRank(newExp);
-
-    await db
-      .prepare("UPDATE users SET exp = ?, rank = ? WHERE id = ?")
-      .bind(newExp, newRank, session.employeeId)
-      .run();
-
-    return jsonResponse({ success: true, gainedExp: expGain, newExp, newRank }, 200, origin);
-  }
-
-  return jsonResponse({ success: true }, 200, origin);
-}
-
-// Hàm lấy danh sách đơn hàng
-async function getOrders(url, db, origin) {
-  const token = url.searchParams.get("token");
-  const session = await checkSessionMiddleware(token, db, origin);
-  if (session instanceof Response) return session;
-
-  const orders = await db
-    .prepare("SELECT * FROM orders WHERE userId = ? ORDER BY createdAt DESC")
-    .bind(session.employeeId)
-    .all();
-
-  const result = orders.results.map(order => ({
-    orderId: order.orderId,
-    cart: JSON.parse(order.cart),
-    status: order.status,
-    total: Number(order.total),
-    createdAt: order.createdAt,
-    deliveryAddress: order.deliveryAddress,
-    distance: order.distance,
-    duration: order.duration
-  }));
-
-  return jsonResponse({ orders: result }, 200, origin);
-}
-
 // Hàm lấy danh sách cửa hàng
 async function handleGetStores(db, origin) {
   try {
@@ -518,29 +360,6 @@ async function handleCheckId(url, db, origin) {
   return user
     ? jsonResponse({ message: "Tài Khoản Đã Tồn Tại!" }, 400, origin)
     : jsonResponse({ message: "Tài Khoản Hợp Lệ!" }, 200, origin);
-}
-
-// Hàm lưu giao dịch
-async function handleSaveTransaction(body, db, origin) {
-  const { id, amount, status, date } = body;
-  if (!id || !amount || !status || !date) {
-    return jsonResponse({ message: "Thiếu thông tin giao dịch!" }, 400, origin);
-  }
-
-  if (status !== "success" && status !== "failed") {
-    return jsonResponse({ message: "Trạng thái không hợp lệ!" }, 400, origin);
-  }
-
-  try {
-    await db
-      .prepare("INSERT INTO 'transaction' (id, amount, status, date) VALUES (?, ?, ?, ?)")
-      .bind(id, amount, status, date)
-      .run();
-    return jsonResponse({ message: "Giao dịch đã được lưu thành công!" }, 200, origin);
-  } catch (error) {
-    console.error("Lỗi khi lưu giao dịch:", error);
-    return jsonResponse({ message: "Lỗi lưu giao dịch!", error: error.message }, 500, origin);
-  }
 }
 
 // Hàm kiểm tra lịch làm việc
@@ -1629,8 +1448,7 @@ export default {
 
       const protectedActions = [
         "update", "savedk", "checkdk", "getUser", "getUsers", 
-        "saveOrder", "updateOrderStatus", "getOrders", "cancelOrder", 
-        "getOrderById", "updateUser", "getPendingRegistrations",
+        "updateUser", "getPendingRegistrations",
         "getPendingRequests", "getTasks", "getRewards", "getPermissions"
       ];
       if (protectedActions.includes(action)) {
@@ -1659,12 +1477,8 @@ export default {
             return await handleUpdate(body, db, ALLOWED_ORIGIN);
           case "savedk":
             return await handleSaveSchedule(body, db, ALLOWED_ORIGIN);
-          case "saveTransaction":
-            return await handleSaveTransaction(body, db, ALLOWED_ORIGIN);
           case "loginUser":
             return await loginUser(body, db, ALLOWED_ORIGIN);
-          case "saveOrder":
-            return await saveOrder(body, request.userId, db, ALLOWED_ORIGIN);
           case "updateUser":
             return await updateUser(body, request.userId, db, ALLOWED_ORIGIN);
           case "addReward":
@@ -1702,14 +1516,6 @@ export default {
             return await handleCheckSchedule(url, db, ALLOWED_ORIGIN);
           case "User":
             return await getUser(url, db, ALLOWED_ORIGIN);
-          case "updateOrderStatus":
-            return await updateOrderStatus(url, db, ALLOWED_ORIGIN);
-          case "getOrders":
-            return await getOrders(url, db, ALLOWED_ORIGIN);
-          case "cancelOrder":
-            return await cancelOrder(url, db, ALLOWED_ORIGIN);
-          case "getOrderById":
-            return await getOrderById(url, db, ALLOWED_ORIGIN);
           case "getTodaySchedule":
             return await handleGetTodaySchedule(db, ALLOWED_ORIGIN);
           case "getPendingRequests":
