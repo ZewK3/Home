@@ -2059,7 +2059,13 @@ class AuthManager {
         }
 
         try {
-            const user = await utils.fetchAPI(`?action=getUser&employeeId=${this.userData.loginEmployeeId}`);
+            // Handle both employeeId and loginEmployeeId for compatibility
+            const employeeId = this.userData.employeeId || this.userData.loginEmployeeId;
+            if (!employeeId) {
+                throw new Error("No employee ID in user data");
+            }
+            
+            const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
             if (user) {
                 const userInfoElement = document.getElementById("userInfo");
                 if (userInfoElement) {
@@ -2426,22 +2432,52 @@ function initializeRoleBasedUI() {
 // Apply role-based section visibility for welcome-section without data-role attributes
 async function applyRoleBasedSectionVisibility() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    
+    // Handle both employeeId and loginEmployeeId for compatibility
+    const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
     let userRole = loggedInUser.position || 'NV';
     
-    // Get fresh user data from API to ensure accurate role
-    try {
-        if (loggedInUser.employeeId) {
-            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+    if (!employeeId) {
+        console.error('❌ No employee ID found in localStorage for role visibility');
+        // Try to get from current user session instead
+        const userInfo = document.getElementById("userInfo");
+        if (userInfo && userInfo.textContent) {
+            // Extract employee ID from userInfo display
+            const match = userInfo.textContent.match(/- ([A-Z0-9]+)$/);
+            if (match) {
+                const extractedId = match[1];
+                console.log('✅ Found employee ID from userInfo:', extractedId);
+                try {
+                    const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${extractedId}`);
+                    if (freshUserData && freshUserData.position) {
+                        userRole = freshUserData.position;
+                        console.log('🔐 Using fresh role from extracted ID:', userRole);
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Could not fetch user data with extracted ID:', error);
+                }
+            }
+        }
+        
+        if (!employeeId && userRole === 'NV') {
+            console.warn('⚠️ No employee ID available, defaulting to NV role');
+            userRole = 'NV';
+        }
+    } else {
+        // Get fresh user data from API to ensure accurate role
+        try {
+            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
             if (freshUserData && freshUserData.position) {
                 userRole = freshUserData.position;
                 console.log('🔐 Using fresh role from API for section visibility:', userRole);
             }
+        } catch (error) {
+            console.warn('⚠️ Using cached role for section visibility due to API error:', error);
         }
-    } catch (error) {
-        console.warn('⚠️ Using cached role for section visibility due to API error:', error);
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
+    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     
     // Role-based section visibility map
     const sectionVisibility = {
@@ -2484,6 +2520,11 @@ async function applyRoleBasedSectionVisibility() {
     };
     
     const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
+    console.log('🔧 Role configuration for', userRole, ':', roleConfig);
+    
+    // Count sections that should be visible
+    const visibleSections = Object.entries(roleConfig).filter(([_, isVisible]) => isVisible);
+    console.log(`📊 Expected ${visibleSections.length} sections to be visible for ${userRole} role`);
     
     // Apply visibility settings
     Object.entries(roleConfig).forEach(([selector, isVisible]) => {
@@ -2493,17 +2534,34 @@ async function applyRoleBasedSectionVisibility() {
                 section.style.display = 'block';
                 section.style.visibility = 'visible';
                 section.classList.remove('role-hidden');
+                section.classList.add('role-visible');
                 console.log(`✅ Section visible for ${userRole}: ${selector}`);
             } else {
                 section.style.display = 'none';
                 section.style.visibility = 'hidden';
                 section.classList.add('role-hidden');
+                section.classList.remove('role-visible');
                 console.log(`❌ Section hidden for ${userRole}: ${selector}`);
             }
         } else {
             console.warn(`⚠️ Section not found: ${selector}`);
         }
     });
+    
+    // Summary log
+    const actualVisibleSections = document.querySelectorAll('.role-visible').length;
+    console.log(`📈 Result: ${actualVisibleSections} sections are now visible`);
+    
+    // Special debug for AD role
+    if (userRole === 'AD') {
+        console.log('🔍 AD Role Special Debug:');
+        console.log('  - Quick Actions:', !!document.querySelector('.quick-actions-section.role-visible'));
+        console.log('  - Analytics:', !!document.querySelector('.analytics-section.role-visible'));
+        console.log('  - Store Management:', !!document.querySelector('.store-management-section.role-visible'));
+        console.log('  - Finance:', !!document.querySelector('.finance-section.role-visible'));
+        console.log('  - Registration Approval:', !!document.querySelector('.registration-approval-section.role-visible'));
+        console.log('  - Activities:', !!document.querySelector('.activities-section.role-visible'));
+    }
     
     // Also apply role-based visibility to quick action buttons within the visible section
     if (roleConfig['.quick-actions-section']) {
@@ -2675,10 +2733,11 @@ function exportReports() {
 async function refreshUserRoleAndPermissions() {
     try {
         const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        if (!loggedInUser.employeeId) return;
+        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
+        if (!employeeId) return;
 
         // Get fresh user data from API
-        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
         if (freshUserData && freshUserData.position) {
             console.log('🔄 Refreshing role permissions for:', freshUserData.position);
             
@@ -2727,7 +2786,8 @@ async function loadPersonalSchedule() {
 
     try {
         const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const response = await utils.fetchAPI(`?action=checkdk&employeeId=${userInfo.employeeId}`);
+        const employeeId = userInfo.employeeId || userInfo.loginEmployeeId;
+        const response = await utils.fetchAPI(`?action=checkdk&employeeId=${employeeId}`);
         
         if (response && response.shifts) {
             const scheduleHTML = response.shifts.map(shift => `
@@ -2754,7 +2814,8 @@ async function loadPersonalRewards() {
     try {
         const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
         const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        const rewards = await utils.fetchAPI(`?action=getRewards&employeeId=${userInfo.employeeId}&limit=5&token=${token}`);
+        const employeeId = userInfo.employeeId || userInfo.loginEmployeeId;
+        const rewards = await utils.fetchAPI(`?action=getRewards&employeeId=${employeeId}&limit=5&token=${token}`);
         
         if (rewards && Array.isArray(rewards) && rewards.length > 0) {
             const rewardsHTML = rewards.map(reward => `
@@ -2887,15 +2948,54 @@ async function initializeEnhancedDashboard() {
         
         // Get fresh user data from API instead of localStorage
         const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        if (!loggedInUser.employeeId) {
-            console.error('No employee ID found in localStorage');
+        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
+        
+        if (!employeeId) {
+            console.error('No employee ID found in localStorage - checking userInfo fallback');
+            
+            // Try to get from current user session display
+            const userInfo = document.getElementById("userInfo");
+            if (userInfo && userInfo.textContent) {
+                const match = userInfo.textContent.match(/- ([A-Z0-9]+)$/);
+                if (match) {
+                    const extractedId = match[1];
+                    console.log('✅ Using employee ID from userInfo:', extractedId);
+                    
+                    try {
+                        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${extractedId}`);
+                        if (freshUserData && freshUserData.position) {
+                            const userPosition = freshUserData.position;
+                            console.log('📊 Fresh user data from extracted ID:', { 
+                                employeeId: freshUserData.employeeId, 
+                                fullName: freshUserData.fullName, 
+                                position: userPosition,
+                                storeName: freshUserData.storeName
+                            });
+                            
+                            // Continue with initialization
+                            console.log('📊 Initializing dashboard stats and role checking...');
+                            await getDashboardStats();
+                            await initializeRecentActivities();
+                            
+                            console.log('🔐 Setting up role-based UI with fresh data...');
+                            initializeRoleBasedUI();
+                            MenuManager.updateMenuByRole(userPosition);
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('Failed to get user data from extracted ID:', error);
+                    }
+                }
+            }
+            
+            console.error('❌ Could not determine employee ID - aborting dashboard initialization');
             return;
         }
 
-        console.log('🚀 Initializing enhanced dashboard for employee:', loggedInUser.employeeId);
+        console.log('🚀 Initializing enhanced dashboard for employee:', employeeId);
         
         // Fetch fresh user data from API
-        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
         if (!freshUserData || !freshUserData.position) {
             console.error('Failed to fetch fresh user data from API');
             return;
@@ -2987,11 +3087,12 @@ async function checkForChanges() {
     try {
         const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
         const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        if (!token || !loggedInUser.employeeId) return false;
+        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
+        if (!token || !employeeId) return false;
         
         // Check for activity changes (simplified hash check)
         const activitiesResponse = await fetch(`${CONFIG.API_URL}?action=getRecentActivities&token=${token}`);
-        const userData = await fetch(`${CONFIG.API_URL}?action=getUser&employeeId=${loggedInUser.employeeId}&token=${token}`);
+        const userData = await fetch(`${CONFIG.API_URL}?action=getUser&employeeId=${employeeId}&token=${token}`);
         
         if (activitiesResponse.ok && userData.ok) {
             const activities = await activitiesResponse.json();
@@ -3103,8 +3204,9 @@ async function showWelcomeSection() {
         
         // Get fresh user data from API to ensure accurate role
         try {
-            if (loggedInUser.employeeId) {
-                const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+            const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
+            if (employeeId) {
+                const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
                 if (freshUserData && freshUserData.position) {
                     userRole = freshUserData.position;
                     console.log('🔐 Using fresh role from API:', userRole);
