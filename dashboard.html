@@ -371,6 +371,114 @@
         </div>
     </div>
 
+    <!-- Role Testing Panel for Development -->
+    <div id="roleTestingPanel" class="role-testing-panel">
+        <div class="role-testing-header">
+            <h3 class="role-testing-title">🧪 Role Testing</h3>
+            <button class="role-testing-close" onclick="toggleRoleTestingPanel()">&times;</button>
+        </div>
+        <div class="role-selector-testing">
+            <label for="testRoleSelect">Test Role:</label>
+            <select id="testRoleSelect" onchange="switchTestRole(this.value)">
+                <option value="AD">Administrator (AD)</option>
+                <option value="QL">Manager (QL)</option>
+                <option value="NV">Employee (NV)</option>
+                <option value="AM">Assistant Manager (AM)</option>
+            </select>
+        </div>
+        <div class="role-test-actions">
+            <button class="btn btn-sm btn-primary" onclick="runRoleValidation()">Validate System</button>
+            <button class="btn btn-sm btn-secondary" onclick="demoRoleSystem()">Demo All Roles</button>
+        </div>
+        <div id="roleTestResults" class="role-test-results">
+            <div class="role-test-info">Click "Validate System" to test current role permissions</div>
+        </div>
+    </div>
+
+    <!-- Debug Toggle Button (Development Only) -->
+    <button id="debugToggle" class="debug-toggle" onclick="toggleRoleTestingPanel()" title="Toggle Role Testing Panel">
+        🧪
+    </button>
+
+    <!-- Debug Info Panel -->
+    <div id="debugInfo" class="debug-info">
+        <div id="debugContent">Debug information will appear here</div>
+    </div>
+
+    <script>
+        // Role Testing Panel Functions
+        function toggleRoleTestingPanel() {
+            const panel = document.getElementById('roleTestingPanel');
+            panel.classList.toggle('show');
+        }
+
+        function switchTestRole(newRole) {
+            const mockUserData = { position: newRole, employeeId: 'TEST001', fullName: 'Test User' };
+            localStorage.setItem('loggedInUser', JSON.stringify(mockUserData));
+            
+            // Re-initialize the role-based system
+            setTimeout(async () => {
+                await applyRoleBasedSectionVisibility();
+                if (window.PermissionManager) {
+                    PermissionManager.applyRoleSpecificStyling(newRole);
+                }
+                updateDebugInfo();
+                runRoleValidation();
+            }, 100);
+        }
+
+        function runRoleValidation() {
+            if (window.validateRoleSystem) {
+                validateRoleSystem().then(results => {
+                    displayTestResults(results);
+                });
+            }
+        }
+
+        function displayTestResults(results) {
+            const container = document.getElementById('roleTestResults');
+            if (!container) return;
+            
+            const html = `
+                <div class="role-test-item role-test-info">Role: ${results.role}</div>
+                <div class="role-test-item role-test-info">Permissions: ${results.permissions.totalPermissions || 0}</div>
+                <div class="role-test-item role-test-info">Level: ${results.permissions.roleLevel || 'Unknown'}</div>
+                <div class="role-test-item role-test-info">Quick Actions: ${results.quickActions ? Object.keys(results.quickActions).length : 0}</div>
+                <div class="role-test-item ${results.visibility ? 'role-test-pass' : 'role-test-fail'}">
+                    UI Visibility: ${results.visibility ? 'OK' : 'Failed'}
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        function updateDebugInfo() {
+            const debugContent = document.getElementById('debugContent');
+            if (!debugContent) return;
+            
+            const currentRole = getCurrentUserRole ? getCurrentUserRole() : 'Unknown';
+            const visibleSections = document.querySelectorAll('.role-visible').length;
+            const hiddenSections = document.querySelectorAll('.role-hidden').length;
+            
+            debugContent.innerHTML = `
+                Current Role: ${currentRole}<br>
+                Visible Sections: ${visibleSections}<br>
+                Hidden Sections: ${hiddenSections}<br>
+                Timestamp: ${new Date().toLocaleTimeString()}
+            `;
+        }
+
+        // Auto-update debug info
+        setInterval(updateDebugInfo, 5000);
+        
+        // Show debug panel only in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            document.getElementById('debugToggle').style.display = 'block';
+            document.getElementById('debugInfo').classList.add('show');
+            updateDebugInfo();
+        }
+    </script>
+
     <script src="main.js"></script>
 </body>
 </html>

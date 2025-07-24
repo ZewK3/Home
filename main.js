@@ -3073,6 +3073,156 @@ function getCurrentUserRole() {
     return loggedInUser.position || 'NV';
 }
 
+// Enhanced role-based testing and validation
+class RoleBasedTesting {
+    static async validateRoleBasedSystem() {
+        console.log('🧪 Starting comprehensive role-based system validation...');
+        
+        const currentRole = getCurrentUserRole();
+        const testResults = {
+            role: currentRole,
+            permissions: {},
+            visibility: {},
+            apiAccess: {},
+            formValidation: {},
+            quickActions: {}
+        };
+        
+        // Test permissions
+        testResults.permissions = this.testPermissions(currentRole);
+        
+        // Test UI visibility
+        testResults.visibility = this.testUIVisibility(currentRole);
+        
+        // Test quick actions
+        testResults.quickActions = this.testQuickActions(currentRole);
+        
+        console.log('📊 Role-based system test results:', testResults);
+        return testResults;
+    }
+    
+    static testPermissions(userRole) {
+        const permissions = PermissionManager.rolePermissions[userRole];
+        if (!permissions) {
+            return { error: 'Role not found' };
+        }
+        
+        const testPermissions = [
+            'manage_employees', 'manage_schedules', 'manage_rewards', 
+            'manage_finances', 'grant_permissions', 'view_analytics'
+        ];
+        
+        const results = {};
+        testPermissions.forEach(permission => {
+            results[permission] = PermissionManager.hasPermission(userRole, permission);
+        });
+        
+        return {
+            roleLevel: permissions.level,
+            totalPermissions: permissions.permissions.length,
+            testResults: results
+        };
+    }
+    
+    static testUIVisibility(userRole) {
+        const results = {};
+        
+        // Test section visibility
+        const sections = [
+            '.quick-actions-section', '.analytics-section', '.finance-section',
+            '.store-management-section', '.registration-approval-section', '.personal-section'
+        ];
+        
+        sections.forEach(selector => {
+            const element = document.querySelector(selector);
+            results[selector] = {
+                exists: !!element,
+                visible: element ? !element.classList.contains('role-hidden') : false,
+                display: element ? getComputedStyle(element).display : 'none'
+            };
+        });
+        
+        // Test quick action buttons
+        const quickActionBtns = document.querySelectorAll('.quick-action-btn');
+        results.quickActionButtons = {
+            total: quickActionBtns.length,
+            visible: Array.from(quickActionBtns).filter(btn => 
+                !btn.classList.contains('role-hidden') && 
+                getComputedStyle(btn).display !== 'none'
+            ).length
+        };
+        
+        return results;
+    }
+    
+    static testQuickActions(userRole) {
+        const roleData = PermissionManager.rolePermissions[userRole];
+        if (!roleData) return { error: 'Role not found' };
+        
+        const allActions = ['addEmployee', 'createSchedule', 'manageRewards', 'viewReports', 'managePermissions'];
+        const results = {};
+        
+        allActions.forEach(action => {
+            results[action] = {
+                allowed: roleData.quickActions.includes(action),
+                button: !!document.querySelector(`[data-action="${action}"]`),
+                visible: this.isQuickActionVisible(action)
+            };
+        });
+        
+        return results;
+    }
+    
+    static isQuickActionVisible(action) {
+        const button = document.querySelector(`[data-action="${action}"]`);
+        if (!button) return false;
+        
+        return !button.classList.contains('role-hidden') && 
+               getComputedStyle(button).display !== 'none';
+    }
+    
+    static async performRoleBasedDemo() {
+        console.log('🎭 Starting role-based system demonstration...');
+        
+        const roles = ['AD', 'QL', 'NV', 'AM'];
+        
+        for (const role of roles) {
+            console.log(`\n👤 Testing role: ${role}`);
+            
+            // Simulate role change
+            const mockUserData = { position: role, employeeId: 'TEST001' };
+            localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(mockUserData));
+            
+            // Re-initialize UI for new role
+            await applyRoleBasedSectionVisibility();
+            PermissionManager.applyRoleSpecificStyling(role);
+            
+            // Test permissions
+            const permissions = this.testPermissions(role);
+            console.log(`🔐 ${role} permissions:`, permissions.testResults);
+            
+            // Test visibility
+            const visibility = this.testUIVisibility(role);
+            console.log(`👁️ ${role} UI visibility:`, visibility);
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        console.log('✅ Role-based system demonstration completed');
+    }
+}
+
+// Global validation functions for debugging
+window.validateRoleSystem = () => RoleBasedTesting.validateRoleBasedSystem();
+window.demoRoleSystem = () => RoleBasedTesting.performRoleBasedDemo();
+
+// Auto-validation on page load for development
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    setTimeout(() => {
+        RoleBasedTesting.validateRoleBasedSystem();
+    }, 2000);
+}
+
 // Apply role-based section visibility for welcome-section without data-role attributes
 async function applyRoleBasedSectionVisibility() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
