@@ -2121,6 +2121,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Ensure stats-grid is visible and updated
         await updateStatsGrid();
 
+        // Apply role-based section visibility
+        await applyRoleBasedSectionVisibility();
+
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
 
@@ -2418,6 +2421,116 @@ function initializeRoleBasedUI() {
     }
     
     console.log(`✅ Role UI initialized for position: ${userPosition}`);
+}
+
+// Apply role-based section visibility for welcome-section without data-role attributes
+async function applyRoleBasedSectionVisibility() {
+    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    let userRole = loggedInUser.position || 'NV';
+    
+    // Get fresh user data from API to ensure accurate role
+    try {
+        if (loggedInUser.employeeId) {
+            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${loggedInUser.employeeId}`);
+            if (freshUserData && freshUserData.position) {
+                userRole = freshUserData.position;
+                console.log('🔐 Using fresh role from API for section visibility:', userRole);
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ Using cached role for section visibility due to API error:', error);
+    }
+    
+    console.log('🎛️ Applying role-based section visibility for role:', userRole);
+    
+    // Role-based section visibility map
+    const sectionVisibility = {
+        'AD': {
+            '.quick-actions-section': true,
+            '.analytics-section': true,
+            '.store-management-section': true,
+            '.finance-section': true,
+            '.registration-approval-section': true,
+            '.personal-section': false,
+            '.activities-section': true
+        },
+        'QL': {
+            '.quick-actions-section': true,
+            '.analytics-section': false,
+            '.store-management-section': true,
+            '.finance-section': false,
+            '.registration-approval-section': true,
+            '.personal-section': false,
+            '.activities-section': true
+        },
+        'NV': {
+            '.quick-actions-section': false,
+            '.analytics-section': false,
+            '.store-management-section': false,
+            '.finance-section': false,
+            '.registration-approval-section': false,
+            '.personal-section': true,
+            '.activities-section': true
+        },
+        'AM': {
+            '.quick-actions-section': false,
+            '.analytics-section': false,
+            '.store-management-section': false,
+            '.finance-section': false,
+            '.registration-approval-section': false,
+            '.personal-section': true,
+            '.activities-section': true
+        }
+    };
+    
+    const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
+    
+    // Apply visibility settings
+    Object.entries(roleConfig).forEach(([selector, isVisible]) => {
+        const section = document.querySelector(selector);
+        if (section) {
+            if (isVisible) {
+                section.style.display = 'block';
+                section.style.visibility = 'visible';
+                section.classList.remove('role-hidden');
+                console.log(`✅ Section visible for ${userRole}: ${selector}`);
+            } else {
+                section.style.display = 'none';
+                section.style.visibility = 'hidden';
+                section.classList.add('role-hidden');
+                console.log(`❌ Section hidden for ${userRole}: ${selector}`);
+            }
+        } else {
+            console.warn(`⚠️ Section not found: ${selector}`);
+        }
+    });
+    
+    // Also apply role-based visibility to quick action buttons within the visible section
+    if (roleConfig['.quick-actions-section']) {
+        const quickActionVisibility = {
+            'AD': ['addEmployee', 'createSchedule', 'manageRewards', 'viewReports'],
+            'QL': ['createSchedule', 'manageRewards'],
+            'NV': [],
+            'AM': []
+        };
+        
+        const allowedActions = quickActionVisibility[userRole] || [];
+        
+        document.querySelectorAll('.quick-action-btn').forEach(btn => {
+            const action = btn.dataset.action;
+            if (allowedActions.includes(action)) {
+                btn.style.display = 'flex';
+                btn.style.visibility = 'visible';
+                console.log(`✅ Quick action visible for ${userRole}: ${action}`);
+            } else {
+                btn.style.display = 'none';
+                btn.style.visibility = 'hidden';
+                console.log(`❌ Quick action hidden for ${userRole}: ${action}`);
+            }
+        });
+    }
+    
+    console.log(`✅ Role-based section visibility applied for: ${userRole}`);
 }
 
 // Quick Actions Handler
