@@ -650,13 +650,60 @@ class ContentManager {
     }
 
     async showGrantAccess() {
-        // Check if user has permission to access this feature
-        if (!PermissionManager.hasPermission(this.user.position, 'grant_permissions')) {
-            utils.showNotification("Bạn không có quyền truy cập chức năng phân quyền", "error");
-            return;
-        }
+        const content = document.getElementById('content');
+        try {
+            // Use getUsers API to get user list
+            const users = await utils.fetchAPI('?action=getUsers');
+            
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Phân Quyền Người Dùng</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="permission-management">
+                            <div class="user-selection">
+                                <select id="userSelect" class="form-control">
+                                    <option value="">Chọn nhân viên</option>
+                                    ${Array.isArray(users) ? users.map(user => 
+                                        `<option value="${user.employeeId}">${user.fullName} - ${user.employeeId}</option>`
+                                    ).join('') : ''}
+                                </select>
+                            </div>
+                            
+                            <div id="permissionForm" class="permission-form" style="display: none;">
+                                <h3>Quyền hạn</h3>
+                                <div class="permission-list">
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="schedule" value="schedule">
+                                        <span>Quản lý lịch làm</span>
+                                    </label>
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="tasks" value="tasks">
+                                        <span>Xử lý yêu cầu</span>
+                                    </label>
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="rewards" value="rewards">
+                                        <span>Quản lý thưởng/phạt</span>
+                                    </label>
+                                    <label class="permission-item">
+                                        <input type="checkbox" name="admin" value="admin">
+                                        <span>Quyền quản trị</span>
+                                    </label>
+                                </div>
+                                <button id="savePermissions" class="btn btn-primary">Lưu quyền hạn</button>
+                                <p class="permission-note">⏳ Chức năng phân quyền đang được phát triển</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
 
-        await PermissionManager.showPermissionGrantInterface();
+            this.setupAccessHandlers();
+        } catch (error) {
+            console.error('Access management error:', error);
+            utils.showNotification("Không thể tải thông tin phân quyền", "error");
+        }
     }
 
     async showPersonalInfo() {
@@ -2313,19 +2360,17 @@ async function initializeRecentActivities() {
     }
 }
 
-// ===== Enhanced Role-Based Permission Management System =====
-
-// Role-based UI Management with comprehensive permission validation
+// Role-based UI Management  
 function initializeRoleBasedUI() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
     const userPosition = loggedInUser.position || 'NV';
     
-    console.log('🔐 Initializing comprehensive role-based UI for position:', userPosition);
+    console.log('🔐 Initializing role-based UI for position:', userPosition);
     
-    // Enhanced role-based element management
+    // Show/hide elements based on role (simple direct matching like original)
     const allRoleElements = document.querySelectorAll('[data-role]');
-    let roleElementsProcessed = 0;
-    let roleElementsShown = 0;
+    let adElementsFound = 0;
+    let adElementsShown = 0;
     
     allRoleElements.forEach(element => {
         // Skip menu items as they are handled by MenuManager
@@ -2333,894 +2378,55 @@ function initializeRoleBasedUI() {
             return;
         }
         
-        const allowedRoles = element.dataset.role.split(',').map(role => role.trim());
-        const hasAccess = PermissionManager.hasRole(userPosition, allowedRoles);
+        const allowedRoles = element.dataset.role.split(',');
+        const hasAccess = allowedRoles.includes(userPosition);
         
-        roleElementsProcessed++;
+        // Special tracking for AD role debugging
+        if (allowedRoles.includes('AD')) {
+            adElementsFound++;
+        }
         
         if (hasAccess) {
-            PermissionManager.showElement(element);
-            roleElementsShown++;
-            console.log(`✅ Element shown for ${userPosition}: ${element.className || element.tagName}`);
+            element.classList.add('role-visible');
+            element.style.display = '';
+            element.style.visibility = 'visible';
+            
+            // Special tracking for AD role debugging
+            if (allowedRoles.includes('AD') && userPosition === 'AD') {
+                adElementsShown++;
+                console.log(`✅ AD Element shown: ${element.className} - ${element.tagName}`);
+            }
         } else {
-            PermissionManager.hideElement(element);
-            console.log(`❌ Element hidden for ${userPosition}: ${element.className || element.tagName}`);
+            element.classList.remove('role-visible');
+            element.style.display = 'none';
         }
     });
     
-    // Apply role-specific UI enhancements
-    PermissionManager.applyRoleSpecificStyling(userPosition);
-    
-    // Initialize permission-based features
-    PermissionManager.initializePermissionBasedFeatures(userPosition);
-    
-    console.log(`📊 Role UI Summary: Processed ${roleElementsProcessed} elements, Shown ${roleElementsShown} elements for ${userPosition}`);
-}
-
-// Comprehensive Permission Management System
-class PermissionManager {
-    // Define comprehensive role permissions
-    static rolePermissions = {
-        'AD': {
-            level: 4,
-            name: 'Administrator',
-            description: 'Full system access with all administrative privileges',
-            permissions: [
-                'manage_employees', 'manage_schedules', 'manage_rewards', 'manage_finances',
-                'manage_stores', 'approve_registrations', 'grant_permissions', 'view_analytics',
-                'manage_tasks', 'system_settings', 'export_data', 'audit_logs'
-            ],
-            sections: ['quick-actions', 'analytics', 'store-management', 'finance', 'registration-approval', 'activities'],
-            quickActions: ['addEmployee', 'createSchedule', 'manageRewards', 'viewReports', 'managePermissions']
-        },
-        'QL': {
-            level: 3,
-            name: 'Manager',
-            description: 'Store and team management with approval capabilities',
-            permissions: [
-                'manage_store_employees', 'manage_schedules', 'manage_rewards', 'view_store_analytics',
-                'approve_registrations', 'manage_store_tasks', 'view_reports'
-            ],
-            sections: ['quick-actions', 'store-management', 'registration-approval', 'activities'],
-            quickActions: ['createSchedule', 'manageRewards', 'viewReports']
-        },
-        'NV': {
-            level: 1,
-            name: 'Employee',
-            description: 'Basic employee access for personal management',
-            permissions: [
-                'view_personal_schedule', 'submit_requests', 'view_personal_rewards', 'view_personal_tasks'
-            ],
-            sections: ['personal', 'activities'],
-            quickActions: []
-        },
-        'AM': {
-            level: 2,
-            name: 'Assistant Manager',
-            description: 'Limited management access with team coordination',
-            permissions: [
-                'view_team_schedule', 'submit_requests', 'view_team_rewards', 'assist_tasks'
-            ],
-            sections: ['personal', 'activities'],
-            quickActions: []
-        }
-    };
-
-    // Check if user has specific role or permission
-    static hasRole(userRole, allowedRoles) {
-        if (!userRole || !allowedRoles) return false;
-        return allowedRoles.includes(userRole);
-    }
-
-    static hasPermission(userRole, permission) {
-        const roleData = this.rolePermissions[userRole];
-        return roleData && roleData.permissions.includes(permission);
-    }
-
-    static getRoleLevel(userRole) {
-        const roleData = this.rolePermissions[userRole];
-        return roleData ? roleData.level : 0;
-    }
-
-    static canAccess(userRole, requiredLevel) {
-        return this.getRoleLevel(userRole) >= requiredLevel;
-    }
-
-    // Enhanced element visibility management
-    static showElement(element, animate = true) {
-        element.classList.remove('role-hidden');
-        element.classList.add('role-visible');
-        element.style.display = '';
-        element.style.visibility = 'visible';
-        element.style.opacity = '1';
-        element.style.pointerEvents = 'auto';
+    if (userPosition === 'AD') {
+        console.log(`🔍 AD Role Summary: Found ${adElementsFound} AD elements, Shown ${adElementsShown} elements`);
         
-        if (animate) {
-            element.classList.add('animate-entrance');
-            setTimeout(() => element.classList.remove('animate-entrance'), 600);
-        }
-    }
-
-    static hideElement(element) {
-        element.classList.add('role-hidden');
-        element.classList.remove('role-visible');
-        element.style.display = 'none';
-        element.style.visibility = 'hidden';
-        element.style.opacity = '0';
-        element.style.pointerEvents = 'none';
-    }
-
-    // Apply role-specific styling and theming
-    static applyRoleSpecificStyling(userRole) {
-        const body = document.body;
+        // Additional verification for all AD-specific sections
+        const adSections = [
+            '.quick-actions-section',
+            '.analytics-section', 
+            '.finance-section',
+            '.registration-approval-section',
+            '.store-management-section'
+        ];
         
-        // Remove existing role classes
-        body.classList.remove('dashboard-role-admin', 'dashboard-role-manager', 'dashboard-role-employee', 'dashboard-role-assistant');
-        
-        // Apply new role class
-        const roleClassMap = {
-            'AD': 'dashboard-role-admin',
-            'QL': 'dashboard-role-manager', 
-            'NV': 'dashboard-role-employee',
-            'AM': 'dashboard-role-assistant'
-        };
-        
-        if (roleClassMap[userRole]) {
-            body.classList.add(roleClassMap[userRole]);
-        }
-
-        // Add role badge to user info if available
-        this.addRoleBadge(userRole);
-        
-        console.log(`🎨 Applied ${userRole} role styling`);
-    }
-
-    // Add visual role indicator to user info
-    static addRoleBadge(userRole) {
-        const userInfo = document.getElementById('userInfo');
-        if (!userInfo) return;
-        
-        // Remove existing badge
-        const existingBadge = userInfo.querySelector('.user-role-badge');
-        if (existingBadge) {
-            existingBadge.remove();
-        }
-        
-        // Create new role badge
-        const roleData = this.rolePermissions[userRole];
-        if (roleData) {
-            const badge = document.createElement('span');
-            badge.className = `user-role-badge ${userRole.toLowerCase()}`;
-            badge.textContent = roleData.name;
-            badge.title = roleData.description;
-            userInfo.appendChild(badge);
-        }
-    }
-
-    // Initialize permission-based features
-    static initializePermissionBasedFeatures(userRole) {
-        // Initialize quick actions based on role
-        this.initializeRoleBasedQuickActions(userRole);
-        
-        // Initialize menu permissions
-        this.initializeMenuPermissions(userRole);
-        
-        // Initialize form validations
-        this.initializeFormValidations(userRole);
-        
-        // Initialize API permission checks
-        this.initializeAPIPermissions(userRole);
-        
-        console.log(`🚀 Initialized permission-based features for ${userRole}`);
-    }
-
-    // Initialize role-based quick actions
-    static initializeRoleBasedQuickActions(userRole) {
-        const roleData = this.rolePermissions[userRole];
-        if (!roleData) return;
-        
-        const quickActionBtns = document.querySelectorAll('.quick-action-btn');
-        quickActionBtns.forEach(btn => {
-            const action = btn.dataset.action;
-            if (roleData.quickActions.includes(action)) {
-                this.showElement(btn, false);
-                btn.disabled = false;
+        adSections.forEach(selector => {
+            const section = document.querySelector(selector);
+            if (section) {
+                section.style.display = 'block';
+                section.style.visibility = 'visible';
+                console.log(`✅ AD Section forced visible: ${selector}`);
             } else {
-                this.hideElement(btn);
-                btn.disabled = true;
-            }
-        });
-        
-        console.log(`🎯 Configured ${roleData.quickActions.length} quick actions for ${userRole}`);
-    }
-
-    // Initialize enhanced menu permissions
-    static initializeMenuPermissions(userRole) {
-        const menuPermissions = {
-            'openSchedule': ['AD', 'QL', 'NV', 'AM'],
-            'openScheduleRegistration': ['AD', 'QL', 'NV', 'AM'],
-            'openScheduleWork': ['AD', 'QL'],
-            'openOfficialworkschedule': ['AD', 'QL', 'NV', 'AM'],
-            'openReward': ['AD', 'QL', 'AM'],
-            'openSubmitTask': ['AD', 'NV', 'AM'],
-            'openTaskProcessing': ['AD', 'QL'],
-            'taskPersonnel': ['AD'],
-            'taskStore': ['AD', 'QL'],
-            'taskFinance': ['AD'],
-            'taskApproval': ['AD', 'QL'],
-            'openRegistrationApproval': ['AD', 'QL'],
-            'openGrantAccess': ['AD'],
-            'openPersonalInformation': ['AD', 'QL', 'AM', 'NV']
-        };
-
-        Object.entries(menuPermissions).forEach(([menuId, allowedRoles]) => {
-            const menuElement = document.getElementById(menuId);
-            if (menuElement) {
-                const menuItem = menuElement.closest('.menu-item, .submenu-item');
-                if (allowedRoles.includes(userRole)) {
-                    if (menuItem) this.showElement(menuItem, false);
-                    menuElement.style.pointerEvents = 'auto';
-                } else {
-                    if (menuItem) this.hideElement(menuItem);
-                    menuElement.style.pointerEvents = 'none';
-                }
+                console.warn(`⚠️ AD Section not found: ${selector}`);
             }
         });
     }
-
-    // Initialize form validations based on role
-    static initializeFormValidations(userRole) {
-        const forms = document.querySelectorAll('form[data-permission]');
-        forms.forEach(form => {
-            const requiredPermission = form.dataset.permission;
-            if (!this.hasPermission(userRole, requiredPermission)) {
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    utils.showNotification('Bạn không có quyền thực hiện hành động này', 'error');
-                });
-                
-                // Disable form inputs
-                form.querySelectorAll('input, select, textarea, button').forEach(input => {
-                    input.disabled = true;
-                });
-            }
-        });
-    }
-
-    // Initialize API permission checks
-    static initializeAPIPermissions(userRole) {
-        // Store original fetchAPI for permission wrapping
-        if (!utils.originalFetchAPI) {
-            utils.originalFetchAPI = utils.fetchAPI;
-            
-            // Wrap fetchAPI with permission checks
-            utils.fetchAPI = async function(url, options = {}) {
-                const action = url.includes('action=') ? url.split('action=')[1].split('&')[0] : '';
-                
-                if (action && !PermissionManager.hasAPIPermission(userRole, action)) {
-                    utils.showNotification('Không có quyền truy cập chức năng này', 'error');
-                    throw new Error('Permission denied');
-                }
-                
-                return utils.originalFetchAPI.call(this, url, options);
-            };
-        }
-    }
-
-    // Check API permission for specific actions
-    static hasAPIPermission(userRole, action) {
-        const apiPermissions = {
-            'getEmployees': ['AD', 'QL'],
-            'addEmployee': ['AD'],
-            'updateEmployee': ['AD', 'QL'],
-            'deleteEmployee': ['AD'],
-            'getDashboardStats': ['AD', 'QL', 'NV', 'AM'],
-            'getStores': ['AD', 'QL'],
-            'manageStore': ['AD', 'QL'],
-            'approveRegistration': ['AD', 'QL'],
-            'rejectRegistration': ['AD', 'QL'],
-            'getMessages': ['AD', 'QL', 'NV', 'AM'],
-            'sendMessage': ['AD', 'QL', 'NV', 'AM'],
-            'grantPermission': ['AD'],
-            'exportData': ['AD']
-        };
-        
-        const allowedRoles = apiPermissions[action];
-        return !allowedRoles || allowedRoles.includes(userRole);
-    }
-
-    // Enhanced permission grant interface
-    static async showPermissionGrantInterface() {
-        if (!this.hasPermission(getCurrentUserRole(), 'grant_permissions')) {
-            utils.showNotification('Bạn không có quyền phân quyền', 'error');
-            return;
-        }
-
-        const content = document.getElementById('content');
-        content.innerHTML = `
-            <div class="card admin-only-section">
-                <div class="card-header">
-                    <h2>🔐 Quản Lý Phân Quyền Hệ Thống</h2>
-                    <div class="permission-indicator admin">ADMIN ONLY</div>
-                </div>
-                <div class="card-body">
-                    ${this.generatePermissionManagementHTML()}
-                </div>
-            </div>
-        `;
-
-        this.initializePermissionManagementHandlers();
-    }
-
-    // Generate comprehensive permission management HTML
-    static generatePermissionManagementHTML() {
-        return `
-            <!-- User Selection Section -->
-            <div class="user-selection-section">
-                <h3 class="section-header">
-                    <span class="material-icons-round">person_search</span>
-                    Chọn Nhân Viên
-                </h3>
-                <div class="user-search-container">
-                    <span class="user-search-icon">🔍</span>
-                    <input type="text" id="userSearchInput" class="user-search-input" 
-                           placeholder="Tìm kiếm nhân viên theo tên hoặc mã...">
-                </div>
-                <div id="userList" class="user-list">
-                    <div class="permission-loading">
-                        <div class="permission-spinner"></div>
-                        Đang tải danh sách nhân viên...
-                    </div>
-                </div>
-                <div id="selectedUserInfo" class="selected-user-info" style="display: none;">
-                    <h4>Nhân viên được chọn:</h4>
-                    <div class="selected-user-details"></div>
-                </div>
-            </div>
-
-            <!-- Role Templates Section -->
-            <div class="role-templates">
-                <div class="role-templates-header">
-                    <span class="material-icons-round">assignment_ind</span>
-                    <h3 class="role-templates-title">Mẫu Phân Quyền Nhanh</h3>
-                </div>
-                <div class="template-grid">
-                    ${this.generateRoleTemplates()}
-                </div>
-            </div>
-
-            <!-- Permission Categories -->
-            <div class="permission-categories">
-                ${this.generatePermissionCategories()}
-            </div>
-
-            <!-- Permission History -->
-            <div class="permission-history">
-                <div class="permission-history-header">
-                    <span class="material-icons-round">history</span>
-                    <h3 class="permission-history-title">Lịch Sử Thay Đổi Quyền</h3>
-                </div>
-                <div id="permissionHistory" class="history-list">
-                    <div class="permission-loading">
-                        <div class="permission-spinner"></div>
-                        Đang tải lịch sử...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Form Actions -->
-            <div class="permission-form-actions">
-                <button id="resetPermissions" class="permission-btn permission-btn-danger">
-                    <span class="material-icons-round">restore</span>
-                    Đặt Lại
-                </button>
-                <button id="previewChanges" class="permission-btn permission-btn-secondary">
-                    <span class="material-icons-round">preview</span>
-                    Xem Trước
-                </button>
-                <button id="savePermissions" class="permission-btn permission-btn-primary">
-                    <span class="material-icons-round">save</span>
-                    Lưu Thay Đổi
-                </button>
-            </div>
-        `;
-    }
-
-    // Generate role template cards
-    static generateRoleTemplates() {
-        return Object.entries(this.rolePermissions).map(([roleCode, roleData]) => `
-            <div class="template-card" data-role="${roleCode}">
-                <div class="template-icon">${this.getRoleIcon(roleCode)}</div>
-                <div class="template-name">${roleData.name}</div>
-                <div class="template-description">${roleData.description}</div>
-                <div class="role-permissions-count">${roleData.permissions.length} quyền</div>
-            </div>
-        `).join('');
-    }
-
-    // Generate permission categories
-    static generatePermissionCategories() {
-        const categories = {
-            'employee': {
-                icon: '👥',
-                title: 'Quản Lý Nhân Viên',
-                color: '#2563eb',
-                permissions: ['manage_employees', 'view_employee_details', 'edit_employee_info']
-            },
-            'schedule': {
-                icon: '📅',
-                title: 'Quản Lý Lịch Làm',
-                color: '#059669',
-                permissions: ['manage_schedules', 'view_schedules', 'approve_schedule_changes']
-            },
-            'financial': {
-                icon: '💰',
-                title: 'Quản Lý Tài Chính',
-                color: '#dc2626',
-                permissions: ['manage_finances', 'view_financial_reports', 'approve_payments']
-            },
-            'system': {
-                icon: '⚙️',
-                title: 'Quản Trị Hệ Thống',
-                color: '#7c3aed',
-                permissions: ['grant_permissions', 'system_settings', 'audit_logs']
-            }
-        };
-
-        return Object.entries(categories).map(([key, category]) => `
-            <div class="permission-category">
-                <div class="permission-category-header">
-                    <div class="permission-category-icon" style="background: ${category.color}20; color: ${category.color};">
-                        ${category.icon}
-                    </div>
-                    <h4 class="permission-category-title">${category.title}</h4>
-                </div>
-                <div class="permission-items">
-                    ${category.permissions.map(permission => this.generatePermissionCheckbox(permission)).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
-
-    // Generate individual permission checkbox
-    static generatePermissionCheckbox(permission) {
-        const permissionData = this.getPermissionData(permission);
-        return `
-            <div class="enhanced-permission-checkbox" data-permission="${permission}">
-                <input type="checkbox" id="perm_${permission}" name="${permission}">
-                <div class="permission-details">
-                    <label for="perm_${permission}" class="permission-label">${permissionData.name}</label>
-                    <div class="permission-description">${permissionData.description}</div>
-                </div>
-                <div class="permission-level ${permissionData.level}">${permissionData.level}</div>
-            </div>
-        `;
-    }
-
-    // Get permission metadata
-    static getPermissionData(permission) {
-        const permissionMetadata = {
-            'manage_employees': { name: 'Quản lý nhân viên', description: 'Thêm, sửa, xóa thông tin nhân viên', level: 'critical' },
-            'manage_schedules': { name: 'Quản lý lịch làm', description: 'Tạo và chỉnh sửa lịch làm việc', level: 'advanced' },
-            'manage_rewards': { name: 'Quản lý thưởng phạt', description: 'Thêm thưởng và phạt cho nhân viên', level: 'advanced' },
-            'manage_finances': { name: 'Quản lý tài chính', description: 'Xem và quản lý báo cáo tài chính', level: 'critical' },
-            'grant_permissions': { name: 'Phân quyền', description: 'Cấp và thu hồi quyền hạn người dùng', level: 'critical' },
-            'view_analytics': { name: 'Xem phân tích', description: 'Truy cập báo cáo và phân tích dữ liệu', level: 'basic' }
-        };
-        
-        return permissionMetadata[permission] || { 
-            name: permission.replace(/_/g, ' '), 
-            description: 'Mô tả quyền hạn', 
-            level: 'basic' 
-        };
-    }
-
-    // Get role icon
-    static getRoleIcon(roleCode) {
-        const icons = {
-            'AD': '👑',
-            'QL': '🎖️', 
-            'NV': '👤',
-            'AM': '🎯'
-        };
-        return icons[roleCode] || '👤';
-    }
-
-    // Initialize permission management event handlers
-    static initializePermissionManagementHandlers() {
-        // User search functionality
-        const searchInput = document.getElementById('userSearchInput');
-        if (searchInput) {
-            searchInput.addEventListener('input', this.handleUserSearch.bind(this));
-        }
-
-        // Role template selection
-        document.querySelectorAll('.template-card').forEach(card => {
-            card.addEventListener('click', () => this.handleRoleTemplateSelection(card));
-        });
-
-        // Permission checkbox changes
-        document.querySelectorAll('.enhanced-permission-checkbox input').forEach(checkbox => {
-            checkbox.addEventListener('change', this.handlePermissionChange.bind(this));
-        });
-
-        // Form action buttons
-        document.getElementById('savePermissions')?.addEventListener('click', this.handleSavePermissions.bind(this));
-        document.getElementById('resetPermissions')?.addEventListener('click', this.handleResetPermissions.bind(this));
-        document.getElementById('previewChanges')?.addEventListener('click', this.handlePreviewChanges.bind(this));
-
-        // Load initial data
-        this.loadUserList();
-        this.loadPermissionHistory();
-    }
-
-    // Handle user search
-    static async handleUserSearch(event) {
-        const searchTerm = event.target.value.toLowerCase();
-        // Implementation for searching users
-        console.log('🔍 Searching users:', searchTerm);
-    }
-
-    // Handle role template selection
-    static handleRoleTemplateSelection(card) {
-        const roleCode = card.dataset.role;
-        const roleData = this.rolePermissions[roleCode];
-        
-        // Clear existing selections
-        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        
-        // Update permission checkboxes
-        document.querySelectorAll('.enhanced-permission-checkbox input').forEach(checkbox => {
-            checkbox.checked = roleData.permissions.includes(checkbox.name);
-            this.updateCheckboxVisualState(checkbox);
-        });
-        
-        console.log(`📋 Applied ${roleData.name} template`);
-        utils.showNotification(`Đã áp dụng mẫu phân quyền ${roleData.name}`, 'success');
-    }
-
-    // Handle permission checkbox changes
-    static handlePermissionChange(event) {
-        this.updateCheckboxVisualState(event.target);
-    }
-
-    // Update checkbox visual state
-    static updateCheckboxVisualState(checkbox) {
-        const container = checkbox.closest('.enhanced-permission-checkbox');
-        if (checkbox.checked) {
-            container.classList.add('checked');
-        } else {
-            container.classList.remove('checked');
-        }
-    }
-
-    // Handle save permissions
-    static async handleSavePermissions() {
-        const selectedUser = this.getSelectedUser();
-        if (!selectedUser) {
-            utils.showNotification('Vui lòng chọn nhân viên', 'warning');
-            return;
-        }
-
-        const permissions = this.getSelectedPermissions();
-        
-        try {
-            // Save permissions via API
-            await utils.fetchAPI('?action=updatePermissions', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId: selectedUser.employeeId,
-                    permissions: permissions
-                })
-            });
-            
-            utils.showNotification('Đã cập nhật phân quyền thành công', 'success');
-            this.loadPermissionHistory();
-        } catch (error) {
-            console.error('Save permissions error:', error);
-            utils.showNotification('Không thể lưu phân quyền', 'error');
-        }
-    }
-
-    // Handle reset permissions
-    static handleResetPermissions() {
-        document.querySelectorAll('.enhanced-permission-checkbox input').forEach(checkbox => {
-            checkbox.checked = false;
-            this.updateCheckboxVisualState(checkbox);
-        });
-        
-        document.querySelectorAll('.template-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        
-        utils.showNotification('Đã đặt lại tất cả quyền hạn', 'info');
-    }
-
-    // Handle preview changes
-    static handlePreviewChanges() {
-        const permissions = this.getSelectedPermissions();
-        const permissionNames = permissions.map(p => this.getPermissionData(p).name);
-        
-        const preview = `
-            <div class="permission-preview">
-                <h4>Xem trước thay đổi quyền hạn:</h4>
-                <ul>
-                    ${permissionNames.map(name => `<li>${name}</li>`).join('')}
-                </ul>
-            </div>
-        `;
-        
-        utils.showNotification(preview, 'info', 5000);
-    }
-
-    // Get selected user
-    static getSelectedUser() {
-        const selectedUserElement = document.querySelector('.user-item.selected');
-        return selectedUserElement ? {
-            employeeId: selectedUserElement.dataset.employeeId,
-            name: selectedUserElement.querySelector('.user-name').textContent
-        } : null;
-    }
-
-    // Get selected permissions
-    static getSelectedPermissions() {
-        const checkedBoxes = document.querySelectorAll('.enhanced-permission-checkbox input:checked');
-        return Array.from(checkedBoxes).map(checkbox => checkbox.name);
-    }
-
-    // Load user list for permission management
-    static async loadUserList() {
-        try {
-            const users = await utils.fetchAPI('?action=getEmployees');
-            this.renderUserList(users);
-        } catch (error) {
-            console.error('Load user list error:', error);
-            document.getElementById('userList').innerHTML = '<p>Không thể tải danh sách nhân viên</p>';
-        }
-    }
-
-    // Render user list
-    static renderUserList(users) {
-        const userList = document.getElementById('userList');
-        if (!Array.isArray(users) || users.length === 0) {
-            userList.innerHTML = '<p>Không có nhân viên nào</p>';
-            return;
-        }
-
-        userList.innerHTML = users.map(user => `
-            <div class="user-item" data-employee-id="${user.employeeId}">
-                <div class="user-info">
-                    <div class="user-name">${user.fullName || user.employeeId}</div>
-                    <div class="user-id">${user.employeeId}</div>
-                </div>
-                <div class="user-current-role ${user.position?.toLowerCase() || 'nv'}">
-                    ${this.rolePermissions[user.position]?.name || user.position || 'NV'}
-                </div>
-            </div>
-        `).join('');
-
-        // Add click handlers for user selection
-        document.querySelectorAll('.user-item').forEach(item => {
-            item.addEventListener('click', () => this.selectUser(item));
-        });
-    }
-
-    // Select user for permission editing
-    static selectUser(userItem) {
-        document.querySelectorAll('.user-item').forEach(item => item.classList.remove('selected'));
-        userItem.classList.add('selected');
-        
-        const employeeId = userItem.dataset.employeeId;
-        const userName = userItem.querySelector('.user-name').textContent;
-        
-        // Show selected user info
-        const selectedUserInfo = document.getElementById('selectedUserInfo');
-        selectedUserInfo.style.display = 'block';
-        selectedUserInfo.querySelector('.selected-user-details').innerHTML = `
-            <strong>${userName}</strong> (${employeeId})
-        `;
-        
-        // Load current permissions for this user
-        this.loadUserPermissions(employeeId);
-    }
-
-    // Load user permissions
-    static async loadUserPermissions(employeeId) {
-        try {
-            const userPermissions = await utils.fetchAPI(`?action=getUserPermissions&employeeId=${employeeId}`);
-            // Update UI based on loaded permissions
-            console.log('Loaded permissions for', employeeId, userPermissions);
-        } catch (error) {
-            console.warn('Could not load user permissions:', error);
-        }
-    }
-
-    // Load permission history
-    static async loadPermissionHistory() {
-        try {
-            const history = await utils.fetchAPI('?action=getPermissionHistory');
-            this.renderPermissionHistory(history);
-        } catch (error) {
-            console.error('Load permission history error:', error);
-            document.getElementById('permissionHistory').innerHTML = '<p>Không thể tải lịch sử</p>';
-        }
-    }
-
-    // Render permission history
-    static renderPermissionHistory(history) {
-        const historyContainer = document.getElementById('permissionHistory');
-        if (!Array.isArray(history) || history.length === 0) {
-            historyContainer.innerHTML = '<p>Chưa có lịch sử thay đổi quyền hạn</p>';
-            return;
-        }
-
-        historyContainer.innerHTML = history.map(item => `
-            <div class="history-item">
-                <div class="history-content">
-                    <div class="history-action">${item.action}</div>
-                    <div class="history-details">${item.details}</div>
-                </div>
-                <div class="history-timestamp">${utils.formatDate(item.timestamp)}</div>
-            </div>
-        `).join('');
-    }
-}
-
-// Helper function to get current user role
-function getCurrentUserRole() {
-    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-    return loggedInUser.position || 'NV';
-}
-
-// Enhanced role-based testing and validation
-class RoleBasedTesting {
-    static async validateRoleBasedSystem() {
-        console.log('🧪 Starting comprehensive role-based system validation...');
-        
-        const currentRole = getCurrentUserRole();
-        const testResults = {
-            role: currentRole,
-            permissions: {},
-            visibility: {},
-            apiAccess: {},
-            formValidation: {},
-            quickActions: {}
-        };
-        
-        // Test permissions
-        testResults.permissions = this.testPermissions(currentRole);
-        
-        // Test UI visibility
-        testResults.visibility = this.testUIVisibility(currentRole);
-        
-        // Test quick actions
-        testResults.quickActions = this.testQuickActions(currentRole);
-        
-        console.log('📊 Role-based system test results:', testResults);
-        return testResults;
-    }
     
-    static testPermissions(userRole) {
-        const permissions = PermissionManager.rolePermissions[userRole];
-        if (!permissions) {
-            return { error: 'Role not found' };
-        }
-        
-        const testPermissions = [
-            'manage_employees', 'manage_schedules', 'manage_rewards', 
-            'manage_finances', 'grant_permissions', 'view_analytics'
-        ];
-        
-        const results = {};
-        testPermissions.forEach(permission => {
-            results[permission] = PermissionManager.hasPermission(userRole, permission);
-        });
-        
-        return {
-            roleLevel: permissions.level,
-            totalPermissions: permissions.permissions.length,
-            testResults: results
-        };
-    }
-    
-    static testUIVisibility(userRole) {
-        const results = {};
-        
-        // Test section visibility
-        const sections = [
-            '.quick-actions-section', '.analytics-section', '.finance-section',
-            '.store-management-section', '.registration-approval-section', '.personal-section'
-        ];
-        
-        sections.forEach(selector => {
-            const element = document.querySelector(selector);
-            results[selector] = {
-                exists: !!element,
-                visible: element ? !element.classList.contains('role-hidden') : false,
-                display: element ? getComputedStyle(element).display : 'none'
-            };
-        });
-        
-        // Test quick action buttons
-        const quickActionBtns = document.querySelectorAll('.quick-action-btn');
-        results.quickActionButtons = {
-            total: quickActionBtns.length,
-            visible: Array.from(quickActionBtns).filter(btn => 
-                !btn.classList.contains('role-hidden') && 
-                getComputedStyle(btn).display !== 'none'
-            ).length
-        };
-        
-        return results;
-    }
-    
-    static testQuickActions(userRole) {
-        const roleData = PermissionManager.rolePermissions[userRole];
-        if (!roleData) return { error: 'Role not found' };
-        
-        const allActions = ['addEmployee', 'createSchedule', 'manageRewards', 'viewReports', 'managePermissions'];
-        const results = {};
-        
-        allActions.forEach(action => {
-            results[action] = {
-                allowed: roleData.quickActions.includes(action),
-                button: !!document.querySelector(`[data-action="${action}"]`),
-                visible: this.isQuickActionVisible(action)
-            };
-        });
-        
-        return results;
-    }
-    
-    static isQuickActionVisible(action) {
-        const button = document.querySelector(`[data-action="${action}"]`);
-        if (!button) return false;
-        
-        return !button.classList.contains('role-hidden') && 
-               getComputedStyle(button).display !== 'none';
-    }
-    
-    static async performRoleBasedDemo() {
-        console.log('🎭 Starting role-based system demonstration...');
-        
-        const roles = ['AD', 'QL', 'NV', 'AM'];
-        
-        for (const role of roles) {
-            console.log(`\n👤 Testing role: ${role}`);
-            
-            // Simulate role change
-            const mockUserData = { position: role, employeeId: 'TEST001' };
-            localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(mockUserData));
-            
-            // Re-initialize UI for new role
-            await applyRoleBasedSectionVisibility();
-            PermissionManager.applyRoleSpecificStyling(role);
-            
-            // Test permissions
-            const permissions = this.testPermissions(role);
-            console.log(`🔐 ${role} permissions:`, permissions.testResults);
-            
-            // Test visibility
-            const visibility = this.testUIVisibility(role);
-            console.log(`👁️ ${role} UI visibility:`, visibility);
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-        console.log('✅ Role-based system demonstration completed');
-    }
-}
-
-// Global validation functions for debugging
-window.validateRoleSystem = () => RoleBasedTesting.validateRoleBasedSystem();
-window.demoRoleSystem = () => RoleBasedTesting.performRoleBasedDemo();
-
-// Auto-validation on page load for development
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    setTimeout(() => {
-        RoleBasedTesting.validateRoleBasedSystem();
-    }, 2000);
+    console.log(`✅ Role UI initialized for position: ${userPosition}`);
 }
 
 // Apply role-based section visibility for welcome-section without data-role attributes
@@ -3271,7 +2477,6 @@ async function applyRoleBasedSectionVisibility() {
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
-    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     
     // Role-based section visibility map
     const sectionVisibility = {
@@ -3313,6 +2518,7 @@ async function applyRoleBasedSectionVisibility() {
         }
     };
     
+    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
     console.log('🔧 Role configuration for', userRole, ':', roleConfig);
     
@@ -3385,174 +2591,33 @@ async function applyRoleBasedSectionVisibility() {
     console.log(`✅ Role-based section visibility applied for: ${userRole}`);
 }
 
-// Enhanced Quick Actions Handler with Permission Validation
+// Quick Actions Handler
 function initializeQuickActions() {
     document.querySelectorAll('.quick-action-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const action = btn.dataset.action;
-            const requiredPermission = btn.dataset.permission;
-            const userRole = getCurrentUserRole();
-            
-            // Check permission before executing action
-            if (requiredPermission && !PermissionManager.hasPermission(userRole, requiredPermission)) {
-                utils.showNotification('Bạn không có quyền thực hiện hành động này', 'error');
-                return;
-            }
-            
             handleQuickAction(action);
         });
     });
 }
 
-// Enhanced Quick Action Handler with Role-based Logic
+// Handle Quick Actions
 function handleQuickAction(action) {
-    const userRole = getCurrentUserRole();
-    
-    console.log(`🎯 Executing quick action: ${action} for role: ${userRole}`);
-    
     switch (action) {
         case 'addEmployee':
-            if (PermissionManager.hasPermission(userRole, 'manage_employees')) {
-                handleAddEmployee();
-            } else {
-                utils.showNotification('Không có quyền thêm nhân viên', 'error');
-            }
+            openModal('register');
             break;
-            
         case 'createSchedule':
-            if (PermissionManager.hasPermission(userRole, 'manage_schedules')) {
-                handleCreateSchedule();
-            } else {
-                utils.showNotification('Không có quyền tạo lịch làm', 'error');
-            }
+            openModal('scheduleWork');
             break;
-            
         case 'manageRewards':
-            if (PermissionManager.hasPermission(userRole, 'manage_rewards')) {
-                handleManageRewards();
-            } else {
-                utils.showNotification('Không có quyền quản lý thưởng phạt', 'error');
-            }
+            openModal('reward');
             break;
-            
         case 'viewReports':
-            if (PermissionManager.hasPermission(userRole, 'view_analytics')) {
-                handleViewReports();
-            } else {
-                utils.showNotification('Không có quyền xem báo cáo', 'error');
-            }
+            generateReports();
             break;
-            
-        case 'managePermissions':
-            if (PermissionManager.hasPermission(userRole, 'grant_permissions')) {
-                PermissionManager.showPermissionGrantInterface();
-            } else {
-                utils.showNotification('Không có quyền phân quyền', 'error');
-            }
-            break;
-            
         default:
-            utils.showNotification(`Chức năng ${action} đang được phát triển`, 'info');
-    }
-}
-
-// Individual Quick Action Handlers
-function handleAddEmployee() {
-    const content = document.getElementById('content');
-    content.innerHTML = `
-        <div class="card admin-only-section">
-            <div class="card-header">
-                <h2>👤 Thêm Nhân Viên Mới</h2>
-                <div class="permission-indicator admin">ADMIN ONLY</div>
-            </div>
-            <div class="card-body">
-                <form id="addEmployeeForm" data-permission="manage_employees">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="employeeId">Mã nhân viên <span class="required">*</span></label>
-                            <input type="text" id="employeeId" name="employeeId" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fullName">Họ và tên <span class="required">*</span></label>
-                            <input type="text" id="fullName" name="fullName" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Số điện thoại</label>
-                            <input type="tel" id="phone" name="phone" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label for="position">Chức vụ <span class="required">*</span></label>
-                            <select id="position" name="position" class="form-control" required>
-                                <option value="">Chọn chức vụ</option>
-                                <option value="AD">Administrator</option>
-                                <option value="QL">Manager</option>
-                                <option value="NV">Employee</option>
-                                <option value="AM">Assistant Manager</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="storeId">Cửa hàng</label>
-                            <select id="storeId" name="storeId" class="form-control">
-                                <option value="">Chọn cửa hàng</option>
-                                <option value="ST001">Cửa Hàng Trung Tâm</option>
-                                <option value="ST002">Cửa Hàng Quận 1</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="showWelcomeSection()">Hủy</button>
-                        <button type="submit" class="btn btn-primary">
-                            <span class="material-icons-round">person_add</span>
-                            Thêm Nhân Viên
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
-    
-    setupAddEmployeeForm();
-}
-
-function handleCreateSchedule() {
-    openModal('scheduleWork');
-}
-
-function handleManageRewards() {
-    openModal('reward');
-}
-
-function handleViewReports() {
-    generateReports();
-}
-
-// Form setup functions
-function setupAddEmployeeForm() {
-    const form = document.getElementById('addEmployeeForm');
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            const employeeData = Object.fromEntries(formData);
-            
-            try {
-                await utils.fetchAPI('?action=addEmployee', {
-                    method: 'POST',
-                    body: JSON.stringify(employeeData)
-                });
-                
-                utils.showNotification('Đã thêm nhân viên thành công', 'success');
-                showWelcomeSection();
-            } catch (error) {
-                console.error('Add employee error:', error);
-                utils.showNotification('Không thể thêm nhân viên', 'error');
-            }
-        });
+            utils.showNotification('Tính năng đang phát triển', 'warning');
     }
 }
 
