@@ -665,12 +665,25 @@ class ContentManager {
             
             console.log('Users response received:', response); // Debug log
             
-            // Extract users data - handle both direct array and wrapped response
-            const users = Array.isArray(response) ? response : (response?.results || response?.data || []);
+            // Extract users data - the API returns data directly as an array
+            let users = [];
+            if (Array.isArray(response)) {
+                users = response;
+            } else if (response && Array.isArray(response.results)) {
+                users = response.results;
+            } else if (response && Array.isArray(response.data)) {
+                users = response.data;
+            } else {
+                console.error('Unexpected response format:', response);
+                throw new Error('Định dạng dữ liệu người dùng không đúng');
+            }
+            
+            console.log('Extracted users array:', users); // Debug log
             
             // Validate users data
-            if (!Array.isArray(users)) {
-                throw new Error('Dữ liệu người dùng không hợp lệ');
+            if (!Array.isArray(users) || users.length === 0) {
+                console.warn('No users found or invalid data format');
+                throw new Error('Không tìm thấy dữ liệu người dùng');
             }
 
             if (users.length === 0) {
