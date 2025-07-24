@@ -1403,30 +1403,83 @@ class ContentManager {
         const newRole = selectedRole.dataset.role;
         
         try {
-            // Here you would typically make an API call to update the user role
-            // For now, we'll simulate the update
+            // Show loading state
+            const saveButton = document.getElementById('saveRoleButton');
+            const originalText = saveButton ? saveButton.innerHTML : '<span class="material-icons-round">save</span>Lưu thay đổi';
+            if (saveButton) {
+                saveButton.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Đang lưu...';
+                saveButton.disabled = true;
+            }
+
             console.log(`Updating user ${userId} to role ${newRole}`);
+            
+            // Get current user info to preserve other fields
+            const currentUserCard = document.querySelector(`[data-user-id="${userId}"]`);
+            if (!currentUserCard) {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
+
+            const userName = currentUserCard.querySelector('h4').textContent;
+            const userInfo = await utils.fetchAPI(`?action=getUser&employeeId=${userId}`);
+            
+            if (!userInfo) {
+                throw new Error('Không thể lấy thông tin người dùng');
+            }
+
+            // Update user role via API
+            const updateData = {
+                employeeId: userId,
+                fullName: userInfo.fullName || userName,
+                storeName: userInfo.storeName || '',
+                position: newRole,
+                phone: userInfo.phone,
+                email: userInfo.email,
+                joinDate: userInfo.joinDate
+            };
+
+            const result = await utils.fetchAPI('?action=update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            console.log('Update result:', result);
             
             // Update the UI
             const userCard = document.querySelector(`[data-user-id="${userId}"]`);
             if (userCard) {
+                const oldRole = userCard.dataset.role;
                 userCard.dataset.role = newRole;
+                
                 const roleElement = userCard.querySelector('.user-role');
                 if (roleElement) {
                     roleElement.textContent = this.getRoleDisplayName(newRole);
                     roleElement.className = `user-role role-${newRole.toLowerCase()}`;
                 }
             }
-            
+
             // Update statistics
             this.updateRoleStatistics();
-            
-            utils.showNotification(`Đã cập nhật phân quyền thành công`, "success");
+
+            // Close the editor
             this.closeRoleEditor();
+
+            utils.showNotification(`Đã cập nhật phân quyền thành công: ${this.getRoleDisplayName(newRole)}`, "success");
+            
+            console.log(`Successfully updated user ${userId} to role ${newRole}`);
             
         } catch (error) {
-            console.error('Save role error:', error);
-            utils.showNotification("Không thể cập nhật phân quyền", "error");
+            console.error('Error updating user role:', error);
+            utils.showNotification(`Lỗi cập nhật phân quyền: ${error.message}`, "error");
+        } finally {
+            // Restore button state
+            const saveButton = document.getElementById('saveRoleButton');
+            if (saveButton) {
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+            }
         }
     }
 
