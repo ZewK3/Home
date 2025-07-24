@@ -585,19 +585,16 @@ body {
 
 /* Enhanced Professional Registration Approval Filters */
 .approval-filters-enhanced {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     background: linear-gradient(135deg, var(--bg-card) 0%, rgba(248,250,252,0.95) 100%);
-    padding: 2rem;
+    padding: 1.25rem;
     border-radius: var(--border-radius);
-    border: 2px solid transparent;
-    box-shadow: var(--shadow-lg), 0 0 30px rgba(37, 99, 235, 0.1);
-    display: flex;
-    flex-direction: row;
-    gap: 1.5rem;
-    align-items: end;
-    backdrop-filter: blur(20px);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    backdrop-filter: blur(10px);
     position: relative;
 }
 
@@ -607,15 +604,15 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 3px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--secondary) 100%);
     border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .filter-group {
-    flex: 1;
-    min-width: 220px;
-    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     position: relative;
 }
 
@@ -1270,43 +1267,21 @@ body {
         font-weight: 700;
     }
     
-    /* Enhanced mobile approval filters - horizontal layout */
+    /* Enhanced mobile approval filters - compact grid layout */
     .approval-filters-enhanced {
-        flex-direction: row;
-        gap: 1rem;
-        padding: 1.25rem;
-        margin-bottom: 1.25rem;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        /* Enhanced scrollbar for mobile */
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary) transparent;
-    }
-    
-    .approval-filters-enhanced::-webkit-scrollbar {
-        height: 4px;
-    }
-    
-    .approval-filters-enhanced::-webkit-scrollbar-track {
-        background: rgba(0,0,0,0.05);
-        border-radius: 2px;
-    }
-    
-    .approval-filters-enhanced::-webkit-scrollbar-thumb {
-        background: var(--primary);
-        border-radius: 2px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
     }
     
     .filter-group {
-        min-width: 180px;
-        max-width: 200px;
-        flex: 0 0 auto;
+        min-width: unset;
     }
     
     .filter-group label {
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
     }
     
     .form-control {
@@ -1324,11 +1299,6 @@ body {
         padding: 0.875rem 1rem;
         font-size: 0.85rem;
         white-space: nowrap;
-    }
-    
-    /* Mobile touch improvements */
-    .approval-filters-enhanced {
-        touch-action: pan-x;
     }
     
     .form-control:focus {
@@ -3908,10 +3878,10 @@ body {
     max-width: 100%;
     overflow: hidden;
     background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255,255,255,0.95) 100%);
-    border: 2px solid transparent;
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg), 0 0 30px rgba(37, 99, 235, 0.1);
-    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(10px);
     position: relative;
 }
 
@@ -3931,78 +3901,61 @@ body {
 }
 
 .permission-header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary-dark) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: white;
-    padding: 2rem 2.5rem;
+    padding: 1.5rem 2rem;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     margin-bottom: 0;
     position: relative;
-    overflow: hidden;
-}
-
-.permission-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-    0% { left: -100%; }
-    100% { left: 100%; }
 }
 
 .permission-header h2 {
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.5rem 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    font-size: 2rem;
-    font-weight: 800;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    letter-spacing: 0.5px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
 }
 
 .header-subtitle {
     margin: 0;
     opacity: 0.95;
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-size: 1rem;
+    font-weight: 400;
     text-align: center;
-    line-height: 1.6;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    line-height: 1.5;
 }
 
-/* Permission Statistics Grid - Enhanced Professional Design */
+/* Permission Statistics Grid - Compact Professional Design */
 .permission-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    padding: 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
     background: linear-gradient(135deg, var(--bg-card) 0%, rgba(248,250,252,0.9) 100%);
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1rem;
 }
 
 .permission-stat-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248,250,252,0.9) 100%);
-    border: 2px solid transparent;
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 2rem 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 1rem;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     cursor: pointer;
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-sm);
 }
 
 .permission-stat-card::before {
@@ -4011,7 +3964,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 5px;
+    height: 3px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
     transition: height 0.3s ease;
 }
@@ -4030,19 +3983,19 @@ body {
 }
 
 .permission-stat-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 30px rgba(37, 99, 235, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
     border-color: var(--primary-light);
 }
 
 .permission-stat-card:hover::before {
-    height: 8px;
+    height: 4px;
 }
 
 .permission-stat-card .stat-icon {
-    font-size: 3.5rem;
-    width: 80px;
-    height: 80px;
+    font-size: 2.5rem;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4094,9 +4047,9 @@ body {
 /* Permission Main Content - Enhanced Professional Layout */
 .permission-main-content {
     display: grid;
-    grid-template-columns: 1.2fr 350px;
+    grid-template-columns: 1.5fr 320px;
     gap: 0;
-    min-height: 700px;
+    min-height: 600px;
     background: var(--bg-card);
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     overflow: hidden;
@@ -4643,12 +4596,12 @@ body {
     
     .permission-stats-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        padding: 1.5rem;
+        gap: 0.75rem;
+        padding: 1rem;
     }
     
     .permission-stat-card {
-        padding: 1.25rem 1rem;
+        padding: 0.75rem;
     }
     
     .permission-stat-card .stat-icon {
@@ -4751,8 +4704,8 @@ body {
 @media (max-width: 480px) {
     .permission-stats-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
-        padding: 1rem;
+        gap: 0.5rem;
+        padding: 0.75rem;
     }
     
     .permission-header {

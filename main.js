@@ -661,9 +661,12 @@ class ContentManager {
             `;
 
             // Use getUsers API to get user list with enhanced error handling
-            const users = await utils.fetchAPI('?action=getUsers');
+            const response = await utils.fetchAPI('?action=getUsers');
             
-            console.log('Users data received:', users); // Debug log
+            console.log('Users response received:', response); // Debug log
+            
+            // Extract users data - handle both direct array and wrapped response
+            const users = Array.isArray(response) ? response : (response?.results || response?.data || []);
             
             // Validate users data
             if (!Array.isArray(users)) {
