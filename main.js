@@ -1205,11 +1205,6 @@ class ContentManager {
             this.setupPersonalInfoHandlers();
             this.loadPersonalStats();
             
-            // Apply GSAP animations if available
-            if (typeof gsap !== 'undefined') {
-                this.animatePersonalInfoEntrance();
-            }
-            
         } catch (error) {
             console.error('Personal info error:', error);
             content.innerHTML = `
@@ -1474,37 +1469,7 @@ class ContentManager {
         utils.showNotification('Đã xuất thông tin cá nhân', 'success');
     }
 
-    animatePersonalInfoEntrance() {
-        // GSAP entrance animations for personal info
-        gsap.fromTo('.personal-header', 
-            { y: -50, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
-        );
-        
-        gsap.fromTo('.info-card', 
-            { y: 50, opacity: 0 },
-            { 
-                y: 0, 
-                opacity: 1, 
-                duration: 0.6, 
-                ease: "power2.out",
-                stagger: 0.1,
-                delay: 0.2
-            }
-        );
-        
-        gsap.fromTo('.stat-item', 
-            { scale: 0, rotation: -45 },
-            { 
-                scale: 1, 
-                rotation: 0, 
-                duration: 0.5, 
-                ease: "back.out(1.7)",
-                stagger: 0.1,
-                delay: 0.8
-            }
-        );
-    }
+
 
     // Helper functions for the above methods
     generateScheduleTable(schedules = []) {
@@ -3289,13 +3254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
 
-        // Initialize GSAP animations after all content is loaded
-        if (typeof gsap !== 'undefined') {
-            console.log('🎬 Starting GSAP initialization...');
-            setTimeout(() => {
-                initializeGSAP();
-            }, 200);
-        }
+        // GSAP animations removed due to interference with sidebar functionality
 
         // Mobile optimization and enhanced menu setup
         setupMobileMenu();
@@ -4046,13 +4005,13 @@ async function initializeFinanceDashboard() {
     if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
 }
 
-// Enhanced Mobile Menu Setup with Professional GSAP Animation
+// Enhanced Mobile Menu Setup (GSAP animations removed)
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     
     if (menuToggle && sidebar) {
-        // Professional mobile menu toggle with subtle animations
+        // Mobile menu toggle with CSS transitions
         menuToggle.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -4060,54 +4019,23 @@ function setupMobileMenu() {
             const isActive = sidebar.classList.contains('active');
             
             if (isActive) {
-                // Close animation
-                gsap.to(sidebar, {
-                    x: -280,
-                    duration: 0.25,
-                    ease: "power2.out",
-                    onComplete: () => {
-                        sidebar.classList.remove('active');
-                    }
-                });
+                // Close menu
+                sidebar.classList.remove('active');
             } else {
-                // Open animation
+                // Open menu
                 sidebar.classList.add('active');
-                gsap.fromTo(sidebar, 
-                    { x: -280 },
-                    { 
-                        x: 0,
-                        duration: 0.25,
-                        ease: "power2.out"
-                    }
-                );
             }
-            
-            // Subtle menu toggle button animation (no ugly scaling)
-            gsap.to(menuToggle, {
-                rotation: isActive ? 0 : 90,
-                duration: 0.2,
-                ease: "power2.out"
-            });
         });
 
-        // Professional touch support without ugly effects
+        // Touch support
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            // Minimal visual feedback
-            gsap.to(menuToggle, {
-                opacity: 0.8,
-                duration: 0.1,
-                ease: "power2.out"
-            });
+            menuToggle.style.opacity = '0.8';
         });
 
         menuToggle.addEventListener('touchend', (e) => {
             e.preventDefault();
-            gsap.to(menuToggle, {
-                opacity: 1,
-                duration: 0.1,
-                ease: "power2.out"
-            });
+            menuToggle.style.opacity = '1';
         });
 
         // Close sidebar when clicking outside on mobile
@@ -4117,19 +4045,9 @@ function setupMobileMenu() {
                 !sidebar.contains(e.target) && 
                 !menuToggle.contains(e.target)) {
                 
-                gsap.to(sidebar, {
-                    x: -280,
-                    duration: 0.25,
-                    ease: "power2.out",
-                    onComplete: () => {
-                        sidebar.classList.remove('active');
-                    }
-                });
+                sidebar.classList.remove('active');
             }
         });
-
-        // Initialize GSAP for mobile menu
-        gsap.set(sidebar, { x: -280 });
     }
 }
 
@@ -4737,242 +4655,8 @@ function buildRoleBasedDashboard(userRole) {
 }
 
 // =============================================================================
-// GSAP ANIMATION SYSTEM
-// =============================================================================
+// GSAP ANIMATION SYSTEM REMOVED - Was causing conflicts with sidebar functionality
 
-// Initialize GSAP with safety checks
-function initializeGSAP() {
-    console.log('🎬 Initializing GSAP Animation System...');
-    
-    // Check if GSAP is loaded and elements exist
-    if (typeof gsap === 'undefined') {
-        console.warn('⚠️ GSAP library not loaded');
-        return;
-    }
 
-    try {
-        // Register GSAP plugins with error handling
-        if (typeof ScrollTrigger !== 'undefined') {
-            gsap.registerPlugin(ScrollTrigger);
-        }
-        if (typeof TextPlugin !== 'undefined') {
-            gsap.registerPlugin(TextPlugin);
-        }
-        
-        console.log('✅ GSAP plugins registered');
-        
-        // Initialize animations with safety checks
-        setTimeout(() => {
-            initializePageAnimations();
-            initializeScrollAnimations();
-            initializeInteractiveAnimations();
-        }, 100);
-        
-        console.log('🎨 GSAP Animation System initialized successfully');
-    } catch (error) {
-        console.error('❌ GSAP initialization error:', error);
-    }
-}
 
-// Page entrance animations
-function initializePageAnimations() {
-    // Subtle fade in for main content areas (not body to avoid interface disappearing)
-    gsap.from(".main-content, .content-section", {
-        opacity: 0,
-        duration: 0.6,
-        ease: "power2.out",
-        stagger: 0.1
-    });
 
-    // Animate header with subtle effect
-    gsap.from(".show-user", {
-        y: -20,
-        opacity: 0,
-        duration: 0.5,
-        delay: 0.1,
-        ease: "power2.out"
-    });
-
-    // Subtle sidebar animation
-    gsap.from(".sidebar", {
-        x: -50,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.05,
-        ease: "power2.out"
-    });
-
-    // Animate stats cards with gentle stagger
-    gsap.from(".stat-card", {
-        y: 30,
-        opacity: 0,
-        duration: 0.5,
-        delay: 0.3,
-        stagger: 0.05,
-        ease: "power2.out"
-    });
-
-    // Simple menu toggle entrance (no repeating pulse)
-    gsap.from(".menu-toggle", {
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.4,
-        delay: 0.2,
-        ease: "power2.out"
-    });
-}
-
-// Scroll-triggered animations (more subtle)
-function initializeScrollAnimations() {
-    // Only animate if ScrollTrigger is available and elements exist
-    if (typeof ScrollTrigger === 'undefined') return;
-    
-    // Gentle section title animations
-    gsap.utils.toArray(".section-title").forEach((title) => {
-        if (title) {
-            gsap.from(title, {
-                scrollTrigger: {
-                    trigger: title,
-                    start: "top 90%",
-                    end: "bottom 10%",
-                    toggleActions: "play none none reverse"
-                },
-                x: -30,
-                opacity: 0,
-                duration: 0.4,
-                ease: "power2.out"
-            });
-        }
-    });
-
-    // Gentle card animations on scroll
-    gsap.utils.toArray(".chart-card, .finance-card, .personal-card, .store-card").forEach((card, index) => {
-        if (card) {
-            gsap.from(card, {
-                scrollTrigger: {
-                    trigger: card,
-                    start: "top 90%",
-                    end: "bottom 10%",
-                    toggleActions: "play none none reverse"
-                },
-                y: 20,
-                opacity: 0,
-                duration: 0.4,
-                delay: index * 0.05,
-                ease: "power2.out"
-            });
-        }
-    });
-}
-
-// Interactive animations (more professional and subtle)
-function initializeInteractiveAnimations() {
-    // Subtle hover effects for stat cards
-    document.querySelectorAll('.stat-card').forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            gsap.to(card, {
-                scale: 1.02,
-                y: -3,
-                duration: 0.2,
-                ease: "power2.out"
-            });
-        });
-
-        card.addEventListener('mouseleave', () => {
-            gsap.to(card, {
-                scale: 1,
-                y: 0,
-                duration: 0.2,
-                ease: "power2.out"
-            });
-        });
-    });
-
-    // Professional button animations
-    document.querySelectorAll('button, .btn, .menu-link').forEach(btn => {
-        btn.addEventListener('mouseenter', () => {
-            gsap.to(btn, {
-                scale: 1.02,
-                duration: 0.15,
-                ease: "power2.out"
-            });
-        });
-
-        btn.addEventListener('mouseleave', () => {
-            gsap.to(btn, {
-                scale: 1,
-                duration: 0.15,
-                ease: "power2.out"
-            });
-        });
-
-        btn.addEventListener('click', () => {
-            gsap.to(btn, {
-                scale: 0.98,
-                duration: 0.05,
-                yoyo: true,
-                repeat: 1,
-                ease: "power2.inOut"
-            });
-        });
-    });
-
-    // Theme switch animation
-    const themeSwitch = document.getElementById('themeSwitch');
-    if (themeSwitch) {
-        themeSwitch.addEventListener('click', () => {
-            gsap.to(themeSwitch, {
-                rotation: 180,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        });
-    }
-}
-
-// Animate content updates
-function animateContentUpdate(element) {
-    if (typeof gsap !== 'undefined' && element) {
-        gsap.from(element, {
-            opacity: 0,
-            y: 30,
-            duration: 0.5,
-            ease: "power2.out"
-        });
-    }
-}
-
-// Animate modal appearances
-function animateModal(modal, show = true) {
-    if (typeof gsap !== 'undefined' && modal) {
-        if (show) {
-            gsap.set(modal, { display: 'flex' });
-            gsap.from(modal, {
-                opacity: 0,
-                scale: 0.8,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-            gsap.from(modal.querySelector('.modal-content'), {
-                y: -50,
-                duration: 0.4,
-                delay: 0.1,
-                ease: "power3.out"
-            });
-        } else {
-            gsap.to(modal, {
-                opacity: 0,
-                scale: 0.8,
-                duration: 0.2,
-                ease: "power2.in",
-                onComplete: () => {
-                    modal.style.display = 'none';
-                }
-            });
-        }
-    }
-}
-
-// Export functions for global use
-window.animateContentUpdate = animateContentUpdate;
-window.animateModal = animateModal;

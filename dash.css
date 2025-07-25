@@ -1767,7 +1767,7 @@ body {
     .sidebar {
         transform: translateX(-100%);
         z-index: 1100;
-        transition: none; /* GSAP will handle transitions */
+        transition: transform 0.25s ease-out;
     }
 
     .sidebar.active {
