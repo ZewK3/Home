@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mobile Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+        }
+        
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 99999;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 18px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: #16213e;
+            border-right: 1px solid #374151;
+            transition: transform 0.25s ease-out;
+            z-index: 1100;
+            padding: 20px;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding-left: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
+        <span>☰</span>
+    </button>
+    
+    <div class="sidebar">
+        <h2>Sidebar Menu</h2>
+        <p>This is the sidebar content</p>
+        <ul>
+            <li>Menu Item 1</li>
+            <li>Menu Item 2</li>
+            <li>Menu Item 3</li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <h1>Main Content</h1>
+        <p>This is the main content area. On mobile, click the menu toggle to open/close the sidebar.</p>
+    </div>
+    
+    <script>
+        function setupMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.querySelector('.sidebar');
+            
+            console.log('Setting up mobile menu...', menuToggle, sidebar);
+            
+            if (menuToggle && sidebar) {
+                // Mobile menu toggle with CSS transitions
+                menuToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    console.log('Menu toggle clicked!');
+                    
+                    const isActive = sidebar.classList.contains('active');
+                    
+                    if (isActive) {
+                        // Close menu
+                        sidebar.classList.remove('active');
+                        console.log('Closing sidebar');
+                    } else {
+                        // Open menu
+                        sidebar.classList.add('active');
+                        console.log('Opening sidebar');
+                    }
+                });
+
+                // Touch support
+                menuToggle.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    menuToggle.style.opacity = '0.8';
+                });
+
+                menuToggle.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    menuToggle.style.opacity = '1';
+                });
+
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth <= 768 && 
+                        sidebar.classList.contains('active') &&
+                        !sidebar.contains(e.target) && 
+                        !menuToggle.contains(e.target)) {
+                        
+                        sidebar.classList.remove('active');
+                        console.log('Closing sidebar (clicked outside)');
+                    }
+                });
+            } else {
+                console.error('Menu toggle or sidebar not found:', { menuToggle, sidebar });
+            }
+        }
+        
+        // Setup mobile menu when DOM is ready
+        document.addEventListener('DOMContentLoaded', setupMobileMenu);
+    </script>
+</body>
+</html>

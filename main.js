@@ -3259,15 +3259,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Mobile optimization and enhanced menu setup
         setupMobileMenu();
         
-        if (window.innerWidth <= 768) {
-            const sidebar = document.querySelector(".sidebar");
-            document.addEventListener("click", (e) => {
-                if (!sidebar.contains(e.target) && 
-                    !e.target.closest(".menu-toggle")) {
-                    sidebar.classList.remove("active");
-                }
-            });
-        }
+        // Additional failsafe - ensure mobile menu is setup after everything else
+        setTimeout(() => {
+            console.log('🔧 Failsafe mobile menu setup');
+            setupMobileMenu();
+        }, 2000);
     }
 });
 
@@ -4010,20 +4006,28 @@ function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     
+    console.log('📱 Setting up mobile menu...', { menuToggle, sidebar });
+    
     if (menuToggle && sidebar) {
+        console.log('✅ Mobile menu elements found, setting up event listeners');
+        
         // Mobile menu toggle with CSS transitions
         menuToggle.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            
+            console.log('📱 Menu toggle clicked!');
             
             const isActive = sidebar.classList.contains('active');
             
             if (isActive) {
                 // Close menu
                 sidebar.classList.remove('active');
+                console.log('🔒 Closing sidebar');
             } else {
                 // Open menu
                 sidebar.classList.add('active');
+                console.log('🔓 Opening sidebar');
             }
         });
 
@@ -4031,11 +4035,13 @@ function setupMobileMenu() {
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
             menuToggle.style.opacity = '0.8';
+            console.log('👆 Touch start on menu toggle');
         });
 
         menuToggle.addEventListener('touchend', (e) => {
             e.preventDefault();
             menuToggle.style.opacity = '1';
+            console.log('👆 Touch end on menu toggle');
         });
 
         // Close sidebar when clicking outside on mobile
@@ -4046,8 +4052,17 @@ function setupMobileMenu() {
                 !menuToggle.contains(e.target)) {
                 
                 sidebar.classList.remove('active');
+                console.log('🔒 Closing sidebar (clicked outside)');
             }
         });
+    } else {
+        console.error('❌ Mobile menu elements not found:', { menuToggle, sidebar });
+        
+        // Retry after a short delay in case elements are being dynamically loaded
+        setTimeout(() => {
+            console.log('🔄 Retrying mobile menu setup...');
+            setupMobileMenu();
+        }, 1000);
     }
 }
 
