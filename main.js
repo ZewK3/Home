@@ -320,14 +320,15 @@ class ContentManager {
                 const formData = new FormData(e.target);
                 const taskData = Object.fromEntries(formData);
                 
-                // For now, use sendMessage API to send the task as a message
-                await utils.fetchAPI('?action=sendMessage', {
+                // Use createTask API to create a proper task
+                await utils.fetchAPI('?action=createTask', {
                     method: 'POST',
                     body: JSON.stringify({
                         employeeId: this.user.employeeId,
                         fullName: this.user.fullName || 'Nhân viên',
                         position: this.user.position || 'NV',
-                        message: `[YÊU CẦU] ${taskData.taskType}: ${taskData.content}`
+                        taskType: taskData.taskType,
+                        content: taskData.content
                     })
                 });
                 
@@ -430,7 +431,7 @@ class ContentManager {
         try {
             // Load task data for dashboard
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const messages = await utils.fetchAPI(`?action=getMessages&token=${token}`);
+            const tasks = await utils.fetchAPI(`?action=getTasks&token=${token}`);
             
             content.innerHTML = `
                 <div class="card">
@@ -447,7 +448,7 @@ class ContentManager {
                             </select>
                         </div>
                         <div class="task-list">
-                            <p>Chức năng xử lý yêu cầu nhân sự. Hiện tại hệ thống có ${Array.isArray(messages) ? messages.length : 0} tin nhắn chưa xử lý.</p>
+                            <p>Chức năng xử lý yêu cầu nhân sự. Hiện tại hệ thống có ${Array.isArray(tasks) ? tasks.length : 0} yêu cầu chưa xử lý.</p>
                             <div class="placeholder-content">
                                 <p>📋 Danh sách yêu cầu nhân sự sẽ được hiển thị ở đây</p>
                                 <p>💬 Các yêu cầu nghỉ phép, tăng ca, thay đổi lịch làm việc</p>
@@ -3016,51 +3017,6 @@ async function updateStatsGrid() {
     console.log('✅ Stats-grid update complete');
 }
 
-// Initialize Recent Activities - Display static sample data instead of API call
-async function initializeRecentActivities() {
-    const container = document.getElementById('recentActivities');
-    if (!container) return;
-
-    try {
-        // Use sample data instead of API call (removed old chat function)
-        const sampleActivities = [
-            {
-                employeeName: "Admin System",
-                time: new Date().toISOString(),
-                action: "Hệ thống đã được khởi tạo thành công"
-            },
-            {
-                employeeName: "HR Manager", 
-                time: new Date(Date.now() - 3600000).toISOString(),
-                action: "Cập nhật chính sách nhân sự"
-            },
-            {
-                employeeName: "Store Manager",
-                time: new Date(Date.now() - 7200000).toISOString(), 
-                action: "Phê duyệt lịch làm việc tháng mới"
-            }
-        ];
-        
-        container.innerHTML = sampleActivities.map(activity => `
-            <div class="activity-item">
-                <div class="activity-avatar">${activity.employeeName?.substring(0, 2) || 'NV'}</div>
-                <div class="activity-content">
-                    <div class="activity-header">
-                        <span class="activity-author">${activity.employeeName || 'Nhân viên'}</span>
-                        <span class="activity-time">${utils.formatDate(activity.time)}</span>
-                    </div>
-                    <div class="activity-message">${activity.action}</div>
-                </div>
-            </div>
-        `).join('');
-        
-        console.log('✅ Recent activities initialized with sample data');
-    } catch (error) {
-        console.error('Error loading recent activities:', error);
-        container.innerHTML = '<p class="loading-text">Không thể tải hoạt động</p>';
-    }
-}
-
 // Role-based UI Management  
 async function initializeRoleBasedUI() {
     const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
@@ -3725,7 +3681,6 @@ async function initializeEnhancedDashboard() {
                             // Continue with initialization
                             console.log('📊 Initializing dashboard stats and role checking...');
                             await getDashboardStats();
-                            await initializeRecentActivities();
                             
                             console.log('🔐 Setting up role-based UI with fresh data...');
                             await initializeRoleBasedUI();
@@ -3762,7 +3717,6 @@ async function initializeEnhancedDashboard() {
         // Initialize all dashboard components
         console.log('📊 Initializing dashboard stats and role checking...');
         await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
-        await initializeRecentActivities();
         
         // Initialize role-based UI and menu visibility with fresh API data
         console.log('🔐 Setting up role-based UI with fresh data...');
@@ -3829,63 +3783,27 @@ async function initializeEnhancedDashboard() {
     }
 }
 
-// Enhanced polling system - only refresh when there are actual changes
-let lastActivityHash = null;
-let lastUserDataHash = null;
-
-async function checkForChanges() {
+// Simplified refresh system - runs only on page load and user actions
+async function refreshSystemData() {
     try {
-        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
-        if (!token || !employeeId) return false;
+        console.log('🔄 Refreshing system data...');
         
-        // Check for activity changes (simplified hash check)
-        const activitiesResponse = await fetch(`${CONFIG.API_URL}?action=getRecentActivities&token=${token}`);
-        const userData = await fetch(`${CONFIG.API_URL}?action=getUser&employeeId=${employeeId}&token=${token}`);
-        
-        if (activitiesResponse.ok && userData.ok) {
-            const activities = await activitiesResponse.json();
-            const user = await userData.json();
-            
-            // Create simple hash of important data
-            const currentActivityHash = JSON.stringify(activities).length;
-            const currentUserHash = JSON.stringify(user.position + user.status).length;
-            
-            // Check if anything changed
-            const activitiesChanged = lastActivityHash !== null && lastActivityHash !== currentActivityHash;
-            const userDataChanged = lastUserDataHash !== null && lastUserDataHash !== currentUserHash;
-            
-            // Update stored hashes
-            lastActivityHash = currentActivityHash;
-            lastUserDataHash = currentUserHash;
-            
-            return activitiesChanged || userDataChanged;
-        }
-    } catch (error) {
-        console.log('⚠️ Change detection failed:', error.message);
-    }
-    return false;
-}
-
-// Smart polling system - only refresh when changes detected
-setInterval(async () => {
-    const hasChanges = await checkForChanges();
-    
-    if (hasChanges) {
-        console.log('🔄 Changes detected - refreshing data...');
-        
-        // Only refresh recent activities, not dashboard stats  
-        await initializeRecentActivities();
-        
-        // Re-initialize role-based UI to ensure AD functions remain visible using fresh API data
+        // Re-initialize role-based UI to ensure functions remain visible using fresh API data
         await refreshUserRoleAndPermissions();
         
-        console.log('✅ Auto-refresh completed (changes detected)');
-    } else {
-        console.log('📊 No changes detected - skipping refresh');
+        console.log('✅ System data refresh completed');
+    } catch (error) {
+        console.log('⚠️ System refresh failed:', error.message);
     }
-}, 30000);
+}
+
+// Run refresh only on page load
+document.addEventListener('DOMContentLoaded', async () => {
+    await refreshSystemData();
+});
+
+// Export function for manual refresh when user performs actions
+window.triggerSystemRefresh = refreshSystemData;
 
 // Global functions for change request modal
 function openChangeRequestModal(field, currentValue) {

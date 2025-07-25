@@ -475,47 +475,6 @@ async function handleLogin(body, db, origin) {
   }
 }
 
-// Hàm lấy tin nhắn
-async function handleGetChat(url, db, origin) {
-  const limit = 50;
-  const lastId = parseInt(url.searchParams.get("lastId"));
-
-  const query = lastId
-    ? "SELECT * FROM messages WHERE id > ? ORDER BY id ASC LIMIT ?"
-    : "SELECT * FROM messages ORDER BY id DESC LIMIT ?";
-  const params = lastId ? [lastId, limit] : [limit];
-
-  const messages = await db.prepare(query).bind(...params).all();
-  if (!messages.results || messages.results.length === 0) {
-    return jsonResponse({ message: "Không có tin nhắn nào!" }, 200, origin);
-  }
-
-  const sortedMessages = lastId ? messages.results : messages.results.reverse();
-  return jsonResponse(sortedMessages, 200, origin);
-}
-
-// Hàm lưu tin nhắn
-async function handleSaveChat(body, db, origin) {
-  const { employeeId, fullName, position, message } = body;
-  if (!employeeId || !fullName || !message) {
-    return jsonResponse({ message: "Thiếu dữ liệu cần thiết!" }, 400, origin);
-  }
-
-  const vietnamTime = new Date(Date.now() + 7 * 60 * 60 * 1000);
-  const formattedTime = vietnamTime.toISOString().replace(/T/, " ").replace(/\..+/, "");
-
-  try {
-    await db
-      .prepare("INSERT INTO messages (employeeId, fullName, position, message, time) VALUES (?, ?, ?, ?, ?)")
-      .bind(employeeId, fullName, position, message, formattedTime)
-      .run();
-    return jsonResponse({ message: "Gửi tin nhắn thành công!" }, 200, origin);
-  } catch (error) {
-    console.error("Lỗi lưu tin nhắn:", error);
-    return jsonResponse({ message: "Lỗi lưu tin nhắn!", error: error.message }, 500, origin);
-  }
-}
-
 // Hàm lấy thông tin nhân viên
 async function handleGetUser(url, db, origin) {
   const employeeId = url.searchParams.get("employeeId");
@@ -975,21 +934,21 @@ async function handleGetTodaySchedule(db, origin) {
 // Hàm lấy yêu cầu đang chờ xử lý
 async function handleGetPendingRequests(db, origin) {
   try {
-    // Sử dụng bảng messages để lấy các tin nhắn có chứa [YÊU CẦU]
-    const pendingMessages = await db
-      .prepare("SELECT * FROM messages WHERE message LIKE '%[YÊU CẦU]%' ORDER BY time DESC LIMIT 10")
+    // Use tasks table instead of messages for pending requests
+    const pendingTasks = await db
+      .prepare("SELECT * FROM tasks WHERE status = 'pending' ORDER BY createdAt DESC LIMIT 10")
       .all();
 
-    if (!pendingMessages.results) {
+    if (!pendingTasks.results) {
       return jsonResponse([], 200, origin);
     }
 
-    const pendingRequests = pendingMessages.results.map(msg => ({
-      id: msg.id,
-      employeeId: msg.employeeId,
-      employeeName: msg.fullName,
-      message: msg.message,
-      time: msg.time,
+    const pendingRequests = pendingTasks.results.map(task => ({
+      id: task.id,
+      employeeId: task.employeeId,
+      employeeName: task.fullName,
+      message: `${task.taskType}: ${task.content}`,
+      time: task.createdAt,
       status: 'pending'
     }));
 
@@ -1013,22 +972,22 @@ async function handleGetDashboardStats(db, origin) {
       .prepare(`SELECT COUNT(*) as count FROM workSchedules WHERE ${dayName} IS NOT NULL AND ${dayName} != 'Off'`)
       .first();
 
-    // Đếm tin nhắn chưa đọc (tin nhắn trong 24h qua)
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const recentMessages = await db
-      .prepare("SELECT COUNT(*) as count FROM messages WHERE time >= ?")
-      .bind(twentyFourHoursAgo)
+    // Đếm tasks đang chờ xử lý thay vì tin nhắn
+    const pendingRequests = await db
+      .prepare("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'")
       .first();
 
-    // Đếm yêu cầu đang chờ
-    const pendingRequests = await db
-      .prepare("SELECT COUNT(*) as count FROM messages WHERE message LIKE '%[YÊU CẦU]%'")
+    // Đếm history logs trong 24h qua thay vì tin nhắn
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recentActivities = await db
+      .prepare("SELECT COUNT(*) as count FROM history_logs WHERE created_at >= ?")
+      .bind(twentyFourHoursAgo)
       .first();
 
     const stats = {
       totalEmployees: totalEmployees?.count || 0,
       todaySchedules: todaySchedules?.count || 0,
-      recentMessages: recentMessages?.count || 0,
+      recentMessages: recentActivities?.count || 0,
       pendingRequests: pendingRequests?.count || 0,
       currentDay: dayName
     };
@@ -1046,74 +1005,7 @@ async function handleGetDashboardStats(db, origin) {
   }
 }
 
-// Hàm lấy hoạt động gần đây
-async function handleGetRecentActivities(url, db, origin) {
-  try {
-    const token = url.searchParams.get("token");
-    const session = await checkSessionMiddleware(token, db, origin);
-    if (session instanceof Response) return session;
 
-    const activities = await db
-      .prepare("SELECT employeeId, fullName, position, message, time FROM messages ORDER BY time DESC LIMIT 15")
-      .all();
-
-    if (!activities.results) {
-      return jsonResponse([], 200, origin);
-    }
-
-    const recentActivities = activities.results.map(activity => ({
-      id: activity.id || Math.random(),
-      employeeId: activity.employeeId,
-      employeeName: activity.fullName,
-      position: activity.position || 'NV',
-      action: activity.message.substring(0, 100) + (activity.message.length > 100 ? '...' : ''),
-      time: activity.time,
-      type: activity.message.includes('[YÊU CẦU]') ? 'request' : 'message'
-    }));
-
-    return jsonResponse(recentActivities, 200, origin);
-  } catch (error) {
-    console.error("Lỗi lấy hoạt động gần đây:", error);
-    return jsonResponse([], 200, origin);
-  }
-}
-
-// Hàm xóa tin nhắn với kiểm tra thời gian
-async function handleDeleteMessage(body, db, origin) {
-  const { messageId } = body;
-  if (!messageId) {
-    return jsonResponse({ message: "Thiếu messageId!" }, 400, origin);
-  }
-
-  try {
-    // Lấy thông tin tin nhắn
-    const message = await db
-      .prepare("SELECT * FROM messages WHERE id = ?")
-      .bind(messageId)
-      .first();
-
-    if (!message) {
-      return jsonResponse({ message: "Tin nhắn không tồn tại!" }, 404, origin);
-    }
-
-    // Kiểm tra thời gian (chỉ cho phép xóa trong vòng 5 phút)
-    const messageTime = new Date(message.time);
-    const currentTime = new Date();
-    const timeDiff = (currentTime - messageTime) / 1000; // Chuyển sang giây
-
-    if (timeDiff > 300) { // 5 phút = 300 giây
-      return jsonResponse({ message: "Chỉ có thể xóa tin nhắn trong vòng 5 phút!" }, 403, origin);
-    }
-
-    // Xóa tin nhắn
-    await db.prepare("DELETE FROM messages WHERE id = ?").bind(messageId).run();
-    
-    return jsonResponse({ message: "Đã xóa tin nhắn!" }, 200, origin);
-  } catch (error) {
-    console.error("Lỗi xóa tin nhắn:", error);
-    return jsonResponse({ message: "Lỗi xóa tin nhắn!", error: error.message }, 500, origin);
-  }
-}
 
 // Hàm thêm thưởng/phạt
 async function handleAddReward(body, db, origin) {
@@ -1235,7 +1127,7 @@ async function handleApproveTask(body, db, origin) {
         .bind(note || '', new Date().toISOString(), taskId)
         .run();
     } else {
-      // Nếu không có bảng tasks riêng, có thể cập nhật trong messages hoặc tạo entry mới
+      // Task không tồn tại trong bảng tasks
       return jsonResponse({ message: "Yêu cầu không tồn tại!" }, 404, origin);
     }
 
@@ -1292,12 +1184,6 @@ async function handleCreateTaskFromMessage(body, db, origin) {
     await db
       .prepare("INSERT INTO tasks (id, employeeId, employeeName, position, type, content, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
       .bind(taskId, employeeId, fullName || 'Nhân viên', position || 'NV', taskType, content, 'pending', now)
-      .run();
-
-    // Cũng lưu như một tin nhắn để theo dõi
-    await db
-      .prepare("INSERT INTO messages (employeeId, fullName, position, message, time) VALUES (?, ?, ?, ?, ?)")
-      .bind(employeeId, fullName || 'Nhân viên', position || 'NV', `[YÊU CẦU] ${taskType}: ${content}`, now)
       .run();
 
     return jsonResponse({ message: "Đã tạo yêu cầu!", taskId }, 200, origin);
@@ -1614,10 +1500,6 @@ export default {
 
         const body = await request.json();
         switch (action) {
-          case "sendMessage":
-            return await handleSaveChat(body, db, ALLOWED_ORIGIN);
-          case "deleteMessage":
-            return await handleDeleteMessage(body, db, ALLOWED_ORIGIN);
           case "login":
             return await handleLogin(body, db, ALLOWED_ORIGIN);
           case "register":
@@ -1655,8 +1537,6 @@ export default {
         switch (action) {
           case "getStores":
             return await handleGetStores(db, ALLOWED_ORIGIN);
-          case "getMessages":
-            return await handleGetChat(url, db, ALLOWED_ORIGIN);
           case "checkId":
             return await handleCheckId(url, db, ALLOWED_ORIGIN);
           case "getUser":
@@ -1675,8 +1555,6 @@ export default {
             return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
           case "getDashboardStats":
             return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
-          case "getRecentActivities":
-            return await handleGetRecentActivities(url, db, ALLOWED_ORIGIN);
           case "getRewards":
             return await handleGetRewards(url, db, ALLOWED_ORIGIN);
           case "getTasks":

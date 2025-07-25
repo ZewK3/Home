@@ -1,5 +1,8 @@
 -- HR Management System Database Schema
 
+-- Drop old messaging table (no longer needed since messaging system removed)
+DROP TABLE IF EXISTS messages;
+
 -- History tracking table for permission changes and approval actions
 CREATE TABLE IF NOT EXISTS history_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
