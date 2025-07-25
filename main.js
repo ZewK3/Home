@@ -4046,13 +4046,13 @@ async function initializeFinanceDashboard() {
     if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
 }
 
-// Enhanced Mobile Menu Setup with GSAP Animation
+// Enhanced Mobile Menu Setup with Professional GSAP Animation
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     
     if (menuToggle && sidebar) {
-        // Enhanced mobile menu toggle with better touch support
+        // Professional mobile menu toggle with subtle animations
         menuToggle.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -4063,7 +4063,7 @@ function setupMobileMenu() {
                 // Close animation
                 gsap.to(sidebar, {
                     x: -280,
-                    duration: 0.3,
+                    duration: 0.25,
                     ease: "power2.out",
                     onComplete: () => {
                         sidebar.classList.remove('active');
@@ -4076,27 +4076,26 @@ function setupMobileMenu() {
                     { x: -280 },
                     { 
                         x: 0,
-                        duration: 0.3,
+                        duration: 0.25,
                         ease: "power2.out"
                     }
                 );
             }
             
-            // Menu toggle button animation
+            // Subtle menu toggle button animation (no ugly scaling)
             gsap.to(menuToggle, {
-                scale: 0.9,
-                duration: 0.1,
-                yoyo: true,
-                repeat: 1,
-                ease: "power2.inOut"
+                rotation: isActive ? 0 : 90,
+                duration: 0.2,
+                ease: "power2.out"
             });
         });
 
-        // Enhanced touch event support
+        // Professional touch support without ugly effects
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            // Minimal visual feedback
             gsap.to(menuToggle, {
-                scale: 0.95,
+                opacity: 0.8,
                 duration: 0.1,
                 ease: "power2.out"
             });
@@ -4105,7 +4104,7 @@ function setupMobileMenu() {
         menuToggle.addEventListener('touchend', (e) => {
             e.preventDefault();
             gsap.to(menuToggle, {
-                scale: 1,
+                opacity: 1,
                 duration: 0.1,
                 ease: "power2.out"
             });
@@ -4120,7 +4119,7 @@ function setupMobileMenu() {
                 
                 gsap.to(sidebar, {
                     x: -280,
-                    duration: 0.3,
+                    duration: 0.25,
                     ease: "power2.out",
                     onComplete: () => {
                         sidebar.classList.remove('active');
@@ -4741,155 +4740,141 @@ function buildRoleBasedDashboard(userRole) {
 // GSAP ANIMATION SYSTEM
 // =============================================================================
 
-// Initialize GSAP and register plugins
+// Initialize GSAP with safety checks
 function initializeGSAP() {
     console.log('🎬 Initializing GSAP Animation System...');
     
-    // Register GSAP plugins
-    if (typeof gsap !== 'undefined') {
-        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+    // Check if GSAP is loaded and elements exist
+    if (typeof gsap === 'undefined') {
+        console.warn('⚠️ GSAP library not loaded');
+        return;
+    }
+
+    try {
+        // Register GSAP plugins with error handling
+        if (typeof ScrollTrigger !== 'undefined') {
+            gsap.registerPlugin(ScrollTrigger);
+        }
+        if (typeof TextPlugin !== 'undefined') {
+            gsap.registerPlugin(TextPlugin);
+        }
+        
         console.log('✅ GSAP plugins registered');
         
-        // Initialize page entrance animations
-        initializePageAnimations();
-        
-        // Initialize scroll animations
-        initializeScrollAnimations();
-        
-        // Initialize interactive animations
-        initializeInteractiveAnimations();
+        // Initialize animations with safety checks
+        setTimeout(() => {
+            initializePageAnimations();
+            initializeScrollAnimations();
+            initializeInteractiveAnimations();
+        }, 100);
         
         console.log('🎨 GSAP Animation System initialized successfully');
-    } else {
-        console.warn('⚠️ GSAP library not loaded');
+    } catch (error) {
+        console.error('❌ GSAP initialization error:', error);
     }
 }
 
 // Page entrance animations
 function initializePageAnimations() {
-    // Fade in the entire page
-    gsap.from("body", {
+    // Subtle fade in for main content areas (not body to avoid interface disappearing)
+    gsap.from(".main-content, .content-section", {
         opacity: 0,
-        duration: 0.8,
+        duration: 0.6,
+        ease: "power2.out",
+        stagger: 0.1
+    });
+
+    // Animate header with subtle effect
+    gsap.from(".show-user", {
+        y: -20,
+        opacity: 0,
+        duration: 0.5,
+        delay: 0.1,
         ease: "power2.out"
     });
 
-    // Animate header
-    gsap.from(".show-user", {
-        y: -50,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.2,
-        ease: "power3.out"
-    });
-
-    // Animate sidebar
+    // Subtle sidebar animation
     gsap.from(".sidebar", {
-        x: -280,
-        duration: 0.8,
-        delay: 0.1,
-        ease: "power3.out"
-    });
-
-    // Animate dashboard title
-    gsap.from(".dashboard-title", {
-        scale: 0.8,
+        x: -50,
         opacity: 0,
         duration: 0.6,
-        delay: 0.4,
-        ease: "back.out(1.7)"
+        delay: 0.05,
+        ease: "power2.out"
     });
 
-    // Animate stats cards with stagger
+    // Animate stats cards with gentle stagger
     gsap.from(".stat-card", {
-        y: 60,
-        opacity: 0,
-        duration: 0.6,
-        delay: 0.6,
-        stagger: 0.1,
-        ease: "power3.out"
-    });
-
-    // Animate menu toggle with pulse
-    gsap.from(".menu-toggle", {
-        scale: 0,
-        duration: 0.5,
-        delay: 0.3,
-        ease: "back.out(1.7)"
-    });
-
-    // Pulse animation for menu toggle (repeating)
-    gsap.to(".menu-toggle", {
-        scale: 1.1,
-        duration: 2,
-        repeat: -1,
-        yoyo: true,
-        ease: "power2.inOut",
-        delay: 2
-    });
-}
-
-// Scroll-triggered animations
-function initializeScrollAnimations() {
-    // Animate sections as they come into view
-    gsap.utils.toArray(".section-title").forEach((title) => {
-        gsap.from(title, {
-            scrollTrigger: {
-                trigger: title,
-                start: "top 80%",
-                end: "bottom 20%",
-                toggleActions: "play none none reverse"
-            },
-            x: -100,
-            opacity: 0,
-            duration: 0.6,
-            ease: "power3.out"
-        });
-    });
-
-    // Animate cards on scroll
-    gsap.utils.toArray(".chart-card, .finance-card, .personal-card, .store-card").forEach((card, index) => {
-        gsap.from(card, {
-            scrollTrigger: {
-                trigger: card,
-                start: "top 85%",
-                end: "bottom 15%",
-                toggleActions: "play none none reverse"
-            },
-            y: 50,
-            opacity: 0,
-            duration: 0.5,
-            delay: index * 0.1,
-            ease: "power2.out"
-        });
-    });
-
-    // Animate activities list
-    gsap.from(".activities-container", {
-        scrollTrigger: {
-            trigger: ".activities-container",
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse"
-        },
         y: 30,
         opacity: 0,
-        duration: 0.6,
+        duration: 0.5,
+        delay: 0.3,
+        stagger: 0.05,
+        ease: "power2.out"
+    });
+
+    // Simple menu toggle entrance (no repeating pulse)
+    gsap.from(".menu-toggle", {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.4,
+        delay: 0.2,
         ease: "power2.out"
     });
 }
 
-// Interactive animations
+// Scroll-triggered animations (more subtle)
+function initializeScrollAnimations() {
+    // Only animate if ScrollTrigger is available and elements exist
+    if (typeof ScrollTrigger === 'undefined') return;
+    
+    // Gentle section title animations
+    gsap.utils.toArray(".section-title").forEach((title) => {
+        if (title) {
+            gsap.from(title, {
+                scrollTrigger: {
+                    trigger: title,
+                    start: "top 90%",
+                    end: "bottom 10%",
+                    toggleActions: "play none none reverse"
+                },
+                x: -30,
+                opacity: 0,
+                duration: 0.4,
+                ease: "power2.out"
+            });
+        }
+    });
+
+    // Gentle card animations on scroll
+    gsap.utils.toArray(".chart-card, .finance-card, .personal-card, .store-card").forEach((card, index) => {
+        if (card) {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 90%",
+                    end: "bottom 10%",
+                    toggleActions: "play none none reverse"
+                },
+                y: 20,
+                opacity: 0,
+                duration: 0.4,
+                delay: index * 0.05,
+                ease: "power2.out"
+            });
+        }
+    });
+}
+
+// Interactive animations (more professional and subtle)
 function initializeInteractiveAnimations() {
-    // Enhanced hover effects for stat cards
+    // Subtle hover effects for stat cards
     document.querySelectorAll('.stat-card').forEach(card => {
         card.addEventListener('mouseenter', () => {
             gsap.to(card, {
-                scale: 1.05,
-                y: -10,
-                duration: 0.3,
-                ease: "power2.out",
-                boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
+                scale: 1.02,
+                y: -3,
+                duration: 0.2,
+                ease: "power2.out"
             });
         });
 
@@ -4897,19 +4882,18 @@ function initializeInteractiveAnimations() {
             gsap.to(card, {
                 scale: 1,
                 y: 0,
-                duration: 0.3,
-                ease: "power2.out",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+                duration: 0.2,
+                ease: "power2.out"
             });
         });
     });
 
-    // Enhanced button animations
+    // Professional button animations
     document.querySelectorAll('button, .btn, .menu-link').forEach(btn => {
         btn.addEventListener('mouseenter', () => {
             gsap.to(btn, {
-                scale: 1.05,
-                duration: 0.2,
+                scale: 1.02,
+                duration: 0.15,
                 ease: "power2.out"
             });
         });
@@ -4917,15 +4901,15 @@ function initializeInteractiveAnimations() {
         btn.addEventListener('mouseleave', () => {
             gsap.to(btn, {
                 scale: 1,
-                duration: 0.2,
+                duration: 0.15,
                 ease: "power2.out"
             });
         });
 
         btn.addEventListener('click', () => {
             gsap.to(btn, {
-                scale: 0.95,
-                duration: 0.1,
+                scale: 0.98,
+                duration: 0.05,
                 yoyo: true,
                 repeat: 1,
                 ease: "power2.inOut"
@@ -4938,39 +4922,12 @@ function initializeInteractiveAnimations() {
     if (themeSwitch) {
         themeSwitch.addEventListener('click', () => {
             gsap.to(themeSwitch, {
-                rotation: 360,
-                duration: 0.6,
+                rotation: 180,
+                duration: 0.3,
                 ease: "power2.out"
             });
         });
     }
-
-    // Sidebar menu animations
-    document.querySelectorAll('.menu-item').forEach((item, index) => {
-        gsap.from(item, {
-            x: -50,
-            opacity: 0,
-            duration: 0.4,
-            delay: 0.8 + (index * 0.1),
-            ease: "power2.out"
-        });
-
-        item.addEventListener('mouseenter', () => {
-            gsap.to(item, {
-                x: 10,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        });
-
-        item.addEventListener('mouseleave', () => {
-            gsap.to(item, {
-                x: 0,
-                duration: 0.3,
-                ease: "power2.out"
-            });
-        });
-    });
 }
 
 // Animate content updates
