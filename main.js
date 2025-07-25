@@ -3968,26 +3968,32 @@ async function initializeFinanceDashboard() {
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
-    
+    const overlay = document.getElementById('sidebarOverlay');
     
     if (menuToggle && sidebar) {
         
+        // Remove any existing event listeners first
+        menuToggle.removeEventListener('click', handleMenuToggle);
+        
         // Mobile menu toggle with CSS transitions
-        menuToggle.addEventListener('click', (e) => {
+        function handleMenuToggle(e) {
             e.preventDefault();
             e.stopPropagation();
-            
             
             const isActive = sidebar.classList.contains('active');
             
             if (isActive) {
                 // Close menu
                 sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
             } else {
                 // Open menu
                 sidebar.classList.add('active');
+                if (overlay) overlay.classList.add('active');
             }
-        });
+        }
+        
+        menuToggle.addEventListener('click', handleMenuToggle);
 
         // Touch support
         menuToggle.addEventListener('touchstart', (e) => {
@@ -4000,6 +4006,14 @@ function setupMobileMenu() {
             menuToggle.style.opacity = '1';
         });
 
+        // Close sidebar when clicking overlay
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 768 && 
@@ -4008,11 +4022,11 @@ function setupMobileMenu() {
                 !menuToggle.contains(e.target)) {
                 
                 sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
             }
         });
-    } else {
-        console.error('❌ Mobile menu elements not found:', { menuToggle, sidebar });
         
+    } else {
         // Retry after a short delay in case elements are being dynamically loaded
         setTimeout(() => {
             setupMobileMenu();

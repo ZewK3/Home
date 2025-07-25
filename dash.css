@@ -1767,16 +1767,39 @@ body {
     .sidebar {
         transform: translateX(-100%) !important;
         z-index: 1200;
-        transition: transform 0.25s ease-out;
-        position: fixed;
+        transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: fixed !important;
         top: var(--header-height);
         left: 0;
         width: var(--sidebar-width);
         height: calc(100vh - var(--header-height));
+        background: var(--bg-sidebar) !important;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        will-change: transform;
     }
 
     .sidebar.active {
         transform: translateX(0) !important;
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Mobile overlay when sidebar is active */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1199;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+        opacity: 1;
     }
 
     .main {
