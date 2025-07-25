@@ -948,67 +948,223 @@ class ContentManager {
             const response = await utils.fetchAPI(`?action=getUser&employeeId=${this.user.employeeId}`);
             
             content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Thông Tin Cá Nhân</h2>
-                        <p class="card-subtitle">Bạn chỉ có thể cập nhật Email và Số điện thoại. Các thông tin khác cần gửi yêu cầu để được duyệt.</p>
+                <div class="personal-info-container">
+                    <div class="personal-header">
+                        <div class="personal-avatar">
+                            <div class="avatar-circle">
+                                <span class="material-icons-round">person</span>
+                            </div>
+                            <div class="avatar-info">
+                                <h2>${response.fullName || 'Chưa cập nhật'}</h2>
+                                <p class="position-badge ${this.getRoleBadgeClass(response.position)}">${this.getRoleDisplayName(response.position)}</p>
+                                <p class="employee-id">ID: ${response.employeeId}</p>
+                            </div>
+                        </div>
+                        <div class="personal-actions">
+                            <button type="button" class="btn btn-outline" id="exportInfoBtn">
+                                <span class="material-icons-round">download</span>
+                                Xuất thông tin
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form id="personalInfoForm" class="personal-info-form">
-                            <div class="form-group">
-                                <label>Mã nhân viên</label>
-                                <input type="text" name="employeeId" class="form-control readonly-field" value="${response.employeeId || ''}" readonly>
-                                <small class="field-note">Không thể thay đổi</small>
+
+                    <div class="personal-content">
+                        <div class="info-grid">
+                            <!-- Editable Information Card -->
+                            <div class="info-card editable-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="material-icons-round">edit</span>
+                                        <h3>Thông tin có thể chỉnh sửa</h3>
+                                    </div>
+                                    <span class="edit-badge">Tự cập nhật</span>
+                                </div>
+                                <form id="editableInfoForm" class="info-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <span class="material-icons-round">email</span>
+                                                Email
+                                            </label>
+                                            <input type="email" name="email" class="form-input" 
+                                                value="${response.email || ''}" required>
+                                            <small class="form-hint">Địa chỉ email để liên lạc và nhận thông báo</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <span class="material-icons-round">phone</span>
+                                                Số điện thoại
+                                            </label>
+                                            <input type="tel" name="phone" class="form-input" 
+                                                value="${response.phone || ''}" pattern="[0-9]{10}" required>
+                                            <small class="form-hint">Số điện thoại liên lạc (10 chữ số)</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary" disabled>
+                                            <span class="material-icons-round">save</span>
+                                            <span class="btn-text">Cập nhật</span>
+                                            <span class="btn-loader"></span>
+                                        </button>
+                                        <button type="reset" class="btn btn-outline">
+                                            <span class="material-icons-round">refresh</span>
+                                            Hoàn tác
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="form-group">
-                                <label>Họ và tên</label>
-                                <input type="text" name="fullName" class="form-control request-field" value="${response.fullName || ''}" readonly>
-                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
-                                <button type="button" class="btn-request" data-field="fullName">Gửi yêu cầu thay đổi</button>
-                            </div>
-                            <div class="form-group editable-field">
-                                <label>Email <span class="editable-badge">Có thể chỉnh sửa</span></label>
-                                <input type="email" name="email" class="form-control" value="${response.email || ''}" required>
-                            </div>
-                            <div class="form-group editable-field">
-                                <label>Số điện thoại <span class="editable-badge">Có thể chỉnh sửa</span></label>
-                                <input type="tel" name="phone" class="form-control" value="${response.phone || ''}" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Chức vụ</label>
-                                <input type="text" name="position" class="form-control request-field" value="${response.position || ''}" readonly>
-                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
-                                <button type="button" class="btn-request" data-field="position">Gửi yêu cầu thay đổi</button>
-                            </div>
-                            <div class="form-group">
-                                <label>Cửa hàng</label>
-                                <input type="text" name="storeName" class="form-control request-field" value="${response.storeName || ''}" readonly>
-                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
-                                <button type="button" class="btn-request" data-field="storeName">Gửi yêu cầu thay đổi</button>
-                            </div>
-                            <div class="form-group">
-                                <label>Ngày gia nhập</label>
-                                <input type="text" name="joinDate" class="form-control request-field" value="${response.joinDate || ''}" readonly>
-                                <small class="field-note">Cần gửi yêu cầu để thay đổi</small>
-                                <button type="button" class="btn-request" data-field="joinDate">Gửi yêu cầu thay đổi</button>
-                            </div>
-                            
-                            <div class="password-confirmation-section" style="display: none;">
-                                <hr>
-                                <h3>Xác nhận mật khẩu để cập nhật</h3>
-                                <div class="form-group">
-                                    <label>Nhập mật khẩu hiện tại</label>
-                                    <input type="password" id="confirmPassword" class="form-control" required>
-                                    <small class="text-danger">Bắt buộc nhập mật khẩu để xác nhận thay đổi</small>
+
+                            <!-- Read-only Information Card -->
+                            <div class="info-card readonly-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="material-icons-round">lock</span>
+                                        <h3>Thông tin cố định</h3>
+                                    </div>
+                                    <span class="readonly-badge">Chỉ đọc</span>
+                                </div>
+                                <div class="readonly-info">
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <span class="material-icons-round">badge</span>
+                                            Mã nhân viên
+                                        </div>
+                                        <div class="info-value">${response.employeeId || 'Chưa cập nhật'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <span class="material-icons-round">person</span>
+                                            Họ và tên
+                                        </div>
+                                        <div class="info-value">${response.fullName || 'Chưa cập nhật'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <span class="material-icons-round">work</span>
+                                            Chức vụ
+                                        </div>
+                                        <div class="info-value">
+                                            <span class="position-tag ${this.getRoleBadgeClass(response.position)}">
+                                                ${this.getRoleDisplayName(response.position)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <span class="material-icons-round">store</span>
+                                            Cửa hàng
+                                        </div>
+                                        <div class="info-value">${response.storeName || 'Chưa cập nhật'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">
+                                            <span class="material-icons-round">calendar_today</span>
+                                            Ngày gia nhập
+                                        </div>
+                                        <div class="info-value">${response.joinDate ? utils.formatDate(response.joinDate) : 'Chưa cập nhật'}</div>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" disabled>
-                                    <span class="btn-text">Cập nhật thông tin</span>
-                                    <span class="btn-loader"></span>
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="this.closest('form').reset(); this.updateButtonState()">Hoàn tác</button>
+
+                            <!-- Request Changes Card -->
+                            <div class="info-card request-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="material-icons-round">request_quote</span>
+                                        <h3>Yêu cầu thay đổi</h3>
+                                    </div>
+                                    <span class="request-badge">Cần duyệt</span>
+                                </div>
+                                <div class="request-info">
+                                    <p class="request-description">
+                                        Để thay đổi thông tin như tên, chức vụ, cửa hàng hoặc ngày gia nhập, 
+                                        bạn cần gửi yêu cầu để được ban quản lý duyệt.
+                                    </p>
+                                    <div class="request-buttons">
+                                        <button type="button" class="btn-request-change" data-field="fullName" data-current="${response.fullName || ''}">
+                                            <span class="material-icons-round">person</span>
+                                            Đổi tên
+                                        </button>
+                                        <button type="button" class="btn-request-change" data-field="position" data-current="${response.position || ''}">
+                                            <span class="material-icons-round">work</span>
+                                            Đổi chức vụ
+                                        </button>
+                                        <button type="button" class="btn-request-change" data-field="storeName" data-current="${response.storeName || ''}">
+                                            <span class="material-icons-round">store</span>
+                                            Đổi cửa hàng
+                                        </button>
+                                        <button type="button" class="btn-request-change" data-field="joinDate" data-current="${response.joinDate || ''}">
+                                            <span class="material-icons-round">calendar_today</span>
+                                            Đổi ngày gia nhập
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Statistics Card -->
+                            <div class="info-card stats-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="material-icons-round">analytics</span>
+                                        <h3>Thống kê cá nhân</h3>
+                                    </div>
+                                </div>
+                                <div class="personal-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-icon">📅</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="workDaysThisMonth">-</div>
+                                            <div class="stat-label">Ngày làm tháng này</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">⏰</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="totalHoursThisMonth">- giờ</div>
+                                            <div class="stat-label">Tổng giờ làm</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">🎯</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="attendanceRate">-%</div>
+                                            <div class="stat-label">Tỷ lệ chuyên cần</div>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">🏆</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="rewardsCount">-</div>
+                                            <div class="stat-label">Lần được khen</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Confirmation Modal -->
+                <div id="passwordConfirmModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Xác nhận mật khẩu</h3>
+                            <button type="button" class="modal-close">&times;</button>
+                        </div>
+                        <form id="passwordConfirmForm">
+                            <div class="modal-body">
+                                <p>Để bảo mật thông tin, vui lòng xác nhận mật khẩu trước khi cập nhật.</p>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <span class="material-icons-round">lock</span>
+                                        Mật khẩu hiện tại
+                                    </label>
+                                    <input type="password" id="confirmPassword" class="form-input" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline" onclick="closePasswordModal()">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Xác nhận</button>
                             </div>
                         </form>
                     </div>
@@ -1024,20 +1180,21 @@ class ContentManager {
                         <form id="changeRequestForm">
                             <div class="modal-body">
                                 <div class="form-group">
-                                    <label id="changeFieldLabel">Trường cần thay đổi</label>
-                                    <input type="text" id="currentValue" class="form-control" readonly>
+                                    <label class="form-label" id="changeFieldLabel">Trường cần thay đổi</label>
+                                    <input type="text" id="currentValue" class="form-input" readonly>
                                 </div>
                                 <div class="form-group">
-                                    <label>Giá trị mới</label>
-                                    <input type="text" id="newValue" class="form-control" required>
+                                    <label class="form-label">Giá trị mới</label>
+                                    <input type="text" id="newValue" class="form-input" required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Lý do thay đổi</label>
-                                    <textarea id="changeReason" class="form-control" rows="3" required placeholder="Vui lòng nêu rõ lý do cần thay đổi thông tin này..."></textarea>
+                                    <label class="form-label">Lý do thay đổi</label>
+                                    <textarea id="changeReason" class="form-input" rows="3" required 
+                                        placeholder="Vui lòng nêu rõ lý do cần thay đổi thông tin này..."></textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" onclick="closeChangeRequestModal()">Hủy</button>
+                                <button type="button" class="btn btn-outline" onclick="closeChangeRequestModal()">Hủy</button>
                                 <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
                             </div>
                         </form>
@@ -1046,10 +1203,307 @@ class ContentManager {
             `;
 
             this.setupPersonalInfoHandlers();
+            this.loadPersonalStats();
+            
+            // Apply GSAP animations if available
+            if (typeof gsap !== 'undefined') {
+                this.animatePersonalInfoEntrance();
+            }
+            
         } catch (error) {
             console.error('Personal info error:', error);
-            utils.showNotification("Không thể tải thông tin cá nhân", "error");
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Không thể tải thông tin cá nhân</h3>
+                        <p>Đã xảy ra lỗi khi tải thông tin. Vui lòng thử lại sau.</p>
+                        <button onclick="this.showPersonalInfo()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
         }
+    }
+
+    getRoleBadgeClass(position) {
+        const roleClasses = {
+            'AD': 'admin-badge',
+            'QL': 'manager-badge', 
+            'AM': 'assistant-badge',
+            'NV': 'employee-badge'
+        };
+        return roleClasses[position] || 'employee-badge';
+    }
+
+    getRoleDisplayName(position) {
+        const roleNames = {
+            'AD': '👑 Quản trị viên',
+            'QL': '⚡ Quản lý',
+            'AM': '🎯 Trợ lý quản lý',
+            'NV': '👤 Nhân viên'
+        };
+        return roleNames[position] || '👤 Nhân viên';
+    }
+
+    setupPersonalInfoHandlers() {
+        // Form input change detection
+        const editableForm = document.getElementById('editableInfoForm');
+        const submitBtn = editableForm?.querySelector('button[type="submit"]');
+        
+        if (editableForm && submitBtn) {
+            const inputs = editableForm.querySelectorAll('input');
+            const originalValues = {};
+            
+            // Store original values
+            inputs.forEach(input => {
+                originalValues[input.name] = input.value;
+            });
+            
+            // Enable/disable submit button based on changes
+            inputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    const hasChanges = Array.from(inputs).some(inp => inp.value !== originalValues[inp.name]);
+                    submitBtn.disabled = !hasChanges;
+                });
+            });
+            
+            // Handle form submission
+            editableForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.showPasswordConfirmModal(editableForm);
+            });
+        }
+
+        // Change request buttons
+        document.querySelectorAll('.btn-request-change').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const field = btn.dataset.field;
+                const current = btn.dataset.current;
+                this.showChangeRequestModal(field, current);
+            });
+        });
+
+        // Export info button
+        const exportBtn = document.getElementById('exportInfoBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => this.exportPersonalInfo());
+        }
+    }
+
+    showPasswordConfirmModal(form) {
+        const modal = document.getElementById('passwordConfirmModal');
+        const passwordForm = document.getElementById('passwordConfirmForm');
+        
+        modal.style.display = 'block';
+        
+        passwordForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('confirmPassword').value;
+            
+            try {
+                // Verify password first
+                const verifyResponse = await utils.fetchAPI(`?action=login`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        employeeId: this.user.employeeId,
+                        password: password
+                    })
+                });
+                
+                if (verifyResponse.status === 200) {
+                    // Password correct, proceed with update
+                    this.updatePersonalInfo(form);
+                    this.closePasswordModal();
+                } else {
+                    utils.showNotification('Mật khẩu không chính xác', 'error');
+                }
+            } catch (error) {
+                utils.showNotification('Lỗi xác thực mật khẩu', 'error');
+            }
+        };
+    }
+
+    closePasswordModal() {
+        const modal = document.getElementById('passwordConfirmModal');
+        modal.style.display = 'none';
+        document.getElementById('confirmPassword').value = '';
+    }
+
+    async updatePersonalInfo(form) {
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const btnLoader = submitBtn.querySelector('.btn-loader');
+        
+        try {
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline-block';
+            
+            const updateData = {
+                employeeId: this.user.employeeId,
+                email: formData.get('email'),
+                phone: formData.get('phone')
+            };
+            
+            const response = await utils.fetchAPI(`?action=updateUser`, {
+                method: 'POST',
+                body: JSON.stringify(updateData)
+            });
+            
+            if (response.status === 200) {
+                utils.showNotification('Cập nhật thông tin thành công', 'success');
+                // Reload personal info to show updated data
+                setTimeout(() => this.showPersonalInfo(), 1000);
+            } else {
+                utils.showNotification('Không thể cập nhật thông tin', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Update error:', error);
+            utils.showNotification('Lỗi khi cập nhật thông tin', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            btnText.style.display = 'inline';
+            btnLoader.style.display = 'none';
+        }
+    }
+
+    showChangeRequestModal(field, currentValue) {
+        const modal = document.getElementById('changeRequestModal');
+        const fieldLabel = document.getElementById('changeFieldLabel');
+        const currentValueInput = document.getElementById('currentValue');
+        const newValueInput = document.getElementById('newValue');
+        const reasonTextarea = document.getElementById('changeReason');
+        const form = document.getElementById('changeRequestForm');
+        
+        const fieldNames = {
+            'fullName': 'Họ và tên',
+            'position': 'Chức vụ',
+            'storeName': 'Cửa hàng',
+            'joinDate': 'Ngày gia nhập'
+        };
+        
+        fieldLabel.textContent = fieldNames[field] || field;
+        currentValueInput.value = currentValue;
+        newValueInput.value = '';
+        reasonTextarea.value = '';
+        
+        modal.style.display = 'block';
+        
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            await this.submitChangeRequest(field, currentValue, newValueInput.value, reasonTextarea.value);
+        };
+    }
+
+    closeChangeRequestModal() {
+        const modal = document.getElementById('changeRequestModal');
+        modal.style.display = 'none';
+    }
+
+    async submitChangeRequest(field, currentValue, newValue, reason) {
+        try {
+            const requestData = {
+                employeeId: this.user.employeeId,
+                field: field,
+                currentValue: currentValue,
+                newValue: newValue,
+                reason: reason,
+                type: 'personal_info_change'
+            };
+            
+            const response = await utils.fetchAPI(`?action=createTask`, {
+                method: 'POST',
+                body: JSON.stringify(requestData)
+            });
+            
+            if (response.status === 200) {
+                utils.showNotification('Gửi yêu cầu thành công. Chờ ban quản lý duyệt.', 'success');
+                this.closeChangeRequestModal();
+            } else {
+                utils.showNotification('Không thể gửi yêu cầu', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Change request error:', error);
+            utils.showNotification('Lỗi khi gửi yêu cầu', 'error');
+        }
+    }
+
+    async loadPersonalStats() {
+        try {
+            // Load personal statistics
+            const statsResponse = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${this.user.employeeId}`);
+            
+            if (statsResponse && statsResponse.stats) {
+                const stats = statsResponse.stats;
+                document.getElementById('workDaysThisMonth').textContent = stats.workDaysThisMonth || 0;
+                document.getElementById('totalHoursThisMonth').textContent = `${stats.totalHoursThisMonth || 0} giờ`;
+                document.getElementById('attendanceRate').textContent = `${stats.attendanceRate || 0}%`;
+                document.getElementById('rewardsCount').textContent = stats.rewardsCount || 0;
+            }
+        } catch (error) {
+            console.log('Stats not available:', error);
+            // Set default values if stats API is not available
+            document.getElementById('workDaysThisMonth').textContent = '0';
+            document.getElementById('totalHoursThisMonth').textContent = '0 giờ';
+            document.getElementById('attendanceRate').textContent = '0%';
+            document.getElementById('rewardsCount').textContent = '0';
+        }
+    }
+
+    exportPersonalInfo() {
+        // Create downloadable personal info summary
+        const userInfo = {
+            employeeId: this.user.employeeId,
+            timestamp: new Date().toISOString(),
+            // Add other relevant info here
+        };
+        
+        const dataStr = JSON.stringify(userInfo, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `personal-info-${this.user.employeeId}-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        utils.showNotification('Đã xuất thông tin cá nhân', 'success');
+    }
+
+    animatePersonalInfoEntrance() {
+        // GSAP entrance animations for personal info
+        gsap.fromTo('.personal-header', 
+            { y: -50, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }
+        );
+        
+        gsap.fromTo('.info-card', 
+            { y: 50, opacity: 0 },
+            { 
+                y: 0, 
+                opacity: 1, 
+                duration: 0.6, 
+                ease: "power2.out",
+                stagger: 0.1,
+                delay: 0.2
+            }
+        );
+        
+        gsap.fromTo('.stat-item', 
+            { scale: 0, rotation: -45 },
+            { 
+                scale: 1, 
+                rotation: 0, 
+                duration: 0.5, 
+                ease: "back.out(1.7)",
+                stagger: 0.1,
+                delay: 0.8
+            }
+        );
     }
 
     // Helper functions for the above methods
@@ -3905,6 +4359,12 @@ function openChangeRequestModal(field, currentValue) {
 function closeChangeRequestModal() {
     const modal = document.getElementById('changeRequestModal');
     modal.style.display = 'none';
+}
+
+function closePasswordModal() {
+    const modal = document.getElementById('passwordConfirmModal');
+    modal.style.display = 'none';
+    document.getElementById('confirmPassword').value = '';
 }
 
 function getFieldDisplayName(field) {
