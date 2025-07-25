@@ -855,26 +855,21 @@ class ContentManager {
                             <!-- Role Selection Section -->
                             <div class="user-edit-section">
                                 <h4><span class="material-icons-round">security</span>Phân quyền hệ thống</h4>
-                                <div class="role-selection-grid">
-                                    <div class="role-selection-card" data-role="AD">
-                                        <div class="role-icon">👑</div>
-                                        <h5>Administrator</h5>
-                                        <p>Toàn quyền hệ thống</p>
-                                    </div>
-                                    <div class="role-selection-card" data-role="QL">
-                                        <div class="role-icon">⚡</div>
-                                        <h5>Manager</h5>
-                                        <p>Quản lý cửa hàng</p>
-                                    </div>
-                                    <div class="role-selection-card" data-role="AM">
-                                        <div class="role-icon">🎯</div>
-                                        <h5>Assistant Manager</h5>
-                                        <p>Trợ lý quản lý</p>
-                                    </div>
-                                    <div class="role-selection-card" data-role="NV">
-                                        <div class="role-icon">👤</div>
-                                        <h5>Employee</h5>
-                                        <p>Nhân viên</p>
+                                <div class="edit-form-group">
+                                    <label>Chọn vai trò</label>
+                                    <select id="editUserRole" class="form-control role-select">
+                                        <option value="AD">👑 Administrator - Toàn quyền hệ thống</option>
+                                        <option value="QL">⚡ Manager - Quản lý cửa hàng</option>
+                                        <option value="AM">🎯 Assistant Manager - Trợ lý quản lý</option>
+                                        <option value="NV">👤 Employee - Nhân viên</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Permission Preview -->
+                                <div id="permissionPreview" class="permission-preview">
+                                    <h5><span class="material-icons-round">preview</span>Quyền truy cập</h5>
+                                    <div id="permissionList" class="permission-list">
+                                        <!-- Will be populated based on selected role -->
                                     </div>
                                 </div>
                             </div>
@@ -1400,8 +1395,12 @@ class ContentManager {
 
     async editUserRole(userId) {
         try {
+            console.log('Editing user role for userId:', userId); // Debug log
+            
             // Get user details from API
             const userInfo = await utils.fetchAPI(`?action=getUser&employeeId=${userId}`);
+            console.log('Fetched user info:', userInfo); // Debug log
+            
             if (!userInfo) {
                 utils.showNotification("Không thể tải thông tin người dùng", "error");
                 return;
@@ -1410,19 +1409,23 @@ class ContentManager {
             const modal = document.getElementById('permissionEditModal');
             const currentUserInfo = document.getElementById('currentUserInfo');
             
-            // Populate current user info
+            // Populate current user info for the SELECTED user (not logged-in user)
             const userName = userInfo.fullName || 'Không rõ';
             const currentRole = userInfo.position || 'NV';
+            const userStore = userInfo.storeName || 'Không rõ';
+            
+            console.log('Displaying user info for:', { userName, userId, currentRole, userStore }); // Debug log
             
             currentUserInfo.innerHTML = `
                 <div class="current-user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
                 <div class="current-user-details">
                     <h4>${userName}</h4>
-                    <p>ID: ${userId} | ${this.getRoleDisplayName(currentRole)}</p>
+                    <p>ID: ${userId} | ${this.getRoleDisplayName(currentRole)} | ${userStore}</p>
+                    <span class="current-role-badge role-${currentRole.toLowerCase()}">${this.getRoleDisplayName(currentRole)}</span>
                 </div>
             `;
 
-            // Populate form fields
+            // Populate form fields with the SELECTED user data
             document.getElementById('editEmployeeId').value = userInfo.employeeId || '';
             document.getElementById('editFullName').value = userInfo.fullName || '';
             document.getElementById('editStoreName').value = userInfo.storeName || 'ST001';
@@ -1430,15 +1433,19 @@ class ContentManager {
             document.getElementById('editEmail').value = userInfo.email || '';
             document.getElementById('editJoinDate').value = userInfo.joinDate || '';
 
-            // Select current role
-            document.querySelectorAll('.role-selection-card').forEach(card => {
-                card.classList.remove('selected');
-                if (card.dataset.role === currentRole) {
-                    card.classList.add('selected');
-                }
-            });
+            // Set the role select dropdown to current role
+            const roleSelect = document.getElementById('editUserRole');
+            if (roleSelect) {
+                roleSelect.value = currentRole;
+                this.updatePermissionPreview(currentRole);
+                
+                // Add event listener for role changes
+                roleSelect.addEventListener('change', (e) => {
+                    this.updatePermissionPreview(e.target.value);
+                });
+            }
 
-            // Load user history
+            // Load user history for this specific user
             await this.loadUserHistory(userId);
 
             // Store current user ID for saving
@@ -1454,6 +1461,51 @@ class ContentManager {
         }
     }
 
+    updatePermissionPreview(role) {
+        const permissionList = document.getElementById('permissionList');
+        const permissions = this.getRolePermissions(role);
+        
+        permissionList.innerHTML = permissions.map(permission => `
+            <div class="permission-item">
+                <span class="permission-icon">${permission.icon}</span>
+                <span class="permission-name">${permission.name}</span>
+            </div>
+        `).join('');
+    }
+
+    getRolePermissions(role) {
+        const permissions = {
+            'AD': [
+                { icon: '🏢', name: 'Quản lý toàn hệ thống' },
+                { icon: '👥', name: 'Quản lý tất cả nhân viên' },
+                { icon: '📊', name: 'Xem tất cả báo cáo' },
+                { icon: '⚙️', name: 'Cài đặt hệ thống' },
+                { icon: '🔒', name: 'Phân quyền người dùng' },
+                { icon: '💰', name: 'Quản lý tài chính' }
+            ],
+            'QL': [
+                { icon: '🏪', name: 'Quản lý cửa hàng' },
+                { icon: '👥', name: 'Quản lý nhân viên cửa hàng' },
+                { icon: '📈', name: 'Xem báo cáo cửa hàng' },
+                { icon: '📝', name: 'Duyệt đăng ký' },
+                { icon: '⏰', name: 'Quản lý ca làm việc' }
+            ],
+            'AM': [
+                { icon: '👥', name: 'Hỗ trợ quản lý nhân viên' },
+                { icon: '📊', name: 'Xem báo cáo cơ bản' },
+                { icon: '📝', name: 'Xử lý yêu cầu nhân viên' },
+                { icon: '⏰', name: 'Xem lịch làm việc' }
+            ],
+            'NV': [
+                { icon: '👤', name: 'Xem thông tin cá nhân' },
+                { icon: '⏰', name: 'Xem lịch làm việc của mình' },
+                { icon: '📝', name: 'Gửi yêu cầu' }
+            ]
+        };
+        
+        return permissions[role] || permissions['NV'];
+    }
+
     closePermissionModal() {
         const modal = document.getElementById('permissionEditModal');
         modal.classList.remove('active');
@@ -1462,37 +1514,101 @@ class ContentManager {
         
         // Clear form
         document.getElementById('changeReason').value = '';
-        document.querySelectorAll('.role-selection-card').forEach(card => {
-            card.classList.remove('selected');
-        });
+        const roleSelect = document.getElementById('editUserRole');
+        if (roleSelect) {
+            roleSelect.selectedIndex = 0;
+        }
+        
+        // Clear permission preview
+        const permissionList = document.getElementById('permissionList');
+        if (permissionList) {
+            permissionList.innerHTML = '';
+        }
     }
 
     async loadUserHistory(userId) {
         try {
+            console.log('Loading history for user:', userId); // Debug log
             const historyList = document.getElementById('userHistoryList');
             historyList.innerHTML = '<div class="history-item"><div class="history-content"><div class="history-action">Đang tải lịch sử...</div></div></div>';
             
-            const history = await utils.fetchAPI(`?action=getUserHistory&employeeId=${userId}`);
+            const response = await utils.fetchAPI(`?action=getUserHistory&employeeId=${userId}`);
+            console.log('History response:', response); // Debug log
             
-            if (!history || !Array.isArray(history) || history.length === 0) {
-                historyList.innerHTML = '<div class="history-item"><div class="history-content"><div class="history-action">Chưa có lịch sử thay đổi</div></div></div>';
+            // Handle multiple response formats
+            let history = [];
+            if (Array.isArray(response)) {
+                history = response;
+            } else if (response && Array.isArray(response.results)) {
+                history = response.results;
+            } else if (response && Array.isArray(response.data)) {
+                history = response.data;
+            } else if (response && typeof response === 'object') {
+                // Handle object with numbered keys like getUserHistory might return
+                const historyKeys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (historyKeys.length > 0) {
+                    history = historyKeys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                    console.log('Converted history object to array:', history);
+                }
+            }
+            
+            console.log('Processed history array:', history); // Debug log
+            
+            if (!history || history.length === 0) {
+                historyList.innerHTML = `
+                    <div class="history-item">
+                        <div class="history-content">
+                            <div class="history-action">Chưa có lịch sử thay đổi cho nhân viên này</div>
+                            <div class="history-details">Chưa có hoạt động nào được ghi nhận</div>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
-            historyList.innerHTML = history.map(item => `
+            // Filter history for this specific user only
+            const userHistory = history.filter(item => 
+                item.target_employee_id === userId || 
+                item.employeeId === userId ||
+                item.employee_id === userId
+            );
+            
+            console.log('Filtered user history:', userHistory); // Debug log
+
+            if (userHistory.length === 0) {
+                historyList.innerHTML = `
+                    <div class="history-item">
+                        <div class="history-content">
+                            <div class="history-action">Chưa có lịch sử thay đổi cho nhân viên này</div>
+                            <div class="history-details">Nhân viên: ${userId}</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            historyList.innerHTML = userHistory.map(item => `
                 <div class="history-item">
                     <div class="history-content">
                         <div class="history-action">${this.getHistoryActionText(item.action_type, item.field_name, item.old_value, item.new_value)}</div>
-                        <div class="history-details">Thực hiện bởi: <span class="history-by">${item.action_by_name}</span></div>
+                        <div class="history-details">Thực hiện bởi: <span class="history-by">${item.action_by_name || item.actionBy || 'Hệ thống'}</span></div>
                         ${item.reason ? `<div class="history-details">Lý do: ${item.reason}</div>` : ''}
-                        <div class="history-timestamp">${new Date(item.created_at).toLocaleString('vi-VN')}</div>
+                        <div class="history-timestamp">${utils.formatDateTime(item.created_at || item.createdAt || item.timestamp)}</div>
                     </div>
                 </div>
             `).join('');
             
         } catch (error) {
             console.error('Error loading user history:', error);
-            document.getElementById('userHistoryList').innerHTML = '<div class="history-item"><div class="history-content"><div class="history-action">Lỗi tải lịch sử</div></div></div>';
+            const historyList = document.getElementById('userHistoryList');
+            historyList.innerHTML = `
+                <div class="history-item">
+                    <div class="history-content">
+                        <div class="history-action">Lỗi tải lịch sử</div>
+                        <div class="history-details">Không thể tải lịch sử thay đổi: ${error.message}</div>
+                    </div>
+                </div>
+            `;
         }
     }
 
