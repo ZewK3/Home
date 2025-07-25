@@ -726,3 +726,204 @@ document.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+// GSAP Animations for Enhanced UI
+function initializeGSAPAnimations() {
+    if (typeof gsap === 'undefined') {
+        console.log('GSAP not loaded, skipping animations');
+        return;
+    }
+
+    console.log('🎬 Initializing GSAP animations for login page...');
+
+    // Animate auth container entrance
+    gsap.fromTo('.auth-container', 
+        { 
+            scale: 0.8, 
+            opacity: 0,
+            y: 50
+        },
+        { 
+            scale: 1, 
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: "power3.out",
+            delay: 0.3
+        }
+    );
+
+    // Animate background elements
+    gsap.fromTo('.glass-circle', 
+        { 
+            scale: 0,
+            rotation: 0
+        },
+        { 
+            scale: 1,
+            rotation: 360,
+            duration: 2,
+            ease: "power2.out",
+            stagger: 0.2
+        }
+    );
+
+    // Animate stars with stagger
+    gsap.fromTo('.star', 
+        { 
+            opacity: 0,
+            scale: 0
+        },
+        { 
+            opacity: 1,
+            scale: 1,
+            duration: 1,
+            ease: "power2.out",
+            stagger: {
+                amount: 2,
+                from: "random"
+            },
+            delay: 0.5
+        }
+    );
+
+    // Form transition animations
+    function animateFormTransition(hideElement, showElement) {
+        const tl = gsap.timeline();
+        
+        tl.to(hideElement, {
+            x: -50,
+            opacity: 0,
+            duration: 0.3,
+            ease: "power2.in"
+        })
+        .set(hideElement, { display: 'none' })
+        .set(showElement, { display: 'block', x: 50, opacity: 0 })
+        .to(showElement, {
+            x: 0,
+            opacity: 1,
+            duration: 0.3,
+            ease: "power2.out"
+        });
+    }
+
+    // Enhanced form switching with GSAP
+    const originalShowRegisterForm = window.showRegisterForm;
+    const originalShowLoginForm = window.showLoginForm;
+
+    if (typeof originalShowRegisterForm === 'function') {
+        window.showRegisterForm = function() {
+            const loginContainer = document.getElementById('loginFormContainer');
+            const registerContainer = document.getElementById('registerFormContainer');
+            
+            if (loginContainer && registerContainer) {
+                animateFormTransition(loginContainer, registerContainer);
+            } else {
+                originalShowRegisterForm();
+            }
+        };
+    }
+
+    if (typeof originalShowLoginForm === 'function') {
+        window.showLoginForm = function() {
+            const registerContainer = document.getElementById('registerFormContainer');
+            const verificationContainer = document.getElementById('verificationFormContainer');
+            const loginContainer = document.getElementById('loginFormContainer');
+            
+            const activeContainer = registerContainer?.style.display !== 'none' ? registerContainer : 
+                                  verificationContainer?.style.display !== 'none' ? verificationContainer : null;
+            
+            if (activeContainer && loginContainer) {
+                animateFormTransition(activeContainer, loginContainer);
+            } else {
+                originalShowLoginForm();
+            }
+        };
+    }
+
+    // Button hover effects
+    gsap.utils.toArray('.btn').forEach(button => {
+        button.addEventListener('mouseenter', () => {
+            gsap.to(button, {
+                scale: 1.05,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            gsap.to(button, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // Input focus animations
+    gsap.utils.toArray('.input-group input').forEach(input => {
+        input.addEventListener('focus', () => {
+            gsap.to(input.closest('.input-group'), {
+                scale: 1.02,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+        
+        input.addEventListener('blur', () => {
+            gsap.to(input.closest('.input-group'), {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // Theme switch animation
+    const themeSwitch = document.getElementById('themeSwitch');
+    if (themeSwitch) {
+        themeSwitch.addEventListener('click', () => {
+            gsap.to(themeSwitch, {
+                rotation: 360,
+                duration: 0.5,
+                ease: "power2.out"
+            });
+        });
+    }
+
+    // Notification animations
+    const originalShowNotification = window.showNotification;
+    if (typeof originalShowNotification === 'function') {
+        window.showNotification = function(message, type = 'info', duration = 3000) {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                // Set content first
+                originalShowNotification(message, type, duration);
+                
+                // Then animate
+                gsap.fromTo(notification,
+                    { y: -100, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.5, ease: "bounce.out" }
+                );
+                
+                // Animate out
+                setTimeout(() => {
+                    gsap.to(notification, {
+                        y: -100,
+                        opacity: 0,
+                        duration: 0.3,
+                        ease: "power2.in"
+                    });
+                }, duration - 300);
+            }
+        };
+    }
+
+    console.log('✅ GSAP animations initialized successfully');
+}
+
+// Initialize GSAP animations when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure all elements are rendered
+    setTimeout(initializeGSAPAnimations, 100);
+});

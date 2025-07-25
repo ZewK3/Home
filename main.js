@@ -3193,7 +3193,6 @@ async function applyRoleBasedSectionVisibility() {
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
-    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     
     // Role-based section visibility map
     const sectionVisibility = {
@@ -3235,6 +3234,7 @@ async function applyRoleBasedSectionVisibility() {
         }
     };
     
+    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
     console.log('🔧 Role configuration for', userRole, ':', roleConfig);
     
