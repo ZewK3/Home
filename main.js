@@ -664,7 +664,6 @@ class ContentManager {
             // Use getUsers API to get user list with enhanced error handling
             const response = await utils.fetchAPI('?action=getUsers');
             
-            console.log('Users response received:', response); // Debug log
             
             // Extract users data - handle multiple response formats
             let users = [];
@@ -679,7 +678,6 @@ class ContentManager {
                 const userKeys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
                 if (userKeys.length > 0) {
                     users = userKeys.map(key => response[key]).filter(user => user && typeof user === 'object');
-                    console.log('Converted object-with-numbered-keys to array:', users);
                 } else {
                     console.error('Unexpected response format:', response);
                     throw new Error('Định dạng dữ liệu người dùng không đúng');
@@ -689,7 +687,6 @@ class ContentManager {
                 throw new Error('Định dạng dữ liệu người dùng không đúng');
             }
             
-            console.log('Extracted users array:', users); // Debug log
             
             // Validate users data
             if (!Array.isArray(users) || users.length === 0) {
@@ -780,7 +777,6 @@ class ContentManager {
                                     const userName = user.fullName || 'Không rõ';
                                     const userId = user.employeeId || 'Unknown';
                                     
-                                    console.log('Rendering user:', { userId, userName, userRole }); // Debug log
                                     
                                     return `
                                         <div class="user-card" data-user-id="${userId}" data-role="${userRole}">
@@ -917,7 +913,6 @@ class ContentManager {
             // Setup permission management functionality
             this.setupPermissionManagement();
             
-            console.log('Permission management setup completed'); // Debug log
         } catch (error) {
             console.error('Access management error:', error);
             content.innerHTML = `
@@ -1712,7 +1707,6 @@ class ContentManager {
     }
 
     setupPermissionManagement() {
-        console.log('Setting up permission management...'); // Debug log
         
         // Count roles and update statistics - with delay to ensure DOM is ready
         setTimeout(() => {
@@ -1744,21 +1738,17 @@ class ContentManager {
         window.closePermissionModal = () => this.closePermissionModal();
         window.savePermissionChanges = () => this.savePermissionChanges();
         
-        console.log('Permission management setup completed'); // Debug log
     }
 
     updateRoleStatistics() {
-        console.log('Updating role statistics...'); // Debug log
         
         const userCards = document.querySelectorAll('.user-card');
         const counts = { AD: 0, QL: 0, AM: 0, NV: 0 };
         
-        console.log('Found user cards:', userCards.length); // Debug log
         
         userCards.forEach(card => {
             const role = card.dataset.role || 'NV';
             counts[role] = (counts[role] || 0) + 1;
-            console.log('User role:', role, 'Current counts:', counts); // Debug log
         });
 
         // Update the display elements
@@ -1769,22 +1759,17 @@ class ContentManager {
 
         if (adminCountEl) {
             adminCountEl.textContent = counts.AD;
-            console.log('Updated adminCount:', counts.AD); // Debug log
         }
         if (managerCountEl) {
             managerCountEl.textContent = counts.QL;
-            console.log('Updated managerCount:', counts.QL); // Debug log
         }
         if (assistantCountEl) {
             assistantCountEl.textContent = counts.AM;
-            console.log('Updated assistantCount:', counts.AM); // Debug log
         }
         if (employeeCountEl) {
             employeeCountEl.textContent = counts.NV;
-            console.log('Updated employeeCount:', counts.NV); // Debug log
         }
 
-        console.log('Role statistics updated successfully:', counts); // Debug log
     }
 
     filterUsers() {
@@ -1815,11 +1800,9 @@ class ContentManager {
 
     async editUserRole(userId) {
         try {
-            console.log('Editing user role for userId:', userId); // Debug log
             
             // Get user details from API
             const userInfo = await utils.fetchAPI(`?action=getUser&employeeId=${userId}`);
-            console.log('Fetched user info:', userInfo); // Debug log
             
             if (!userInfo) {
                 utils.showNotification("Không thể tải thông tin người dùng", "error");
@@ -1834,7 +1817,6 @@ class ContentManager {
             const currentRole = userInfo.position || 'NV';
             const userStore = userInfo.storeName || 'Không rõ';
             
-            console.log('Displaying user info for:', { userName, userId, currentRole, userStore }); // Debug log
             
             currentUserInfo.innerHTML = `
                 <div class="current-user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
@@ -1948,12 +1930,10 @@ class ContentManager {
 
     async loadUserHistory(userId) {
         try {
-            console.log('Loading history for user:', userId); // Debug log
             const historyList = document.getElementById('userHistoryList');
             historyList.innerHTML = '<div class="history-item"><div class="history-content"><div class="history-action">Đang tải lịch sử...</div></div></div>';
             
             const response = await utils.fetchAPI(`?action=getUserHistory&employeeId=${userId}`);
-            console.log('History response:', response); // Debug log
             
             // Handle multiple response formats
             let history = [];
@@ -1972,7 +1952,6 @@ class ContentManager {
                 }
             }
             
-            console.log('Processed history array:', history); // Debug log
             
             if (!history || history.length === 0) {
                 historyList.innerHTML = `
@@ -1993,7 +1972,6 @@ class ContentManager {
                 item.employee_id === userId
             );
             
-            console.log('Filtered user history:', userHistory); // Debug log
 
             if (userHistory.length === 0) {
                 historyList.innerHTML = `
@@ -2110,7 +2088,6 @@ class ContentManager {
                 }
             });
 
-            console.log('Saving permission changes:', { updateData, changes, reason: changeReason }); // Debug log
 
             // Update user data
             const result = await utils.fetchAPI('?action=updateUserWithHistory', {
@@ -2139,7 +2116,6 @@ class ContentManager {
                 userCard.querySelector('.user-role').className = `user-role role-${selectedRole.toLowerCase()}`;
                 userCard.querySelector('h4').textContent = updateData.fullName;
                 
-                console.log('Updated user card from', oldRole, 'to', selectedRole); // Debug log
             }
             
             // Update role statistics
@@ -2520,7 +2496,6 @@ class ContentManager {
             if (storeFilter && stores.length > 0) {
                 storeFilter.innerHTML = '<option value="">Tất cả cửa hàng</option>' +
                     stores.map(store => `<option value="${store.storeName || store.name || store.storeId}">${store.storeName || store.name || store.storeId}</option>`).join('');
-                console.log('✅ Store filter updated with', stores.length, 'stores');
             } else {
                 console.log('⚠️ No stores found or storeFilter element missing');
             }
@@ -3216,10 +3191,8 @@ class AuthManager {
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🌟 DOM Content Loaded - Starting application initialization');
     
     // Setup mobile menu FIRST - before any authentication checks
-    console.log('🚀 Setting up mobile menu immediately...');
     setupMobileMenu();
     
     // Wait a moment for all elements to be rendered
@@ -3246,7 +3219,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         new ContentManager(user);
 
         // Load dashboard stats immediately when page loads
-        console.log('🔄 Loading dashboard stats on page load...');
         await getDashboardStats();
         
         // Ensure stats-grid is visible and updated
@@ -3265,7 +3237,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Additional failsafe - ensure mobile menu is setup after everything else
         setTimeout(() => {
-            console.log('🔧 Failsafe mobile menu setup');
             setupMobileMenu();
         }, 2000);
     }
@@ -3273,19 +3244,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Standalone mobile menu initialization - independent of authentication
 window.addEventListener('load', () => {
-    console.log('🔧 Window loaded - ensuring mobile menu is setup');
     setupMobileMenu();
 });
 
 // Additional backup initialization for mobile menu
 setTimeout(() => {
-    console.log('⏰ Backup mobile menu initialization');
     setupMobileMenu();
 }, 3000);
 
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function getDashboardStats() {
-    console.log('🔄 Starting dashboard stats initialization...');
     
     // First, ensure the welcome section and stats-grid are visible
     const welcomeSection = document.querySelector('.welcome-section');
@@ -3294,21 +3262,18 @@ async function getDashboardStats() {
     
     if (welcomeSection) {
         welcomeSection.style.display = 'block';
-        console.log('✅ Welcome section made visible');
     } else {
         console.warn('⚠️ Welcome section not found in DOM');
     }
     
     if (statsGrid) {
         statsGrid.style.display = 'grid';
-        console.log('✅ Stats grid made visible');
     } else {
         console.warn('⚠️ Stats grid not found in DOM');
     }
     
     if (content) {
         content.style.display = 'block';
-        console.log('✅ Content section made visible');
     }
     
     // Wait a moment for DOM to be ready
@@ -3338,7 +3303,6 @@ async function getDashboardStats() {
         console.log('📈 Dashboard stats response:', stats);
         
         if (stats && typeof stats === 'object') {
-            console.log('✅ Valid stats response received, updating elements...');
             
             // Update dashboard statistics
             if (elements.totalEmployees) {
@@ -3376,7 +3340,6 @@ async function getDashboardStats() {
                 console.log(`Updated todayScheduleDay: ${value}`);
             }
             
-            console.log('✅ All dashboard stats updated successfully');
         } else {
             console.warn('⚠️ Invalid or empty stats response');
             // Set loading state
@@ -3429,13 +3392,11 @@ async function updateStatsGrid() {
     if (statsGrid) {
         statsGrid.style.display = 'grid';
         statsGrid.style.visibility = 'visible';
-        console.log('✅ Stats-grid made visible');
         
         // Ensure all stat cards are visible
         const statCards = statsGrid.querySelectorAll('.stat-card');
         statCards.forEach((card, index) => {
             card.style.display = 'block';
-            console.log(`✅ Stat card ${index + 1} made visible`);
         });
     } else {
         console.warn('⚠️ Stats-grid not found in DOM');
@@ -3444,12 +3405,10 @@ async function updateStatsGrid() {
     if (welcomeSection) {
         welcomeSection.style.display = 'block';
         welcomeSection.style.visibility = 'visible';
-        console.log('✅ Welcome section made visible');
     }
     
     // Force a re-layout
     await new Promise(resolve => setTimeout(resolve, 50));
-    console.log('✅ Stats-grid update complete');
 }
 
 // Role-based UI Management  
@@ -3507,7 +3466,6 @@ async function initializeRoleBasedUI() {
             // Special tracking for AD role debugging
             if (allowedRoles.includes('AD') && userPosition === 'AD') {
                 adElementsShown++;
-                console.log(`✅ AD Element shown: ${element.className} - ${element.tagName}`);
             }
         } else {
             element.classList.remove('role-visible');
@@ -3538,7 +3496,6 @@ async function initializeRoleBasedUI() {
                 section.style.visibility = 'visible';
                 section.classList.add('role-visible');
                 section.classList.remove('role-hidden');
-                console.log(`✅ AD Section forced visible: ${selector}`);
             } else {
                 // Try without the dot prefix in case of selector issues
                 const altSelector = selector.startsWith('.') ? selector.substring(1) : '.' + selector;
@@ -3548,7 +3505,6 @@ async function initializeRoleBasedUI() {
                     altSection.style.visibility = 'visible';
                     altSection.classList.add('role-visible');
                     altSection.classList.remove('role-hidden');
-                    console.log(`✅ AD Section found with alternative selector ${altSelector}: ${selector}`);
                 } else {
                     // Final check: look for class name in any div
                     const className = selector.replace('.', '');
@@ -3558,7 +3514,6 @@ async function initializeRoleBasedUI() {
                         classSection.style.visibility = 'visible';
                         classSection.classList.add('role-visible');
                         classSection.classList.remove('role-hidden');
-                        console.log(`✅ AD Section found by class: div.${className}`);
                     } else {
                         console.log(`ℹ️ AD Section ${selector} not found - likely due to DOM timing or authentication`);
                     }
@@ -3567,7 +3522,6 @@ async function initializeRoleBasedUI() {
         });
     }
     
-    console.log(`✅ Role UI initialized for position: ${userPosition}`);
 }
 
 // Apply role-based section visibility for welcome-section without data-role attributes
@@ -3587,7 +3541,6 @@ async function applyRoleBasedSectionVisibility() {
             const match = userInfo.textContent.match(/- ([A-Z0-9]+)$/);
             if (match) {
                 const extractedId = match[1];
-                console.log('✅ Found employee ID from userInfo:', extractedId);
                 try {
                     const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${extractedId}`);
                     if (freshUserData && freshUserData.position) {
@@ -3661,7 +3614,6 @@ async function applyRoleBasedSectionVisibility() {
     
     console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
-    console.log('🔧 Role configuration for', userRole, ':', roleConfig);
     
     // Count sections that should be visible
     const visibleSections = Object.entries(roleConfig).filter(([_, isVisible]) => isVisible);
@@ -3676,7 +3628,6 @@ async function applyRoleBasedSectionVisibility() {
                 section.style.visibility = 'visible';
                 section.classList.remove('role-hidden');
                 section.classList.add('role-visible');
-                console.log(`✅ Section visible for ${userRole}: ${selector}`);
             } else {
                 section.style.display = 'none';
                 section.style.visibility = 'hidden';
@@ -3720,7 +3671,6 @@ async function applyRoleBasedSectionVisibility() {
             if (allowedActions.includes(action)) {
                 btn.style.display = 'flex';
                 btn.style.visibility = 'visible';
-                console.log(`✅ Quick action visible for ${userRole}: ${action}`);
             } else {
                 btn.style.display = 'none';
                 btn.style.visibility = 'hidden';
@@ -3729,7 +3679,6 @@ async function applyRoleBasedSectionVisibility() {
         });
     }
     
-    console.log(`✅ Role-based section visibility applied for: ${userRole}`);
 }
 
 // Quick Actions Handler
@@ -3880,7 +3829,6 @@ async function refreshUserRoleAndPermissions() {
         // Get fresh user data from API
         const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
         if (freshUserData && freshUserData.position) {
-            console.log('🔄 Refreshing role permissions for:', freshUserData.position);
             
             // Update role-based UI with fresh data
             await initializeRoleBasedUI();
@@ -3893,7 +3841,6 @@ async function refreshUserRoleAndPermissions() {
                     const visibleADElements = Array.from(adElements).filter(el => 
                         el.style.display !== 'none' && !el.classList.contains('role-hidden')
                     );
-                    console.log('✅ AD functions check - Total:', adElements.length, 'Visible:', visibleADElements.length);
                     
                     if (visibleADElements.length < adElements.length) {
                         console.warn('⚠️ Re-applying AD permissions...');
@@ -4022,28 +3969,23 @@ function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     
-    console.log('📱 Setting up mobile menu...', { menuToggle, sidebar });
     
     if (menuToggle && sidebar) {
-        console.log('✅ Mobile menu elements found, setting up event listeners');
         
         // Mobile menu toggle with CSS transitions
         menuToggle.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             
-            console.log('📱 Menu toggle clicked!');
             
             const isActive = sidebar.classList.contains('active');
             
             if (isActive) {
                 // Close menu
                 sidebar.classList.remove('active');
-                console.log('🔒 Closing sidebar');
             } else {
                 // Open menu
                 sidebar.classList.add('active');
-                console.log('🔓 Opening sidebar');
             }
         });
 
@@ -4051,13 +3993,11 @@ function setupMobileMenu() {
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
             menuToggle.style.opacity = '0.8';
-            console.log('👆 Touch start on menu toggle');
         });
 
         menuToggle.addEventListener('touchend', (e) => {
             e.preventDefault();
             menuToggle.style.opacity = '1';
-            console.log('👆 Touch end on menu toggle');
         });
 
         // Close sidebar when clicking outside on mobile
@@ -4068,7 +4008,6 @@ function setupMobileMenu() {
                 !menuToggle.contains(e.target)) {
                 
                 sidebar.classList.remove('active');
-                console.log('🔒 Closing sidebar (clicked outside)');
             }
         });
     } else {
@@ -4076,7 +4015,6 @@ function setupMobileMenu() {
         
         // Retry after a short delay in case elements are being dynamically loaded
         setTimeout(() => {
-            console.log('🔄 Retrying mobile menu setup...');
             setupMobileMenu();
         }, 1000);
     }
@@ -4084,7 +4022,6 @@ function setupMobileMenu() {
 
 // Function to ensure dashboard content is visible
 function showDashboardContent() {
-    console.log('📱 Ensuring dashboard content is visible...');
     
     const content = document.getElementById('content');
     const welcomeSection = document.querySelector('.welcome-section');
@@ -4094,21 +4031,18 @@ function showDashboardContent() {
     if (content) {
         content.style.display = 'block';
         content.style.visibility = 'visible';
-        console.log('✅ Main content made visible');
     }
     
     // Make sure welcome section is visible
     if (welcomeSection) {
         welcomeSection.style.display = 'block';
         welcomeSection.style.visibility = 'visible';
-        console.log('✅ Welcome section made visible');
     }
     
     // Make sure stats grid is visible
     if (statsGrid) {
         statsGrid.style.display = 'grid';
         statsGrid.style.visibility = 'visible';
-        console.log('✅ Stats grid made visible');
     }
     
     // Log element existence
@@ -4126,7 +4060,6 @@ function showDashboardContent() {
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
-        console.log('🚀 Enhanced dashboard initialization started');
         
         // First ensure content is visible
         showDashboardContent();
@@ -4144,7 +4077,6 @@ async function initializeEnhancedDashboard() {
                 const match = userInfo.textContent.match(/- ([A-Z0-9]+)$/);
                 if (match) {
                     const extractedId = match[1];
-                    console.log('✅ Using employee ID from userInfo:', extractedId);
                     
                     try {
                         const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${extractedId}`);
@@ -4161,7 +4093,6 @@ async function initializeEnhancedDashboard() {
                             console.log('📊 Initializing dashboard stats and role checking...');
                             await getDashboardStats();
                             
-                            console.log('🔐 Setting up role-based UI with fresh data...');
                             await initializeRoleBasedUI();
                             MenuManager.updateMenuByRole(userPosition);
                             return;
@@ -4176,7 +4107,6 @@ async function initializeEnhancedDashboard() {
             return;
         }
 
-        console.log('🚀 Initializing enhanced dashboard for employee:', employeeId);
         
         // Fetch fresh user data from API
         const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
@@ -4198,7 +4128,6 @@ async function initializeEnhancedDashboard() {
         await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
         
         // Initialize role-based UI and menu visibility with fresh API data
-        console.log('🔐 Setting up role-based UI with fresh data...');
         await initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
         
@@ -4230,7 +4159,7 @@ async function initializeEnhancedDashboard() {
                 const visibleADElements = Array.from(adElements).filter(el => 
                     el.style.display !== 'none' && !el.classList.contains('role-hidden')
                 );
-                console.log('✅ AD visibility verification:', {
+                console.log('AD elements visibility check:', {
                     total: adElements.length,
                     visible: visibleADElements.length,
                     success: visibleADElements.length === adElements.length
@@ -4255,7 +4184,6 @@ async function initializeEnhancedDashboard() {
         // Theme switching is handled by ThemeManager.initialize()
         
         utils.showNotification('Dashboard đã được tải thành công', 'success');
-        console.log('✅ Dashboard initialization complete for role:', userPosition);
     } catch (error) {
         console.error('Failed to initialize enhanced dashboard:', error);
         utils.showNotification('Có lỗi khi tải dashboard', 'error');
@@ -4265,12 +4193,10 @@ async function initializeEnhancedDashboard() {
 // Simplified refresh system - runs only on page load and user actions
 async function refreshSystemData() {
     try {
-        console.log('🔄 Refreshing system data...');
         
         // Re-initialize role-based UI to ensure functions remain visible using fresh API data
         await refreshUserRoleAndPermissions();
         
-        console.log('✅ System data refresh completed');
     } catch (error) {
         console.log('⚠️ System refresh failed:', error.message);
     }
@@ -4387,7 +4313,6 @@ async function showWelcomeSection() {
         // Run getDashboardStats to update the stats numbers
         await getDashboardStats();
         
-        console.log('✅ Welcome section built specifically for role:', userRole);
         
     } catch (error) {
         console.error('❌ Error building role-based welcome section:', error);
@@ -4681,7 +4606,6 @@ function buildRoleBasedDashboard(userRole) {
         </div>
     `;
     
-    console.log('✅ Dashboard content built for role:', userRole);
     return content;
 }
 
