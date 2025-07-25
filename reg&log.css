@@ -771,25 +771,39 @@ body {
 /* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
     body {
-        padding: 1rem;
+        padding: 0.75rem;
     }
     
     .auth-container {
         max-width: 100%;
+        margin: 0;
     }
     
     .form-container {
         padding: 2rem 1.5rem;
         margin: 0.5rem 0;
+        border-radius: 16px;
     }
 
     .form-header h2 {
         font-size: 1.75rem;
+        margin-bottom: 1rem;
     }
 
     .input-group input {
         font-size: 16px; /* Prevents zoom on iOS */
         padding: 0.875rem 1rem 0.875rem 2.75rem;
+        min-height: 48px; /* Better touch target */
+    }
+    
+    .input-group label {
+        font-size: 0.9rem;
+    }
+    
+    .btn {
+        min-height: 48px; /* Better touch target */
+        font-size: 1rem;
+        font-weight: 600;
     }
     
     .circle-1, .circle-2 {
@@ -799,23 +813,100 @@ body {
     .circle-3 {
         width: 200px;
         height: 200px;
-        opacity: 0.5;
+        opacity: 0.3;
+    }
+    
+    /* Enhanced mobile theme switch */
+    .theme-switch {
+        width: 48px;
+        height: 48px;
+        font-size: 1.1rem;
+        top: 1rem;
+        right: 1rem;
+    }
+    
+    /* Better notification positioning */
+    .notification {
+        top: 5rem;
+        left: 0.75rem;
+        right: 0.75rem;
+        width: auto;
+        border-radius: 12px;
+        font-size: 0.9rem;
+    }
+    
+    /* Enhanced form footer for mobile */
+    .form-footer {
+        margin-top: 1.5rem;
+        text-align: center;
+    }
+    
+    .form-link {
+        display: inline-block;
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
     }
 }
 
 @media (max-width: 480px) {
+    body {
+        padding: 0.5rem;
+    }
+    
     .form-container {
         padding: 1.5rem 1rem;
+        border-radius: 12px;
     }
     
     .form-header h2 {
         font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-header .form-subtitle {
+        font-size: 0.85rem;
     }
 
     .form-options {
         flex-direction: column;
         gap: 1rem;
         align-items: flex-start;
+    }
+    
+    .checkbox-container {
+        font-size: 0.85rem;
+    }
+    
+    .input-group input {
+        padding: 0.75rem 0.875rem 0.75rem 2.5rem;
+    }
+    
+    .input-group .input-icon {
+        font-size: 1.1rem;
+        left: 0.75rem;
+    }
+    
+    .password-toggle {
+        right: 0.75rem;
+        width: 36px;
+        height: 36px;
+    }
+    
+    /* Very small screen optimizations */
+    .theme-switch {
+        width: 44px;
+        height: 44px;
+        top: 0.75rem;
+        right: 0.75rem;
+    }
+    
+    .verification-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .verification-actions .btn {
+        width: 100%;
     }
 
     .notification {

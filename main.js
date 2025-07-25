@@ -3112,32 +3112,53 @@ class MenuManager {
     }
 }
 
-// Theme Manager - Single Instance
+// Automatic Time-Based Theme Manager
 class ThemeManager {
     static initialize() {
         const themeSwitch = document.getElementById('themeSwitch');
         if (!themeSwitch) return;
 
-        const savedTheme = localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+        // Set automatic theme based on time
+        this.setAutomaticTheme();
         
-        // Update icon based on current theme
-        const icon = themeSwitch.querySelector('.material-icons-round');
-        if (icon) {
-            icon.textContent = savedTheme === 'light' ? 'dark_mode' : 'light_mode';
-        }
+        // Update theme every minute
+        setInterval(() => this.setAutomaticTheme(), 60000);
 
+        // Remove manual toggle - show time info instead
         themeSwitch.addEventListener('click', () => {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            const message = currentTheme === 'dark' 
+                ? `🌙 Chế độ tối (${timeString}) - Tự động từ 6:00 PM đến 7:00 AM`
+                : `☀️ Chế độ sáng (${timeString}) - Tự động từ 7:00 AM đến 6:00 PM`;
             
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
-            
+            NotificationManager.show(message, 'info', 3000);
+        });
+    }
+    
+    static setAutomaticTheme() {
+        const now = new Date();
+        const hour = now.getHours();
+        
+        // Dark mode: 18:00 (6 PM) to 06:59 (7 AM)
+        // Light mode: 07:00 (7 AM) to 17:59 (6 PM)
+        const isDarkTime = hour >= 18 || hour < 7;
+        const newTheme = isDarkTime ? "dark" : "light";
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
+        
+        // Update theme switch icon
+        const themeSwitch = document.getElementById('themeSwitch');
+        if (themeSwitch) {
+            const icon = themeSwitch.querySelector('.material-icons-round');
             if (icon) {
                 icon.textContent = newTheme === 'light' ? 'dark_mode' : 'light_mode';
             }
-        });
+        }
+        
+        return newTheme;
     }
 }
 
