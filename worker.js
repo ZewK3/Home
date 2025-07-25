@@ -688,6 +688,155 @@ async function handleVerifyEmail(body, db, origin, env) {
 }
 
 // Hàm cập nhật thông tin nhân viên
+// Enhanced user update with history tracking
+async function handleUpdateUserWithHistory(body, db, origin) {
+  const { employeeId, fullName, storeName, position, phone, email, joinDate, changes, reason, actionBy } = body;
+  
+  if (!employeeId || !fullName || !storeName || !actionBy) {
+    return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
+  }
+
+  try {
+    // Get action by user info
+    const actionByUser = await db
+      .prepare("SELECT fullName FROM employees WHERE employeeId = ?")
+      .bind(actionBy)
+      .first();
+    
+    if (!actionByUser) {
+      return jsonResponse({ message: "Người thực hiện không hợp lệ!" }, 400, origin);
+    }
+
+    // Update user data
+    const updated = await db
+      .prepare(
+        "UPDATE employees SET fullName = ?, storeName = ?, position = ?, phone = ?, email = ?, joinDate = ? WHERE employeeId = ?"
+      )
+      .bind(fullName, storeName, position || "NV", phone || null, email || null, joinDate || null, employeeId)
+      .run();
+
+    if (updated.meta.changes === 0) {
+      return jsonResponse({ message: "Cập nhật thất bại, mã nhân viên không tồn tại!" }, 404, origin);
+    }
+
+    // Log changes to history
+    const timestamp = new Date().toISOString();
+    
+    if (changes && Array.isArray(changes)) {
+      for (const change of changes) {
+        let actionType = 'user_data_change';
+        if (change.field === 'position') {
+          actionType = 'permission_change';
+        }
+        
+        await db
+          .prepare(
+            "INSERT INTO history_logs (action_type, target_employee_id, action_by_employee_id, action_by_name, old_value, new_value, field_name, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          )
+          .bind(
+            actionType,
+            employeeId,
+            actionBy,
+            actionByUser.fullName,
+            change.oldValue,
+            change.newValue,
+            change.field,
+            reason,
+            timestamp
+          )
+          .run();
+      }
+    }
+
+    return jsonResponse({ 
+      message: "Cập nhật thành công!",
+      changes: changes?.length || 0 
+    }, 200, origin);
+    
+  } catch (error) {
+    console.error('Error updating user with history:', error);
+    return jsonResponse({ message: "Lỗi hệ thống khi cập nhật!" }, 500, origin);
+  }
+}
+
+// Get user history
+async function handleGetUserHistory(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  
+  if (!employeeId) {
+    return jsonResponse({ message: "Thiếu mã nhân viên!" }, 400, origin);
+  }
+
+  try {
+    const history = await db
+      .prepare(
+        "SELECT * FROM history_logs WHERE target_employee_id = ? ORDER BY created_at DESC LIMIT 50"
+      )
+      .bind(employeeId)
+      .all();
+
+    // D1 database returns {results: [...], success: true}
+    const historyList = history.results || history;
+    
+    return jsonResponse(historyList, 200, origin);
+    
+  } catch (error) {
+    console.error('Error getting user history:', error);
+    return jsonResponse({ message: "Lỗi tải lịch sử!" }, 500, origin);
+  }
+}
+
+// Enhanced approval with history tracking
+async function handleApproveRegistrationWithHistory(body, db, origin) {
+  const { employeeId, approved, reason, actionBy } = body;
+  
+  if (!employeeId || approved === undefined || !actionBy) {
+    return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
+  }
+
+  try {
+    // Get action by user info
+    const actionByUser = await db
+      .prepare("SELECT fullName FROM employees WHERE employeeId = ?")
+      .bind(actionBy)
+      .first();
+    
+    if (!actionByUser) {
+      return jsonResponse({ message: "Người thực hiện không hợp lệ!" }, 400, origin);
+    }
+
+    // Update approval status (this would depend on your existing approval logic)
+    // Add your approval logic here...
+
+    // Log approval action to history
+    const timestamp = new Date().toISOString();
+    
+    await db
+      .prepare(
+        "INSERT INTO history_logs (action_type, target_employee_id, action_by_employee_id, action_by_name, old_value, new_value, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+      )
+      .bind(
+        'approval_action',
+        employeeId,
+        actionBy,
+        actionByUser.fullName,
+        approved ? 'Phê duyệt' : 'Từ chối',
+        'đăng ký',
+        reason || '',
+        timestamp
+      )
+      .run();
+
+    return jsonResponse({ 
+      message: approved ? "Đã phê duyệt đăng ký!" : "Đã từ chối đăng ký!" 
+    }, 200, origin);
+    
+  } catch (error) {
+    console.error('Error processing approval with history:', error);
+    return jsonResponse({ message: "Lỗi hệ thống khi xử lý!" }, 500, origin);
+  }
+}
+
 async function handleUpdate(body, db, origin) {
   const { employeeId, fullName, storeName, position, phone, email, joinDate } = body;
   if (!employeeId || !fullName || !storeName) {
@@ -1493,6 +1642,8 @@ export default {
             return await handleUpdatePermissions(body, db, ALLOWED_ORIGIN);
           case "updatePersonalInfo":
             return await handleUpdatePersonalInfo(body, db, ALLOWED_ORIGIN);
+          case "updateUserWithHistory":
+            return await handleUpdateUserWithHistory(body, db, ALLOWED_ORIGIN);
           case "approveRegistration":
             return await handleApproveRegistration(body, db, ALLOWED_ORIGIN);
           default:
@@ -1510,6 +1661,8 @@ export default {
             return await handleCheckId(url, db, ALLOWED_ORIGIN);
           case "getUser":
             return await handleGetUser(url, db, ALLOWED_ORIGIN);
+          case "getUserHistory":
+            return await handleGetUserHistory(url, db, ALLOWED_ORIGIN);
           case "getUsers":
             return await handleGetUsers(url, db, ALLOWED_ORIGIN);
           case "checkdk":
