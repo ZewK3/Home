@@ -3705,38 +3705,44 @@ body {
     background: var(--bg-glass);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
-    overflow-y: auto;
-    max-height: 70vh;
+    padding: 1.2rem;
+    height: calc(100vh - 280px);
+    min-height: 500px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .search-section {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.2rem;
+    flex-shrink: 0;
 }
 
 .search-section h3 {
     color: var(--text-primary);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 600;
-    margin: 0 0 1rem 0;
+    margin: 0 0 0.8rem 0;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .search-controls {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr auto;
     gap: 0.75rem;
+    align-items: end;
 }
 
 .search-controls .form-control {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
     transition: var(--transition);
+    min-height: 38px;
 }
 
 .search-controls .form-control:focus {
@@ -3748,32 +3754,54 @@ body {
 .user-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    max-height: 400px;
+    gap: 0.6rem;
+    flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.5rem;
+}
+
+.user-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.user-list::-webkit-scrollbar-track {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.user-list::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+.user-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
 }
 
 .user-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
-    padding: 1rem;
+    padding: 0.8rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     transition: var(--transition);
     cursor: pointer;
+    min-height: 70px;
 }
 
 .user-card:hover {
     background: rgba(37, 99, 235, 0.05);
     border-color: var(--primary-light);
     transform: translateX(3px);
+    box-shadow: var(--shadow-sm);
 }
 
 .user-avatar {
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: white;
@@ -3781,23 +3809,25 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     flex-shrink: 0;
 }
 
 .user-info {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
 }
 
 .user-info h4 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
+    margin: 0 0 0.2rem 0;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
 }
 
 .user-id {
@@ -4601,7 +4631,13 @@ body {
     
     .user-selection-panel {
         padding: 1rem;
-        max-height: 400px;
+        height: calc(100vh - 200px);
+        min-height: 400px;
+    }
+    
+    .search-controls {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
     }
     
     .role-cards {
@@ -4647,10 +4683,24 @@ body {
     
     .user-selection-panel {
         padding: 0.75rem;
+        height: calc(100vh - 160px);
+        min-height: 350px;
+    }
+
+    .user-card {
+        padding: 0.6rem;
+        min-height: 60px;
     }
     
-    .user-card {
-        padding: 0.75rem;
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 0.75rem;
+    }
+    
+    .search-controls .form-control {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
     }
     
     .role-editor-panel {

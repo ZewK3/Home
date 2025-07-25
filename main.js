@@ -1387,9 +1387,13 @@ class ContentManager {
             const userId = card.querySelector('.user-id').textContent.toLowerCase();
             const userRole = card.dataset.role;
 
-            const matchesSearch = userName.includes(searchTerm) || userId.includes(searchTerm);
+            // Enhanced search logic: search text ONLY in name and ID, not role
+            const matchesSearch = !searchTerm || userName.includes(searchTerm) || userId.includes(searchTerm);
+            
+            // Role filter: exact match ONLY when role filter is selected
             const matchesRole = !roleFilterValue || userRole === roleFilterValue;
 
+            // Show card only if both search and role filter match
             card.style.display = matchesSearch && matchesRole ? 'flex' : 'none';
         });
     }
@@ -2971,6 +2975,11 @@ async function initializeRoleBasedUI() {
     allRoleElements.forEach(element => {
         // Skip menu items as they are handled by MenuManager
         if (element.closest('#menuList')) {
+            return;
+        }
+        
+        // Skip user cards in permission management to prevent data loss
+        if (element.classList.contains('user-card') || element.closest('.user-selection-panel')) {
             return;
         }
         
