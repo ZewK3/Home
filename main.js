@@ -1643,7 +1643,8 @@ class ContentManager {
             return;
         }
 
-        const selectedRole = document.querySelector('.role-selection-card.selected');
+        const roleSelect = document.getElementById('editUserRole');
+        const selectedRole = roleSelect ? roleSelect.value : null;
         const changeReason = document.getElementById('changeReason').value.trim();
 
         if (!selectedRole) {
@@ -1671,7 +1672,7 @@ class ContentManager {
                 employeeId: document.getElementById('editEmployeeId').value,
                 fullName: document.getElementById('editFullName').value,
                 storeName: document.getElementById('editStoreName').value,
-                position: selectedRole.dataset.role,
+                position: selectedRole,
                 phone: document.getElementById('editPhone').value,
                 email: document.getElementById('editEmail').value,
                 joinDate: document.getElementById('editJoinDate').value
@@ -1688,6 +1689,8 @@ class ContentManager {
                     });
                 }
             });
+
+            console.log('Saving permission changes:', { updateData, changes, reason: changeReason }); // Debug log
 
             // Update user data
             const result = await utils.fetchAPI('?action=updateUserWithHistory', {
@@ -1709,41 +1712,39 @@ class ContentManager {
             const userCard = document.querySelector(`[data-user-id="${userId}"]`);
             if (userCard) {
                 const oldRole = userCard.dataset.role;
-                userCard.dataset.role = updateData.position;
                 
-                const roleElement = userCard.querySelector('.user-role');
-                const nameElement = userCard.querySelector('h4');
-                if (roleElement) {
-                    roleElement.textContent = this.getRoleDisplayName(updateData.position);
-                    roleElement.className = `user-role role-${updateData.position.toLowerCase()}`;
-                }
-                if (nameElement) {
-                    nameElement.textContent = updateData.fullName;
-                }
+                // Update user card
+                userCard.dataset.role = selectedRole;
+                userCard.querySelector('.user-role').textContent = this.getRoleDisplayName(selectedRole);
+                userCard.querySelector('.user-role').className = `user-role role-${selectedRole.toLowerCase()}`;
+                userCard.querySelector('h4').textContent = updateData.fullName;
                 
-                // Update avatar if name changed
-                const avatarElement = userCard.querySelector('.user-avatar');
-                if (avatarElement) {
-                    avatarElement.textContent = updateData.fullName.substring(0, 2).toUpperCase();
-                }
+                console.log('Updated user card from', oldRole, 'to', selectedRole); // Debug log
             }
-
-            // Update statistics
+            
+            // Update role statistics
             this.updateRoleStatistics();
-
+            
             // Close modal
             this.closePermissionModal();
+            
+            utils.showNotification("Đã cập nhật thông tin thành công", "success");
+            
+            // Refresh the user list to show updates
+            setTimeout(() => {
+                this.showGrantAccess();
+            }, 1000);
 
-            utils.showNotification(`Đã cập nhật thông tin và phân quyền thành công`, "success");
-            
         } catch (error) {
-            console.error('Error updating user:', error);
-            utils.showNotification(`Lỗi cập nhật: ${error.message}`, "error");
-            
-            // Reset button
+            console.error('Save permission error:', error);
+            utils.showNotification("Không thể lưu thông tin: " + error.message, "error");
+        } finally {
+            // Reset button state
             const saveButton = document.getElementById('savePermissionChanges');
-            saveButton.innerHTML = originalText;
-            saveButton.disabled = false;
+            if (saveButton) {
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+            }
         }
     }
 
