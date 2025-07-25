@@ -2835,7 +2835,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
 
-        // Mobile optimization
+        // Initialize GSAP animations after all content is loaded
+        if (typeof gsap !== 'undefined') {
+            console.log('🎬 Starting GSAP initialization...');
+            setTimeout(() => {
+                initializeGSAP();
+            }, 200);
+        }
+
+        // Mobile optimization and enhanced menu setup
+        setupMobileMenu();
+        
         if (window.innerWidth <= 768) {
             const sidebar = document.querySelector(".sidebar");
             document.addEventListener("click", (e) => {
@@ -3582,24 +3592,91 @@ async function initializeFinanceDashboard() {
     if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
 }
 
-// Enhanced Mobile Menu Setup
+// Enhanced Mobile Menu Setup with GSAP Animation
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     
     if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
+        // Enhanced mobile menu toggle with better touch support
+        menuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isActive = sidebar.classList.contains('active');
+            
+            if (isActive) {
+                // Close animation
+                gsap.to(sidebar, {
+                    x: -280,
+                    duration: 0.3,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            } else {
+                // Open animation
+                sidebar.classList.add('active');
+                gsap.fromTo(sidebar, 
+                    { x: -280 },
+                    { 
+                        x: 0,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    }
+                );
+            }
+            
+            // Menu toggle button animation
+            gsap.to(menuToggle, {
+                scale: 0.9,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.inOut"
+            });
+        });
+
+        // Enhanced touch event support
+        menuToggle.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            gsap.to(menuToggle, {
+                scale: 0.95,
+                duration: 0.1,
+                ease: "power2.out"
+            });
+        });
+
+        menuToggle.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            gsap.to(menuToggle, {
+                scale: 1,
+                duration: 0.1,
+                ease: "power2.out"
+            });
         });
 
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 768 && 
+                sidebar.classList.contains('active') &&
                 !sidebar.contains(e.target) && 
                 !menuToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
+                
+                gsap.to(sidebar, {
+                    x: -280,
+                    duration: 0.3,
+                    ease: "power2.out",
+                    onComplete: () => {
+                        sidebar.classList.remove('active');
+                    }
+                });
             }
         });
+
+        // Initialize GSAP for mobile menu
+        gsap.set(sidebar, { x: -280 });
     }
 }
 
@@ -3772,7 +3849,7 @@ async function initializeEnhancedDashboard() {
         await initializeFinanceDashboard();
         
         // Setup UI enhancements
-        setupMobileMenu();
+        // Mobile menu setup is handled in main initialization
         // Theme switching is handled by ThemeManager.initialize()
         
         utils.showNotification('Dashboard đã được tải thành công', 'success');
@@ -4199,3 +4276,286 @@ function buildRoleBasedDashboard(userRole) {
     console.log('✅ Dashboard content built for role:', userRole);
     return content;
 }
+
+// =============================================================================
+// GSAP ANIMATION SYSTEM
+// =============================================================================
+
+// Initialize GSAP and register plugins
+function initializeGSAP() {
+    console.log('🎬 Initializing GSAP Animation System...');
+    
+    // Register GSAP plugins
+    if (typeof gsap !== 'undefined') {
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+        console.log('✅ GSAP plugins registered');
+        
+        // Initialize page entrance animations
+        initializePageAnimations();
+        
+        // Initialize scroll animations
+        initializeScrollAnimations();
+        
+        // Initialize interactive animations
+        initializeInteractiveAnimations();
+        
+        console.log('🎨 GSAP Animation System initialized successfully');
+    } else {
+        console.warn('⚠️ GSAP library not loaded');
+    }
+}
+
+// Page entrance animations
+function initializePageAnimations() {
+    // Fade in the entire page
+    gsap.from("body", {
+        opacity: 0,
+        duration: 0.8,
+        ease: "power2.out"
+    });
+
+    // Animate header
+    gsap.from(".show-user", {
+        y: -50,
+        opacity: 0,
+        duration: 0.6,
+        delay: 0.2,
+        ease: "power3.out"
+    });
+
+    // Animate sidebar
+    gsap.from(".sidebar", {
+        x: -280,
+        duration: 0.8,
+        delay: 0.1,
+        ease: "power3.out"
+    });
+
+    // Animate dashboard title
+    gsap.from(".dashboard-title", {
+        scale: 0.8,
+        opacity: 0,
+        duration: 0.6,
+        delay: 0.4,
+        ease: "back.out(1.7)"
+    });
+
+    // Animate stats cards with stagger
+    gsap.from(".stat-card", {
+        y: 60,
+        opacity: 0,
+        duration: 0.6,
+        delay: 0.6,
+        stagger: 0.1,
+        ease: "power3.out"
+    });
+
+    // Animate menu toggle with pulse
+    gsap.from(".menu-toggle", {
+        scale: 0,
+        duration: 0.5,
+        delay: 0.3,
+        ease: "back.out(1.7)"
+    });
+
+    // Pulse animation for menu toggle (repeating)
+    gsap.to(".menu-toggle", {
+        scale: 1.1,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "power2.inOut",
+        delay: 2
+    });
+}
+
+// Scroll-triggered animations
+function initializeScrollAnimations() {
+    // Animate sections as they come into view
+    gsap.utils.toArray(".section-title").forEach((title) => {
+        gsap.from(title, {
+            scrollTrigger: {
+                trigger: title,
+                start: "top 80%",
+                end: "bottom 20%",
+                toggleActions: "play none none reverse"
+            },
+            x: -100,
+            opacity: 0,
+            duration: 0.6,
+            ease: "power3.out"
+        });
+    });
+
+    // Animate cards on scroll
+    gsap.utils.toArray(".chart-card, .finance-card, .personal-card, .store-card").forEach((card, index) => {
+        gsap.from(card, {
+            scrollTrigger: {
+                trigger: card,
+                start: "top 85%",
+                end: "bottom 15%",
+                toggleActions: "play none none reverse"
+            },
+            y: 50,
+            opacity: 0,
+            duration: 0.5,
+            delay: index * 0.1,
+            ease: "power2.out"
+        });
+    });
+
+    // Animate activities list
+    gsap.from(".activities-container", {
+        scrollTrigger: {
+            trigger: ".activities-container",
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+        },
+        y: 30,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power2.out"
+    });
+}
+
+// Interactive animations
+function initializeInteractiveAnimations() {
+    // Enhanced hover effects for stat cards
+    document.querySelectorAll('.stat-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            gsap.to(card, {
+                scale: 1.05,
+                y: -10,
+                duration: 0.3,
+                ease: "power2.out",
+                boxShadow: "0 20px 40px rgba(0,0,0,0.1)"
+            });
+        });
+
+        card.addEventListener('mouseleave', () => {
+            gsap.to(card, {
+                scale: 1,
+                y: 0,
+                duration: 0.3,
+                ease: "power2.out",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+            });
+        });
+    });
+
+    // Enhanced button animations
+    document.querySelectorAll('button, .btn, .menu-link').forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            gsap.to(btn, {
+                scale: 1.05,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+
+        btn.addEventListener('mouseleave', () => {
+            gsap.to(btn, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+
+        btn.addEventListener('click', () => {
+            gsap.to(btn, {
+                scale: 0.95,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.inOut"
+            });
+        });
+    });
+
+    // Theme switch animation
+    const themeSwitch = document.getElementById('themeSwitch');
+    if (themeSwitch) {
+        themeSwitch.addEventListener('click', () => {
+            gsap.to(themeSwitch, {
+                rotation: 360,
+                duration: 0.6,
+                ease: "power2.out"
+            });
+        });
+    }
+
+    // Sidebar menu animations
+    document.querySelectorAll('.menu-item').forEach((item, index) => {
+        gsap.from(item, {
+            x: -50,
+            opacity: 0,
+            duration: 0.4,
+            delay: 0.8 + (index * 0.1),
+            ease: "power2.out"
+        });
+
+        item.addEventListener('mouseenter', () => {
+            gsap.to(item, {
+                x: 10,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+
+        item.addEventListener('mouseleave', () => {
+            gsap.to(item, {
+                x: 0,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+        });
+    });
+}
+
+// Animate content updates
+function animateContentUpdate(element) {
+    if (typeof gsap !== 'undefined' && element) {
+        gsap.from(element, {
+            opacity: 0,
+            y: 30,
+            duration: 0.5,
+            ease: "power2.out"
+        });
+    }
+}
+
+// Animate modal appearances
+function animateModal(modal, show = true) {
+    if (typeof gsap !== 'undefined' && modal) {
+        if (show) {
+            gsap.set(modal, { display: 'flex' });
+            gsap.from(modal, {
+                opacity: 0,
+                scale: 0.8,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+            gsap.from(modal.querySelector('.modal-content'), {
+                y: -50,
+                duration: 0.4,
+                delay: 0.1,
+                ease: "power3.out"
+            });
+        } else {
+            gsap.to(modal, {
+                opacity: 0,
+                scale: 0.8,
+                duration: 0.2,
+                ease: "power2.in",
+                onComplete: () => {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    }
+}
+
+// Export functions for global use
+window.animateContentUpdate = animateContentUpdate;
+window.animateModal = animateModal;

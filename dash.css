@@ -1762,11 +1762,12 @@ body {
     border-left: 4px solid var(--warning);
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design with GSAP Support */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
         z-index: 1100;
+        transition: none; /* GSAP will handle transitions */
     }
 
     .sidebar.active {
@@ -2163,28 +2164,37 @@ body {
     }
 }
 
-/* Mobile menu toggle - Repositioned */
+/* Mobile menu toggle - Enhanced for Mobile */
 .menu-toggle {
     display: none;
     position: fixed;
-    top: 10px;
+    top: 15px;
     left: 15px;
-    z-index: 1200;
+    z-index: 99999;
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 6px;
-    width: 38px;
-    height: 38px;
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
-    font-size: 1.1rem;
-    box-shadow: var(--shadow);
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     transition: var(--transition);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .menu-toggle:hover {
     transform: scale(1.05);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    background: var(--primary-dark);
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
 }
 
 @media (max-width: 768px) {
@@ -2195,7 +2205,16 @@ body {
     }
 
     .show-user {
-        padding-left: 60px;
+        padding-left: 70px;
+    }
+
+    /* Ensure menu toggle is always accessible */
+    .menu-toggle {
+        pointer-events: auto;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
     }
 }
 
@@ -4927,5 +4946,140 @@ body {
     
     .welcome-section > div {
         margin-bottom: 20px;
+    }
+}
+
+/* =============================================================================
+   ENHANCED VISUAL EFFECTS WITH GSAP SUPPORT
+   ============================================================================= */
+
+/* Enhanced hover effects for better interactivity */
+.stat-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    will-change: transform;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Enhanced button styles with animation ready properties */
+button, .btn, .menu-link {
+    transition: all 0.2s ease;
+    will-change: transform;
+}
+
+/* Glass morphism enhancement */
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(20px);
+    z-index: -1;
+    border-radius: inherit;
+}
+
+/* Enhanced menu toggle with pulse effect */
+@keyframes menuPulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+.menu-toggle {
+    animation: menuPulse 3s infinite;
+}
+
+/* Enhanced loading animations */
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+.loading-text {
+    background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+}
+
+/* Enhanced card animations */
+.chart-card, .finance-card, .personal-card, .store-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform;
+}
+
+.chart-card:hover, .finance-card:hover, .personal-card:hover, .store-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08), 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* Enhanced modal animations */
+.modal-overlay, .permission-edit-modal {
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+/* Enhanced notification styles */
+.notification {
+    transform: translateX(150%);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+/* Enhanced scroll animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-title {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Enhanced dark mode transitions */
+[data-theme="dark"] * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Performance optimizations for animations */
+.stat-card, .chart-card, .finance-card, .personal-card, .store-card,
+.menu-toggle, .sidebar, .notification {
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Enhanced focus states for accessibility */
+button:focus, .btn:focus, .menu-link:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Enhanced mobile touch targets */
+@media (max-width: 768px) {
+    button, .btn, .menu-link {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .menu-toggle {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
     }
 }
