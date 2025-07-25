@@ -3218,6 +3218,10 @@ class AuthManager {
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🌟 DOM Content Loaded - Starting application initialization');
     
+    // Setup mobile menu FIRST - before any authentication checks
+    console.log('🚀 Setting up mobile menu immediately...');
+    setupMobileMenu();
+    
     // Wait a moment for all elements to be rendered
     await new Promise(resolve => setTimeout(resolve, 100));
     
@@ -3266,6 +3270,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 2000);
     }
 });
+
+// Standalone mobile menu initialization - independent of authentication
+window.addEventListener('load', () => {
+    console.log('🔧 Window loaded - ensuring mobile menu is setup');
+    setupMobileMenu();
+});
+
+// Additional backup initialization for mobile menu
+setTimeout(() => {
+    console.log('⏰ Backup mobile menu initialization');
+    setupMobileMenu();
+}, 3000);
 
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function getDashboardStats() {
