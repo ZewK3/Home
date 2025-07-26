@@ -2009,6 +2009,19 @@ body {
         margin: 0;
     }
     
+    /* Mobile Modal Positioning */
+    .permission-edit-modal {
+        position: fixed !important;
+        z-index: 1300;
+        padding: 0.5rem;
+    }
+    
+    .permission-edit-content {
+        max-width: 100%;
+        max-height: 95vh;
+        margin: 0 auto;
+    }
+    
     .user-info {
         font-size: 0.85rem;
     }
@@ -2174,6 +2187,19 @@ body {
         text-align: center;
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
+        gap: 0.25rem;
+    }
+    
+    .user-header-info {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+        width: 100%;
+    }
+    
+    .current-time {
+        padding: 0.25rem 0.5rem;
+        min-width: 50px;
     }
     
     .company-logo h1 {
@@ -2255,6 +2281,13 @@ body {
 
     .show-user {
         padding: 0 15px;
+        gap: 0.5rem;
+    }
+    
+    .user-header-info {
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-end;
     }
 
     .company-logo h1 {
