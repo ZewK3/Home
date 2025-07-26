@@ -2993,12 +2993,12 @@ class ContentManager {
                     <h4>🏪 Thông tin công việc</h4>
                     <div class="detail-grid">
                         <div class="detail-item">
-                            <span class="label">Cửa hàng:</span>
-                            <span class="value">${registration.storeName || registration.storeId || 'N/A'}</span>
+                            <span class="label">Tên cửa hàng:</span>
+                            <span class="value">${registration.storeName || 'N/A'}</span>
                         </div>
                         <div class="detail-item">
                             <span class="label">Mã cửa hàng:</span>
-                            <span class="value">${registration.storeId || 'N/A'}</span>
+                            <span class="value">${registration.storeId || registration.storeName || 'N/A'}</span>
                         </div>
                     </div>
                 </div>
@@ -3049,6 +3049,8 @@ class ContentManager {
 
     getStatusText(status) {
         switch (status) {
+            case 'Wait':
+            case 'wait':
             case 'pending': return '⏳ Chờ duyệt';
             case 'approved': return '✅ Đã duyệt';
             case 'rejected': return '❌ Đã từ chối';

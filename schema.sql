@@ -3,6 +3,23 @@
 -- Drop old messaging table (no longer needed since messaging system removed)
 DROP TABLE IF EXISTS messages;
 
+-- Enhanced stores table with area/region for AM management
+CREATE TABLE IF NOT EXISTS stores (
+    storeId TEXT PRIMARY KEY,
+    storeName TEXT NOT NULL,
+    region TEXT NOT NULL, -- Area/region for AM management
+    address TEXT,
+    managerEmployeeId TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default store data if not exists
+INSERT OR IGNORE INTO stores (storeId, storeName, region, address) VALUES 
+('STORE001', 'Cửa hàng Quận 1', 'TP.HCM', 'Quận 1, TP.HCM'),
+('STORE002', 'Cửa hàng Quận 3', 'TP.HCM', 'Quận 3, TP.HCM'),
+('STORE003', 'Cửa hàng Hà Nội', 'Miền Bắc', 'Quận Ba Đình, Hà Nội'),
+('STORE004', 'Cửa hàng Đà Nẵng', 'Miền Trung', 'Quận Hải Châu, Đà Nẵng');
+
 -- History tracking table for permission changes and approval actions
 CREATE TABLE IF NOT EXISTS history_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

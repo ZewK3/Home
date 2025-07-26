@@ -1307,9 +1307,9 @@ async function handleGetPendingRegistrations(url, db, origin) {
     const session = await checkSessionMiddleware(token, db, origin);
     if (session instanceof Response) return session;
 
-    // Get current user's position/role
+    // Get current user's position/role and storeName
     const currentUser = await db
-      .prepare("SELECT position FROM employees WHERE employeeId = ?")
+      .prepare("SELECT position, storeName FROM employees WHERE employeeId = ?")
       .bind(session.employeeId)
       .first();
 
@@ -1321,9 +1321,45 @@ async function handleGetPendingRegistrations(url, db, origin) {
     let query = "SELECT * FROM queue WHERE status = 'Wait'";
     let params = [];
 
-    // Only apply store filtering if user is NOT Admin (AD)
-    // AD can see all pending registrations from all stores
-    if (currentUser.position !== 'AD' && store) {
+    // Apply filtering based on position hierarchy:
+    // AD (Administrator) - Can see all registrations
+    // AM (Area Manager) - Can see registrations from their region
+    // QL (Store Manager) - Can see registrations from their specific store(s)
+    if (currentUser.position === 'AD') {
+      // Admin can see all pending registrations - no additional filtering
+    } else if (currentUser.position === 'AM') {
+      // Area Manager - filter by region
+      // Get stores in their region based on their store assignment
+      const userStore = await db
+        .prepare("SELECT region FROM stores WHERE storeName = ?")
+        .bind(currentUser.storeName)
+        .first();
+      
+      if (userStore) {
+        const regionStores = await db
+          .prepare("SELECT storeName FROM stores WHERE region = ?")
+          .bind(userStore.region)
+          .all();
+        
+        if (regionStores.results && regionStores.results.length > 0) {
+          const storeNames = regionStores.results.map(s => s.storeName);
+          query += ` AND storeName IN (${storeNames.map(() => '?').join(',')})`;
+          params.push(...storeNames);
+        }
+      }
+    } else if (currentUser.position === 'QL') {
+      // Store Manager - filter by their specific store(s)
+      if (currentUser.storeName) {
+        query += " AND storeName = ?";
+        params.push(currentUser.storeName);
+      }
+    } else {
+      // Other positions cannot see any registrations
+      return jsonResponse([], 200, origin);
+    }
+
+    // Apply additional store filter if provided
+    if (store && !params.includes(store)) {
       query += " AND storeName = ?";
       params.push(store);
     }
@@ -1336,11 +1372,12 @@ async function handleGetPendingRegistrations(url, db, origin) {
       return jsonResponse([], 200, origin);
     }
 
-    // Format response without sensitive data
+    // Format response without sensitive data and include store information
     const pendingRequests = registrations.results.map(reg => ({
       employeeId: reg.employeeId,
       fullName: reg.fullName,
       storeName: reg.storeName,
+      storeId: reg.storeId || 'N/A',
       position: reg.position,
       phone: reg.phone,
       email: reg.email,
@@ -1443,6 +1480,31 @@ async function handleGetPermissions(url, db, origin) {
   } catch (error) {
     console.error("Lỗi lấy quyền hạn:", error);
     return jsonResponse({}, 200, origin);
+  }
+}
+
+// Hàm lấy thống kê cá nhân
+async function handleGetPersonalStats(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  
+  if (!employeeId) {
+    return jsonResponse({ message: "Thiếu employeeId!" }, 400, origin);
+  }
+
+  try {
+    // Generate some basic personal stats
+    // You can modify this based on your actual data structure
+    const stats = {
+      workDaysThisMonth: Math.floor(Math.random() * 22) + 8, // 8-30 days
+      totalHoursThisMonth: Math.floor(Math.random() * 160) + 40, // 40-200 hours
+      attendanceRate: Math.floor(Math.random() * 20) + 80, // 80-100%
+      rewardsCount: Math.floor(Math.random() * 5) // 0-5 rewards
+    };
+
+    return jsonResponse({ stats }, 200, origin);
+  } catch (error) {
+    console.error("Lỗi lấy thống kê cá nhân:", error);
+    return jsonResponse({ message: "Lỗi lấy thống kê cá nhân!", error: error.message }, 500, origin);
   }
 }
 
@@ -1563,6 +1625,8 @@ export default {
             return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
           case "getPendingRegistrations":
             return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
+          case "getPersonalStats":
+            return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }

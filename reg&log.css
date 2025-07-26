@@ -375,6 +375,127 @@ body {
     --gray-500: #94a3b8;
 }
 
+/* Light Theme */
+[data-theme="light"] {
+    --background: #ffffff;
+    --foreground: #1f2937;
+    --gradient-background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+    --gray-100: #f8fafc;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+}
+
+/* Light Theme Body */
+[data-theme="light"] body {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+    color: var(--foreground);
+}
+
+/* Light Theme Form Container */
+[data-theme="light"] .form-container {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+}
+
+/* Light Theme Form Headers */
+[data-theme="light"] .form-header h2,
+[data-theme="light"] .form-header p {
+    color: var(--foreground);
+}
+
+/* Light Theme Input Styles */
+[data-theme="light"] .input-group input {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--foreground);
+    border-color: var(--gray-300);
+}
+
+[data-theme="light"] .input-group label {
+    color: var(--gray-500);
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .input-group input:focus + label,
+[data-theme="light"] .input-group input:not(:placeholder-shown) + label {
+    color: var(--primary);
+    background-color: var(--background);
+}
+
+[data-theme="light"] .input-icon,
+[data-theme="light"] .password-toggle {
+    color: var(--gray-400);
+}
+
+/* Light Theme Button */
+[data-theme="light"] .btn-primary {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    box-shadow: 0 4px 15px 0 rgba(79, 70, 229, 0.3);
+}
+
+[data-theme="light"] .btn-primary:hover {
+    box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.4);
+}
+
+/* Light Theme Text Elements */
+[data-theme="light"] .form-footer,
+[data-theme="light"] .form-link,
+[data-theme="light"] .form-options,
+[data-theme="light"] .checkbox-container span {
+    color: var(--foreground);
+}
+
+[data-theme="light"] .form-link {
+    color: var(--primary);
+}
+
+[data-theme="light"] .strength-text {
+    color: var(--gray-500);
+}
+
+/* Light Theme Notification */
+[data-theme="light"] .notification {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--foreground);
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .notification.success { border-left-color: var(--success); }
+[data-theme="light"] .notification.error { border-left-color: var(--danger); }
+[data-theme="light"] .notification.warning { border-left-color: var(--warning); }
+
+/* Light Theme Background Elements */
+[data-theme="light"] .glass-circle {
+    opacity: 0.4;
+}
+
+[data-theme="light"] .circle-1 {
+    background: radial-gradient(circle at center, rgba(79, 70, 229, 0.15), rgba(79, 70, 229, 0.05));
+}
+
+[data-theme="light"] .circle-2 {
+    background: radial-gradient(circle at center, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05));
+}
+
+[data-theme="light"] .circle-3 {
+    background: radial-gradient(circle at center, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+}
+
+[data-theme="light"] .aurora {
+    opacity: 0.3;
+    background: linear-gradient(45deg, rgba(79, 70, 229, 0.1), rgba(14, 165, 233, 0.1), rgba(34, 197, 94, 0.1));
+}
+
+[data-theme="light"] .stars .star {
+    background: #64748b;
+    opacity: 0.6;
+}
+
 /* Base Styles */
 *, *::before, *::after {
     margin: 0;
