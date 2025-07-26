@@ -861,7 +861,7 @@ body {
 }
 
 /* Enhanced Mobile Responsiveness */
-/* Enhanced Mobile-First Design with GSAP Optimization */
+/* Enhanced Mobile-First Design with CSS Animations */
 @media (max-width: 768px) {
     body {
         padding: 1rem 0.75rem;
@@ -1831,5 +1831,286 @@ body {
 
 .verification-success {
     animation: verificationSuccess 0.6s ease-out;
+}
+
+/* CSS Animation System (GSAP Replacement) */
+
+/* Entrance Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) rotateY(5deg);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.05) rotateY(0deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+    }
+}
+
+@keyframes floatIn {
+    from {
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(360deg);
+    }
+}
+
+@keyframes twinkleIn {
+    0% {
+        opacity: 0;
+        transform: scale(0) translateY(-50px);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2) translateY(-25px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Continuous Animations */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(-20px) translateX(-10px) rotate(-10deg);
+    }
+    50% {
+        transform: translateY(20px) translateX(10px) rotate(10deg);
+    }
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+/* Form Transition Animations */
+@keyframes slideOutLeft {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-50px) scale(0.95);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Notification Animations */
+@keyframes bounceInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-100px) scale(0.8) rotateX(-90deg);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(10px) scale(1.05) rotateX(0deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+    }
+}
+
+@keyframes slideOutUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-100px);
+    }
+}
+
+/* Interactive Element Animations */
+@keyframes inputFocus {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.02);
+    }
+}
+
+@keyframes iconFocus {
+    from {
+        transform: scale(1) rotate(0deg);
+        color: #64748b;
+    }
+    to {
+        transform: scale(1.2) rotate(10deg);
+        color: #3b82f6;
+    }
+}
+
+@keyframes buttonPress {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(0.95);
+    }
+}
+
+@keyframes buttonHover {
+    from {
+        transform: scale(1);
+    }
+    to {
+        transform: scale(1.05);
+    }
+}
+
+/* Animation Classes */
+.animate-entrance {
+    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+.animate-entrance-delayed {
+    animation: bounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.4s both;
+}
+
+.animate-float {
+    animation: floatIn 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both,
+               float 6s ease-in-out infinite;
+}
+
+.animate-twinkle {
+    animation: twinkleIn 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both,
+               twinkle 3s ease-in-out infinite;
+}
+
+/* Form Transition Classes */
+.form-slide-out {
+    animation: slideOutLeft 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19) both;
+}
+
+.form-slide-in {
+    animation: slideInRight 0.3s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+/* Notification Classes */
+.notification-bounce-in {
+    animation: bounceInDown 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+}
+
+.notification-slide-out {
+    animation: slideOutUp 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19) both;
+}
+
+/* Interactive Element Classes */
+.input-focused {
+    animation: inputFocus 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.icon-focused {
+    animation: iconFocus 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+}
+
+.btn-pressed {
+    animation: buttonPress 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.btn:hover {
+    animation: buttonHover 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Apply stagger delays */
+.glass-circle:nth-child(1) { animation-delay: 0ms; }
+.glass-circle:nth-child(2) { animation-delay: 300ms; }
+.glass-circle:nth-child(3) { animation-delay: 600ms; }
+
+.star:nth-child(odd) { animation-delay: 0ms; }
+.star:nth-child(even) { animation-delay: 50ms; }
+
+/* Ensure proper layering */
+.auth-container {
+    z-index: 10;
+    position: relative;
+}
+
+/* Mobile optimizations for animations */
+@media (max-width: 768px) {
+    .animate-entrance {
+        animation-duration: 0.6s;
+    }
+    
+    .animate-entrance-delayed {
+        animation-duration: 0.8s;
+    }
+    
+    .animate-float {
+        animation-duration: 2s, 4s;
+    }
+    
+    .animate-twinkle {
+        animation-duration: 1s, 2s;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .animate-entrance,
+    .animate-entrance-delayed,
+    .animate-float,
+    .animate-twinkle,
+    .form-slide-out,
+    .form-slide-in,
+    .notification-bounce-in,
+    .notification-slide-out,
+    .input-focused,
+    .icon-focused,
+    .btn-pressed,
+    .btn:hover {
+        animation: none;
+    }
+    
+    .glass-circle {
+        animation: none;
+    }
+    
+    .star {
+        animation: none;
+        opacity: 0.7;
+    }
 }
 

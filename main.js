@@ -2169,37 +2169,13 @@ class ContentManager {
             modal.dataset.editingUser = userId;
             modal.dataset.originalData = JSON.stringify(userInfo);
             
-            // Show modal with GSAP animation
-            if (typeof gsap !== 'undefined') {
-                gsap.set(modal, { 
-                    display: 'flex',
-                    opacity: 0
-                });
-                
-                const modalContent = modal.querySelector('.permission-edit-content');
-                gsap.set(modalContent, {
-                    scale: 0.8,
-                    y: 30,
-                    opacity: 0
-                });
-                
-                gsap.to(modal, {
-                    opacity: 1,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
-                
-                gsap.to(modalContent, {
-                    scale: 1,
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.4,
-                    delay: 0.1,
-                    ease: "power3.out"
-                });
-            } else {
-                // Fallback without GSAP
-                modal.classList.add('active');
+            // Show modal with CSS animation
+            modal.style.display = 'flex';
+            modal.classList.add('modal-fade-in');
+            
+            const modalContent = modal.querySelector('.permission-edit-content');
+            if (modalContent) {
+                modalContent.classList.add('modal-content-bounce-in');
             }
             
         } catch (error) {
@@ -2340,34 +2316,27 @@ class ContentManager {
     closePermissionModal() {
         const modal = document.getElementById('permissionEditModal');
         
-        if (modal && typeof gsap !== 'undefined') {
-            // GSAP-powered modal close animation
+        if (modal) {
+            // CSS-powered modal close animation
             const modalContent = modal.querySelector('.permission-edit-content');
             
-            gsap.to(modalContent, {
-                scale: 0.9,
-                y: 20,
-                opacity: 0,
-                duration: 0.3,
-                ease: "power3.in"
-            });
+            modal.classList.add('modal-fade-out');
+            if (modalContent) {
+                modalContent.classList.add('modal-content-scale-out');
+            }
             
-            gsap.to(modal, {
-                opacity: 0,
-                duration: 0.3,
-                ease: "power2.in",
-                onComplete: () => {
-                    modal.classList.remove('active');
-                    gsap.set(modal, { display: 'none' });
+            // Hide modal after animation completes
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modal.classList.remove('modal-fade-out', 'modal-fade-in');
+                if (modalContent) {
+                    modalContent.classList.remove('modal-content-scale-out', 'modal-content-bounce-in');
                 }
-            });
-        } else if (modal) {
-            // Fallback without GSAP
-            modal.classList.remove('active');
+            }, 300);
         }
         
-        modal.removeAttribute('data-editing-user');
-        modal.removeAttribute('data-original-data');
+        modal?.removeAttribute('data-editing-user');
+        modal?.removeAttribute('data-original-data');
         
         // Clear form
         document.getElementById('changeReason').value = '';
@@ -3765,15 +3734,15 @@ class AuthManager {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // Initialize GSAP for dashboard if available
-    if (typeof gsap !== 'undefined') {
-        console.log('🎬 GSAP available, initializing dashboard animations...');
-        
-        // Set initial states for dashboard elements
-        gsap.set('.main', { opacity: 0, y: 20 });
-        gsap.set('.stat-card', { opacity: 0, y: 30, stagger: 0.1 });
-        gsap.set('.quick-action-btn', { opacity: 0, scale: 0.8, stagger: 0.05 });
-    }
+    // Set initial CSS classes for dashboard elements
+    const main = document.querySelector('.main');
+    const statCards = document.querySelectorAll('.stat-card');
+    const quickActionBtns = document.querySelectorAll('.quick-action-btn');
+    
+    // Set initial hidden state for CSS animations
+    if (main) main.classList.add('dashboard-hidden');
+    statCards.forEach(card => card.classList.add('dashboard-hidden'));
+    quickActionBtns.forEach(btn => btn.classList.add('dashboard-hidden'));
     
     // Show loading screen immediately
     showLoadingScreen();
@@ -3832,7 +3801,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // GSAP animations removed due to interference with sidebar functionality
+        // CSS animations replace GSAP for better mobile compatibility
 
         // Mobile optimization and enhanced menu setup
         setupMobileMenu();
@@ -4569,34 +4538,13 @@ async function initializeFinanceDashboard() {
     if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
 }
 
-// Enhanced Mobile Menu Setup with GSAP Animations
+// Enhanced Mobile Menu Setup with CSS Animations
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
     
-    if (menuToggle && sidebar && typeof gsap !== 'undefined') {
-        // Initialize GSAP timeline for smooth animations
-        const menuTimeline = gsap.timeline({ paused: true });
-        
-        // Set initial states
-        gsap.set(sidebar, { x: '-100%', visibility: 'visible' });
-        gsap.set(overlay, { opacity: 0, visibility: 'hidden' });
-        
-        // Create animation timeline
-        menuTimeline
-            .to(overlay, { 
-                opacity: 1, 
-                visibility: 'visible', 
-                duration: 0.3, 
-                ease: "power2.out" 
-            })
-            .to(sidebar, { 
-                x: '0%', 
-                duration: 0.4, 
-                ease: "power3.out" 
-            }, 0.1);
-        
+    if (menuToggle && sidebar) {
         let isMenuOpen = false;
         
         // Remove any existing event listeners first
@@ -4606,44 +4554,35 @@ function setupMobileMenu() {
             menuToggle.removeEventListener('touchend', oldHandler);
         }
         
-        // Enhanced mobile menu toggle handler with GSAP
+        // Enhanced mobile menu toggle handler with CSS animations
         function handleMenuToggle(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Add touch feedback animation
-            gsap.to(menuToggle, {
-                scale: 0.9,
-                duration: 0.1,
-                yoyo: true,
-                repeat: 1,
-                ease: "power2.out"
-            });
+            // Add touch feedback
+            menuToggle.classList.add('menu-toggle-pressed');
+            setTimeout(() => {
+                menuToggle.classList.remove('menu-toggle-pressed');
+            }, 150);
             
             if (isMenuOpen) {
-                // Close menu with smooth GSAP animation
-                menuTimeline.reverse();
+                // Close menu
+                sidebar.classList.remove('sidebar-open');
+                overlay?.classList.remove('overlay-visible');
                 document.body.style.overflow = '';
                 isMenuOpen = false;
                 
                 // Animate menu button
-                gsap.to(menuToggle, {
-                    rotation: 0,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
+                menuToggle.classList.remove('menu-toggle-open');
             } else {
-                // Open menu with smooth GSAP animation
-                menuTimeline.play();
+                // Open menu
+                sidebar.classList.add('sidebar-open');
+                overlay?.classList.add('overlay-visible');
                 document.body.style.overflow = 'hidden';
                 isMenuOpen = true;
                 
                 // Animate menu button
-                gsap.to(menuToggle, {
-                    rotation: 90,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
+                menuToggle.classList.add('menu-toggle-open');
             }
         }
         
@@ -4654,38 +4593,22 @@ function setupMobileMenu() {
         menuToggle.addEventListener('click', handleMenuToggle);
         menuToggle.addEventListener('touchend', handleMenuToggle);
 
-        // Enhanced touch feedback with GSAP
+        // Enhanced touch feedback
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            gsap.to(menuToggle, {
-                scale: 0.95,
-                duration: 0.1,
-                ease: "power2.out"
-            });
+            menuToggle.classList.add('menu-toggle-active');
         });
 
         menuToggle.addEventListener('touchcancel', (e) => {
-            gsap.to(menuToggle, {
-                scale: 1,
-                duration: 0.2,
-                ease: "power2.out"
-            });
+            menuToggle.classList.remove('menu-toggle-active');
         });
 
-        // Close sidebar when clicking overlay with animation
+        // Close sidebar when clicking overlay
         if (overlay) {
             overlay.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (isMenuOpen) {
-                    menuTimeline.reverse();
-                    document.body.style.overflow = '';
-                    isMenuOpen = false;
-                    
-                    gsap.to(menuToggle, {
-                        rotation: 0,
-                        duration: 0.3,
-                        ease: "power2.out"
-                    });
+                    handleMenuToggle(e);
                 }
             });
         }
@@ -4698,77 +4621,27 @@ function setupMobileMenu() {
                 !menuToggle.contains(e.target) &&
                 e.target !== overlay) {
                 
-                menuTimeline.reverse();
-                document.body.style.overflow = '';
-                isMenuOpen = false;
-                
-                gsap.to(menuToggle, {
-                    rotation: 0,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
+                handleMenuToggle(e);
             }
         });
 
         // Handle escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && isMenuOpen) {
-                menuTimeline.reverse();
-                document.body.style.overflow = '';
-                isMenuOpen = false;
-                
-                gsap.to(menuToggle, {
-                    rotation: 0,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
+                handleMenuToggle(e);
             }
         });
         
         // Handle window resize
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768 && isMenuOpen) {
-                menuTimeline.reverse();
-                document.body.style.overflow = '';
-                isMenuOpen = false;
-                
-                gsap.to(menuToggle, {
-                    rotation: 0,
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
+                handleMenuToggle(new Event('resize'));
             }
         });
         
-    } else if (menuToggle && sidebar) {
-        // Fallback without GSAP for older browsers
-        console.warn('GSAP not available, using fallback mobile menu');
-        
-        let isMenuOpen = false;
-        
-        function handleMenuToggle(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (isMenuOpen) {
-                sidebar.style.transform = 'translateX(-100%)';
-                overlay.style.opacity = '0';
-                overlay.style.visibility = 'hidden';
-                document.body.style.overflow = '';
-                isMenuOpen = false;
-            } else {
-                sidebar.style.transform = 'translateX(0)';
-                overlay.style.opacity = '1';
-                overlay.style.visibility = 'visible';
-                document.body.style.overflow = 'hidden';
-                isMenuOpen = true;
-            }
-        }
-        
-        menuToggle.addEventListener('click', handleMenuToggle);
-        if (overlay) {
-            overlay.addEventListener('click', handleMenuToggle);
-        }
+        console.log('✅ Mobile menu initialized with CSS animations');
+    } else {
+        console.warn('Mobile menu elements not found');
     }
 }
 
@@ -4809,171 +4682,98 @@ function showDashboardContent() {
     });
 }
 
-// Enhanced Loading Screen Management with GSAP
+// Enhanced Loading Screen Management with CSS Animations
 function showLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen && typeof gsap !== 'undefined') {
-        // GSAP-powered loading screen with advanced animations
-        gsap.set(loadingScreen, { 
-            display: 'flex',
-            opacity: 0,
-            scale: 0.9
-        });
-        
-        gsap.to(loadingScreen, {
-            opacity: 1,
-            scale: 1,
-            duration: 0.5,
-            ease: "power3.out"
-        });
+    if (loadingScreen) {
+        loadingScreen.style.display = 'flex';
+        loadingScreen.classList.add('loading-fade-in');
         
         // Animate loading content
         const loadingContent = loadingScreen.querySelector('.loading-content');
         if (loadingContent) {
-            gsap.fromTo(loadingContent, 
-                { y: 30, opacity: 0 },
-                { y: 0, opacity: 1, duration: 0.6, delay: 0.2, ease: "power3.out" }
-            );
+            loadingContent.classList.add('loading-content-slide-in');
         }
         
-        // Animate loading dots
-        const dots = loadingScreen.querySelectorAll('.loading-dot');
-        if (dots.length > 0) {
-            gsap.to(dots, {
-                scale: 1.2,
-                duration: 0.8,
-                stagger: 0.1,
-                repeat: -1,
-                yoyo: true,
-                ease: "power2.inOut"
-            });
-        }
-        
-        // Animate spinner
+        // Apply spinning animation to spinner
         const spinner = loadingScreen.querySelector('.loading-spinner');
         if (spinner) {
-            gsap.to(spinner, {
-                rotation: 360,
-                duration: 1,
-                repeat: -1,
-                ease: "none"
-            });
+            spinner.classList.add('loading-spinner-rotate');
         }
         
-    } else if (loadingScreen) {
-        // Fallback without GSAP
-        loadingScreen.classList.remove('hidden');
+        // Apply bounce animation to dots
+        const dots = loadingScreen.querySelectorAll('.loading-dot');
+        dots.forEach((dot, index) => {
+            dot.style.animationDelay = `${index * 0.1}s`;
+            dot.classList.add('loading-dot-bounce');
+        });
     }
 }
 
 function hideLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen && typeof gsap !== 'undefined') {
-        // GSAP-powered hide animation
-        gsap.to(loadingScreen, {
-            opacity: 0,
-            scale: 0.95,
-            duration: 0.4,
-            ease: "power3.in",
-            onComplete: () => {
-                gsap.set(loadingScreen, { display: 'none' });
-                // Animate dashboard content after loading screen is hidden
-                setTimeout(() => {
-                    animateDashboardContent();
-                }, 100);
-            }
-        });
+    if (loadingScreen) {
+        loadingScreen.classList.add('loading-fade-out');
         
         // Animate loading content out
         const loadingContent = loadingScreen.querySelector('.loading-content');
         if (loadingContent) {
-            gsap.to(loadingContent, {
-                y: -20,
-                opacity: 0,
-                duration: 0.3,
-                ease: "power3.in"
-            });
+            loadingContent.classList.add('loading-content-slide-out');
         }
         
-    } else if (loadingScreen) {
-        // Fallback without GSAP
-        loadingScreen.classList.add('hidden');
-        // Still animate dashboard content
+        // Hide after animation completes
         setTimeout(() => {
-            animateDashboardContent();
-        }, 200);
+            loadingScreen.style.display = 'none';
+            loadingScreen.classList.remove('loading-fade-in', 'loading-fade-out');
+            
+            // Clean up content classes
+            if (loadingContent) {
+                loadingContent.classList.remove('loading-content-slide-in', 'loading-content-slide-out');
+            }
+            
+            // Animate dashboard content after loading screen is hidden
+            setTimeout(() => {
+                animateDashboardContent();
+            }, 100);
+        }, 400);
     }
 }
 
-// Enhanced Dashboard Content Animation with GSAP
+// Enhanced Dashboard Content Animation with CSS
 function animateDashboardContent() {
-    if (typeof gsap !== 'undefined') {
-        console.log('✨ Animating dashboard content with GSAP...');
-        
-        // Animate main content container
-        gsap.to('.main', {
-            opacity: 1,
-            y: 0,
-            duration: 0.6,
-            ease: "power3.out",
-            delay: 0.2
-        });
-        
-        // Animate stat cards with stagger
-        gsap.to('.stat-card', {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            stagger: 0.1,
-            ease: "power3.out",
-            delay: 0.4
-        });
-        
-        // Animate quick action buttons
-        gsap.to('.quick-action-btn', {
-            opacity: 1,
-            scale: 1,
-            duration: 0.4,
-            stagger: 0.05,
-            ease: "back.out(1.7)",
-            delay: 0.6
-        });
-        
-        // Animate other content sections
-        gsap.fromTo('.section-title', 
-            { opacity: 0, x: -20 },
-            { 
-                opacity: 1, 
-                x: 0, 
-                duration: 0.5, 
-                stagger: 0.2, 
-                ease: "power3.out",
-                delay: 0.8
-            }
-        );
-        
-        // Add continuous subtle animations
-        gsap.to('.stat-card', {
-            y: "random(-2, 2)",
-            duration: "random(3, 5)",
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            stagger: {
-                amount: 2,
-                from: "random"
-            }
-        });
-        
-    } else {
-        console.log('GSAP not available, using fallback animation');
-        // Fallback CSS animations
-        const main = document.querySelector('.main');
-        if (main) {
-            main.style.opacity = '1';
-            main.style.transform = 'translateY(0)';
-        }
+    console.log('✨ Animating dashboard content with CSS...');
+    
+    // Animate main content container
+    const main = document.querySelector('.main');
+    if (main) {
+        main.classList.add('dashboard-main-fade-in');
     }
+    
+    // Animate stat cards with stagger
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('dashboard-card-slide-in');
+        }, index * 100 + 200);
+    });
+    
+    // Animate quick action buttons
+    const quickActions = document.querySelectorAll('.quick-action-btn');
+    quickActions.forEach((btn, index) => {
+        setTimeout(() => {
+            btn.classList.add('dashboard-button-bounce-in');
+        }, index * 50 + 400);
+    });
+    
+    // Animate other content sections
+    const sectionTitles = document.querySelectorAll('.section-title');
+    sectionTitles.forEach((title, index) => {
+        setTimeout(() => {
+            title.classList.add('dashboard-title-slide-in');
+        }, index * 200 + 600);
+    });
+    
+    console.log('✅ Dashboard animations applied');
 }
 
 // Time Display Management
@@ -5595,7 +5395,7 @@ function buildRoleBasedDashboard(userRole) {
 }
 
 // =============================================================================
-// GSAP ANIMATION SYSTEM REMOVED - Was causing conflicts with sidebar functionality
+// CSS Animation System - Replaced GSAP with pure CSS animations for better performance
 
 
 
