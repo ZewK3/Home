@@ -1028,6 +1028,33 @@ body {
     
     .verification-actions .btn {
         width: 100%;
+        min-height: 48px;
+        font-size: 1rem;
+        padding: 14px 20px;
+        margin-bottom: 8px;
+    }
+    
+    /* Ensure registration button is fully visible on mobile */
+    .btn-primary {
+        width: 100%;
+        min-height: 50px;
+        font-size: 1rem;
+        padding: 16px 24px;
+        margin: 20px 0;
+        box-sizing: border-box;
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+    
+    .form-container {
+        padding-bottom: 40px;
+        margin-bottom: 20px;
+    }
+    
+    .form-footer {
+        margin-top: 24px;
+        padding-bottom: 20px;
     }
 
     .notification {

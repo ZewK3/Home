@@ -457,17 +457,23 @@ body {
     backdrop-filter: var(--glass-blur);
 }
 
-.sidebar-title {
-    padding: 20px 18px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    text-align: center;
-    border-bottom: 2px solid var(--border-color);
-    background: var(--bg-glass);
-    backdrop-filter: var(--glass-blur);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+/* Company Logo Responsive Text */
+.company-name-mobile {
+    display: none;
+}
+
+.company-name-desktop {
+    display: inline;
+}
+
+@media (max-width: 768px) {
+    .company-name-mobile {
+        display: inline;
+    }
+    
+    .company-name-desktop {
+        display: none;
+    }
 }
 
 .menu-list {
@@ -937,64 +943,99 @@ body {
 }
 
 .approval-filters-enhanced {
-    margin-bottom: 25px;
-    background: var(--bg-card);
-    padding: 25px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-md);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: end;
-    backdrop-filter: var(--glass-blur);
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255, 255, 255, 0.95) 100%);
+    padding: 30px;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 8px 25px rgba(0, 0, 0, 0.04);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    align-items: start;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="dark"] .approval-filters-enhanced {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(30, 41, 59, 0.95) 100%);
+}
+
+.approval-filters-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 50%, #f59e0b 100%);
+    background-size: 200% 100%;
+    animation: gradientMove 3s ease-in-out infinite;
+}
+
+@keyframes gradientMove {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
 }
 
 .filter-group {
-    flex: 1;
-    min-width: 200px;
-    max-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .filter-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin-bottom: 0;
     color: var(--text-primary);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.025em;
+    font-size: 0.95rem;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px 16px;
+    min-height: 48px;
+    padding: 14px 18px;
     border: 2px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    background: white;
+    border-radius: 14px;
+    background: var(--bg-card);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 500;
-    transition: var(--transition);
-    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(10px);
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 8px 25px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.98);
 }
 
 .form-control:hover {
-    border-color: var(--border-hover);
-    box-shadow: var(--shadow);
+    border-color: var(--primary);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 
 .filter-actions {
+    grid-column: 1 / -1;
     display: flex;
-    gap: 12px;
-    align-items: end;
+    gap: 16px;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 24px;
+    border-top: 2px solid var(--border-color);
 }
 
 .btn {
@@ -1192,30 +1233,34 @@ body {
 }
 
 .registration-card-enhanced {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255, 255, 255, 0.98) 100%);
+    border: 2px solid transparent;
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 28px;
     display: flex;
-    gap: 24px;
+    gap: 28px;
     align-items: flex-start;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.08),
+        0 8px 25px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(20px);
     overflow: hidden;
-    border-left: 5px solid transparent;
     transform: translateY(0);
-    background: linear-gradient(135deg, 
-        var(--bg-card) 0%, 
-        rgba(255, 255, 255, 0.95) 100%);
+    background-clip: padding-box;
 }
 
 [data-theme="dark"] .registration-card-enhanced {
     background: linear-gradient(135deg, 
         var(--bg-card) 0%, 
-        rgba(30, 41, 59, 0.95) 100%);
+        rgba(30, 41, 59, 0.98) 100%);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.25),
+        0 8px 25px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .registration-card-enhanced::before {
@@ -1224,23 +1269,23 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 5px;
     background: linear-gradient(90deg, 
         #3b82f6 0%, 
-        #60a5fa 25%,
-        #93c5fd 50%, 
-        #3b82f6 75%,
-        #1d4ed8 100%);
+        #10b981 25%,
+        #f59e0b 50%, 
+        #ef4444 75%,
+        #8b5cf6 100%);
     transform: scaleX(0);
-    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border-radius: 20px 20px 0 0;
-    background-size: 200% 100%;
-    animation: gradientShift 3s ease-in-out infinite alternate;
+    transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 24px 24px 0 0;
+    background-size: 300% 100%;
+    animation: rainbowShift 4s ease-in-out infinite;
 }
 
-@keyframes gradientShift {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 0%; }
+@keyframes rainbowShift {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
 }
 
 .registration-card-enhanced:hover::before {
@@ -1248,21 +1293,27 @@ body {
 }
 
 .registration-card-enhanced:hover {
-    border-color: rgba(59, 130, 246, 0.4);
-    border-left-color: #3b82f6;
-    box-shadow: 0 25px 70px rgba(59, 130, 246, 0.2);
-    transform: translateY(-6px);
+    border-color: var(--primary);
+    box-shadow: 
+        0 32px 80px rgba(59, 130, 246, 0.15),
+        0 16px 40px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transform: translateY(-8px) scale(1.02);
     background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.08) 0%, 
-        var(--bg-card) 50%,
-        rgba(147, 197, 253, 0.05) 100%);
+        rgba(59, 130, 246, 0.06) 0%, 
+        var(--bg-card) 40%,
+        rgba(147, 197, 253, 0.04) 100%);
 }
 
 [data-theme="dark"] .registration-card-enhanced:hover {
     background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.12) 0%, 
-        var(--bg-card) 50%,
-        rgba(30, 41, 59, 0.9) 100%);
+        rgba(59, 130, 246, 0.15) 0%, 
+        var(--bg-card) 40%,
+        rgba(30, 41, 59, 0.95) 100%);
+    box-shadow: 
+        0 32px 80px rgba(59, 130, 246, 0.25),
+        0 16px 40px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .registration-card-enhanced:hover .registration-avatar .avatar-circle {
@@ -2191,31 +2242,62 @@ body {
     
     .registration-card-enhanced {
         flex-direction: column;
-        gap: 15px;
-        padding: 20px;
-        margin-bottom: 16px;
-        border-radius: 12px;
+        gap: 20px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border-radius: 20px;
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.08),
+            0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    
+    .registration-card-enhanced .registration-avatar {
+        align-self: center;
     }
     
     .registration-card-enhanced .registration-avatar .avatar-circle {
-        width: 50px;
-        height: 50px;
-        align-self: center;
+        width: 60px;
+        height: 60px;
     }
     
     .registration-card-enhanced .registration-info {
         text-align: center;
-        min-width: unset;
+        min-width: auto;
+        width: 100%;
     }
     
     .registration-card-enhanced .registration-info h4 {
-        font-size: 1.1rem;
-        margin-bottom: 12px;
+        font-size: 1.2rem;
+        margin-bottom: 16px;
     }
     
     .registration-card-enhanced .registration-info .detail-item {
         justify-content: center;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 8px;
+        font-size: 0.9rem;
+    }
+    
+    .registration-card-enhanced .registration-actions-enhanced {
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    
+    .registration-card-enhanced .registration-actions-enhanced .btn {
+        min-width: 100px;
+        flex: 1;
+        max-width: 140px;
+        padding: 12px 16px;
+        font-size: 0.85rem;
+    }
+    
+    .registration-card-enhanced .status-badge {
+        align-self: center;
+        margin-top: 16px;
     }
     
     .registration-actions-enhanced {
@@ -2810,7 +2892,39 @@ body {
     }
     
     .show-user {
-        padding-left: 70px !important;
+        padding: 0 15px 0 70px !important;
+        height: 50px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .company-logo h1 {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+    }
+    
+    .user-header-info {
+        gap: 0.75rem !important;
+        flex-shrink: 0;
+    }
+    
+    .user-info {
+        gap: 0.5rem !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    
+    .current-time {
+        font-size: 0.8rem !important;
+        gap: 4px !important;
+        padding: 4px 8px !important;
+        border-radius: 8px !important;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    .time-icon {
+        font-size: 1rem !important;
     }
     
     /* Mobile Sidebar - Hidden by default */
@@ -3223,9 +3337,8 @@ body {
         font-size: 0.875rem;
     }
 
-    .sidebar-title {
-        font-size: 1.25rem;
-        padding: 20px 15px 15px;
+    .menu-list {
+        padding-top: 20px;
     }
 
     .menu-link {
@@ -6752,8 +6865,40 @@ body {
     
     .approval-filters-enhanced {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
-        padding: 1rem;
+        gap: 1rem;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+    }
+    
+    .filter-group {
+        min-width: auto;
+    }
+    
+    .filter-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        padding-top: 16px;
+    }
+    
+    .filter-actions .btn {
+        min-width: 120px;
+        flex: 1;
+        max-width: 200px;
+    }
+    
+    .search-section {
+        margin-bottom: 20px;
+    }
+    
+    .search-bar {
+        max-width: 100%;
+    }
+    
+    .search-input {
+        font-size: 16px !important; /* Prevent zoom on iOS */
+        padding: 14px 16px;
     }
     
     .approval-cards {
