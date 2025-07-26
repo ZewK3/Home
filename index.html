@@ -4,207 +4,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hệ thống đăng nhập và đăng ký">
+    <meta name="description" content="Hệ thống đăng nhập và đăng ký - Smart Router">
     <meta name="theme-color" content="#4f46e5">
-    <title>Đăng nhập & Đăng ký</title>
-    <link rel="stylesheet" href="reg&log.css">
+    <title>ZewK Management System</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .router-container {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .logo {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1rem 0;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .device-info {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.6;
+        }
+    </style>
 </head>
 <body>
-<div class='flag-vn'></div>
-<div class="glass-bg">
-    <div class="glass-circle circle-1"></div>
-    <div class="glass-circle circle-2"></div>
-    <div class="glass-circle circle-3"></div>
-</div>
-
-<div class="aurora"></div>
-
-<div class="stars"></div>
-
-<div class="light-streaks"></div>
-
-
-    <!-- Auth Container -->
-    <div class="auth-container">
-        <!-- Login Form -->
-        <div id="loginFormContainer" class="form-container active">
-            <div class="form-header">
-                <h2>Đăng nhập</h2>
-            </div>
-
-            <form id="loginForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">badge</span>
-                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required>
-                        <label for="loginEmployeeId">Mã nhân viên</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required>
-                        <label for="loginPassword">Mật khẩu</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-options">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="rememberMe" name="rememberMe">
-                        <span class="checkmark"></span>
-                        <span>Ghi nhớ tôi</span>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <span class="btn-text">Đăng nhập</span>
-                    <span class="btn-loader"></span>
-                </button>
-
-                <div class="form-footer">
-                    <a href="#" id="goToRegister" class="form-link">Chưa có tài khoản? </a>
-                    <a href="#" class="form-link">Quên mật khẩu?</a>
-                </div>
-            </form>
-        </div>
-
-        <!-- Register Form -->
-        <div id="registerFormContainer" class="form-container">
-            <div class="form-header">
-                <h2>Đăng ký</h2>
-            </div>
-
-            <form id="registerForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">badge</span>
-                        <input type="text" id="employeeId" name="employeeId" placeholder=" " required>
-                        <label for="employeeId">Mã nhân viên</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="password" name="password" placeholder=" " required>
-                        <label for="password">Mật khẩu</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                    </div>
-                    <div class="password-strength">
-                        <div class="strength-meter">
-                            <div></div>
-                        </div>
-                        <span class="strength-text"></span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">person</span>
-                        <input type="text" id="fullName" name="fullName" placeholder=" " required>
-                        <label for="fullName">Họ và tên</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">phone</span>
-                        <input type="tel" id="phone" name="phone" placeholder=" " required pattern="[0-9]{10}">
-                        <label for="phone">Số điện thoại</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">email</span>
-                        <input type="email" id="email" name="email" placeholder=" " required>
-                        <label for="email">Email</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">store</span>
-                        <select id="storeName" name="storeName" required>
-                            <option value="">Đang tải danh sách cửa hàng...</option>
-                        </select>
-                        <label for="storeName">Cửa hàng</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="checkbox-container">
-                        <input type="checkbox" required>
-                        <span class="checkmark"></span>
-                        <span>Tôi đồng ý với <a href="#" class="form-link">Điều khoản</a> và 
-                        <a href="#" class="form-link">Chính sách bảo mật</a></span>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <span class="btn-text">Đăng ký</span>
-                    <span class="btn-loader"></span>
-                </button>
-
-                <div class="form-footer">
-                    <p>Đã có tài khoản? 
-                        <a href="#" id="backToLogin" class="form-link">Đăng nhập</a>
-                    </p>
-                </div>
-            </form>
-        </div>
-
-        <!-- Email Verification Form -->
-        <div id="verificationFormContainer" class="form-container">
-            <div class="form-header">
-                <h2>Xác nhận Email</h2>
-                <p class="form-subtitle">Vui lòng nhập mã xác nhận được gửi tới email của bạn</p>
-            </div>
-
-            <form id="verificationForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">verified_user</span>
-                        <input type="text" id="verificationCode" name="verificationCode" placeholder=" " required maxlength="8" style="text-transform: uppercase;">
-                        <label for="verificationCode">Mã xác nhận</label>
-                    </div>
-                    <div class="form-hint">
-                        <p>Mã xác nhận có 8 ký tự và có hiệu lực trong 15 phút</p>
-                    </div>
-                </div>
-
-                <div class="verification-actions">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="btn-text">Xác nhận</span>
-                        <span class="btn-loader"></span>
-                    </button>
-                    
-                    <button type="button" id="resendCodeBtn" class="btn btn-outline">
-                        <span class="btn-text">Gửi lại mã</span>
-                    </button>
-                </div>
-
-                <div class="form-footer">
-                    <p>
-                        <a href="#" id="backToRegister" class="form-link">← Quay lại đăng ký</a>
-                    </p>
-                </div>
-            </form>
-        </div>
+    <div class="router-container">
+        <div class="logo">ZewK</div>
+        <div class="subtitle">Management System</div>
+        <div class="loading"></div>
+        <div class="device-info" id="deviceInfo">Detecting device...</div>
     </div>
 
-    <!-- Notification -->
-    <div id="notification" class="notification"></div>
-
-    <script src="script.js"></script>
+    <script>
+        // Smart device detection and routing
+        function detectDevice() {
+            const userAgent = navigator.userAgent;
+            const screenWidth = window.innerWidth;
+            const isTouchDevice = 'ontouchstart' in window;
+            
+            // Mobile detection
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
+                            (screenWidth <= 768 && isTouchDevice);
+            
+            return {
+                isMobile,
+                isDesktop: !isMobile,
+                screenWidth,
+                isTouchDevice,
+                userAgent: userAgent.substring(0, 50) + '...'
+            };
+        }
+        
+        function updateDeviceInfo(device) {
+            const deviceInfo = document.getElementById('deviceInfo');
+            deviceInfo.textContent = `${device.isMobile ? 'Mobile' : 'Desktop'} device detected (${device.screenWidth}px)`;
+        }
+        
+        function routeToDevice() {
+            const device = detectDevice();
+            updateDeviceInfo(device);
+            
+            // Route to appropriate version after a short delay for UX
+            setTimeout(() => {
+                if (device.isMobile) {
+                    window.location.href = 'index-mobile.html';
+                } else {
+                    window.location.href = 'index-desktop.html';
+                }
+            }, 1500);
+        }
+        
+        // Initialize routing when page loads
+        document.addEventListener('DOMContentLoaded', routeToDevice);
+        
+        // Handle window resize - re-route if device type changes
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const currentDevice = detectDevice();
+                updateDeviceInfo(currentDevice);
+                
+                // Only route again if device type actually changed
+                const currentPath = window.location.pathname;
+                const shouldBeMobile = currentDevice.isMobile;
+                const isMobilePage = currentPath.includes('mobile');
+                
+                if (shouldBeMobile && !isMobilePage) {
+                    setTimeout(() => window.location.href = 'index-mobile.html', 1000);
+                } else if (!shouldBeMobile && isMobilePage) {
+                    setTimeout(() => window.location.href = 'index-desktop.html', 1000);
+                }
+            }, 500);
+        });
+        
+        // Debug mode
+        if (window.location.search.includes('debug=router')) {
+            console.log('Router Debug Info:', detectDevice());
+        }
+    </script>
 </body>
 </html>

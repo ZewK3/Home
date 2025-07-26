@@ -1,0 +1,607 @@
+/* Desktop Dashboard Specific Styles */
+/* =================================== */
+
+/* Desktop Dashboard Body */
+.desktop-dashboard {
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* Desktop Header */
+.desktop-header {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    height: var(--header-height);
+    z-index: 998;
+    background: var(--bg-header);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    transition: var(--transition);
+}
+
+.desktop-logo {
+    flex-shrink: 0;
+}
+
+.desktop-brand {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.desktop-brand:hover {
+    opacity: 0.9;
+}
+
+.desktop-user-info {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.desktop-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-light);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.desktop-time {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-light);
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Desktop Sidebar */
+.desktop-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--bg-sidebar);
+    z-index: 999;
+    overflow-y: auto;
+    padding-top: calc(var(--header-height) + 1rem);
+    box-shadow: var(--shadow-md);
+    border-right: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.desktop-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.desktop-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.desktop-sidebar::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.desktop-sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
+}
+
+/* Desktop Menu List */
+.desktop-menu {
+    list-style: none;
+    padding: 1rem;
+    margin: 0;
+}
+
+.desktop-menu-item {
+    margin: 0.5rem 0;
+}
+
+.desktop-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    position: relative;
+    cursor: pointer;
+}
+
+.desktop-menu-link:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--primary);
+    transform: translateX(4px);
+}
+
+.desktop-menu-link:focus {
+    outline: none;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+}
+
+.desktop-menu-link.active {
+    background: var(--primary);
+    color: var(--text-light);
+    box-shadow: var(--shadow-glow);
+}
+
+.desktop-menu-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 24px;
+    background: var(--text-light);
+    border-radius: 2px;
+}
+
+.desktop-menu-link .material-icons-round {
+    font-size: 22px;
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.desktop-menu-link:hover .material-icons-round {
+    transform: scale(1.1);
+}
+
+/* Desktop Submenu */
+.desktop-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0 0;
+    background: rgba(37, 99, 235, 0.03);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    overflow: hidden;
+}
+
+.desktop-submenu-item {
+    margin: 0;
+}
+
+.desktop-submenu-link {
+    display: block;
+    padding: 0.75rem 1.25rem 0.75rem 3.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 400;
+    transition: var(--transition);
+    border-bottom: 1px solid rgba(37, 99, 235, 0.05);
+    position: relative;
+}
+
+.desktop-submenu-link:last-child {
+    border-bottom: none;
+}
+
+.desktop-submenu-link:hover {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--primary);
+    padding-left: 4rem;
+}
+
+.desktop-submenu-link:focus {
+    outline: none;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+}
+
+.desktop-submenu-link.active {
+    background: var(--primary);
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.desktop-submenu-link.active::before {
+    content: '';
+    position: absolute;
+    left: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--text-light);
+    border-radius: 50%;
+}
+
+/* Desktop Main Content */
+.desktop-content {
+    margin-top: var(--header-height);
+    margin-left: var(--sidebar-width);
+    padding: 2rem;
+    min-height: calc(100vh - var(--header-height));
+    background: var(--bg-main);
+    transition: var(--transition);
+}
+
+.desktop-content-area {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Desktop Welcome Section */
+.desktop-welcome {
+    padding: 2rem 0;
+}
+
+.desktop-welcome-message {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.desktop-welcome-message h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.desktop-welcome-message p {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Desktop Stats Grid */
+.desktop-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.desktop-stat-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.desktop-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+}
+
+.desktop-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.desktop-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.desktop-stat-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.desktop-stat-header .material-icons-round {
+    font-size: 32px;
+    color: var(--primary);
+    background: rgba(37, 99, 235, 0.1);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.desktop-stat-card:hover .desktop-stat-header .material-icons-round {
+    transform: rotate(5deg) scale(1.1);
+    background: rgba(37, 99, 235, 0.2);
+}
+
+.desktop-stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.desktop-stat-trend {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Desktop Loading Screen */
+.desktop-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-main);
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.5s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.desktop-loading.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.desktop-loading-content {
+    text-align: center;
+    padding: 3rem;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+}
+
+.desktop-spinner {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+}
+
+.spinner-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 4px solid transparent;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-ring:nth-child(2) {
+    border-top-color: var(--secondary);
+    animation-duration: 1.5s;
+    animation-direction: reverse;
+    width: 60px;
+    height: 60px;
+    top: 10px;
+    left: 10px;
+}
+
+.desktop-loading-text {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Desktop Notification */
+.desktop-notification {
+    position: fixed;
+    top: calc(var(--header-height) + 1rem);
+    right: 2rem;
+    z-index: 1003;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    max-width: 400px;
+    min-width: 300px;
+    border: 1px solid var(--border-color);
+}
+
+.desktop-notification.show {
+    transform: translateX(0);
+}
+
+/* Desktop Large Screen Optimizations */
+@media (min-width: 1200px) {
+    .desktop-content {
+        padding: 2.5rem;
+    }
+    
+    .desktop-stats {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+    }
+    
+    .desktop-stat-card {
+        padding: 2.5rem;
+    }
+    
+    .desktop-stat-value {
+        font-size: 3rem;
+    }
+    
+    .desktop-welcome-message h2 {
+        font-size: 2.75rem;
+    }
+    
+    .desktop-welcome-message p {
+        font-size: 1.25rem;
+    }
+}
+
+@media (min-width: 1440px) {
+    :root {
+        --sidebar-width: 320px;
+    }
+    
+    .desktop-menu-link {
+        padding: 1.25rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .desktop-submenu-link {
+        padding: 1rem 1.5rem 1rem 4rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Desktop Dark Theme */
+[data-theme="dark"] .desktop-header {
+    background: var(--bg-header);
+}
+
+[data-theme="dark"] .desktop-sidebar {
+    background: var(--bg-sidebar);
+    border-right-color: var(--border-color);
+}
+
+[data-theme="dark"] .desktop-menu-link {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .desktop-submenu-link {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .desktop-stat-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .desktop-welcome-message h2 {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .desktop-welcome-message p {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .desktop-loading-content {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+/* Desktop High Performance */
+.desktop-sidebar,
+.desktop-notification {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Desktop Smooth Animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Desktop Focus Styles */
+.desktop-menu-link:focus-visible,
+.desktop-submenu-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Desktop Selection Styling */
+::selection {
+    background: rgba(37, 99, 235, 0.2);
+    color: var(--text-primary);
+}
+
+::-moz-selection {
+    background: rgba(37, 99, 235, 0.2);
+    color: var(--text-primary);
+}
+
+/* Desktop Hover Effects Enhancement */
+@media (hover: hover) and (pointer: fine) {
+    .desktop-menu-link {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .desktop-menu-link::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .desktop-menu-link:hover::after {
+        left: 100%;
+    }
+    
+    .desktop-stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .desktop-stat-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .desktop-stat-card:hover::after {
+        opacity: 1;
+    }
+}

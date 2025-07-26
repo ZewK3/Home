@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - Mobile">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="favicon-32x32.png" sizes="32x32">
+    <title>ZewK Management System - Mobile Dashboard</title>
+    <link rel="stylesheet" href="dash.css">
+    <link rel="stylesheet" href="dash-mobile.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body class="mobile-dashboard">
+    <!-- Mobile Menu Toggle -->
+    <button id="menuToggle" class="menu-toggle mobile-menu-toggle" aria-label="Toggle menu">
+        <span class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay mobile-overlay"></div>
+
+    <!-- Mobile User Info Header -->
+    <div class="show-user mobile-header">
+        <div class="company-logo mobile-logo">
+            <h1><a href="#" id="companyLogoLink" class="mobile-brand">
+                <span class="company-name-mobile">ZewK</span>
+            </a></h1>
+        </div>
+        <div class="user-header-info mobile-user-info">
+            <div id="userInfo" class="user-info mobile-info"></div>
+            <div id="currentTime" class="current-time mobile-time">
+                <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                <span id="timeDisplay" class="time-display">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <div class="sidebar mobile-sidebar">
+        <ul id="menuList" class="menu-list mobile-menu">
+            <li class="menu-item mobile-menu-item" data-role="AD,QL,NV">
+                <a href="#" id="openShiftManagement" class="menu-link mobile-menu-link">
+                    <span class="material-icons-round">schedule</span>
+                    <span>Quản Lý Ca</span>
+                </a>
+                <ul class="submenu mobile-submenu">
+                    <li class="submenu-item mobile-submenu-item" data-role="AD,AM,QL">
+                        <a href="#" id="openShiftAssignment" class="submenu-link mobile-submenu-link">Phân Ca</a>
+                    </li>
+                    <li class="submenu-item mobile-submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openWorkShifts" class="submenu-link mobile-submenu-link">Ca Làm</a>
+                    </li>
+                    <li class="submenu-item mobile-submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openAttendance" class="submenu-link mobile-submenu-link">Chấm Công</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu-item mobile-menu-item" data-role="AD,AM,QL">
+                <a href="#" id="openRegistrationApproval" class="menu-link mobile-menu-link">
+                    <span class="material-icons-round">how_to_reg</span>
+                    <span>Duyệt Đăng Ký</span>
+                </a>
+            </li>
+            <li class="menu-item mobile-menu-item" data-role="AD">
+                <a href="#" id="openPermissionManagement" class="menu-link mobile-menu-link">
+                    <span class="material-icons-round">admin_panel_settings</span>
+                    <span>Phân Quyền</span>
+                </a>
+            </li>
+            <li class="menu-item mobile-menu-item" data-role="AD,AM,QL,NV">
+                <a href="#" id="openPersonalInfo" class="menu-link mobile-menu-link">
+                    <span class="material-icons-round">person</span>
+                    <span>Thông Tin Cá Nhân</span>
+                </a>
+            </li>
+            <li class="menu-item mobile-menu-item" data-role="AD,AM,QL,NV">
+                <a href="#" id="logoutBtn" class="menu-link mobile-menu-link logout">
+                    <span class="material-icons-round">logout</span>
+                    <span>Đăng Xuất</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Mobile Main Content -->
+    <div class="main-content mobile-content">
+        <div id="contentArea" class="content-area mobile-content-area">
+            <!-- Welcome Section for Mobile -->
+            <div id="welcomeSection" class="welcome-section mobile-welcome">
+                <div class="stats-grid mobile-stats">
+                    <div class="stat-card mobile-stat-card">
+                        <div class="stat-header mobile-stat-header">
+                            <h3>Tổng Nhân Viên</h3>
+                            <span class="material-icons-round">group</span>
+                        </div>
+                        <div class="stat-value mobile-stat-value" id="totalEmployees">---</div>
+                    </div>
+                    <div class="stat-card mobile-stat-card">
+                        <div class="stat-header mobile-stat-header">
+                            <h3>Hôm Nay</h3>
+                            <span class="material-icons-round">today</span>
+                        </div>
+                        <div class="stat-value mobile-stat-value" id="todayPresent">---</div>
+                    </div>
+                    <div class="stat-card mobile-stat-card">
+                        <div class="stat-header mobile-stat-header">
+                            <h3>Đăng Ký Chờ</h3>
+                            <span class="material-icons-round">pending</span>
+                        </div>
+                        <div class="stat-value mobile-stat-value" id="pendingRequests">---</div>
+                    </div>
+                    <div class="stat-card mobile-stat-card">
+                        <div class="stat-header mobile-stat-header">
+                            <h3>Cửa Hàng</h3>
+                            <span class="material-icons-round">store</span>
+                        </div>
+                        <div class="stat-value mobile-stat-value" id="totalStores">---</div>
+                    </div>
+                </div>
+                
+                <div class="welcome-message mobile-welcome-message">
+                    <h2>Chào mừng trở lại!</h2>
+                    <p>Quản lý hiệu quả hệ thống nhân sự của bạn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Loading Screen -->
+    <div id="loadingScreen" class="loading-screen mobile-loading">
+        <div class="loading-content mobile-loading-content">
+            <div class="loading-spinner mobile-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="loading-text mobile-loading-text">Đang tải dữ liệu...</div>
+        </div>
+    </div>
+
+    <!-- Mobile Notification -->
+    <div id="notification" class="notification mobile-notification"></div>
+
+    <script src="main.js"></script>
+    <script src="main-mobile.js"></script>
+</body>
+</html>

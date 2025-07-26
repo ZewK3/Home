@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hệ thống đăng nhập và đăng ký - Mobile">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Đăng nhập & Đăng ký - Mobile</title>
+    <link rel="stylesheet" href="reg&log.css">
+    <link rel="stylesheet" href="reg&log-mobile.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body class="mobile-body">
+    <div class='flag-vn'></div>
+    <div class="glass-bg">
+        <div class="glass-circle circle-1"></div>
+        <div class="glass-circle circle-2"></div>
+        <div class="glass-circle circle-3"></div>
+    </div>
+
+    <div class="aurora"></div>
+    <div class="stars"></div>
+    <div class="light-streaks"></div>
+
+    <!-- Mobile Auth Container -->
+    <div class="auth-container mobile-auth">
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container active">
+            <div class="form-header">
+                <h2>Đăng nhập</h2>
+            </div>
+
+            <form id="loginForm" class="form mobile-form">
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
+                        <label for="loginEmployeeId">Mã nhân viên</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <button type="button" class="password-toggle mobile-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options mobile-options">
+                    <label class="checkbox-container mobile-checkbox">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark mobile-checkmark"></span>
+                        <span>Ghi nhớ tôi</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary mobile-btn">
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loader mobile-loader"></span>
+                </button>
+
+                <div class="form-footer mobile-footer">
+                    <a href="#" id="goToRegister" class="form-link mobile-link">Chưa có tài khoản?</a>
+                    <a href="#" class="form-link mobile-link">Quên mật khẩu?</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerFormContainer" class="form-container">
+            <div class="form-header">
+                <h2>Đăng ký</h2>
+            </div>
+
+            <form id="registerForm" class="form mobile-form">
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="employeeId" name="employeeId" placeholder=" " required autocomplete="username">
+                        <label for="employeeId">Mã nhân viên</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
+                        <label for="password">Mật khẩu</label>
+                        <button type="button" class="password-toggle mobile-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                    </div>
+                    <div class="password-strength mobile-strength">
+                        <div class="strength-meter">
+                            <div></div>
+                        </div>
+                        <span class="strength-text"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
+                        <label for="fullName">Họ và tên</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">phone</span>
+                        <input type="tel" id="phone" name="phone" placeholder=" " required pattern="[0-9]{10}" autocomplete="tel">
+                        <label for="phone">Số điện thoại</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+                        <label for="email">Email</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">store</span>
+                        <select id="storeName" name="storeName" required class="mobile-select">
+                            <option value="">Đang tải danh sách cửa hàng...</option>
+                        </select>
+                        <label for="storeName">Cửa hàng</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-container mobile-checkbox">
+                        <input type="checkbox" required>
+                        <span class="checkmark mobile-checkmark"></span>
+                        <span>Tôi đồng ý với <a href="#" class="form-link mobile-link">Điều khoản</a> và 
+                        <a href="#" class="form-link mobile-link">Chính sách bảo mật</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary mobile-btn">
+                    <span class="btn-text">Đăng ký</span>
+                    <span class="btn-loader mobile-loader"></span>
+                </button>
+
+                <div class="form-footer mobile-footer">
+                    <p>Đã có tài khoản? 
+                        <a href="#" id="backToLogin" class="form-link mobile-link">Đăng nhập</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Email Verification Form -->
+        <div id="verificationFormContainer" class="form-container">
+            <div class="form-header">
+                <h2>Xác nhận Email</h2>
+                <p class="form-subtitle">Vui lòng nhập mã xác nhận được gửi tới email của bạn</p>
+            </div>
+
+            <form id="verificationForm" class="form mobile-form">
+                <div class="form-group">
+                    <div class="input-group mobile-input">
+                        <span class="material-icons-round input-icon">verified_user</span>
+                        <input type="text" id="verificationCode" name="verificationCode" placeholder=" " required maxlength="8" style="text-transform: uppercase;" autocomplete="one-time-code">
+                        <label for="verificationCode">Mã xác nhận</label>
+                    </div>
+                    <div class="form-hint mobile-hint">
+                        <p>Mã xác nhận có 8 ký tự và có hiệu lực trong 15 phút</p>
+                    </div>
+                </div>
+
+                <div class="verification-actions mobile-actions">
+                    <button type="submit" class="btn btn-primary mobile-btn">
+                        <span class="btn-text">Xác nhận</span>
+                        <span class="btn-loader mobile-loader"></span>
+                    </button>
+                    
+                    <button type="button" id="resendCodeBtn" class="btn btn-outline mobile-btn-outline">
+                        <span class="btn-text">Gửi lại mã</span>
+                    </button>
+                </div>
+
+                <div class="form-footer mobile-footer">
+                    <p>
+                        <a href="#" id="backToRegister" class="form-link mobile-link">← Quay lại đăng ký</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Notification -->
+    <div id="notification" class="notification mobile-notification"></div>
+
+    <script src="script.js"></script>
+    <script src="script-mobile.js"></script>
+</body>
+</html>

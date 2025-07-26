@@ -1,0 +1,462 @@
+/* Mobile-Specific Styles */
+/* ====================== */
+
+/* Mobile Body Override */
+.mobile-body {
+    padding: 1rem;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Mobile Auth Container */
+.mobile-auth {
+    width: 100%;
+    max-width: 400px;
+    padding: 1.5rem;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+/* Mobile Form Styling */
+.mobile-form {
+    width: 100%;
+    gap: 1.5rem;
+}
+
+/* Mobile Input Groups */
+.mobile-input {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.mobile-input input,
+.mobile-input .mobile-select {
+    width: 100%;
+    height: 56px; /* Touch-friendly height */
+    font-size: 16px; /* Prevents iOS zoom */
+    padding: 1rem 3rem 1rem 3rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.mobile-input input:focus,
+.mobile-input .mobile-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Mobile Labels */
+.mobile-input label {
+    position: absolute;
+    left: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    padding: 0 0.5rem;
+    z-index: 1;
+}
+
+.mobile-input input:focus + label,
+.mobile-input input:not(:placeholder-shown) + label,
+.mobile-input .mobile-select:focus + label,
+.mobile-input .mobile-select:not([value=""]) + label {
+    top: 0;
+    left: 2rem;
+    font-size: 12px;
+    color: #3b82f6;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 0 0.5rem;
+    border-radius: 4px;
+}
+
+/* Mobile Icons */
+.mobile-input .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 24px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Mobile Password Toggle */
+.mobile-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    z-index: 2;
+    min-width: 44px; /* Touch target */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-toggle:hover,
+.mobile-toggle:focus {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.mobile-toggle:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+/* Mobile Buttons */
+.mobile-btn {
+    width: 100%;
+    height: 56px; /* Touch-friendly height */
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    margin: 1rem 0;
+}
+
+.mobile-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.mobile-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.mobile-btn:disabled {
+    opacity: 0.6;
+    transform: none;
+    cursor: not-allowed;
+}
+
+/* Mobile Button Outline */
+.mobile-btn-outline {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    height: 56px;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-btn-outline:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Mobile Checkbox */
+.mobile-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    font-size: 16px;
+    line-height: 1.5;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-checkmark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    position: relative;
+    background: transparent;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.mobile-checkbox input:checked + .mobile-checkmark {
+    background: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.mobile-checkbox input:checked + .mobile-checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Mobile Options */
+.mobile-options {
+    margin: 1.5rem 0;
+}
+
+/* Mobile Footer */
+.mobile-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 16px;
+}
+
+.mobile-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: inline-block;
+    margin: 0 0.25rem;
+    min-height: 44px; /* Touch target */
+    line-height: 34px;
+}
+
+.mobile-link:hover,
+.mobile-link:focus {
+    color: #2563eb;
+    background: rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.mobile-link:active {
+    transform: scale(0.95);
+}
+
+/* Mobile Actions */
+.mobile-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+/* Mobile Strength Meter */
+.mobile-strength {
+    margin-top: 0.5rem;
+}
+
+.mobile-strength .strength-meter {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.mobile-strength .strength-text {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Mobile Hint */
+.mobile-hint {
+    margin-top: 0.5rem;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+/* Mobile Notification */
+.mobile-notification {
+    position: fixed;
+    top: 2rem;
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+    border-radius: 16px;
+    z-index: 10000;
+    transform: translateY(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-notification.show {
+    transform: translateY(0);
+}
+
+/* Mobile Select Styling */
+.mobile-select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 20px;
+    padding-right: 3rem;
+    cursor: pointer;
+}
+
+/* Mobile Loading States */
+.mobile-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-btn.loading .btn-text {
+    opacity: 0;
+}
+
+.mobile-btn.loading .mobile-loader {
+    opacity: 1;
+}
+
+/* Mobile Form Container */
+.form-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile Form Header */
+.form-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.form-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 480px) {
+    .mobile-body {
+        padding: 0.5rem;
+    }
+    
+    .mobile-auth {
+        padding: 1rem;
+        max-width: 100%;
+    }
+    
+    .form-container {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+    
+    .form-header h2 {
+        font-size: 24px;
+    }
+    
+    .mobile-input input,
+    .mobile-input .mobile-select,
+    .mobile-btn,
+    .mobile-btn-outline {
+        height: 52px;
+        font-size: 16px;
+    }
+}
+
+/* Mobile Touch Improvements */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-btn:hover {
+        transform: none;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+    
+    .mobile-link:hover {
+        background: none;
+    }
+    
+    .mobile-toggle:hover {
+        background: none;
+    }
+}
+
+/* Mobile Safe Area Support */
+@supports (padding: max(0px)) {
+    .mobile-body {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+        padding-top: max(1rem, env(safe-area-inset-top));
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Mobile Performance Optimizations */
+.mobile-auth,
+.mobile-input,
+.mobile-btn {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* Mobile Animation Timing */
+.mobile-input input,
+.mobile-btn,
+.mobile-toggle {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mobile Focus Styles */
+.mobile-input input:focus-visible,
+.mobile-btn:focus-visible,
+.mobile-toggle:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}

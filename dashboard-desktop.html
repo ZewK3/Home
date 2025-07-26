@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - Desktop">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" href="favicon-32x32.png" sizes="32x32">
+    <title>ZewK Management System - Desktop Dashboard</title>
+    <link rel="stylesheet" href="dash.css">
+    <link rel="stylesheet" href="dash-desktop.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body class="desktop-dashboard">
+    <!-- Desktop User Info Header -->
+    <div class="show-user desktop-header">
+        <div class="company-logo desktop-logo">
+            <h1><a href="#" id="companyLogoLink" class="desktop-brand">
+                <span class="company-name-desktop">ZewK Management System</span>
+            </a></h1>
+        </div>
+        <div class="user-header-info desktop-user-info">
+            <div id="userInfo" class="user-info desktop-info"></div>
+            <div id="currentTime" class="current-time desktop-time">
+                <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                <span id="timeDisplay" class="time-display">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <div class="sidebar desktop-sidebar">
+        <ul id="menuList" class="menu-list desktop-menu">
+            <li class="menu-item desktop-menu-item" data-role="AD,QL,NV">
+                <a href="#" id="openShiftManagement" class="menu-link desktop-menu-link">
+                    <span class="material-icons-round">schedule</span>
+                    <span>Quản Lý Ca</span>
+                </a>
+                <ul class="submenu desktop-submenu">
+                    <li class="submenu-item desktop-submenu-item" data-role="AD,AM,QL">
+                        <a href="#" id="openShiftAssignment" class="submenu-link desktop-submenu-link">Phân Ca</a>
+                    </li>
+                    <li class="submenu-item desktop-submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openWorkShifts" class="submenu-link desktop-submenu-link">Ca Làm</a>
+                    </li>
+                    <li class="submenu-item desktop-submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openAttendance" class="submenu-link desktop-submenu-link">Chấm Công</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu-item desktop-menu-item" data-role="AD,AM,QL">
+                <a href="#" id="openRegistrationApproval" class="menu-link desktop-menu-link">
+                    <span class="material-icons-round">how_to_reg</span>
+                    <span>Duyệt Đăng Ký</span>
+                </a>
+            </li>
+            <li class="menu-item desktop-menu-item" data-role="AD">
+                <a href="#" id="openPermissionManagement" class="menu-link desktop-menu-link">
+                    <span class="material-icons-round">admin_panel_settings</span>
+                    <span>Phân Quyền</span>
+                </a>
+            </li>
+            <li class="menu-item desktop-menu-item" data-role="AD,AM,QL,NV">
+                <a href="#" id="openPersonalInfo" class="menu-link desktop-menu-link">
+                    <span class="material-icons-round">person</span>
+                    <span>Thông Tin Cá Nhân</span>
+                </a>
+            </li>
+            <li class="menu-item desktop-menu-item" data-role="AD,AM,QL,NV">
+                <a href="#" id="logoutBtn" class="menu-link desktop-menu-link logout">
+                    <span class="material-icons-round">logout</span>
+                    <span>Đăng Xuất</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Desktop Main Content -->
+    <div class="main-content desktop-content">
+        <div id="contentArea" class="content-area desktop-content-area">
+            <!-- Welcome Section for Desktop -->
+            <div id="welcomeSection" class="welcome-section desktop-welcome">
+                <div class="stats-grid desktop-stats">
+                    <div class="stat-card desktop-stat-card">
+                        <div class="stat-header desktop-stat-header">
+                            <h3>Tổng Nhân Viên</h3>
+                            <span class="material-icons-round">group</span>
+                        </div>
+                        <div class="stat-value desktop-stat-value" id="totalEmployees">---</div>
+                        <div class="stat-trend desktop-stat-trend">+5.2% từ tháng trước</div>
+                    </div>
+                    <div class="stat-card desktop-stat-card">
+                        <div class="stat-header desktop-stat-header">
+                            <h3>Hôm Nay</h3>
+                            <span class="material-icons-round">today</span>
+                        </div>
+                        <div class="stat-value desktop-stat-value" id="todayPresent">---</div>
+                        <div class="stat-trend desktop-stat-trend">Có mặt hôm nay</div>
+                    </div>
+                    <div class="stat-card desktop-stat-card">
+                        <div class="stat-header desktop-stat-header">
+                            <h3>Đăng Ký Chờ</h3>
+                            <span class="material-icons-round">pending</span>
+                        </div>
+                        <div class="stat-value desktop-stat-value" id="pendingRequests">---</div>
+                        <div class="stat-trend desktop-stat-trend">Cần duyệt</div>
+                    </div>
+                    <div class="stat-card desktop-stat-card">
+                        <div class="stat-header desktop-stat-header">
+                            <h3>Cửa Hàng</h3>
+                            <span class="material-icons-round">store</span>
+                        </div>
+                        <div class="stat-value desktop-stat-value" id="totalStores">---</div>
+                        <div class="stat-trend desktop-stat-trend">Đang hoạt động</div>
+                    </div>
+                </div>
+                
+                <div class="welcome-message desktop-welcome-message">
+                    <h2>Chào mừng trở lại!</h2>
+                    <p>Quản lý hiệu quả hệ thống nhân sự của bạn với giao diện chuyên nghiệp</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Loading Screen -->
+    <div id="loadingScreen" class="loading-screen desktop-loading">
+        <div class="loading-content desktop-loading-content">
+            <div class="loading-spinner desktop-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <div class="loading-text desktop-loading-text">Đang tải dữ liệu...</div>
+        </div>
+    </div>
+
+    <!-- Desktop Notification -->
+    <div id="notification" class="notification desktop-notification"></div>
+
+    <script src="main.js"></script>
+    <script src="main-desktop.js"></script>
+</body>
+</html>
