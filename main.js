@@ -110,13 +110,13 @@ class ContentManager {
     }
 
     setupMenuHandlers() {
-        // Schedule Management
-        document.getElementById('openScheduleRegistration')?.addEventListener('click', () => 
-            this.showScheduleRegistration());
-        document.getElementById('openScheduleWork')?.addEventListener('click', () => 
-            this.showScheduleWork());
-        document.getElementById('openOfficialworkschedule')?.addEventListener('click', () => 
-            this.showOfficialSchedule());
+        // Shift Management
+        document.getElementById('openShiftAssignment')?.addEventListener('click', () => 
+            this.showShiftAssignment());
+        document.getElementById('openWorkShifts')?.addEventListener('click', () => 
+            this.showWorkShifts());
+        document.getElementById('openAttendance')?.addEventListener('click', () => 
+            this.showAttendance());
 
         // Tasks
         document.getElementById('openSubmitTask')?.addEventListener('click', () => 
@@ -143,141 +143,234 @@ class ContentManager {
             this.showRegistrationApproval());
     }
 
-    // Schedule Management Functions
-    async showScheduleRegistration() {
+    // Shift Management Functions
+    async showShiftAssignment() {
         const content = document.getElementById('content');
         try {
-            // Use checkdk API to get existing schedule
-            const response = await utils.fetchAPI(`?action=checkdk&employeeId=${this.user.employeeId}`);
+            // Get current user's role and stores to determine permissions
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
             
-            content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Đăng Ký Lịch Làm</h2>
+            // Only AD, AM, QL can assign shifts
+            if (!['AD', 'AM', 'QL'].includes(userResponse.position)) {
+                content.innerHTML = `
+                    <div class="error-container">
+                        <div class="error-card">
+                            <span class="material-icons-round error-icon">lock</span>
+                            <h3>Không có quyền truy cập</h3>
+                            <p>Bạn không có quyền phân ca cho nhân viên.</p>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <form id="scheduleForm">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Ngày</th>
-                                        <th>Ca làm</th>
-                                        <th>Giờ vào</th>
-                                        <th>Giờ ra</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${this.generateScheduleRows(response.shifts || [])}
-                                </tbody>
-                            </table>
-                            <button type="submit" class="btn btn-primary">Lưu lịch làm việc</button>
-                        </form>
+                `;
+                return;
+            }
+
+            content.innerHTML = `
+                <div class="shift-assignment-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Phân Ca Làm Việc</h2>
+                            <p>Phân công ca làm việc cho nhân viên theo cửa hàng và thời gian</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="shift-filters">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="shiftStore">Cửa hàng:</label>
+                                        <select id="shiftStore" class="form-control">
+                                            <option value="">Chọn cửa hàng</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="shiftWeek">Tuần:</label>
+                                        <input type="week" id="shiftWeek" class="form-control" value="${this.getCurrentWeek()}">
+                                    </div>
+                                    <button id="loadShiftData" class="btn btn-primary">Tải dữ liệu</button>
+                                </div>
+                            </div>
+                            <div id="shiftAssignmentGrid" class="shift-grid">
+                                <p class="text-center">Chọn cửa hàng và tuần để bắt đầu phân ca</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
 
-            this.setupScheduleForm();
+            await this.loadStoresForShiftAssignment();
+            this.setupShiftAssignmentHandlers();
         } catch (error) {
-            console.error('Schedule error:', error);
-            // Show basic form even if no existing schedule
+            console.error('Shift assignment error:', error);
             content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Đăng Ký Lịch Làm</h2>
-                    </div>
-                    <div class="card-body">
-                        <form id="scheduleForm">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Ngày</th>
-                                        <th>Ca làm</th>
-                                        <th>Giờ vào</th>
-                                        <th>Giờ ra</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${this.generateScheduleRows([])}
-                                </tbody>
-                            </table>
-                            <button type="submit" class="btn btn-primary">Lưu lịch làm việc</button>
-                        </form>
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải phân ca</h3>
+                        <p>Không thể tải giao diện phân ca. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showShiftAssignment()" class="btn btn-primary">Thử lại</button>
                     </div>
                 </div>
             `;
-            this.setupScheduleForm();
         }
     }
 
-    generateScheduleRows(schedule = []) {
-        const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-        return days.map(day => `
-            <tr>
-                <td>${day}</td>
-                <td>
-                    <select name="shift_${day}" class="form-control">
-                        <option value="">Chọn ca</option>
-                        <option value="morning">Ca sáng</option>
-                        <option value="afternoon">Ca chiều</option>
-                        <option value="evening">Ca tối</option>
-                    </select>
-                </td>
-                <td>
-                    <input type="time" name="start_${day}" class="form-control">
-                </td>
-                <td>
-                    <input type="time" name="end_${day}" class="form-control">
-                </td>
-            </tr>
-        `).join('');
+    async showWorkShifts() {
+        const content = document.getElementById('content');
+        try {
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+
+            content.innerHTML = `
+                <div class="work-shifts-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Ca Làm Việc</h2>
+                            <p>Xem lịch ca làm việc và thực hiện checkin/checkout</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="shift-overview">
+                                <div class="current-shift-card">
+                                    <h3>Ca Hiện Tại</h3>
+                                    <div id="currentShiftInfo">
+                                        <p class="shift-time">Chưa có ca làm</p>
+                                        <div class="shift-actions">
+                                            <button id="checkinBtn" class="btn btn-success" disabled>Check In</button>
+                                            <button id="checkoutBtn" class="btn btn-danger" disabled>Check Out</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="weekly-shifts-card">
+                                    <h3>Lịch Ca Tuần Này</h3>
+                                    <div id="weeklyShiftsTable">
+                                        <div class="loading-shifts">Đang tải ca làm...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            await this.loadCurrentShift(employeeId);
+            await this.loadWeeklyShifts(employeeId);
+            this.setupShiftCheckHandlers();
+        } catch (error) {
+            console.error('Work shifts error:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải ca làm</h3>
+                        <p>Không thể tải thông tin ca làm. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showWorkShifts()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
     }
 
-    setupScheduleForm() {
-        document.getElementById('scheduleForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const formData = new FormData(e.target);
-                const scheduleData = Object.fromEntries(formData);
-                
-                // Convert form data to the format expected by savedk API
-                const shifts = [];
-                const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-                
-                days.forEach(day => {
-                    const start = scheduleData[`start_${day}`];
-                    const end = scheduleData[`end_${day}`];
-                    if (start && end) {
-                        const startHour = parseInt(start.split(':')[0]);
-                        const endHour = parseInt(end.split(':')[0]);
-                        if (endHour > startHour) {
-                            shifts.push({
-                                day: day,
-                                start: startHour,
-                                end: endHour
-                            });
-                        }
-                    }
-                });
+    async showAttendance() {
+        const content = document.getElementById('content');
+        try {
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
 
-                if (shifts.length === 0) {
-                    utils.showNotification("Vui lòng chọn ít nhất một ca làm việc", "warning");
-                    return;
-                }
+            content.innerHTML = `
+                <div class="attendance-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Chấm Công</h2>
+                            <p>Theo dõi thời gian làm việc và chấm công</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="attendance-filters">
+                                <div class="filter-row">
+                                    <div class="filter-group">
+                                        <label for="attendanceMonth">Tháng:</label>
+                                        <input type="month" id="attendanceMonth" class="form-control" value="${this.getCurrentMonth()}">
+                                    </div>
+                                    ${userResponse.position !== 'NV' ? `
+                                    <div class="filter-group">
+                                        <label for="attendanceStore">Cửa hàng:</label>
+                                        <select id="attendanceStore" class="form-control">
+                                            <option value="">Tất cả cửa hàng</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label for="attendanceEmployee">Nhân viên:</label>
+                                        <select id="attendanceEmployee" class="form-control">
+                                            <option value="">Tất cả nhân viên</option>
+                                        </select>
+                                    </div>
+                                    ` : ''}
+                                    <button id="loadAttendanceData" class="btn btn-primary">Tải dữ liệu</button>
+                                </div>
+                            </div>
+                            
+                            <div class="attendance-summary">
+                                <div class="summary-cards">
+                                    <div class="summary-card">
+                                        <h4>Tổng giờ làm</h4>
+                                        <span id="totalHours" class="summary-value">0h</span>
+                                    </div>
+                                    <div class="summary-card">
+                                        <h4>Số ngày làm</h4>
+                                        <span id="workDays" class="summary-value">0</span>
+                                    </div>
+                                    <div class="summary-card">
+                                        <h4>Đi muộn</h4>
+                                        <span id="lateCount" class="summary-value">0</span>
+                                    </div>
+                                    <div class="summary-card">
+                                        <h4>Nghỉ không phép</h4>
+                                        <span id="absentCount" class="summary-value">0</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                await utils.fetchAPI('?action=savedk', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        employeeId: this.user.employeeId,
-                        shifts: shifts
-                    })
-                });
-                
-                utils.showNotification("Lịch làm việc đã được lưu", "success");
-            } catch (error) {
-                console.error('Save schedule error:', error);
-                utils.showNotification("Không thể lưu lịch làm việc", "error");
+                            <div id="attendanceTable" class="attendance-table-container">
+                                <div class="loading-attendance">Đang tải dữ liệu chấm công...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (userResponse.position !== 'NV') {
+                await this.loadStoresForAttendance();
             }
-        });
+            await this.loadAttendanceData(employeeId, userResponse.position);
+            this.setupAttendanceHandlers();
+        } catch (error) {
+            console.error('Attendance error:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải chấm công</h3>
+                        <p>Không thể tải dữ liệu chấm công. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showAttendance()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Helper functions for shift management
+    getCurrentWeek() {
+        const now = new Date();
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
+        const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+        return `${now.getFullYear()}-W${weekNumber.toString().padStart(2, '0')}`;
+    }
+
+    getCurrentMonth() {
+        const now = new Date();
+        return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
     }
 
     // Task Management Functions
@@ -339,91 +432,6 @@ class ContentManager {
                 utils.showNotification("Không thể gửi yêu cầu", "error");
             }
         });
-    }
-
-    async showScheduleWork() {
-        const content = document.getElementById('content');
-        try {
-            // Use getUsers to get employee list
-            const employees = await utils.fetchAPI('?action=getUsers');
-            
-            content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Xếp Lịch Làm Việc</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="schedule-filters">
-                            <select id="employeeFilter" class="form-control">
-                                <option value="">Tất cả nhân viên</option>
-                                ${Array.isArray(employees) ? employees.map(emp => 
-                                    `<option value="${emp.employeeId}">${emp.fullName} - ${emp.employeeId}</option>`
-                                ).join('') : ''}
-                            </select>
-                            <select id="weekFilter" class="form-control">
-                                <option value="current">Tuần hiện tại</option>
-                                <option value="next">Tuần tới</option>
-                            </select>
-                        </div>
-                        <div id="scheduleTable" class="schedule-table">
-                            <p>Chọn nhân viên để xem lịch làm việc</p>
-                        </div>
-                        <button id="saveScheduleChanges" class="btn btn-primary">Lưu thay đổi</button>
-                    </div>
-                </div>
-            `;
-
-            this.setupScheduleWorkHandlers();
-        } catch (error) {
-            console.error('Schedule work error:', error);
-            utils.showNotification("Không thể tải danh sách nhân viên", "error");
-        }
-    }
-
-    async showOfficialSchedule() {
-        const content = document.getElementById('content');
-        try {
-            // Use checkdk API to get official schedule
-            const response = await utils.fetchAPI(`?action=checkdk&employeeId=${this.user.employeeId}`);
-            
-            content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Lịch Làm Việc Chính Thức</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="schedule-view">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Ngày</th>
-                                        <th>Ca làm</th>
-                                        <th>Giờ vào</th>
-                                        <th>Giờ ra</th>
-                                        <th>Trạng thái</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${this.generateOfficialScheduleRows(response.shifts || [])}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } catch (error) {
-            console.error('Official schedule error:', error);
-            content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Lịch Làm Việc Chính Thức</h2>
-                    </div>
-                    <div class="card-body">
-                        <p>Chưa có lịch làm việc được đăng ký. Vui lòng đăng ký lịch làm việc trước.</p>
-                    </div>
-                </div>
-            `;
-        }
     }
 
     async showTaskPersonnel() {
@@ -2673,7 +2681,13 @@ class ContentManager {
             }
             
             // Get user's current info to apply proper filtering
-            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${userData.employeeId}&token=${token}`);
+            // Handle both loginEmployeeId (from login) and employeeId formats
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            if (!employeeId) {
+                console.error('No employee ID found in user data:', userData);
+                throw new Error('Employee ID not found in user data');
+            }
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${token}`);
             let currentUser = userResponse;
             
             let availableStores = [];

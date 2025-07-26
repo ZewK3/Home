@@ -38,16 +38,16 @@
         <h2 class="sidebar-title">QUẢN LÝ NHÂN SỰ</h2>
         <ul id="menuList" class="menu-list">
             <li class="menu-item" data-role="AD,QL,NV">
-                <a href="#" id="openSchedule" class="menu-link">Lịch Làm</a>
+                <a href="#" id="openShiftManagement" class="menu-link">Quản Lý Ca</a>
                 <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,QL,NV">
-                        <a href="#" id="openScheduleRegistration" class="submenu-link">Đăng Ký Lịch Làm</a>
+                    <li class="submenu-item" data-role="AD,AM,QL">
+                        <a href="#" id="openShiftAssignment" class="submenu-link">Phân Ca</a>
                     </li>
-                    <li class="submenu-item" data-role="AD,QL">
-                        <a href="#" id="openScheduleWork" class="submenu-link">Xếp Lịch</a>
+                    <li class="submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openWorkShifts" class="submenu-link">Ca Làm</a>
                     </li>
-                    <li class="submenu-item" data-role="AD,QL,NV">
-                        <a href="#" id="openOfficialworkschedule" class="submenu-link">Lịch Chính Thức</a>
+                    <li class="submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openAttendance" class="submenu-link">Chấm Công</a>
                     </li>
                 </ul>
             </li>
@@ -91,8 +91,13 @@
     <div id="loadingScreen" class="loading-screen hidden">
         <div class="loading-content">
             <div class="loading-spinner"></div>
-            <h2>Đang tải hệ thống HR</h2>
-            <p class="loading-text">Vui lòng chờ trong giây lát<span class="loading-dots"><span></span><span></span><span></span></span></p>
+            <h2 class="loading-text">Đang tải hệ thống HR</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0;">Vui lòng chờ trong giây lát</p>
+            <div class="loading-dots">
+                <span class="loading-dot"></span>
+                <span class="loading-dot"></span>
+                <span class="loading-dot"></span>
+            </div>
         </div>
     </div>
 
@@ -117,9 +122,9 @@
                     <div class="stat-card success">
                         <div class="stat-icon">📅</div>
                         <div class="stat-info">
-                            <h3>Lịch Hôm Nay</h3>
-                            <p id="todaySchedule">-</p>
-                            <span class="stat-trend" id="todayScheduleDay">-</span>
+                            <h3>Ca Hôm Nay</h3>
+                            <p id="todayShift">-</p>
+                            <span class="stat-trend" id="todayShiftTime">-</span>
                         </div>
                     </div>
                     <div class="stat-card warning">
@@ -148,9 +153,9 @@
                             <span class="action-icon">👤</span>
                             <span class="action-text">Thêm Nhân Viên</span>
                         </button>
-                        <button class="quick-action-btn" data-action="createSchedule">
+                        <button class="quick-action-btn" data-action="assignShift">
                             <span class="action-icon">📊</span>
-                            <span class="action-text">Tạo Lịch Làm</span>
+                            <span class="action-text">Phân Ca</span>
                         </button>
                         <button class="quick-action-btn" data-action="manageRewards">
                             <span class="action-icon">🏆</span>
@@ -210,12 +215,12 @@
                                 </div>
                                 <div class="store-stat">
                                     <span class="stat-label">Ca làm hôm nay:</span>
-                                    <span class="stat-value" id="store1Schedule">-</span>
+                                    <span class="stat-value" id="store1Shift">-</span>
                                 </div>
                             </div>
                             <div class="store-actions">
                                 <button class="btn-sm btn-primary" onclick="manageStore('ST001')">Quản Lý</button>
-                                <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST001')">Xem Lịch</button>
+                                <button class="btn-sm btn-outline" onclick="viewStoreShifts('ST001')">Xem Ca</button>
                             </div>
                         </div>
                         <div class="store-card" data-store="ST002">
@@ -230,12 +235,12 @@
                                 </div>
                                 <div class="store-stat">
                                     <span class="stat-label">Ca làm hôm nay:</span>
-                                    <span class="stat-value" id="store2Schedule">-</span>
+                                    <span class="stat-value" id="store2Shift">-</span>
                                 </div>
                             </div>
                             <div class="store-actions">
                                 <button class="btn-sm btn-primary" onclick="manageStore('ST002')">Quản Lý</button>
-                                <button class="btn-sm btn-outline" onclick="viewStoreSchedule('ST002')">Xem Lịch</button>
+                                <button class="btn-sm btn-outline" onclick="viewStoreShifts('ST002')">Xem Ca</button>
                             </div>
                         </div>
                     </div>
@@ -319,9 +324,9 @@
                     <h2 class="section-title">Thông Tin Cá Nhân</h2>
                     <div class="personal-grid">
                         <div class="personal-card schedule">
-                            <h3>Lịch Làm Tuần Này</h3>
-                            <div id="personalSchedule" class="schedule-preview">
-                                <p>Đang tải lịch làm...</p>
+                            <h3>Ca Làm Tuần Này</h3>
+                            <div id="personalShifts" class="shift-preview">
+                                <p>Đang tải ca làm...</p>
                             </div>
                         </div>
                         <div class="personal-card rewards">
