@@ -7869,3 +7869,271 @@ button:focus, .btn:focus, .menu-link:focus {
     backface-visibility: hidden;
     perspective: 1000px;
 }
+
+/* Shift Management Styles */
+.shift-assignment-container, .work-shifts-container, .attendance-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.shift-filters, .attendance-filters {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.shift-grid {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.current-shift-card, .weekly-shifts-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.current-shift-card h3, .weekly-shifts-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.shift-time {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.shift-store {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.shift-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.shift-actions .btn {
+    min-width: 120px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.loading-shifts, .loading-attendance {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.attendance-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.summary-card {
+    background: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.summary-card h4 {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.attendance-table-container {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+
+.shift-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status.assigned {
+    background: linear-gradient(135deg, #dbeafe, #3b82f6);
+    color: #1e40af;
+}
+
+.status.confirmed {
+    background: linear-gradient(135deg, #dcfce7, #22c55e);
+    color: #166534;
+}
+
+.status.in_progress {
+    background: linear-gradient(135deg, #fef3c7, #f59e0b);
+    color: #92400e;
+}
+
+.status.completed {
+    background: linear-gradient(135deg, #d1fae5, #10b981);
+    color: #065f46;
+}
+
+.status.absent {
+    background: linear-gradient(135deg, #fee2e2, #ef4444);
+    color: #991b1b;
+}
+
+.status.present {
+    background: linear-gradient(135deg, #d1fae5, #10b981);
+    color: #065f46;
+}
+
+.status.late {
+    background: linear-gradient(135deg, #fed7aa, #f97316);
+    color: #9a3412;
+}
+
+.status.early_leave {
+    background: linear-gradient(135deg, #fef3c7, #f59e0b);
+    color: #92400e;
+}
+
+.status.overtime {
+    background: linear-gradient(135deg, #e0e7ff, #6366f1);
+    color: #4338ca;
+}
+
+/* Dark mode for shift management */
+[data-theme="dark"] .shift-assignment-container,
+[data-theme="dark"] .work-shifts-container,
+[data-theme="dark"] .attendance-container {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .shift-filters,
+[data-theme="dark"] .attendance-filters,
+[data-theme="dark"] .shift-grid,
+[data-theme="dark"] .current-shift-card,
+[data-theme="dark"] .weekly-shifts-card,
+[data-theme="dark"] .summary-card,
+[data-theme="dark"] .attendance-table-container {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .filter-group label {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .current-shift-card h3,
+[data-theme="dark"] .weekly-shifts-card h3 {
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .summary-card h4 {
+    color: var(--text-secondary);
+}
+
+/* Mobile responsive for shift management */
+@media (max-width: 768px) {
+    .shift-assignment-container,
+    .work-shifts-container,
+    .attendance-container {
+        padding: 1rem;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .shift-actions {
+        flex-direction: column;
+    }
+    
+    .shift-actions .btn {
+        width: 100%;
+    }
+    
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .summary-card {
+        padding: 1rem;
+    }
+    
+    .summary-value {
+        font-size: 1.5rem;
+    }
+}

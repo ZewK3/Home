@@ -373,6 +373,304 @@ class ContentManager {
         return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
     }
 
+    // Helper functions for shift management
+    async loadStoresForShiftAssignment() {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            
+            let stores = [];
+            if (Array.isArray(response)) {
+                stores = response;
+            } else if (response && typeof response === 'object') {
+                const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    stores = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                }
+            }
+
+            const storeSelect = document.getElementById('shiftStore');
+            if (storeSelect) {
+                storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>' +
+                    stores.map(store => `<option value="${store.storeId}">${store.storeName} (${store.storeId})</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Load stores error:', error);
+        }
+    }
+
+    async loadStoresForAttendance() {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            
+            let stores = [];
+            if (Array.isArray(response)) {
+                stores = response;
+            } else if (response && typeof response === 'object') {
+                const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    stores = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                }
+            }
+
+            const storeSelect = document.getElementById('attendanceStore');
+            if (storeSelect) {
+                storeSelect.innerHTML = '<option value="">Tất cả cửa hàng</option>' +
+                    stores.map(store => `<option value="${store.storeId}">${store.storeName} (${store.storeId})</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Load stores for attendance error:', error);
+        }
+    }
+
+    async loadCurrentShift(employeeId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getCurrentShift&employeeId=${employeeId}&token=${token}`);
+            
+            const currentShiftInfo = document.getElementById('currentShiftInfo');
+            if (currentShiftInfo) {
+                if (response && response.currentShift) {
+                    const shift = response.currentShift;
+                    currentShiftInfo.innerHTML = `
+                        <p class="shift-time">${shift.startTime} - ${shift.endTime}</p>
+                        <p class="shift-store">Cửa hàng: ${shift.storeName}</p>
+                        <div class="shift-actions">
+                            <button id="checkinBtn" class="btn btn-success" ${shift.checkedIn ? 'disabled' : ''}>
+                                ${shift.checkedIn ? 'Đã Check In' : 'Check In'}
+                            </button>
+                            <button id="checkoutBtn" class="btn btn-danger" ${!shift.checkedIn || shift.checkedOut ? 'disabled' : ''}>
+                                ${shift.checkedOut ? 'Đã Check Out' : 'Check Out'}
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    currentShiftInfo.innerHTML = `
+                        <p class="shift-time">Không có ca làm hôm nay</p>
+                        <div class="shift-actions">
+                            <button id="checkinBtn" class="btn btn-success" disabled>Check In</button>
+                            <button id="checkoutBtn" class="btn btn-danger" disabled>Check Out</button>
+                        </div>
+                    `;
+                }
+            }
+        } catch (error) {
+            console.error('Load current shift error:', error);
+        }
+    }
+
+    async loadWeeklyShifts(employeeId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getWeeklyShifts&employeeId=${employeeId}&token=${token}`);
+            
+            const weeklyShiftsTable = document.getElementById('weeklyShiftsTable');
+            if (weeklyShiftsTable) {
+                if (response && response.shifts && response.shifts.length > 0) {
+                    weeklyShiftsTable.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Ngày</th>
+                                    <th>Ca</th>
+                                    <th>Giờ</th>
+                                    <th>Cửa hàng</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${response.shifts.map(shift => `
+                                    <tr>
+                                        <td>${shift.date}</td>
+                                        <td>${shift.shiftName}</td>
+                                        <td>${shift.startTime} - ${shift.endTime}</td>
+                                        <td>${shift.storeName}</td>
+                                        <td><span class="status ${shift.status}">${this.getShiftStatusText(shift.status)}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    weeklyShiftsTable.innerHTML = '<p>Không có ca làm nào trong tuần này.</p>';
+                }
+            }
+        } catch (error) {
+            console.error('Load weekly shifts error:', error);
+            const weeklyShiftsTable = document.getElementById('weeklyShiftsTable');
+            if (weeklyShiftsTable) {
+                weeklyShiftsTable.innerHTML = '<p>Không thể tải ca làm trong tuần.</p>';
+            }
+        }
+    }
+
+    async loadAttendanceData(employeeId, position) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const month = document.getElementById('attendanceMonth')?.value || this.getCurrentMonth();
+            
+            let url = `?action=getAttendanceData&month=${month}&token=${token}`;
+            if (position === 'NV') {
+                url += `&employeeId=${employeeId}`;
+            }
+            
+            const response = await utils.fetchAPI(url);
+            
+            // Update summary cards
+            if (response && response.summary) {
+                document.getElementById('totalHours').textContent = `${response.summary.totalHours}h`;
+                document.getElementById('workDays').textContent = response.summary.workDays;
+                document.getElementById('lateCount').textContent = response.summary.lateCount;
+                document.getElementById('absentCount').textContent = response.summary.absentCount;
+            }
+
+            // Update attendance table
+            const attendanceTable = document.getElementById('attendanceTable');
+            if (attendanceTable && response && response.records) {
+                attendanceTable.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                ${position !== 'NV' ? '<th>Nhân viên</th>' : ''}
+                                <th>Ca làm</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Tổng giờ</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${response.records.map(record => `
+                                <tr>
+                                    <td>${record.date}</td>
+                                    ${position !== 'NV' ? `<td>${record.employeeName}</td>` : ''}
+                                    <td>${record.shiftName}</td>
+                                    <td>${record.checkIn || '-'}</td>
+                                    <td>${record.checkOut || '-'}</td>
+                                    <td>${record.totalHours || '-'}</td>
+                                    <td><span class="status ${record.status}">${this.getAttendanceStatusText(record.status)}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        } catch (error) {
+            console.error('Load attendance data error:', error);
+        }
+    }
+
+    setupShiftAssignmentHandlers() {
+        document.getElementById('loadShiftData')?.addEventListener('click', async () => {
+            const store = document.getElementById('shiftStore')?.value;
+            const week = document.getElementById('shiftWeek')?.value;
+            
+            if (!store || !week) {
+                utils.showNotification('Vui lòng chọn cửa hàng và tuần', 'warning');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                const response = await utils.fetchAPI(`?action=getShiftAssignments&store=${store}&week=${week}&token=${token}`);
+                
+                const shiftGrid = document.getElementById('shiftAssignmentGrid');
+                if (shiftGrid && response) {
+                    // Generate shift assignment grid here
+                    shiftGrid.innerHTML = `
+                        <div class="shift-assignment-grid">
+                            <p>Giao diện phân ca sẽ được triển khai ở đây</p>
+                            <p>Cửa hàng: ${store}, Tuần: ${week}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Load shift assignment error:', error);
+                utils.showNotification('Không thể tải dữ liệu phân ca', 'error');
+            }
+        });
+    }
+
+    setupShiftCheckHandlers() {
+        document.getElementById('checkinBtn')?.addEventListener('click', async () => {
+            try {
+                const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+                const employeeId = userData.employeeId || userData.loginEmployeeId;
+                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                
+                await utils.fetchAPI(`?action=checkIn&employeeId=${employeeId}&token=${token}`, {
+                    method: 'POST'
+                });
+                
+                utils.showNotification('Check in thành công', 'success');
+                await this.loadCurrentShift(employeeId);
+            } catch (error) {
+                console.error('Check in error:', error);
+                utils.showNotification('Không thể check in', 'error');
+            }
+        });
+
+        document.getElementById('checkoutBtn')?.addEventListener('click', async () => {
+            try {
+                const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+                const employeeId = userData.employeeId || userData.loginEmployeeId;
+                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                
+                await utils.fetchAPI(`?action=checkOut&employeeId=${employeeId}&token=${token}`, {
+                    method: 'POST'
+                });
+                
+                utils.showNotification('Check out thành công', 'success');
+                await this.loadCurrentShift(employeeId);
+            } catch (error) {
+                console.error('Check out error:', error);
+                utils.showNotification('Không thể check out', 'error');
+            }
+        });
+    }
+
+    setupAttendanceHandlers() {
+        document.getElementById('loadAttendanceData')?.addEventListener('click', async () => {
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            
+            await this.loadAttendanceData(employeeId, userResponse.position);
+        });
+
+        document.getElementById('attendanceMonth')?.addEventListener('change', async () => {
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            
+            await this.loadAttendanceData(employeeId, userResponse.position);
+        });
+    }
+
+    getShiftStatusText(status) {
+        const statusMap = {
+            'assigned': 'Đã phân công',
+            'confirmed': 'Đã xác nhận',
+            'in_progress': 'Đang làm',
+            'completed': 'Hoàn thành',
+            'absent': 'Vắng mặt'
+        };
+        return statusMap[status] || status;
+    }
+
+    getAttendanceStatusText(status) {
+        const statusMap = {
+            'present': 'Có mặt',
+            'late': 'Muộn',
+            'absent': 'Vắng',
+            'early_leave': 'Về sớm',
+            'overtime': 'Tăng ca'
+        };
+        return statusMap[status] || status;
+    }
+
     // Task Management Functions
     async showSubmitTask() {
         const content = document.getElementById('content');
@@ -1493,62 +1791,6 @@ class ContentManager {
 
 
     // Helper functions for the above methods
-    generateScheduleTable(schedules = []) {
-        if (!schedules.length) return '<p>Không có lịch làm việc nào.</p>';
-        
-        return `
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Nhân viên</th>
-                        <th>Ngày</th>
-                        <th>Ca làm</th>
-                        <th>Giờ vào</th>
-                        <th>Giờ ra</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${schedules.map(schedule => `
-                        <tr data-schedule-id="${schedule.id}">
-                            <td>${schedule.employeeName}</td>
-                            <td>${utils.formatDate(schedule.date)}</td>
-                            <td>${schedule.shift}</td>
-                            <td>${schedule.startTime}</td>
-                            <td>${schedule.endTime}</td>
-                            <td>
-                                <button class="btn btn-sm btn-edit" onclick="editSchedule('${schedule.id}')">Sửa</button>
-                                <button class="btn btn-sm btn-delete" onclick="deleteSchedule('${schedule.id}')">Xóa</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-    }
-
-    generateOfficialScheduleRows(shifts = []) {
-        if (!Array.isArray(shifts) || shifts.length === 0) {
-            return '<tr><td colspan="5">Không có lịch làm việc.</td></tr>';
-        }
-        
-        return shifts.map(shift => {
-            // Extract time from format like "08:00-17:00"
-            const timeRange = shift.time && shift.time !== 'Off' ? shift.time.split('-') : ['', ''];
-            const startTime = timeRange[0] || '';
-            const endTime = timeRange[1] || '';
-            
-            return `
-                <tr>
-                    <td>${shift.day || ''}</td>
-                    <td>${shift.time === 'Off' ? 'Nghỉ' : (startTime && endTime ? 'Ca làm' : 'Chưa xác định')}</td>
-                    <td>${startTime}</td>
-                    <td>${endTime}</td>
-                    <td><span class="status confirmed">Đã xác nhận</span></td>
-                </tr>
-            `;
-        }).join('');
-    }
 
     generateTaskList(tasks = [], type) {
         if (!tasks.length) return '<p>Không có yêu cầu nào.</p>';
@@ -1627,21 +1869,6 @@ class ContentManager {
     }
 
     // Setup handlers for the new functions
-    setupScheduleWorkHandlers() {
-        document.getElementById('saveScheduleChanges')?.addEventListener('click', async () => {
-            try {
-                // Implementation for saving schedule changes
-                await utils.fetchAPI('?action=saveScheduleChanges', {
-                    method: 'POST',
-                    body: JSON.stringify({ scheduleData: 'data' })
-                });
-                utils.showNotification("Lịch làm việc đã được cập nhật", "success");
-            } catch (error) {
-                utils.showNotification("Không thể lưu thay đổi", "error");
-            }
-        });
-    }
-
     setupTaskHandlers(type) {
         // Implementation for task handlers would go here
         window.approveTask = async (taskId) => {

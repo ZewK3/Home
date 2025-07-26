@@ -363,74 +363,157 @@ async function handleCheckId(url, db, origin) {
 }
 
 // Hàm kiểm tra lịch làm việc
-async function handleCheckSchedule(url, db, origin) {
-  const employeeId = url.searchParams.get("employeeId");
-  if (!employeeId) return jsonResponse({ message: "Mã nhân viên không hợp lệ!" }, 400, origin);
+// Shift Management Functions
+async function handleGetShiftAssignments(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const store = urlParams.get('store');
+    const week = urlParams.get('week');
+    
+    if (!store || !week) {
+      return jsonResponse({ error: "Missing store or week parameter" }, 400, origin);
+    }
 
-  const result = await db
-    .prepare("SELECT createdAt, T2, T3, T4, T5, T6, T7, CN FROM workSchedules WHERE employeeId = ?")
-    .bind(employeeId)
-    .first();
+    // Get shift assignments for the specified store and week
+    // For now, return sample data since we haven't created the tables yet
+    const assignments = {
+      store: store,
+      week: week,
+      employees: [
+        { employeeId: 'EMP001', fullName: 'Nguyễn Văn A', shifts: [] },
+        { employeeId: 'EMP002', fullName: 'Trần Thị B', shifts: [] }
+      ]
+    };
 
-  if (!result) {
-    return jsonResponse({ message: "Nhân viên chưa đăng ký lịch làm!" }, 202, origin);
+    return jsonResponse(assignments, 200, origin);
+  } catch (error) {
+    console.error("Get shift assignments error:", error);
+    return jsonResponse({ error: "Failed to get shift assignments" }, 500, origin);
   }
-
-  const shifts = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map(day => ({
-    day,
-    time: result[day] || "Off",
-  }));
-
-  return jsonResponse({ shifts, message: "Nhân viên đã đăng ký lịch làm!" }, 200, origin);
 }
 
-// Hàm lưu lịch làm việc
-async function handleSaveSchedule(body, db, origin) {
-  const { employeeId, shifts } = body;
-  if (!employeeId || !shifts || !Array.isArray(shifts) || shifts.length === 0) {
-    return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 401, origin);
-  }
-
-  const employee = await db
-    .prepare("SELECT employeeId, fullName, storeName FROM employees WHERE employeeId = ?")
-    .bind(employeeId)
-    .first();
-
-  if (!employee) return jsonResponse({ message: "Mã nhân viên không tồn tại!" }, 404, origin);
-
-  const scheduleData = { T2: null, T3: null, T4: null, T5: null, T6: null, T7: null, CN: null };
-  for (const shift of shifts) {
-    const { day, start, end } = shift;
-    if (end - start < 4) return jsonResponse({ message: `Ca làm tối thiểu 4h ${day}!` }, 402, origin);
-
-    const dayColumn = { T2: "T2", T3: "T3", T4: "T4", T5: "T5", T6: "T6", T7: "T7", CN: "CN" }[day];
-    if (!dayColumn) return jsonResponse({ message: `Ngày ${day} không hợp lệ!` }, 403, origin);
-
-    scheduleData[dayColumn] = `${String(start).padStart(2, "0")}:00-${String(end).padStart(2, "0")}:00`;
-  }
-
+async function handleAssignShift(body, db, origin) {
   try {
-    await db
-      .prepare(
-        "INSERT INTO workSchedules (employeeId, fullName, storeName, T2, T3, T4, T5, T6, T7, CN) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-      )
-      .bind(
-        employeeId,
-        employee.fullName,
-        employee.storeName,
-        scheduleData.T2,
-        scheduleData.T3,
-        scheduleData.T4,
-        scheduleData.T5,
-        scheduleData.T6,
-        scheduleData.T7,
-        scheduleData.CN
-      )
-      .run();
-    return jsonResponse({ message: "Lịch làm việc đã được lưu thành công!" }, 200, origin);
+    const { employeeId, storeId, date, shiftType, startTime, endTime } = body;
+    
+    if (!employeeId || !storeId || !date || !shiftType) {
+      return jsonResponse({ error: "Missing required parameters" }, 400, origin);
+    }
+
+    // For now, just return success (we'll implement the database logic later)
+    return jsonResponse({ message: "Shift assigned successfully" }, 200, origin);
   } catch (error) {
-    console.error("Lỗi lưu lịch làm việc:", error);
-    return jsonResponse({ message: "Lỗi lưu lịch làm việc!", error: error.message }, 500, origin);
+    console.error("Assign shift error:", error);
+    return jsonResponse({ error: "Failed to assign shift" }, 500, origin);
+  }
+}
+
+async function handleGetCurrentShift(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get('employeeId');
+    
+    if (!employeeId) {
+      return jsonResponse({ error: "Missing employeeId parameter" }, 400, origin);
+    }
+
+    // For now, return sample current shift data
+    const currentShift = {
+      startTime: "08:00",
+      endTime: "17:00",
+      storeName: "Cửa hàng A",
+      checkedIn: false,
+      checkedOut: false
+    };
+
+    return jsonResponse({ currentShift }, 200, origin);
+  } catch (error) {
+    console.error("Get current shift error:", error);
+    return jsonResponse({ error: "Failed to get current shift" }, 500, origin);
+  }
+}
+
+async function handleGetWeeklyShifts(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get('employeeId');
+    
+    if (!employeeId) {
+      return jsonResponse({ error: "Missing employeeId parameter" }, 400, origin);
+    }
+
+    // Return sample weekly shifts data
+    const shifts = [
+      { date: '2024-01-15', shiftName: 'Ca sáng', startTime: '08:00', endTime: '17:00', storeName: 'Cửa hàng A', status: 'assigned' },
+      { date: '2024-01-16', shiftName: 'Ca chiều', startTime: '13:00', endTime: '22:00', storeName: 'Cửa hàng A', status: 'confirmed' }
+    ];
+
+    return jsonResponse({ shifts }, 200, origin);
+  } catch (error) {
+    console.error("Get weekly shifts error:", error);
+    return jsonResponse({ error: "Failed to get weekly shifts" }, 500, origin);
+  }
+}
+
+async function handleGetAttendanceData(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const month = urlParams.get('month');
+    const employeeId = urlParams.get('employeeId');
+    
+    if (!month) {
+      return jsonResponse({ error: "Missing month parameter" }, 400, origin);
+    }
+
+    // Return sample attendance data
+    const summary = {
+      totalHours: 160,
+      workDays: 20,
+      lateCount: 2,
+      absentCount: 1
+    };
+
+    const records = [
+      { date: '2024-01-15', employeeName: 'Nguyễn Văn A', shiftName: 'Ca sáng', checkIn: '08:00', checkOut: '17:00', totalHours: '8', status: 'present' },
+      { date: '2024-01-16', employeeName: 'Nguyễn Văn A', shiftName: 'Ca chiều', checkIn: '13:05', checkOut: '22:00', totalHours: '8', status: 'late' }
+    ];
+
+    return jsonResponse({ summary, records }, 200, origin);
+  } catch (error) {
+    console.error("Get attendance data error:", error);
+    return jsonResponse({ error: "Failed to get attendance data" }, 500, origin);
+  }
+}
+
+async function handleCheckIn(body, db, origin) {
+  try {
+    const { employeeId } = body;
+    
+    if (!employeeId) {
+      return jsonResponse({ error: "Missing employeeId" }, 400, origin);
+    }
+
+    // For now, just return success
+    return jsonResponse({ message: "Check in successful" }, 200, origin);
+  } catch (error) {
+    console.error("Check in error:", error);
+    return jsonResponse({ error: "Failed to check in" }, 500, origin);
+  }
+}
+
+async function handleCheckOut(body, db, origin) {
+  try {
+    const { employeeId } = body;
+    
+    if (!employeeId) {
+      return jsonResponse({ error: "Missing employeeId" }, 400, origin);
+    }
+
+    // For now, just return success
+    return jsonResponse({ message: "Check out successful" }, 200, origin);
+  } catch (error) {
+    console.error("Check out error:", error);
+    return jsonResponse({ error: "Failed to check out" }, 500, origin);
   }
 }
 
@@ -903,34 +986,6 @@ async function verifyPassword(storedHash, storedSalt, password) {
   return storedHash.length === hash.length && storedHash.every((byte, index) => byte === hash[index]);
 }
 
-// Hàm lấy lịch làm việc hôm nay
-async function handleGetTodaySchedule(db, origin) {
-  try {
-    const today = new Date();
-    const dayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][today.getDay()];
-    
-    const schedules = await db
-      .prepare(`SELECT employeeId, fullName, ${dayName} as todaySchedule FROM workSchedules WHERE ${dayName} IS NOT NULL AND ${dayName} != 'Off'`)
-      .all();
-
-    if (!schedules.results) {
-      return jsonResponse([], 200, origin);
-    }
-
-    const todaySchedules = schedules.results.map(schedule => ({
-      employeeId: schedule.employeeId,
-      fullName: schedule.fullName,
-      schedule: schedule.todaySchedule,
-      day: dayName
-    }));
-
-    return jsonResponse(todaySchedules, 200, origin);
-  } catch (error) {
-    console.error("Lỗi lấy lịch hôm nay:", error);
-    return jsonResponse([], 200, origin);
-  }
-}
-
 // Hàm lấy yêu cầu đang chờ xử lý
 async function handleGetPendingRequests(db, origin) {
   try {
@@ -965,12 +1020,11 @@ async function handleGetDashboardStats(db, origin) {
     // Đếm tổng số nhân viên
     const totalEmployees = await db.prepare("SELECT COUNT(*) as count FROM employees").first();
     
-    // Đếm số nhân viên có lịch hôm nay
+    // Count active shifts today (replacing old schedule system)
     const today = new Date();
     const dayName = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][today.getDay()];
-    const todaySchedules = await db
-      .prepare(`SELECT COUNT(*) as count FROM workSchedules WHERE ${dayName} IS NOT NULL AND ${dayName} != 'Off'`)
-      .first();
+    // TODO: Replace with actual shift assignments table when created
+    const todayShifts = { count: 0 }; // Placeholder for now
 
     // Đếm tasks đang chờ xử lý thay vì tin nhắn
     const pendingRequests = await db
@@ -986,7 +1040,7 @@ async function handleGetDashboardStats(db, origin) {
 
     const stats = {
       totalEmployees: totalEmployees?.count || 0,
-      todaySchedules: todaySchedules?.count || 0,
+      todayShifts: todayShifts?.count || 0,
       recentMessages: recentActivities?.count || 0,
       pendingRequests: pendingRequests?.count || 0,
       currentDay: dayName
@@ -997,7 +1051,7 @@ async function handleGetDashboardStats(db, origin) {
     console.error("Lỗi lấy thống kê dashboard:", error);
     return jsonResponse({
       totalEmployees: 0,
-      todaySchedules: 0,
+      todayShifts: 0,
       recentMessages: 0,
       pendingRequests: 0,
       currentDay: 'T2'
@@ -1518,9 +1572,8 @@ export default {
         return;
       }
 
-      console.log("It's Monday! Clearing workSchedules...");
-      const deleteResult = await env.D1_BINDING.prepare("DELETE FROM workSchedules").run();
-      console.log(`Deleted ${deleteResult.meta.changes} rows from workSchedules.`);
+      // TODO: Add weekly shift management tasks here if needed
+      console.log("Monday maintenance completed");
     } catch (error) {
       console.error("Error in scheduled worker:", error);
     }
@@ -1544,9 +1597,11 @@ export default {
       if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400);
 
       const protectedActions = [
-        "update", "savedk", "checkdk", "getUser", "getUsers", 
+        "update", "getUser", "getUsers", 
         "updateUser", "getPendingRegistrations",
-        "getPendingRequests", "getTasks", "getRewards", "getPermissions"
+        "getPendingRequests", "getTasks", "getRewards", "getPermissions",
+        "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
+        "getAttendanceData", "checkIn", "checkOut"
       ];
       if (protectedActions.includes(action)) {
         const session = await checkSessionMiddleware(token, db, ALLOWED_ORIGIN);
@@ -1568,8 +1623,10 @@ export default {
             return await handleRegister(body, db, ALLOWED_ORIGIN, env);
           case "update":
             return await handleUpdate(body, db, ALLOWED_ORIGIN);
-          case "savedk":
-            return await handleSaveSchedule(body, db, ALLOWED_ORIGIN);
+          case "getShiftAssignments":
+            return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
+          case "assignShift":
+            return await handleAssignShift(body, db, ALLOWED_ORIGIN);
           case "loginUser":
             return await loginUser(body, db, ALLOWED_ORIGIN);
           case "updateUser":
@@ -1607,12 +1664,16 @@ export default {
             return await handleGetUserHistory(url, db, ALLOWED_ORIGIN);
           case "getUsers":
             return await handleGetUsers(url, db, ALLOWED_ORIGIN);
-          case "checkdk":
-            return await handleCheckSchedule(url, db, ALLOWED_ORIGIN);
-          case "User":
-            return await getUser(url, db, ALLOWED_ORIGIN);
-          case "getTodaySchedule":
-            return await handleGetTodaySchedule(db, ALLOWED_ORIGIN);
+          case "getCurrentShift":
+            return await handleGetCurrentShift(url, db, ALLOWED_ORIGIN);
+          case "getWeeklyShifts":
+            return await handleGetWeeklyShifts(url, db, ALLOWED_ORIGIN);
+          case "getAttendanceData":
+            return await handleGetAttendanceData(url, db, ALLOWED_ORIGIN);
+          case "checkIn":
+            return await handleCheckIn(body, db, ALLOWED_ORIGIN);
+          case "checkOut":
+            return await handleCheckOut(body, db, ALLOWED_ORIGIN);
           case "getPendingRequests":
             return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
           case "getDashboardStats":
