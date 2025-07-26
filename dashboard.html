@@ -19,17 +19,18 @@
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-    <!-- Theme Switch -->
-    <button id="themeSwitch" class="theme-switch" aria-label="Toggle theme">
-        <span class="material-icons-round">dark_mode</span>
-    </button>
-
     <!-- User Info Header -->
     <div class="show-user">
         <div class="company-logo">
-            <h1><a href="#" onclick="location.reload(); return false;" style="text-decoration: none; color: inherit; cursor: pointer;">HR Management System</a></h1>
+            <h1><a href="#" id="companyLogoLink" style="text-decoration: none; color: inherit; cursor: pointer;">HR Management System</a></h1>
         </div>
-        <div id="userInfo" class="user-info"></div>
+        <div class="user-header-info">
+            <div id="userInfo" class="user-info"></div>
+            <div id="currentTime" class="current-time">
+                <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                <span id="timeDisplay" class="time-display">00:00</span>
+            </div>
+        </div>
     </div>
 
     <!-- Sidebar -->
@@ -84,6 +85,15 @@
             </li>
         </ul>
         <button id="logout" class="logout-btn">Đăng xuất</button>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Đang tải hệ thống...</h2>
+            <p>Vui lòng chờ trong giây lát</p>
+        </div>
     </div>
 
     <!-- Main Content -->

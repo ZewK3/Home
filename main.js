@@ -3115,26 +3115,11 @@ class MenuManager {
 // Automatic Time-Based Theme Manager
 class ThemeManager {
     static initialize() {
-        const themeSwitch = document.getElementById('themeSwitch');
-        if (!themeSwitch) return;
-
         // Set automatic theme based on time
         this.setAutomaticTheme();
         
         // Update theme every minute
         setInterval(() => this.setAutomaticTheme(), 60000);
-
-        // Remove manual toggle - show time info instead
-        themeSwitch.addEventListener('click', () => {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const message = currentTheme === 'dark' 
-                ? `🌙 Chế độ tối (${timeString}) - Tự động từ 6:00 PM đến 7:00 AM`
-                : `☀️ Chế độ sáng (${timeString}) - Tự động từ 7:00 AM đến 6:00 PM`;
-            
-            NotificationManager.show(message, 'info', 3000);
-        });
     }
     
     static setAutomaticTheme() {
@@ -3148,15 +3133,6 @@ class ThemeManager {
         
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
-        
-        // Update theme switch icon
-        const themeSwitch = document.getElementById('themeSwitch');
-        if (themeSwitch) {
-            const icon = themeSwitch.querySelector('.material-icons-round');
-            if (icon) {
-                icon.textContent = newTheme === 'light' ? 'dark_mode' : 'light_mode';
-            }
-        }
         
         return newTheme;
     }
@@ -3213,6 +3189,12 @@ class AuthManager {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
     
+    // Show loading screen immediately
+    showLoadingScreen();
+    
+    // Initialize time display
+    initializeTimeDisplay();
+    
     // Setup mobile menu FIRST - before any authentication checks
     setupMobileMenu();
     
@@ -3251,6 +3233,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
 
+        // Hide loading screen after initialization is complete
+        hideLoadingScreen();
+
+        // Setup company logo click handler
+        const companyLogoLink = document.getElementById('companyLogoLink');
+        if (companyLogoLink) {
+            companyLogoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                restoreOriginalDashboardContent();
+                return false;
+            });
+        }
+
         // GSAP animations removed due to interference with sidebar functionality
 
         // Mobile optimization and enhanced menu setup
@@ -3260,6 +3255,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => {
             setupMobileMenu();
         }, 2000);
+    } else {
+        // Hide loading screen if authentication fails
+        hideLoadingScreen();
     }
 });
 
@@ -4092,6 +4090,83 @@ function showDashboardContent() {
     });
 }
 
+// Loading Screen Management
+function showLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.remove('hidden');
+    }
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.add('hidden');
+    }
+}
+
+// Time Display Management
+function updateTimeDisplay() {
+    const timeDisplay = document.getElementById('timeDisplay');
+    const timeIcon = document.getElementById('timeIcon');
+    
+    if (!timeDisplay || !timeIcon) return;
+    
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    
+    timeDisplay.textContent = timeString;
+    
+    // Update icon based on time (6 PM - 7 AM = night)
+    if (hours >= 18 || hours < 7) {
+        timeIcon.textContent = 'bedtime';
+        timeIcon.classList.add('moon');
+        timeIcon.classList.remove('sun');
+    } else {
+        timeIcon.textContent = 'wb_sunny';
+        timeIcon.classList.add('sun');
+        timeIcon.classList.remove('moon');
+    }
+}
+
+// Initialize time display
+function initializeTimeDisplay() {
+    updateTimeDisplay();
+    // Update every minute
+    setInterval(updateTimeDisplay, 60000);
+}
+
+// Dashboard Content Storage for Company Logo Restoration
+let originalDashboardContent = null;
+
+function saveOriginalDashboardContent() {
+    const content = document.getElementById('content');
+    if (content && !originalDashboardContent) {
+        originalDashboardContent = content.innerHTML;
+        console.log('💾 Original dashboard content saved');
+    }
+}
+
+function restoreOriginalDashboardContent() {
+    const content = document.getElementById('content');
+    if (content && originalDashboardContent) {
+        content.innerHTML = originalDashboardContent;
+        console.log('🔄 Dashboard content restored to original state');
+        
+        // Re-initialize any necessary event handlers for the restored content
+        MenuManager.setupMenuInteractions();
+        setupMobileMenu();
+        
+        // Update stats and apply role-based visibility
+        setTimeout(async () => {
+            await updateStatsGrid();
+            await applyRoleBasedSectionVisibility();
+        }, 100);
+    }
+}
+
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
@@ -4219,6 +4294,10 @@ async function initializeEnhancedDashboard() {
         // Theme switching is handled by ThemeManager.initialize()
         
         utils.showNotification('Dashboard đã được tải thành công', 'success');
+        
+        // Save the original dashboard content after initialization
+        saveOriginalDashboardContent();
+        
     } catch (error) {
         console.error('Failed to initialize enhanced dashboard:', error);
         utils.showNotification('Có lỗi khi tải dashboard', 'error');
