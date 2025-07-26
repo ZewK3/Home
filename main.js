@@ -827,12 +827,30 @@ class ContentManager {
                                         <label>Họ và tên</label>
                                         <input type="text" id="editFullName" class="form-control">
                                     </div>
-                                    <div class="edit-form-group">
-                                        <label>Cửa hàng</label>
-                                        <select id="editStoreName" class="form-control">
-                                            <option value="ST001">Cửa hàng Trung Tâm</option>
-                                            <option value="ST002">Cửa hàng Quận 1</option>
-                                        </select>
+                                    <div class="edit-form-group" id="storeAssignmentGroup">
+                                        <label id="storeAssignmentLabel">Cửa hàng</label>
+                                        <!-- Store selection for QL -->
+                                        <div id="storeSelection" style="display: none;">
+                                            <select id="editStoreName" class="form-control" multiple>
+                                                <!-- Populated dynamically -->
+                                            </select>
+                                            <small class="form-text">Có thể chọn nhiều cửa hàng (Ctrl+Click)</small>
+                                        </div>
+                                        <!-- Region selection for AM -->
+                                        <div id="regionSelection" style="display: none;">
+                                            <select id="editRegion" class="form-control">
+                                                <option value="">Chọn khu vực</option>
+                                                <option value="TP.HCM">TP.HCM</option>
+                                                <option value="Miền Bắc">Miền Bắc</option>
+                                                <option value="Miền Trung">Miền Trung</option>
+                                            </select>
+                                        </div>
+                                        <!-- Single store for other roles -->
+                                        <div id="singleStoreSelection">
+                                            <select id="editSingleStore" class="form-control">
+                                                <!-- Populated dynamically -->
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="edit-form-group">
                                         <label>Số điện thoại</label>
@@ -857,7 +875,7 @@ class ContentManager {
                                     <select id="editUserRole" class="form-control role-select">
                                         <option value="AD">👑 Administrator - Toàn quyền hệ thống</option>
                                         <option value="QL">⚡ Manager - Quản lý cửa hàng</option>
-                                        <option value="AM">🎯 Assistant Manager - Trợ lý quản lý</option>
+                                        <option value="AM">🎯 Area Manager - Quản lý khu vực</option>
                                         <option value="NV">👤 Employee - Nhân viên</option>
                                     </select>
                                 </div>
@@ -1809,6 +1827,9 @@ class ContentManager {
                 return;
             }
 
+            // Load stores for selection
+            await this.loadStoresForPermissionEdit();
+
             const modal = document.getElementById('permissionEditModal');
             const currentUserInfo = document.getElementById('currentUserInfo');
             
@@ -1830,10 +1851,12 @@ class ContentManager {
             // Populate form fields with the SELECTED user data
             document.getElementById('editEmployeeId').value = userInfo.employeeId || '';
             document.getElementById('editFullName').value = userInfo.fullName || '';
-            document.getElementById('editStoreName').value = userInfo.storeName || 'ST001';
             document.getElementById('editPhone').value = userInfo.phone || '';
             document.getElementById('editEmail').value = userInfo.email || '';
             document.getElementById('editJoinDate').value = userInfo.joinDate || '';
+
+            // Set current store/region selection based on role
+            this.setupStoreRegionSelection(currentRole, userInfo.storeName);
 
             // Set the role select dropdown to current role
             const roleSelect = document.getElementById('editUserRole');
@@ -1841,9 +1864,10 @@ class ContentManager {
                 roleSelect.value = currentRole;
                 this.updatePermissionPreview(currentRole);
                 
-                // Add event listener for role changes
+                // Add event listener for role changes to switch store/region selection
                 roleSelect.addEventListener('change', (e) => {
                     this.updatePermissionPreview(e.target.value);
+                    this.setupStoreRegionSelection(e.target.value, '');
                 });
             }
 
@@ -1873,6 +1897,88 @@ class ContentManager {
                 <span class="permission-name">${permission.name}</span>
             </div>
         `).join('');
+    }
+
+    async loadStoresForPermissionEdit() {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            
+            let stores = [];
+            if (Array.isArray(response)) {
+                stores = response;
+            } else if (response && typeof response === 'object') {
+                const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    stores = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                } else if (response.data && Array.isArray(response.data)) {
+                    stores = response.data;
+                }
+            }
+
+            // Populate store selections
+            const storeSelect = document.getElementById('editStoreName');
+            const singleStoreSelect = document.getElementById('editSingleStore');
+            
+            const storeOptions = stores.map(store => 
+                `<option value="${store.storeId}">${store.storeName} (${store.storeId})</option>`
+            ).join('');
+            
+            if (storeSelect) {
+                storeSelect.innerHTML = storeOptions;
+            }
+            if (singleStoreSelect) {
+                singleStoreSelect.innerHTML = '<option value="">Chọn cửa hàng</option>' + storeOptions;
+            }
+            
+        } catch (error) {
+            console.error('Error loading stores for permission edit:', error);
+        }
+    }
+
+    setupStoreRegionSelection(role, currentValue) {
+        const storeSelection = document.getElementById('storeSelection');
+        const regionSelection = document.getElementById('regionSelection');
+        const singleStoreSelection = document.getElementById('singleStoreSelection');
+        const label = document.getElementById('storeAssignmentLabel');
+        
+        // Hide all by default
+        storeSelection.style.display = 'none';
+        regionSelection.style.display = 'none';
+        singleStoreSelection.style.display = 'none';
+        
+        if (role === 'AM') {
+            // Show region selection for Area Manager
+            label.textContent = 'Khu vực quản lý';
+            regionSelection.style.display = 'block';
+            
+            // Set current region if available
+            if (currentValue) {
+                // Get region from store (would need to query stores API)
+                document.getElementById('editRegion').value = '';
+            }
+        } else if (role === 'QL') {
+            // Show multi-store selection for Store Manager
+            label.textContent = 'Cửa hàng quản lý';
+            storeSelection.style.display = 'block';
+            
+            // Set current stores
+            if (currentValue) {
+                const stores = currentValue.split(',').map(s => s.trim());
+                const select = document.getElementById('editStoreName');
+                Array.from(select.options).forEach(option => {
+                    option.selected = stores.includes(option.value);
+                });
+            }
+        } else {
+            // Show single store selection for other roles
+            label.textContent = 'Cửa hàng';
+            singleStoreSelection.style.display = 'block';
+            
+            if (currentValue) {
+                document.getElementById('editSingleStore').value = currentValue;
+            }
+        }
     }
 
     getRolePermissions(role) {
@@ -2065,11 +2171,30 @@ class ContentManager {
             // Get current logged in user
             const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
             
+            // Get store/region assignment based on role
+            let storeAssignment = '';
+            if (selectedRole === 'AM') {
+                // For Area Manager, use region selection
+                const regionSelect = document.getElementById('editRegion');
+                storeAssignment = regionSelect ? regionSelect.value : '';
+            } else if (selectedRole === 'QL') {
+                // For Store Manager, use multi-store selection
+                const storeSelect = document.getElementById('editStoreName');
+                if (storeSelect) {
+                    const selectedStores = Array.from(storeSelect.selectedOptions).map(option => option.value);
+                    storeAssignment = selectedStores.join(',');
+                }
+            } else {
+                // For other roles, use single store selection
+                const singleStoreSelect = document.getElementById('editSingleStore');
+                storeAssignment = singleStoreSelect ? singleStoreSelect.value : '';
+            }
+            
             // Prepare updated user data
             const updateData = {
                 employeeId: document.getElementById('editEmployeeId').value,
                 fullName: document.getElementById('editFullName').value,
-                storeName: document.getElementById('editStoreName').value,
+                storeName: storeAssignment,
                 position: selectedRole,
                 phone: document.getElementById('editPhone').value,
                 email: document.getElementById('editEmail').value,
@@ -2462,7 +2587,9 @@ class ContentManager {
             this.selectedRegistrations = new Set();
             this.filteredRegistrations = [];
             this.allRegistrations = [];
+            this.storeMap = new Map(); // Store ID -> Store Name mapping
 
+            await this.loadStoreMapping();
             await this.loadStoresForFilter();
             await this.loadPendingRegistrations();
             this.setupEnhancedRegistrationApprovalHandlers();
@@ -2472,17 +2599,15 @@ class ContentManager {
         }
     }
 
-    async loadStoresForFilter() {
+    async loadStoreMapping() {
         try {
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
-            console.log('Stores API response:', response);
             
             let stores = [];
             if (Array.isArray(response)) {
                 stores = response;
             } else if (response && typeof response === 'object') {
-                // Handle object format with numeric keys
                 const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
                 if (keys.length > 0) {
                     stores = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
@@ -2490,14 +2615,89 @@ class ContentManager {
                     stores = response.data;
                 }
             }
+
+            // Create mapping from store ID to store name
+            this.storeMap.clear();
+            stores.forEach(store => {
+                if (store.storeId && store.storeName) {
+                    this.storeMap.set(store.storeId, store.storeName);
+                }
+            });
             
-            console.log('Parsed stores:', stores);
+            console.log('Store mapping loaded:', this.storeMap);
+        } catch (error) {
+            console.error('Error loading store mapping:', error);
+        }
+    }
+
+    getStoreDisplayName(storeId) {
+        return this.storeMap.get(storeId) || storeId || 'N/A';
+    }
+
+    async loadStoresForFilter() {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            
+            // Get all stores from API
+            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            console.log('Stores API response:', response);
+            
+            let allStores = [];
+            if (Array.isArray(response)) {
+                allStores = response;
+            } else if (response && typeof response === 'object') {
+                // Handle object format with numeric keys
+                const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    allStores = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                } else if (response.data && Array.isArray(response.data)) {
+                    allStores = response.data;
+                }
+            }
+            
+            // Get user's current info to apply proper filtering
+            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${userData.employeeId}&token=${token}`);
+            let currentUser = userResponse;
+            
+            let availableStores = [];
+            
+            // Apply filtering based on user role and permissions
+            if (currentUser.position === 'AD') {
+                // Administrator can see all stores
+                availableStores = allStores;
+            } else if (currentUser.position === 'AM') {
+                // Area Manager - filter by region based on their store
+                if (currentUser.storeName) {
+                    const userStore = allStores.find(store => 
+                        store.storeId === currentUser.storeName || store.storeName === currentUser.storeName
+                    );
+                    if (userStore && userStore.region) {
+                        availableStores = allStores.filter(store => store.region === userStore.region);
+                    }
+                }
+            } else if (currentUser.position === 'QL') {
+                // Store Manager - only their specific stores (support multiple stores)
+                if (currentUser.storeName) {
+                    const userStores = currentUser.storeName.split(',').map(s => s.trim());
+                    availableStores = allStores.filter(store => 
+                        userStores.includes(store.storeId) || userStores.includes(store.storeName)
+                    );
+                }
+            }
+            
+            console.log('Available stores for user:', availableStores);
             const storeFilter = document.getElementById('storeFilterSelect');
-            if (storeFilter && stores.length > 0) {
+            if (storeFilter && availableStores.length > 0) {
                 storeFilter.innerHTML = '<option value="">Tất cả cửa hàng</option>' +
-                    stores.map(store => `<option value="${store.storeName || store.name || store.storeId}">${store.storeName || store.name || store.storeId}</option>`).join('');
+                    availableStores.map(store => 
+                        `<option value="${store.storeId}">${store.storeName} (${store.storeId})</option>`
+                    ).join('');
             } else {
-                console.log('⚠️ No stores found or storeFilter element missing');
+                console.log('⚠️ No stores available for this user');
+                if (storeFilter) {
+                    storeFilter.innerHTML = '<option value="">Không có cửa hàng nào</option>';
+                }
             }
         } catch (error) {
             console.error('Load stores error:', error);
@@ -2883,7 +3083,7 @@ class ContentManager {
                         <h3 class="registration-name">${reg.fullName || 'N/A'}</h3>
                         <div class="registration-badges">
                             <span class="position-badge">${reg.position || 'N/A'}</span>
-                            <span class="store-badge">${reg.storeName || reg.storeId || 'N/A'}</span>
+                            <span class="store-badge">${this.getStoreDisplayName(reg.storeName)}</span>
                         </div>
                     </div>
                     <div class="registration-details">
@@ -2994,11 +3194,11 @@ class ContentManager {
                     <div class="detail-grid">
                         <div class="detail-item">
                             <span class="label">Tên cửa hàng:</span>
-                            <span class="value">${registration.storeName || 'N/A'}</span>
+                            <span class="value">${this.getStoreDisplayName(registration.storeName)}</span>
                         </div>
                         <div class="detail-item">
                             <span class="label">Mã cửa hàng:</span>
-                            <span class="value">${registration.storeId || registration.storeName || 'N/A'}</span>
+                            <span class="value">${registration.storeName || 'N/A'}</span>
                         </div>
                     </div>
                 </div>

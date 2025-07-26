@@ -983,17 +983,18 @@ body {
 .registration-card-enhanced {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 24px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     display: flex;
-    gap: 18px;
+    gap: 20px;
     align-items: flex-start;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
     overflow: hidden;
+    border-left: 4px solid transparent;
 }
 
 .registration-card-enhanced::before {
@@ -1002,7 +1003,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 2px;
     background: linear-gradient(90deg, var(--primary), var(--secondary));
     transform: scaleX(0);
     transition: transform 0.3s ease;
@@ -1014,20 +1015,203 @@ body {
 
 .registration-card-enhanced:hover {
     border-color: var(--primary);
-    box-shadow: 0 8px 25px rgba(30, 64, 175, 0.15);
-    transform: translateY(-3px);
-    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59, 130, 246, 0.02) 100%);
+    border-left-color: var(--primary);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59, 130, 246, 0.03) 100%);
+}
+
+.registration-avatar {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.status-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.status-indicator.status-wait {
+    background-color: #f59e0b;
+}
+
+.status-indicator.status-approved {
+    background-color: #10b981;
+}
+
+.status-indicator.status-rejected {
+    background-color: #ef4444;
+}
+
+.registration-info-enhanced {
+    flex: 1;
+    min-width: 0;
+}
+
+.registration-header {
+    margin-bottom: 16px;
+}
+
+.registration-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.registration-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.position-badge {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+}
+
+.store-badge {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3);
+}
+
+.registration-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.detail-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    font-weight: 400;
+}
+
+.status-text-wait {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.status-text-approved {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.status-text-rejected {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.registration-actions-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.view-btn {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.view-btn:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: scale(1.05);
+}
+
+.approve-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.approve-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: scale(1.05);
+}
+
+.reject-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.reject-btn:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: scale(1.05);
 }
 
 .registration-select {
     padding-top: 6px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .registration-checkbox {
     width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
     height: 20px;
     cursor: pointer;
     border-radius: 4px;
@@ -1380,19 +1564,41 @@ body {
     backdrop-filter: blur(5px);
 }
 
-/* Special positioning for registration detail modal */
+/* Special positioning for registration detail modal - contained within main content */
 #registrationDetailModal {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 20px;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 1050;
     backdrop-filter: blur(5px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border-radius: 16px;
+    overflow: auto;
+    padding: 20px;
+}
+
+#registrationDetailModal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.registration-detail-content {
+    background: var(--bg-card);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 800px;
+    max-height: 100%;
+    overflow-y: auto;
+    margin-top: 20px;
 }
 
 /* Mobile modal positioning */
@@ -1402,15 +1608,17 @@ body {
         left: 0;
         right: 0;
         top: 60px;
-        height: calc(100vh - 60px);
+        bottom: 0;
+        border-radius: 0;
+        padding: 10px;
         z-index: 1200;
     }
     
-    #registrationDetailModal .modal-content {
-        width: calc(100% - 2rem);
+    .registration-detail-content {
+        width: 100%;
         max-width: none;
-        margin: 1rem;
-        max-height: calc(100vh - 120px);
+        margin-top: 0;
+        border-radius: 12px;
     }
 }
 
