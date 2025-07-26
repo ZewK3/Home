@@ -4510,46 +4510,62 @@ function setupMobileMenu() {
     const overlay = document.getElementById('sidebarOverlay');
     
     if (menuToggle && sidebar) {
-        
         // Remove any existing event listeners first
-        menuToggle.removeEventListener('click', handleMenuToggle);
+        const oldHandler = menuToggle._mobileMenuHandler;
+        if (oldHandler) {
+            menuToggle.removeEventListener('click', oldHandler);
+            menuToggle.removeEventListener('touchend', oldHandler);
+        }
         
-        // Mobile menu toggle with CSS transitions
+        // Enhanced mobile menu toggle handler
         function handleMenuToggle(e) {
             e.preventDefault();
             e.stopPropagation();
             
+            // Force focus for better mobile interaction
+            menuToggle.blur();
+            
             const isActive = sidebar.classList.contains('active');
             
             if (isActive) {
-                // Close menu
+                // Close menu with animation
                 sidebar.classList.remove('active');
                 if (overlay) overlay.classList.remove('active');
+                document.body.style.overflow = '';
             } else {
-                // Open menu
+                // Open menu with animation
                 sidebar.classList.add('active');
                 if (overlay) overlay.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent background scroll
             }
         }
         
+        // Store handler reference for cleanup
+        menuToggle._mobileMenuHandler = handleMenuToggle;
+        
+        // Add event listeners
         menuToggle.addEventListener('click', handleMenuToggle);
+        menuToggle.addEventListener('touchend', handleMenuToggle);
 
-        // Touch support
+        // Enhanced touch feedback
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
+            menuToggle.style.transform = 'scale(0.95)';
             menuToggle.style.opacity = '0.8';
         });
 
-        menuToggle.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            menuToggle.style.opacity = '1';
+        menuToggle.addEventListener('touchcancel', (e) => {
+            menuToggle.style.transform = '';
+            menuToggle.style.opacity = '';
         });
 
         // Close sidebar when clicking overlay
         if (overlay) {
-            overlay.addEventListener('click', () => {
+            overlay.addEventListener('click', (e) => {
+                e.preventDefault();
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
+                document.body.style.overflow = '';
             });
         }
 
@@ -4558,18 +4574,32 @@ function setupMobileMenu() {
             if (window.innerWidth <= 768 && 
                 sidebar.classList.contains('active') &&
                 !sidebar.contains(e.target) && 
-                !menuToggle.contains(e.target)) {
+                !menuToggle.contains(e.target) &&
+                !overlay.contains(e.target)) {
                 
                 sidebar.classList.remove('active');
                 if (overlay) overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Handle escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+                document.body.style.overflow = '';
             }
         });
         
+        console.log('Mobile menu setup completed successfully');
+        
     } else {
+        console.warn('Mobile menu elements not found, retrying...');
         // Retry after a short delay in case elements are being dynamically loaded
         setTimeout(() => {
             setupMobileMenu();
-        }, 1000);
+        }, 500);
     }
 }
 
