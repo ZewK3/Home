@@ -601,19 +601,23 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-/* Loading Screen */
+/* Enhanced Loading Screen */
 .loading-screen {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--bg-main);
+    background: linear-gradient(135deg, 
+        var(--bg-main) 0%, 
+        rgba(59, 130, 246, 0.1) 50%, 
+        var(--bg-main) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 50000;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    backdrop-filter: blur(10px);
 }
 
 .loading-screen.hidden {
@@ -625,26 +629,115 @@ body {
 .loading-content {
     text-align: center;
     background: var(--bg-card);
-    padding: 3rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-lg);
+    padding: 3rem 2rem;
+    border-radius: 24px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
     border: 1px solid var(--border-color);
+    backdrop-filter: blur(20px);
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+}
+
+.loading-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--primary) 50%, 
+        transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid var(--border-color);
-    border-top: 4px solid var(--color-primary);
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(59, 130, 246, 0.1);
+    border-top: 4px solid var(--primary);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1.5rem;
+    animation: modernSpin 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    margin: 0 auto 2rem;
+    position: relative;
+}
+
+.loading-spinner::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes modernSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.8); }
 }
 
 .loading-content h2 {
     color: var(--text-primary);
     margin-bottom: 0.5rem;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--text-primary), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.loading-content .loading-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.loading-dots {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.loading-dots span {
+    width: 4px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 50%;
+    animation: bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { 
+        transform: scale(0); 
+        opacity: 0.5; 
+    }
+    40% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
 }
 
 .loading-content p {
@@ -983,18 +1076,19 @@ body {
 .registration-card-enhanced {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 16px;
     padding: 24px;
     margin-bottom: 20px;
     display: flex;
     gap: 20px;
     align-items: flex-start;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(20px);
     overflow: hidden;
     border-left: 4px solid transparent;
+    transform: translateY(0);
 }
 
 .registration-card-enhanced::before {
@@ -1003,10 +1097,14 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    height: 3px;
+    background: linear-gradient(90deg, 
+        var(--primary) 0%, 
+        #3b82f6 50%, 
+        var(--secondary) 100%);
     transform: scaleX(0);
-    transition: transform 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 16px 16px 0 0;
 }
 
 .registration-card-enhanced:hover::before {
@@ -1014,11 +1112,101 @@ body {
 }
 
 .registration-card-enhanced:hover {
-    border-color: var(--primary);
+    border-color: rgba(59, 130, 246, 0.3);
     border-left-color: var(--primary);
-    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(59, 130, 246, 0.03) 100%);
+    box-shadow: 0 20px 60px rgba(59, 130, 246, 0.15);
+    transform: translateY(-4px);
+    background: linear-gradient(135deg, 
+        var(--bg-card) 0%, 
+        rgba(59, 130, 246, 0.05) 100%);
+}
+
+.registration-card-enhanced:hover .registration-avatar .avatar-circle {
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    transform: scale(1.05);
+}
+
+.registration-card-enhanced:hover .registration-info h4 {
+    color: var(--primary);
+}
+
+.registration-card-enhanced .registration-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.registration-card-enhanced .registration-info h4 {
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    transition: color 0.3s ease;
+}
+
+.registration-card-enhanced .registration-info .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.registration-card-enhanced .registration-info .detail-item .material-icons-round {
+    font-size: 16px;
+    color: var(--text-tertiary);
+}
+
+.registration-card-enhanced .registration-actions-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.registration-card-enhanced .registration-actions-enhanced .btn {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.registration-card-enhanced .status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.registration-card-enhanced .status-badge.status-wait {
+    background: linear-gradient(135deg, #fef3c7, #fbbf24);
+    color: #92400e;
+    border: 1px solid #fbbf24;
+}
+
+.registration-card-enhanced .status-badge.status-approved {
+    background: linear-gradient(135deg, #d1fae5, #10b981);
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.registration-card-enhanced .status-badge.status-rejected {
+    background: linear-gradient(135deg, #fee2e2, #ef4444);
+    color: #991b1b;
+    border: 1px solid #ef4444;
 }
 
 .registration-avatar {
@@ -1777,11 +1965,44 @@ body {
     .registration-card-enhanced {
         flex-direction: column;
         gap: 15px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+    }
+    
+    .registration-card-enhanced .registration-avatar .avatar-circle {
+        width: 50px;
+        height: 50px;
+        align-self: center;
+    }
+    
+    .registration-card-enhanced .registration-info {
+        text-align: center;
+        min-width: unset;
+    }
+    
+    .registration-card-enhanced .registration-info h4 {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+    
+    .registration-card-enhanced .registration-info .detail-item {
+        justify-content: center;
+        margin-bottom: 8px;
     }
     
     .registration-actions-enhanced {
         flex-direction: row;
         justify-content: center;
+        gap: 8px;
+        min-width: unset;
+        width: 100%;
+    }
+    
+    .registration-actions-enhanced .btn {
+        flex: 1;
+        padding: 10px 12px;
+        font-size: 0.875rem;
     }
     
     .detail-grid {
@@ -5131,13 +5352,15 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
     display: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 1000;
-    padding: 1rem;
+    padding: 2rem 1rem;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .permission-edit-modal.active {
@@ -5146,13 +5369,16 @@ body {
 
 .permission-edit-content {
     background: var(--bg-card);
-    border-radius: var(--border-radius);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
     max-width: 900px;
-    max-height: 90vh;
+    max-height: calc(100vh - 4rem);
     width: 100%;
     overflow-y: auto;
     position: relative;
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(20px);
 }
 
 .permission-edit-header {
@@ -5491,13 +5717,21 @@ body {
 }
 
 @media (max-width: 768px) {
+    .permission-edit-modal {
+        padding: 1rem 0.5rem;
+        align-items: flex-start;
+    }
+    
     .permission-edit-content {
-        margin: 0.5rem;
-        max-height: 95vh;
+        margin: 0.5rem 0;
+        max-height: calc(100vh - 2rem);
+        width: 100%;
+        border-radius: 12px;
     }
     
     .permission-edit-header {
         padding: 1rem 1.5rem;
+        border-radius: 12px 12px 0 0;
     }
     
     .permission-edit-body {
@@ -5506,10 +5740,12 @@ body {
     
     .user-edit-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .role-selection-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .permission-actions {

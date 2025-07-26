@@ -3,22 +3,48 @@
 -- Drop old messaging table (no longer needed since messaging system removed)
 DROP TABLE IF EXISTS messages;
 
+-- Drop and recreate stores table with MayCha store codes and regions
+DROP TABLE IF EXISTS stores;
+
 -- Enhanced stores table with area/region for AM management
 CREATE TABLE IF NOT EXISTS stores (
     storeId TEXT PRIMARY KEY,
     storeName TEXT NOT NULL,
-    region TEXT NOT NULL, -- Area/region for AM management
+    region TEXT NOT NULL, -- Area/region for AM management (1, 2, 3, 4)
     address TEXT,
     managerEmployeeId TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default store data if not exists
+-- Insert MayCha store data with proper regions
 INSERT OR IGNORE INTO stores (storeId, storeName, region, address) VALUES 
-('STORE001', 'Cửa hàng Quận 1', 'TP.HCM', 'Quận 1, TP.HCM'),
-('STORE002', 'Cửa hàng Quận 3', 'TP.HCM', 'Quận 3, TP.HCM'),
-('STORE003', 'Cửa hàng Hà Nội', 'Miền Bắc', 'Quận Ba Đình, Hà Nội'),
-('STORE004', 'Cửa hàng Đà Nẵng', 'Miền Trung', 'Quận Hải Châu, Đà Nẵng');
+-- Khu vực 1 (TP.HCM)
+('MC001', 'MayCha Quận 1', '1', '123 Đường Nguyễn Du, Quận 1, TP.HCM'),
+('MC002', 'MayCha Quận 3', '1', '456 Đường Võ Văn Tần, Quận 3, TP.HCM'),
+('MC003', 'MayCha Bình Thạnh', '1', '789 Đường Xô Viết Nghệ Tĩnh, Bình Thạnh, TP.HCM'),
+('MC004', 'MayCha Tân Bình', '1', '321 Đường Cộng Hòa, Tân Bình, TP.HCM'),
+('MC005', 'MayCha Thủ Đức', '1', '654 Đường Võ Văn Ngân, Thủ Đức, TP.HCM'),
+
+-- Khu vực 2 (Miền Bắc)
+('MC006', 'MayCha Hà Nội - Ba Đình', '2', '987 Đường Hoàng Diệu, Ba Đình, Hà Nội'),
+('MC007', 'MayCha Hà Nội - Đống Đa', '2', '147 Đường Láng, Đống Đa, Hà Nội'),
+('MC008', 'MayCha Hà Nội - Cầu Giấy', '2', '258 Đường Xuân Thủy, Cầu Giấy, Hà Nội'),
+('MC009', 'MayCha Hải Phòng', '2', '369 Đường Lê Thánh Tông, Ngô Quyền, Hải Phòng'),
+('MC010', 'MayCha Thái Nguyên', '2', '741 Đường Hoàng Văn Thụ, Thái Nguyên'),
+
+-- Khu vực 3 (Miền Trung)
+('MC011', 'MayCha Đà Nẵng - Hải Châu', '3', '852 Đường Trần Phú, Hải Châu, Đà Nẵng'),
+('MC012', 'MayCha Đà Nẵng - Thanh Khê', '3', '963 Đường Nguyễn Lương Bằng, Thanh Khê, Đà Nẵng'),
+('MC013', 'MayCha Huế', '3', '159 Đường Lê Lợi, Thành phố Huế, Thừa Thiên Huế'),
+('MC014', 'MayCha Quảng Nam', '3', '753 Đường Phan Chu Trinh, Hội An, Quảng Nam'),
+('MC015', 'MayCha Nha Trang', '3', '486 Đường Trần Phú, Nha Trang, Khánh Hòa'),
+
+-- Khu vực 4 (Miền Nam)
+('MC016', 'MayCha Cần Thơ', '4', '357 Đường 3 Tháng 2, Ninh Kiều, Cần Thơ'),
+('MC017', 'MayCha An Giang', '4', '951 Đường Tôn Đức Thắng, Long Xuyên, An Giang'),
+('MC018', 'MayCha Vũng Tàu', '4', '624 Đường Hạ Long, Vũng Tàu, Bà Rịa - Vũng Tàu'),
+('MC019', 'MayCha Đồng Tháp', '4', '735 Đường Nguyễn Huệ, Cao Lãnh, Đồng Tháp'),
+('MC020', 'MayCha Tiền Giang', '4', '148 Đường Đinh Bộ Lĩnh, Mỹ Tho, Tiền Giang');
 
 -- History tracking table for permission changes and approval actions
 CREATE TABLE IF NOT EXISTS history_logs (
