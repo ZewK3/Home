@@ -3765,6 +3765,16 @@ class AuthManager {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
     
+    // Initialize GSAP for dashboard if available
+    if (typeof gsap !== 'undefined') {
+        console.log('🎬 GSAP available, initializing dashboard animations...');
+        
+        // Set initial states for dashboard elements
+        gsap.set('.main', { opacity: 0, y: 20 });
+        gsap.set('.stat-card', { opacity: 0, y: 30, stagger: 0.1 });
+        gsap.set('.quick-action-btn', { opacity: 0, scale: 0.8, stagger: 0.05 });
+    }
+    
     // Show loading screen immediately
     showLoadingScreen();
     
@@ -4867,6 +4877,10 @@ function hideLoadingScreen() {
             ease: "power3.in",
             onComplete: () => {
                 gsap.set(loadingScreen, { display: 'none' });
+                // Animate dashboard content after loading screen is hidden
+                setTimeout(() => {
+                    animateDashboardContent();
+                }, 100);
             }
         });
         
@@ -4884,6 +4898,81 @@ function hideLoadingScreen() {
     } else if (loadingScreen) {
         // Fallback without GSAP
         loadingScreen.classList.add('hidden');
+        // Still animate dashboard content
+        setTimeout(() => {
+            animateDashboardContent();
+        }, 200);
+    }
+}
+
+// Enhanced Dashboard Content Animation with GSAP
+function animateDashboardContent() {
+    if (typeof gsap !== 'undefined') {
+        console.log('✨ Animating dashboard content with GSAP...');
+        
+        // Animate main content container
+        gsap.to('.main', {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            ease: "power3.out",
+            delay: 0.2
+        });
+        
+        // Animate stat cards with stagger
+        gsap.to('.stat-card', {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "power3.out",
+            delay: 0.4
+        });
+        
+        // Animate quick action buttons
+        gsap.to('.quick-action-btn', {
+            opacity: 1,
+            scale: 1,
+            duration: 0.4,
+            stagger: 0.05,
+            ease: "back.out(1.7)",
+            delay: 0.6
+        });
+        
+        // Animate other content sections
+        gsap.fromTo('.section-title', 
+            { opacity: 0, x: -20 },
+            { 
+                opacity: 1, 
+                x: 0, 
+                duration: 0.5, 
+                stagger: 0.2, 
+                ease: "power3.out",
+                delay: 0.8
+            }
+        );
+        
+        // Add continuous subtle animations
+        gsap.to('.stat-card', {
+            y: "random(-2, 2)",
+            duration: "random(3, 5)",
+            repeat: -1,
+            yoyo: true,
+            ease: "sine.inOut",
+            stagger: {
+                amount: 2,
+                from: "random"
+            }
+        });
+        
+    } else {
+        console.log('GSAP not available, using fallback animation');
+        // Fallback CSS animations
+        const main = document.querySelector('.main');
+        if (main) {
+            main.style.opacity = '1';
+            main.style.transform = 'translateY(0)';
+        }
     }
 }
 

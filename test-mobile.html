@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Interface Test</title>
+    <link rel="stylesheet" href="dash.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        /* Override authentication redirects for testing */
+        body { overflow-x: hidden; }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
+        <span>☰</span>
+    </button>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- User Info Header -->
+    <div class="show-user">
+        <div class="company-logo">
+            <h1>
+                <span class="company-name-desktop">ZewK Management System</span>
+                <span class="company-name-mobile">ZewK</span>
+            </h1>
+        </div>
+        <div class="user-header-info">
+            <div id="currentTime" class="current-time">
+                <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                <span id="timeDisplay" class="time-display">12:34</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <ul class="menu-list">
+            <li class="menu-item">
+                <a href="#" class="menu-link">📊 Dashboard</a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">👥 Nhân viên</a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">🏪 Cửa hàng</a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">⚙️ Cài đặt</a>
+            </li>
+        </ul>
+        <button class="logout-btn">Đăng xuất</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="content">
+            <h1 class="dashboard-title">Mobile Test Interface</h1>
+            
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <h3>Test Card 1</h3>
+                        <p>123</p>
+                        <span class="stat-trend">+5 this week</span>
+                    </div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <h3>Test Card 2</h3>
+                        <p>456</p>
+                        <span class="stat-trend">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-grid">
+                <button class="quick-action-btn">
+                    <span class="action-icon">👤</span>
+                    <span class="action-text">Action 1</span>
+                </button>
+                <button class="quick-action-btn">
+                    <span class="action-icon">📊</span>
+                    <span class="action-text">Action 2</span>
+                </button>
+                <button class="quick-action-btn">
+                    <span class="action-icon">🏆</span>
+                    <span class="action-text">Action 3</span>
+                </button>
+                <button class="quick-action-btn">
+                    <span class="action-icon">📈</span>
+                    <span class="action-text">Action 4</span>
+                </button>
+            </div>
+
+            <!-- Test Modal -->
+            <div id="testModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div style="padding: 2rem;">
+                        <h2>Test Modal</h2>
+                        <p>This modal should be properly positioned and animated with GSAP.</p>
+                        <button onclick="closeTestModal()" class="btn btn-primary">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test modal functions
+        function openTestModal() {
+            const modal = document.getElementById('testModal');
+            if (typeof gsap !== 'undefined') {
+                gsap.set(modal, { display: 'flex', opacity: 0 });
+                gsap.to(modal, { opacity: 1, duration: 0.3 });
+                const content = modal.querySelector('.modal-content');
+                gsap.fromTo(content, 
+                    { scale: 0.8, y: 30 },
+                    { scale: 1, y: 0, duration: 0.4, ease: "power3.out" }
+                );
+            } else {
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeTestModal() {
+            const modal = document.getElementById('testModal');
+            if (typeof gsap !== 'undefined') {
+                const content = modal.querySelector('.modal-content');
+                gsap.to(content, { scale: 0.9, y: 20, duration: 0.3 });
+                gsap.to(modal, { 
+                    opacity: 0, 
+                    duration: 0.3,
+                    onComplete: () => { modal.style.display = 'none'; }
+                });
+            } else {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Add test modal button
+        document.addEventListener('DOMContentLoaded', () => {
+            const testButton = document.createElement('button');
+            testButton.textContent = 'Open Test Modal';
+            testButton.className = 'btn btn-primary';
+            testButton.style.margin = '1rem 0';
+            testButton.onclick = openTestModal;
+            document.querySelector('.content').appendChild(testButton);
+        });
+    </script>
+
+    <!-- Include mobile menu functionality -->
+    <script>
+        // Simplified mobile menu for testing
+        function setupMobileMenu() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (menuToggle && sidebar && typeof gsap !== 'undefined') {
+                const menuTimeline = gsap.timeline({ paused: true });
+                
+                gsap.set(sidebar, { x: '-100%', visibility: 'visible' });
+                gsap.set(overlay, { opacity: 0, visibility: 'hidden' });
+                
+                menuTimeline
+                    .to(overlay, { opacity: 1, visibility: 'visible', duration: 0.3 })
+                    .to(sidebar, { x: '0%', duration: 0.4, ease: "power3.out" }, 0.1);
+                
+                let isMenuOpen = false;
+                
+                function handleMenuToggle(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    gsap.to(menuToggle, {
+                        scale: 0.9,
+                        duration: 0.1,
+                        yoyo: true,
+                        repeat: 1
+                    });
+                    
+                    if (isMenuOpen) {
+                        menuTimeline.reverse();
+                        isMenuOpen = false;
+                        gsap.to(menuToggle, { rotation: 0, duration: 0.3 });
+                    } else {
+                        menuTimeline.play();
+                        isMenuOpen = true;
+                        gsap.to(menuToggle, { rotation: 90, duration: 0.3 });
+                    }
+                }
+                
+                menuToggle.addEventListener('click', handleMenuToggle);
+                
+                if (overlay) {
+                    overlay.addEventListener('click', () => {
+                        if (isMenuOpen) {
+                            menuTimeline.reverse();
+                            isMenuOpen = false;
+                            gsap.to(menuToggle, { rotation: 0, duration: 0.3 });
+                        }
+                    });
+                }
+            }
+        }
+
+        // Initialize GSAP animations
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Mobile Interface Test - Initializing...');
+            
+            if (typeof gsap !== 'undefined') {
+                console.log('✅ GSAP loaded successfully');
+                
+                // Animate content entrance
+                gsap.set('.main', { opacity: 0, y: 20 });
+                gsap.set('.stat-card', { opacity: 0, y: 30 });
+                gsap.set('.quick-action-btn', { opacity: 0, scale: 0.8 });
+                
+                gsap.to('.main', { opacity: 1, y: 0, duration: 0.6, delay: 0.2 });
+                gsap.to('.stat-card', { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.4 });
+                gsap.to('.quick-action-btn', { opacity: 1, scale: 1, duration: 0.4, stagger: 0.05, delay: 0.6 });
+                
+                setupMobileMenu();
+                console.log('✅ Mobile menu initialized with GSAP');
+            } else {
+                console.error('❌ GSAP not loaded');
+            }
+        });
+    </script>
+</body>
+</html>
