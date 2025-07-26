@@ -317,7 +317,7 @@ async function updateUser(body, userId, db, origin) {
 // Hàm lấy danh sách cửa hàng
 async function handleGetStores(db, origin) {
   try {
-    const stores = await db.prepare("SELECT storeId, storeName FROM stores").all();
+    const stores = await db.prepare("SELECT storeId, storeName, region, address FROM stores").all();
     console.log("Raw stores query result:", stores);
     
     // D1 database returns {results: [...], success: true}

@@ -1952,10 +1952,12 @@ class ContentManager {
             label.textContent = 'Khu vực quản lý';
             regionSelection.style.display = 'block';
             
-            // Set current region if available
-            if (currentValue) {
-                // Get region from store (would need to query stores API)
-                document.getElementById('editRegion').value = '';
+            // For AM, set current region based on their store assignment
+            if (currentValue && this.regionMap) {
+                const currentRegion = this.getStoreRegion(currentValue);
+                if (currentRegion) {
+                    document.getElementById('editRegion').value = currentRegion;
+                }
             }
         } else if (role === 'QL') {
             // Show multi-store selection for Store Manager
@@ -2176,7 +2178,11 @@ class ContentManager {
             if (selectedRole === 'AM') {
                 // For Area Manager, use region selection
                 const regionSelect = document.getElementById('editRegion');
-                storeAssignment = regionSelect ? regionSelect.value : '';
+                const selectedRegion = regionSelect ? regionSelect.value : '';
+                
+                // For AM, we store a region-representative store ID or region name
+                // This would need backend logic to determine which stores are in this region
+                storeAssignment = selectedRegion; // Store the region name directly
             } else if (selectedRole === 'QL') {
                 // For Store Manager, use multi-store selection
                 const storeSelect = document.getElementById('editStoreName');
@@ -2588,6 +2594,7 @@ class ContentManager {
             this.filteredRegistrations = [];
             this.allRegistrations = [];
             this.storeMap = new Map(); // Store ID -> Store Name mapping
+            this.regionMap = new Map(); // Store ID -> Region mapping
 
             await this.loadStoreMapping();
             await this.loadStoresForFilter();
@@ -2616,15 +2623,20 @@ class ContentManager {
                 }
             }
 
-            // Create mapping from store ID to store name
+            // Create mapping from store ID to store info
             this.storeMap.clear();
+            this.regionMap = new Map(); // Store ID -> Region mapping
             stores.forEach(store => {
                 if (store.storeId && store.storeName) {
                     this.storeMap.set(store.storeId, store.storeName);
+                    if (store.region) {
+                        this.regionMap.set(store.storeId, store.region);
+                    }
                 }
             });
             
             console.log('Store mapping loaded:', this.storeMap);
+            console.log('Region mapping loaded:', this.regionMap);
         } catch (error) {
             console.error('Error loading store mapping:', error);
         }
@@ -2632,6 +2644,10 @@ class ContentManager {
 
     getStoreDisplayName(storeId) {
         return this.storeMap.get(storeId) || storeId || 'N/A';
+    }
+
+    getStoreRegion(storeId) {
+        return this.regionMap.get(storeId) || '';
     }
 
     async loadStoresForFilter() {
