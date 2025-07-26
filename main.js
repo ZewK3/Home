@@ -2169,8 +2169,38 @@ class ContentManager {
             modal.dataset.editingUser = userId;
             modal.dataset.originalData = JSON.stringify(userInfo);
             
-            // Show modal
-            modal.classList.add('active');
+            // Show modal with GSAP animation
+            if (typeof gsap !== 'undefined') {
+                gsap.set(modal, { 
+                    display: 'flex',
+                    opacity: 0
+                });
+                
+                const modalContent = modal.querySelector('.permission-edit-content');
+                gsap.set(modalContent, {
+                    scale: 0.8,
+                    y: 30,
+                    opacity: 0
+                });
+                
+                gsap.to(modal, {
+                    opacity: 1,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+                
+                gsap.to(modalContent, {
+                    scale: 1,
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.4,
+                    delay: 0.1,
+                    ease: "power3.out"
+                });
+            } else {
+                // Fallback without GSAP
+                modal.classList.add('active');
+            }
             
         } catch (error) {
             console.error('Error loading user data:', error);
@@ -2309,7 +2339,33 @@ class ContentManager {
 
     closePermissionModal() {
         const modal = document.getElementById('permissionEditModal');
-        modal.classList.remove('active');
+        
+        if (modal && typeof gsap !== 'undefined') {
+            // GSAP-powered modal close animation
+            const modalContent = modal.querySelector('.permission-edit-content');
+            
+            gsap.to(modalContent, {
+                scale: 0.9,
+                y: 20,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power3.in"
+            });
+            
+            gsap.to(modal, {
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.in",
+                onComplete: () => {
+                    modal.classList.remove('active');
+                    gsap.set(modal, { display: 'none' });
+                }
+            });
+        } else if (modal) {
+            // Fallback without GSAP
+            modal.classList.remove('active');
+        }
+        
         modal.removeAttribute('data-editing-user');
         modal.removeAttribute('data-original-data');
         
@@ -4503,13 +4559,36 @@ async function initializeFinanceDashboard() {
     if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
 }
 
-// Enhanced Mobile Menu Setup (GSAP animations removed)
+// Enhanced Mobile Menu Setup with GSAP Animations
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.getElementById('sidebarOverlay');
     
-    if (menuToggle && sidebar) {
+    if (menuToggle && sidebar && typeof gsap !== 'undefined') {
+        // Initialize GSAP timeline for smooth animations
+        const menuTimeline = gsap.timeline({ paused: true });
+        
+        // Set initial states
+        gsap.set(sidebar, { x: '-100%', visibility: 'visible' });
+        gsap.set(overlay, { opacity: 0, visibility: 'hidden' });
+        
+        // Create animation timeline
+        menuTimeline
+            .to(overlay, { 
+                opacity: 1, 
+                visibility: 'visible', 
+                duration: 0.3, 
+                ease: "power2.out" 
+            })
+            .to(sidebar, { 
+                x: '0%', 
+                duration: 0.4, 
+                ease: "power3.out" 
+            }, 0.1);
+        
+        let isMenuOpen = false;
+        
         // Remove any existing event listeners first
         const oldHandler = menuToggle._mobileMenuHandler;
         if (oldHandler) {
@@ -4517,26 +4596,44 @@ function setupMobileMenu() {
             menuToggle.removeEventListener('touchend', oldHandler);
         }
         
-        // Enhanced mobile menu toggle handler
+        // Enhanced mobile menu toggle handler with GSAP
         function handleMenuToggle(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Force focus for better mobile interaction
-            menuToggle.blur();
+            // Add touch feedback animation
+            gsap.to(menuToggle, {
+                scale: 0.9,
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                ease: "power2.out"
+            });
             
-            const isActive = sidebar.classList.contains('active');
-            
-            if (isActive) {
-                // Close menu with animation
-                sidebar.classList.remove('active');
-                if (overlay) overlay.classList.remove('active');
+            if (isMenuOpen) {
+                // Close menu with smooth GSAP animation
+                menuTimeline.reverse();
                 document.body.style.overflow = '';
+                isMenuOpen = false;
+                
+                // Animate menu button
+                gsap.to(menuToggle, {
+                    rotation: 0,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
             } else {
-                // Open menu with animation
-                sidebar.classList.add('active');
-                if (overlay) overlay.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent background scroll
+                // Open menu with smooth GSAP animation
+                menuTimeline.play();
+                document.body.style.overflow = 'hidden';
+                isMenuOpen = true;
+                
+                // Animate menu button
+                gsap.to(menuToggle, {
+                    rotation: 90,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
             }
         }
         
@@ -4547,59 +4644,121 @@ function setupMobileMenu() {
         menuToggle.addEventListener('click', handleMenuToggle);
         menuToggle.addEventListener('touchend', handleMenuToggle);
 
-        // Enhanced touch feedback
+        // Enhanced touch feedback with GSAP
         menuToggle.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            menuToggle.style.transform = 'scale(0.95)';
-            menuToggle.style.opacity = '0.8';
+            gsap.to(menuToggle, {
+                scale: 0.95,
+                duration: 0.1,
+                ease: "power2.out"
+            });
         });
 
         menuToggle.addEventListener('touchcancel', (e) => {
-            menuToggle.style.transform = '';
-            menuToggle.style.opacity = '';
+            gsap.to(menuToggle, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out"
+            });
         });
 
-        // Close sidebar when clicking overlay
+        // Close sidebar when clicking overlay with animation
         if (overlay) {
             overlay.addEventListener('click', (e) => {
                 e.preventDefault();
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
+                if (isMenuOpen) {
+                    menuTimeline.reverse();
+                    document.body.style.overflow = '';
+                    isMenuOpen = false;
+                    
+                    gsap.to(menuToggle, {
+                        rotation: 0,
+                        duration: 0.3,
+                        ease: "power2.out"
+                    });
+                }
             });
         }
 
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 768 && 
-                sidebar.classList.contains('active') &&
+                isMenuOpen &&
                 !sidebar.contains(e.target) && 
                 !menuToggle.contains(e.target) &&
-                !overlay.contains(e.target)) {
+                e.target !== overlay) {
                 
-                sidebar.classList.remove('active');
-                if (overlay) overlay.classList.remove('active');
+                menuTimeline.reverse();
                 document.body.style.overflow = '';
+                isMenuOpen = false;
+                
+                gsap.to(menuToggle, {
+                    rotation: 0,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
             }
         });
 
         // Handle escape key
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
-                if (overlay) overlay.classList.remove('active');
+            if (e.key === 'Escape' && isMenuOpen) {
+                menuTimeline.reverse();
                 document.body.style.overflow = '';
+                isMenuOpen = false;
+                
+                gsap.to(menuToggle, {
+                    rotation: 0,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
             }
         });
         
-        console.log('Mobile menu setup completed successfully');
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && isMenuOpen) {
+                menuTimeline.reverse();
+                document.body.style.overflow = '';
+                isMenuOpen = false;
+                
+                gsap.to(menuToggle, {
+                    rotation: 0,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            }
+        });
         
-    } else {
-        console.warn('Mobile menu elements not found, retrying...');
-        // Retry after a short delay in case elements are being dynamically loaded
-        setTimeout(() => {
-            setupMobileMenu();
-        }, 500);
+    } else if (menuToggle && sidebar) {
+        // Fallback without GSAP for older browsers
+        console.warn('GSAP not available, using fallback mobile menu');
+        
+        let isMenuOpen = false;
+        
+        function handleMenuToggle(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (isMenuOpen) {
+                sidebar.style.transform = 'translateX(-100%)';
+                overlay.style.opacity = '0';
+                overlay.style.visibility = 'hidden';
+                document.body.style.overflow = '';
+                isMenuOpen = false;
+            } else {
+                sidebar.style.transform = 'translateX(0)';
+                overlay.style.opacity = '1';
+                overlay.style.visibility = 'visible';
+                document.body.style.overflow = 'hidden';
+                isMenuOpen = true;
+            }
+        }
+        
+        menuToggle.addEventListener('click', handleMenuToggle);
+        if (overlay) {
+            overlay.addEventListener('click', handleMenuToggle);
+        }
     }
 }
 
@@ -4640,17 +4799,90 @@ function showDashboardContent() {
     });
 }
 
-// Loading Screen Management
+// Enhanced Loading Screen Management with GSAP
 function showLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) {
+    if (loadingScreen && typeof gsap !== 'undefined') {
+        // GSAP-powered loading screen with advanced animations
+        gsap.set(loadingScreen, { 
+            display: 'flex',
+            opacity: 0,
+            scale: 0.9
+        });
+        
+        gsap.to(loadingScreen, {
+            opacity: 1,
+            scale: 1,
+            duration: 0.5,
+            ease: "power3.out"
+        });
+        
+        // Animate loading content
+        const loadingContent = loadingScreen.querySelector('.loading-content');
+        if (loadingContent) {
+            gsap.fromTo(loadingContent, 
+                { y: 30, opacity: 0 },
+                { y: 0, opacity: 1, duration: 0.6, delay: 0.2, ease: "power3.out" }
+            );
+        }
+        
+        // Animate loading dots
+        const dots = loadingScreen.querySelectorAll('.loading-dot');
+        if (dots.length > 0) {
+            gsap.to(dots, {
+                scale: 1.2,
+                duration: 0.8,
+                stagger: 0.1,
+                repeat: -1,
+                yoyo: true,
+                ease: "power2.inOut"
+            });
+        }
+        
+        // Animate spinner
+        const spinner = loadingScreen.querySelector('.loading-spinner');
+        if (spinner) {
+            gsap.to(spinner, {
+                rotation: 360,
+                duration: 1,
+                repeat: -1,
+                ease: "none"
+            });
+        }
+        
+    } else if (loadingScreen) {
+        // Fallback without GSAP
         loadingScreen.classList.remove('hidden');
     }
 }
 
 function hideLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) {
+    if (loadingScreen && typeof gsap !== 'undefined') {
+        // GSAP-powered hide animation
+        gsap.to(loadingScreen, {
+            opacity: 0,
+            scale: 0.95,
+            duration: 0.4,
+            ease: "power3.in",
+            onComplete: () => {
+                gsap.set(loadingScreen, { display: 'none' });
+            }
+        });
+        
+        // Animate loading content out
+        const loadingContent = loadingScreen.querySelector('.loading-content');
+        if (loadingContent) {
+            gsap.to(loadingContent, {
+                y: -20,
+                opacity: 0,
+                duration: 0.3,
+                ease: "power3.in"
+            });
+        }
+        
+    } else if (loadingScreen) {
+        // Fallback without GSAP
         loadingScreen.classList.add('hidden');
     }
 }

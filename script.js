@@ -763,67 +763,248 @@ document.addEventListener("keydown", (e) => {
 
 document.addEventListener("contextmenu", (e) => e.preventDefault());
 
-// GSAP Animations for Enhanced UI
+// Enhanced GSAP Animations for Modern Mobile Experience
 function initializeGSAPAnimations() {
     if (typeof gsap === 'undefined') {
         console.log('GSAP not loaded, skipping animations');
         return;
     }
 
-    console.log('🎬 Initializing GSAP animations for login page...');
+    console.log('🎬 Initializing enhanced GSAP animations for login page...');
 
-    // Animate auth container entrance
+    // Enhanced mobile entrance animation with stagger
     gsap.fromTo('.auth-container', 
         { 
-            scale: 0.8, 
+            scale: 0.9, 
             opacity: 0,
-            y: 50
+            y: 30,
+            filter: 'blur(10px)'
         },
         { 
             scale: 1, 
             opacity: 1,
             y: 0,
-            duration: 1,
+            filter: 'blur(0px)',
+            duration: 0.8,
             ease: "power3.out",
-            delay: 0.3
+            delay: 0.2
         }
     );
 
-    // Animate background elements
+    // Enhanced form container entrance with bounce effect
+    gsap.fromTo('.form-container', 
+        { 
+            scale: 0.85,
+            opacity: 0,
+            rotationY: 5
+        },
+        { 
+            scale: 1,
+            opacity: 1,
+            rotationY: 0,
+            duration: 1,
+            ease: "back.out(1.7)",
+            delay: 0.4,
+            onComplete: () => {
+                document.querySelector('.form-container')?.classList.add('active');
+            }
+        }
+    );
+
+    // Enhanced background elements with continuous motion
     gsap.fromTo('.glass-circle', 
         { 
             scale: 0,
-            rotation: 0
+            rotation: 0,
+            opacity: 0
         },
         { 
             scale: 1,
             rotation: 360,
-            duration: 2,
+            opacity: 1,
+            duration: 2.5,
             ease: "power2.out",
-            stagger: 0.2
+            stagger: 0.3
         }
     );
 
-    // Animate stars with stagger
+    // Continuous floating animation for glass circles
+    gsap.to('.glass-circle', {
+        y: "random(-20, 20)",
+        x: "random(-10, 10)",
+        rotation: "random(-10, 10)",
+        duration: "random(4, 6)",
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        stagger: {
+            amount: 2,
+            from: "random"
+        }
+    });
+
+    // Enhanced stars with parallax effect
     gsap.fromTo('.star', 
         { 
             opacity: 0,
-            scale: 0
+            scale: 0,
+            y: "random(-50, 50)"
         },
         { 
             opacity: 1,
             scale: 1,
-            duration: 1,
+            y: 0,
+            duration: 1.5,
             ease: "power2.out",
             stagger: {
-                amount: 2,
+                amount: 3,
                 from: "random"
             },
-            delay: 0.5
+            delay: 0.6
         }
     );
 
-    // Form transition animations
+    // Continuous twinkling animation for stars
+    gsap.to('.star', {
+        opacity: "random(0.3, 1)",
+        scale: "random(0.8, 1.2)",
+        duration: "random(2, 4)",
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        stagger: {
+            amount: 5,
+            from: "random"
+        }
+    });
+
+    // Enhanced input focus animations
+    const inputs = document.querySelectorAll('.input-group input, .input-group select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            gsap.to(input.closest('.input-group'), {
+                scale: 1.02,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+            
+            const icon = input.closest('.input-group').querySelector('.input-icon');
+            if (icon) {
+                gsap.to(icon, {
+                    scale: 1.2,
+                    rotation: 10,
+                    color: '#3b82f6',
+                    duration: 0.3,
+                    ease: "back.out(1.7)"
+                });
+            }
+        });
+
+        input.addEventListener('blur', () => {
+            gsap.to(input.closest('.input-group'), {
+                scale: 1,
+                duration: 0.3,
+                ease: "power2.out"
+            });
+            
+            const icon = input.closest('.input-group').querySelector('.input-icon');
+            if (icon) {
+                gsap.to(icon, {
+                    scale: 1,
+                    rotation: 0,
+                    color: '#64748b',
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            }
+        });
+    });
+
+    // Enhanced button animations
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('mousedown', () => {
+            gsap.to(button, {
+                scale: 0.95,
+                duration: 0.1,
+                ease: "power2.out"
+            });
+        });
+
+        button.addEventListener('mouseup', () => {
+            gsap.to(button, {
+                scale: 1,
+                duration: 0.2,
+                ease: "back.out(1.7)"
+            });
+        });
+
+        button.addEventListener('mouseleave', () => {
+            gsap.to(button, {
+                scale: 1,
+                duration: 0.2,
+                ease: "power2.out"
+            });
+        });
+    });
+
+    // Enhanced form transition animations
+    function animateFormTransition(hideElement, showElement) {
+        const tl = gsap.timeline();
+        
+        tl.to(hideElement, {
+            opacity: 0,
+            x: -50,
+            scale: 0.95,
+            duration: 0.4,
+            ease: "power3.in"
+        })
+        .set(hideElement, { display: 'none' })
+        .set(showElement, { display: 'block', opacity: 0, x: 50, scale: 0.95 })
+        .to(showElement, {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            duration: 0.5,
+            ease: "power3.out"
+        })
+        .to(showElement.querySelector('.form-container'), {
+            scale: 1.02,
+            duration: 0.1,
+            ease: "power2.out",
+            yoyo: true,
+            repeat: 1
+        }, "-=0.2");
+        
+        return tl;
+    }
+
+    // Enhanced notification animations
+    function animateNotification(notification) {
+        gsap.fromTo(notification, 
+            {
+                y: -100,
+                opacity: 0,
+                scale: 0.8,
+                rotationX: -90
+            },
+            {
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                rotationX: 0,
+                duration: 0.6,
+                ease: "back.out(1.7)"
+            }
+        );
+    }
+
+    // Store animation function globally for form transitions
+    window.animateFormTransition = animateFormTransition;
+    window.animateNotification = animateNotification;
+
+    console.log('✨ Enhanced GSAP animations initialized successfully!');
+}
     function animateFormTransition(hideElement, showElement) {
         const tl = gsap.timeline();
         
