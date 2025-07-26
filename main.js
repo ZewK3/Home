@@ -11,6 +11,68 @@ const CONFIG = {
     MAX_RETRY_ATTEMPTS: 3
 };
 
+// Global cache for API data
+const API_CACHE = {
+    userData: null,
+    storesData: null,
+    lastUserDataFetch: null,
+    lastStoresDataFetch: null,
+    CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
+    
+    // Clear cache
+    clear() {
+        this.userData = null;
+        this.storesData = null;
+        this.lastUserDataFetch = null;
+        this.lastStoresDataFetch = null;
+    },
+    
+    // Check if cache is valid
+    isCacheValid(timestamp) {
+        return timestamp && (Date.now() - timestamp < this.CACHE_DURATION);
+    },
+    
+    // Get cached user data or fetch new
+    async getUserData() {
+        if (this.userData && this.isCacheValid(this.lastUserDataFetch)) {
+            return this.userData;
+        }
+        
+        const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        const employeeId = userData.employeeId || userData.loginEmployeeId;
+        
+        if (!employeeId) {
+            throw new Error('No employee ID found');
+        }
+        
+        try {
+            this.userData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            this.lastUserDataFetch = Date.now();
+            return this.userData;
+        } catch (error) {
+            console.error('Failed to fetch user data:', error);
+            throw error;
+        }
+    },
+    
+    // Get cached stores data or fetch new
+    async getStoresData() {
+        if (this.storesData && this.isCacheValid(this.lastStoresDataFetch)) {
+            return this.storesData;
+        }
+        
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            this.storesData = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            this.lastStoresDataFetch = Date.now();
+            return this.storesData;
+        } catch (error) {
+            console.error('Failed to fetch stores data:', error);
+            throw error;
+        }
+    }
+};
+
 // Utility Functions
 const utils = {
     showNotification(message, type = "success", duration = 3000) {
@@ -147,10 +209,8 @@ class ContentManager {
     async showShiftAssignment() {
         const content = document.getElementById('content');
         try {
-            // Get current user's role and stores to determine permissions
-            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-            const employeeId = userData.employeeId || userData.loginEmployeeId;
-            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            // Get current user's role and stores to determine permissions using cache
+            const userResponse = await API_CACHE.getUserData();
             
             // Only AD, AM, QL can assign shifts
             if (!['AD', 'AM', 'QL'].includes(userResponse.position)) {
@@ -217,9 +277,8 @@ class ContentManager {
     async showWorkShifts() {
         const content = document.getElementById('content');
         try {
-            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-            const employeeId = userData.employeeId || userData.loginEmployeeId;
-            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            const userResponse = await API_CACHE.getUserData();
+            const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
                 <div class="work-shifts-container">
@@ -274,9 +333,8 @@ class ContentManager {
     async showAttendance() {
         const content = document.getElementById('content');
         try {
-            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-            const employeeId = userData.employeeId || userData.loginEmployeeId;
-            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            const userResponse = await API_CACHE.getUserData();
+            const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
                 <div class="attendance-container">
@@ -376,8 +434,7 @@ class ContentManager {
     // Helper functions for shift management
     async loadStoresForShiftAssignment() {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            const response = await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -401,8 +458,7 @@ class ContentManager {
 
     async loadStoresForAttendance() {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            const response = await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -3377,6 +3433,11 @@ class ContentManager {
                         <button class="action-btn reject-btn" onclick="window.rejectRegistration('${reg.employeeId}')" title="Từ chối">
                             <span class="material-icons-round">close</span>
                         </button>
+                    ` : reg.status === 'Rejected' ? `
+                        <button class="action-btn approve-btn" onclick="window.approveRegistration('${reg.employeeId}')" title="Duyệt lại">
+                            <span class="material-icons-round">check</span>
+                            Duyệt lại
+                        </button>
                     ` : ''}
                 </div>
             </div>
@@ -3387,11 +3448,11 @@ class ContentManager {
     
     getStatusText(status) {
         const statusMap = {
-            'Wait': 'Chờ duyệt',
-            'Approved': 'Đã duyệt', 
-            'Rejected': 'Từ chối'
+            'Wait': '⏳ Chờ duyệt',
+            'Approved': '✅ Đã duyệt', 
+            'Rejected': '❌ Đã hủy'
         };
-        return statusMap[status] || status || 'Chờ duyệt';
+        return statusMap[status] || status || '⏳ Chờ duyệt';
     }
 
     updatePaginationControls() {
@@ -3510,7 +3571,7 @@ class ContentManager {
             case 'wait':
             case 'pending': return '⏳ Chờ duyệt';
             case 'approved': return '✅ Đã duyệt';
-            case 'rejected': return '❌ Đã từ chối';
+            case 'rejected': return '❌ Đã hủy';
             default: return '❓ Không xác định';
         }
     }
