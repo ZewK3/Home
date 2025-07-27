@@ -377,7 +377,7 @@ async function handleLogin(event) {
             showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
             if (buttonText) buttonText.textContent = "Thành công!";
             
-            setTimeout(() => window.location.href = "dashboard.html", 300);
+            setTimeout(() => window.location.href = "dashboard.html", 1500);
         } else {
             const errorData = await response.json().catch(() => ({}));
             
@@ -461,7 +461,7 @@ async function handleRegister(event) {
                 } else {
                     showNotification("Đăng ký thành công! Yêu cầu của bạn đang chờ phê duyệt từ quản lý cửa hàng.", "success", 5000);
                     if (buttonText) buttonText.textContent = "Chờ phê duyệt";
-                    setTimeout(showLoginForm, 1000);
+                    setTimeout(showLoginForm, 2500);
                 }
                 break;
             case ACCOUNT_EXISTS_STATUS:

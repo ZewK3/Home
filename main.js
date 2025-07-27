@@ -1724,7 +1724,7 @@ class ContentManager {
             if (response.status === 200) {
                 utils.showNotification('Cập nhật thông tin thành công', 'success');
                 // Reload personal info to show updated data
-                this.showPersonalInfo();
+                setTimeout(() => this.showPersonalInfo(), 1000);
             } else {
                 utils.showNotification('Không thể cập nhật thông tin', 'error');
             }
@@ -3750,7 +3750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupMobileMenu();
     
     // Wait a moment for all elements to be rendered
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     // Setup security
     document.addEventListener("keydown", (e) => {
@@ -3770,7 +3770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ThemeManager.initialize();
 
         // Initialize features
-        window.contentManager = new ContentManager(user);
+        new ContentManager(user);
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();
@@ -3805,7 +3805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Additional failsafe - ensure mobile menu is setup after everything else
         setTimeout(() => {
             setupMobileMenu();
-        }, 100);
+        }, 2000);
     } else {
         // Hide dashboard loader if authentication fails
         await hideDashboardLoader();
@@ -3820,7 +3820,7 @@ window.addEventListener('load', () => {
 // Additional backup initialization for mobile menu
 setTimeout(() => {
     setupMobileMenu();
-}, 50);
+}, 3000);
 
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function getDashboardStats() {
@@ -3847,7 +3847,7 @@ async function getDashboardStats() {
     }
     
     // Wait a moment for DOM to be ready
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     const elements = {
         totalEmployees: document.getElementById('totalEmployees'),
@@ -3978,7 +3978,7 @@ async function updateStatsGrid() {
     }
     
     // Force a re-layout
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, 50));
 }
 
 // Role-based UI Management  
@@ -4056,7 +4056,7 @@ async function initializeRoleBasedUI() {
         ];
         
         // Wait for DOM to be fully ready before checking sections
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 100));
         
         adSections.forEach(selector => {
             // Use more flexible selector approach
@@ -4626,7 +4626,6 @@ function setupMobileMenu() {
             const submenu = item.querySelector('.mobile-submenu');
             
             if (menuLink && submenu) {
-                // Menu item with submenu - toggle submenu
                 menuLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     
@@ -4647,32 +4646,6 @@ function setupMobileMenu() {
                         item.classList.add('submenu-open');
                     }
                 });
-            } else if (menuLink && !submenu) {
-                // Menu item without submenu - handle direct navigation
-                menuLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    closeMobileMenu();
-                    
-                    // Handle different menu actions
-                    const linkId = menuLink.id;
-                    switch(linkId) {
-                        case 'mobileReward':
-                            window.contentManager?.showReward();
-                            break;
-                        case 'mobileSubmitTask':
-                            window.contentManager?.showSubmitTask();
-                            break;
-                        case 'mobileRegistrationApproval':
-                            window.contentManager?.showRegistrationApproval();
-                            break;
-                        case 'mobileGrantAccess':
-                            window.contentManager?.showGrantAccess();
-                            break;
-                        case 'mobilePersonalInformation':
-                            window.contentManager?.showPersonalInformation();
-                            break;
-                    }
-                });
             }
         });
         
@@ -4680,81 +4653,81 @@ function setupMobileMenu() {
         document.getElementById('mobileShiftAssignment')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showShiftAssignment()
+            setTimeout(() => window.contentManager?.showShiftAssignment(), 300);
         });
         
         document.getElementById('mobileWorkShifts')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showWorkShifts()
+            setTimeout(() => window.contentManager?.showWorkShifts(), 300);
         });
         
         document.getElementById('mobileAttendance')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showAttendance()
+            setTimeout(() => window.contentManager?.showAttendance(), 300);
         });
         
         // Other menu items
         document.getElementById('mobileReward')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showReward()
+            setTimeout(() => window.contentManager?.showReward(), 300);
         });
         
         document.getElementById('mobileSubmitTask')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showSubmitTask()
+            setTimeout(() => window.contentManager?.showSubmitTask(), 300);
         });
         
         document.getElementById('mobileTaskPersonnel')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showTaskPersonnel()
+            setTimeout(() => window.contentManager?.showTaskPersonnel(), 300);
         });
         
         document.getElementById('mobileTaskStore')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showTaskStore()
+            setTimeout(() => window.contentManager?.showTaskStore(), 300);
         });
         
         document.getElementById('mobileTaskFinance')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showTaskFinance()
+            setTimeout(() => window.contentManager?.showTaskFinance(), 300);
         });
         
         document.getElementById('mobileTaskApproval')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showTaskApproval()
+            setTimeout(() => window.contentManager?.showTaskApproval(), 300);
         });
         
         document.getElementById('mobileRegistrationApproval')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showRegistrationApproval()
+            setTimeout(() => window.contentManager?.showRegistrationApproval(), 300);
         });
         
         document.getElementById('mobileGrantAccess')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showGrantAccess()
+            setTimeout(() => window.contentManager?.showGrantAccess(), 300);
         });
         
         document.getElementById('mobilePersonalInformation')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            window.contentManager?.showPersonalInformation()
+            setTimeout(() => window.contentManager?.showPersonalInformation(), 300);
         });
         
         // Mobile logout
         document.getElementById('mobileLogout')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            logout()
+            setTimeout(() => logout(), 300);
         });
     }
     
@@ -4873,7 +4846,7 @@ async function hideDashboardLoader() {
     const dashboardContent = document.getElementById('dashboardContent');
     
     // Simulate minimum loading time for better UX
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     if (dashboardLoader) {
         dashboardLoader.classList.add('hidden');
@@ -5219,7 +5192,7 @@ async function showWelcomeSection() {
         `;
         
         // Wait a moment for visual feedback
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         // Get user role first before building content
         const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
