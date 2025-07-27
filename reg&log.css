@@ -3,7 +3,8 @@
 body {
     position: relative;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     background: #000428;
     background: -webkit-linear-gradient(to right, #004e92, #000428);
     background: linear-gradient(to right, #004e92, #000428);
@@ -1042,7 +1043,6 @@ body {
             inset 0 1px 0 rgba(255, 255, 255, 0.025);
         background: rgba(13, 17, 23, 0.95);
     }
-    }
 
     .input-icon {
         position: absolute;
@@ -1242,9 +1242,6 @@ body {
         -webkit-backdrop-filter: blur(16px);
         animation: slideInDown 0.3s ease-out;
     }
-}
-    }
-}
     
     .circle-3 {
         width: 200px;
