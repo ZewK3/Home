@@ -34,7 +34,6 @@
     --shadow-glow: 0 0 0 1px rgba(37, 99, 235, 0.1), 0 4px 16px rgba(37, 99, 235, 0.2);
     
     /* Enhanced Professional Layout */
-    --header-height: 60px;
     --sidebar-width: 280px;
     --border-radius: 12px;
     --border-radius-sm: 8px;
@@ -115,7 +114,7 @@ body {
     min-height: 100vh;
     letter-spacing: -0.025em;
     position: relative;
-    padding-top: var(--header-height);
+    padding-top: 60px;
 }
 
 /* Enhanced Professional Header Styles */
@@ -124,7 +123,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: var(--header-height);
+    height: 60px;
     background: var(--bg-header);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
@@ -456,7 +455,7 @@ body {
     flex-direction: column;
     box-shadow: var(--shadow-lg);
     backdrop-filter: var(--glass-blur);
-    padding-top: var(--header-height);
+    padding-top: 60px;
 }
 
 /* Company Logo Responsive Text */
@@ -892,12 +891,12 @@ body {
     margin-left: var(--sidebar-width);
     margin-top: 0;
     padding: 30px 40px;
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - 60px);
     overflow-y: auto;
     background: var(--bg-main);
     position: relative;
     z-index: 1;
-    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100vh - 60px);
 }
 
 .main::before {
@@ -2839,7 +2838,7 @@ body {
     .main::before {
         content: '';
         position: fixed;
-        top: var(--header-height);
+        top: 60px;
         left: var(--sidebar-width);
         right: 0;
         bottom: 0;
@@ -8433,7 +8432,7 @@ button:focus, .btn:focus, .menu-link:focus {
     top: 0;
     left: 0;
     width: 100%;
-    height: var(--header-height);
+    height: 60px;
     background: var(--bg-header);
     z-index: 9998;
     display: flex;
@@ -8486,7 +8485,7 @@ button:focus, .btn:focus, .menu-link:focus {
 .main {
     margin-left: 0 !important;
     width: 100% !important;
-    padding: calc(var(--header-height) + 1rem) 1rem 2rem 1rem !important;
+    padding: calc(60px + 1rem) 1rem 2rem 1rem !important;
     min-height: 100vh;
     background: var(--bg-main);
 }
@@ -8828,8 +8827,8 @@ button:focus, .btn:focus, .menu-link:focus {
         position: fixed !important;
         transform: translateX(0) !important;
         z-index: 500;
-        top: var(--header-height);
-        height: calc(100vh - var(--header-height));
+        top: 60px;
+        height: calc(100vh - 60px);
     }
     
     .sidebar-overlay {
@@ -8847,7 +8846,7 @@ button:focus, .btn:focus, .menu-link:focus {
     .main {
         margin-left: var(--sidebar-width) !important;
         width: calc(100% - var(--sidebar-width)) !important;
-        padding: calc(var(--header-height) + 2rem) 2rem 2rem 2rem !important;
+        padding: calc(60px + 2rem) 2rem 2rem 2rem !important;
     }
     
     .stats-grid {
@@ -9518,7 +9517,7 @@ button:focus, .btn:focus, .menu-link:focus {
     top: 0;
     left: 0;
     right: 0;
-    height: var(--header-height, 64px);
+    height: 60px;
     background: rgba(13, 17, 23, 0.95);
     border-bottom: 1px solid rgba(48, 54, 61, 0.8);
     backdrop-filter: blur(16px);
