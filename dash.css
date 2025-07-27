@@ -60,29 +60,6 @@
     --shadow-glow: 0 0 30px rgba(96, 165, 250, 0.2);
 }
 
-/* Global Reset and Body Styling */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background: var(--bg-main);
-    color: var(--text-primary);
-    line-height: 1.6;
-    overflow: hidden;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-}
-
-html {
-    overflow: hidden;
-    height: 100vh;
-}
-
 /* Dark mode optimizations */
 [data-theme="dark"] .stat-card {
     background: rgba(30, 41, 59, 0.9);
@@ -143,7 +120,7 @@ body {
 
 /* Enhanced Professional Header Styles */
 .show-user {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -465,7 +442,7 @@ body {
 
 /* Enhanced Professional Sidebar - Desktop Only */
 .sidebar {
-    position: fixed !important;
+    position: fixed;
     top: 60px;
     left: 0;
     width: var(--sidebar-width);
@@ -911,22 +888,20 @@ body {
 
 /* Enhanced Professional Main Content - Desktop Only */
 .main {
-    position: fixed !important;
-    top: 60px;
-    left: var(--sidebar-width);
-    right: 0;
-    bottom: 0;
-    padding: 30px 40px;
-    background: var(--bg-main);
+    margin-left: var(--sidebar-width);
+    padding: 90px 40px 30px 40px;
+    min-height: 100vh;
     overflow-y: auto;
+    background: var(--bg-main);
+    position: relative;
     z-index: 1;
 }
 
 .main::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: fixed;
+    top: 60px;
+    left: var(--sidebar-width);
     right: 0;
     bottom: 0;
     background: var(--bg-main);
@@ -8502,15 +8477,11 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* Main Content - Mobile Optimized */
 .main {
-    position: fixed !important;
-    top: 60px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 1rem;
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: calc(60px + 1rem) 1rem 2rem 1rem !important;
+    min-height: 100vh;
     background: var(--bg-main);
-    overflow-y: auto;
-    z-index: 1;
 }
 
 .content {
@@ -8860,23 +8831,16 @@ button:focus, .btn:focus, .menu-link:focus {
     
     .show-user {
         position: fixed !important;
-        left: 0;
-        right: 0;
-        width: 100%;
+        left: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
         padding: 0 2rem;
         margin-left: 0;
     }
     
     .main {
-        position: fixed !important;
-        top: 60px;
-        left: var(--sidebar-width);
-        right: 0;
-        bottom: 0;
-        padding: 30px 40px;
-        width: calc(100% - var(--sidebar-width));
-        margin-left: 0;
-        overflow-y: auto;
+        margin-left: var(--sidebar-width) !important;
+        width: calc(100% - var(--sidebar-width)) !important;
+        padding: calc(60px + 2rem) 2rem 2rem 2rem !important;
     }
     
     .stats-grid {
@@ -8929,33 +8893,6 @@ button:focus, .btn:focus, .menu-link:focus {
     
     .section-title {
         font-size: 1.1rem;
-    }
-}
-
-/* Mobile responsive overrides for fixed layout */
-@media (max-width: 768px) {
-    body {
-        overflow: hidden;
-    }
-    
-    .main {
-        position: fixed !important;
-        top: 60px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        padding: 1rem;
-        overflow-y: auto;
-    }
-    
-    .sidebar {
-        position: fixed !important;
-        top: 0;
-        left: 0;
-        width: 280px;
-        height: 100vh;
-        transform: translateX(-100%);
-        z-index: 10000;
     }
 }
 
@@ -9755,7 +9692,7 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* Dashboard Loading Screen */
 .dashboard-loader {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
