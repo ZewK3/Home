@@ -3,8 +3,7 @@
 body {
     position: relative;
     min-height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
     background: #000428;
     background: -webkit-linear-gradient(to right, #004e92, #000428);
     background: linear-gradient(to right, #004e92, #000428);
@@ -290,25 +289,16 @@ body {
 }
 
 [data-theme="dark"] .notification {
-    background: rgba(30, 41, 59, 0.95);
-    color: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #1e293b;
+    color: var(--foreground);
+    border-left: 4px solid var(--primary);
+    max-width: 350px;
+    min-width: 250px;
 }
 
-[data-theme="dark"] .notification.success { 
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-}
-
-[data-theme="dark"] .notification.error { 
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
-    color: white;
-}
-
-[data-theme="dark"] .notification.warning { 
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-}
+[data-theme="dark"] .notification.success { border-left-color: var(--success); }
+[data-theme="dark"] .notification.error { border-left-color: var(--danger); }
+[data-theme="dark"] .notification.warning { border-left-color: var(--warning); }
 
 [data-theme="dark"] .theme-switch {
     background: #1e293b;
@@ -470,24 +460,14 @@ body {
 /* Light Theme Notification */
 [data-theme="light"] .notification {
     background: rgba(255, 255, 255, 0.95);
-    color: #1e293b;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--foreground);
+    border-left: 4px solid var(--primary);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="light"] .notification.success { 
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-}
-
-[data-theme="light"] .notification.error { 
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
-    color: white;
-}
-
-[data-theme="light"] .notification.warning { 
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-}
+[data-theme="light"] .notification.success { border-left-color: var(--success); }
+[data-theme="light"] .notification.error { border-left-color: var(--danger); }
+[data-theme="light"] .notification.warning { border-left-color: var(--warning); }
 
 /* Light Theme Background Elements */
 [data-theme="light"] .glass-circle {
@@ -855,52 +835,30 @@ body {
 /* Notification */
 .notification {
     position: fixed;
-    top: 2rem;
-    left: 1rem;
+    top: 1rem;
     right: 1rem;
-    z-index: 10000;
-    padding: 1rem;
-    border-radius: 12px;
-    font-weight: 600;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    transform: translateY(-20px);
-    opacity: 0;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    background: white;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(120%);
+    transition: var(--transition);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     max-width: 350px;
     min-width: 250px;
     word-wrap: break-word;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    line-height: 1.5;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.notification.hidden {
-    display: none;
 }
 
 .notification.show {
-    transform: translateY(0);
-    opacity: 1;
+    transform: translateX(0);
 }
 
-.notification.success { 
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-}
-
-.notification.error { 
-    background: linear-gradient(135deg, #ef4444, #b91c1c);
-    color: white;
-}
-
-.notification.warning { 
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-}
+.notification.success { border-left: 4px solid var(--success); }
+.notification.error { border-left: 4px solid var(--danger); }
+.notification.warning { border-left: 4px solid var(--warning); }
 
 .notification-message {
     line-height: 1.4;
@@ -939,17 +897,6 @@ body {
 /* Animations */
 @keyframes spin {
     to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 /* Enhanced Mobile Responsiveness */
@@ -1042,6 +989,7 @@ body {
             0 0 0 3px rgba(31, 111, 235, 0.15),
             inset 0 1px 0 rgba(255, 255, 255, 0.025);
         background: rgba(13, 17, 23, 0.95);
+    }
     }
 
     .input-icon {
@@ -1231,17 +1179,19 @@ body {
     /* Enhanced mobile notification */
     .notification {
         position: fixed;
-        top: 1.5rem;
+        top: 1rem;
         left: 1rem;
         right: 1rem;
         max-width: none;
-        border-radius: 10px;
-        font-size: 0.9rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
         z-index: 10000;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        animation: slideInDown 0.3s ease-out;
     }
+}
+    }
+}
     
     .circle-3 {
         width: 200px;
@@ -1260,7 +1210,7 @@ body {
     
     /* Better notification positioning */
     .notification {
-        top: 1rem;
+        top: 5rem;
         left: 0.75rem;
         right: 0.75rem;
         width: auto;
