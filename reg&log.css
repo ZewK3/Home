@@ -1,10 +1,11 @@
-/* GitHub-Style Clean Design System */
+/* Optimized GitHub-Style Design System */
 :root {
     /* GitHub Color Palette - Light Mode */
     --color-canvas-default: #ffffff;
     --color-canvas-subtle: #f6f8fa;
     --color-border-default: #d0d7de;
     --color-border-muted: #d8dee4;
+    --color-border-subtle: rgba(31, 35, 40, 0.15);
     --color-fg-default: #24292f;
     --color-fg-muted: #656d76;
     --color-fg-subtle: #8c959f;
@@ -22,6 +23,31 @@
     --color-shadow-small: 0 1px 0 rgba(31, 35, 40, 0.04);
     --color-shadow-medium: 0 3px 6px rgba(140, 149, 159, 0.15);
     --color-shadow-large: 0 8px 24px rgba(140, 149, 159, 0.2);
+    
+    /* Enhanced spacing system */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    
+    /* Typography scale */
+    --fontsize-small: 12px;
+    --fontsize-normal: 14px;
+    --fontsize-medium: 16px;
+    --fontsize-large: 18px;
+    --fontsize-xlarge: 20px;
+    --fontsize-xxlarge: 24px;
+    --fontsize-title: 28px;
+    
+    /* Font weights */
+    --fontweight-normal: 400;
+    --fontweight-semibold: 500;
+    --fontweight-bold: 600;
+    --fontweight-heavy: 700;
 }
 
 /* GitHub Dark Mode */
@@ -30,6 +56,7 @@
     --color-canvas-subtle: #161b22;
     --color-border-default: #30363d;
     --color-border-muted: #21262d;
+    --color-border-subtle: rgba(240, 246, 252, 0.1);
     --color-fg-default: #e6edf3;
     --color-fg-muted: #7d8590;
     --color-fg-subtle: #6e7681;
@@ -55,26 +82,27 @@ body {
     min-height: 100vh;
     background-color: var(--color-canvas-default);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-    font-size: 14px;
+    font-size: var(--fontsize-normal);
     line-height: 1.5;
     color: var(--color-fg-default);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: var(--space-4);
+    font-weight: var(--fontweight-normal);
 }
 
-/* GitHub-style simple flag indicator */
+/* Professional flag indicator */
 .flag-vn {
     position: fixed;
-    top: 16px;
-    left: 16px;
-    width: 24px;
-    height: 16px;
+    top: var(--space-4);
+    left: var(--space-4);
+    width: 28px;
+    height: 20px;
     background: linear-gradient(to bottom, #da020e 0%, #da020e 33.33%, #ffff00 33.33%, #ffff00 66.66%, #da020e 66.66%);
-    border-radius: 2px;
+    border-radius: 4px;
     z-index: 1001;
-    box-shadow: var(--color-shadow-small);
+    box-shadow: var(--color-shadow-medium);
     border: 1px solid var(--color-border-default);
 }
 
