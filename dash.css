@@ -120,7 +120,7 @@ body {
 
 /* Enhanced Professional Header Styles */
 .show-user {
-    position: fixed;
+    position: fixed !important;
     top: 0;
     left: 0;
     right: 0;
@@ -442,7 +442,7 @@ body {
 
 /* Enhanced Professional Sidebar - Desktop Only */
 .sidebar {
-    position: fixed;
+    position: fixed !important;
     top: 60px;
     left: 0;
     width: var(--sidebar-width);
@@ -4984,6 +4984,42 @@ body {
         width: 100%;
         justify-content: center;
         min-height: 36px;
+    }
+    
+    /* Mobile user-list: show user-info instead of user-avatar */
+    .user-list .user-card .user-avatar {
+        display: none !important;
+    }
+    
+    .user-list .user-card {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .user-list .user-card .user-info {
+        width: 100%;
+        text-align: left;
+    }
+    
+    .user-list .user-card .user-info h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+    
+    .user-list .user-card .user-info .user-id {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .user-list .user-card .user-info .user-role {
+        font-size: 0.85rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
     }
 }
 
@@ -9692,7 +9728,7 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* Dashboard Loading Screen */
 .dashboard-loader {
-    position: fixed;
+    position: fixed !important;
     top: 0;
     left: 0;
     width: 100vw;
