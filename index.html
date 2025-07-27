@@ -3,149 +3,164 @@
 <html lang="vi" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hệ thống đăng nhập và đăng ký - Smart Router">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hệ thống đăng nhập và đăng ký - ZewK Management System">
     <meta name="theme-color" content="#4f46e5">
-    <title>ZewK Management System</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ZewK Management System - Đăng nhập</title>
+    <link rel="stylesheet" href="reg&log.css">
     <link rel="icon" type="image/png" href="favicon.png">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-        
-        .router-container {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
-        
-        .logo {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.8;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 1rem 0;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .device-info {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            opacity: 0.6;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 <body>
-    <div class="router-container">
-        <div class="logo">ZewK</div>
-        <div class="subtitle">Management System</div>
-        <div class="loading"></div>
-        <div class="device-info" id="deviceInfo">Detecting device...</div>
+    <div class='flag-vn'></div>
+    <div class="glass-bg">
+        <div class="glass-circle circle-1"></div>
+        <div class="glass-circle circle-2"></div>
+        <div class="glass-circle circle-3"></div>
     </div>
 
-    <script>
-        // Smart device detection and routing
-        function detectDevice() {
-            const userAgent = navigator.userAgent;
-            const screenWidth = window.innerWidth;
-            const isTouchDevice = 'ontouchstart' in window;
-            
-            // Mobile detection
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
-                            (screenWidth <= 768 && isTouchDevice);
-            
-            return {
-                isMobile,
-                isDesktop: !isMobile,
-                screenWidth,
-                isTouchDevice,
-                userAgent: userAgent.substring(0, 50) + '...'
-            };
-        }
-        
-        function updateDeviceInfo(device) {
-            const deviceInfo = document.getElementById('deviceInfo');
-            deviceInfo.textContent = `${device.isMobile ? 'Mobile' : 'Desktop'} device detected (${device.screenWidth}px)`;
-        }
-        
-        function routeToDevice() {
-            const device = detectDevice();
-            updateDeviceInfo(device);
-            
-            // Route to appropriate version after a short delay for UX
-            setTimeout(() => {
-                if (device.isMobile) {
-                    window.location.href = 'index-mobile.html';
-                } else {
-                    window.location.href = 'index-desktop.html';
-                }
-            }, 1500);
-        }
-        
-        // Initialize routing when page loads
-        document.addEventListener('DOMContentLoaded', routeToDevice);
-        
-        // Handle window resize - re-route if device type changes
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                const currentDevice = detectDevice();
-                updateDeviceInfo(currentDevice);
-                
-                // Only route again if device type actually changed
-                const currentPath = window.location.pathname;
-                const shouldBeMobile = currentDevice.isMobile;
-                const isMobilePage = currentPath.includes('mobile');
-                
-                if (shouldBeMobile && !isMobilePage) {
-                    setTimeout(() => window.location.href = 'index-mobile.html', 1000);
-                } else if (!shouldBeMobile && isMobilePage) {
-                    setTimeout(() => window.location.href = 'index-desktop.html', 1000);
-                }
-            }, 500);
-        });
-        
-        // Debug mode
-        if (window.location.search.includes('debug=router')) {
-            console.log('Router Debug Info:', detectDevice());
-        }
-    </script>
+    <div class="aurora"></div>
+    <div class="stars"></div>
+    <div class="light-streaks"></div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container active">
+            <div class="form-header">
+                <h2>Đăng nhập</h2>
+            </div>
+
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
+                        <label for="loginEmployeeId">Mã nhân viên</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark"></span>
+                        <span>Ghi nhớ tôi</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <a href="#" id="goToRegister" class="form-link">Chưa có tài khoản?</a>
+                    <a href="#" class="form-link">Quên mật khẩu?</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerFormContainer" class="form-container">
+            <div class="form-header">
+                <h2>Đăng ký</h2>
+            </div>
+
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="employeeId" name="employeeId" placeholder=" " required autocomplete="username">
+                        <label for="employeeId">Mã nhân viên</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
+                        <label for="password">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
+                        <label for="fullName">Họ và tên</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">phone</span>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder=" " required autocomplete="tel">
+                        <label for="phoneNumber">Số điện thoại</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">store</span>
+                        <select id="storeName" name="storeName" required>
+                            <option value="">Chọn cửa hàng</option>
+                        </select>
+                        <label for="storeName">Cửa hàng</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">work</span>
+                        <select id="position" name="position" required>
+                            <option value="">Chọn vị trí</option>
+                            <option value="NV">Nhân viên</option>
+                            <option value="QL">Quản lý</option>
+                        </select>
+                        <label for="position">Vị trí</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Đăng ký</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <a href="#" id="goToLogin" class="form-link">Đã có tài khoản?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
