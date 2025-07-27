@@ -9732,6 +9732,11 @@ button:focus, .btn:focus, .menu-link:focus {
 /* Mobile AppHeader Responsive */
 @media (max-width: 768px) {
     .AppHeader-globalBar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
         padding: 0 3.5rem 0 1rem;
         height: 48px;
     }
