@@ -60,6 +60,29 @@
     --shadow-glow: 0 0 30px rgba(96, 165, 250, 0.2);
 }
 
+/* Global Reset and Body Styling */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow: hidden;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+}
+
+html {
+    overflow: hidden;
+    height: 100vh;
+}
+
 /* Dark mode optimizations */
 [data-theme="dark"] .stat-card {
     background: rgba(30, 41, 59, 0.9);
@@ -110,8 +133,8 @@ body {
     background: var(--bg-main);
     color: var(--text-primary);
     line-height: 1.6;
-    overflow: hidden;
-    height: 100vh;
+    overflow-y: auto;
+    min-height: 100vh;
     letter-spacing: -0.025em;
     position: relative;
     margin: 0;
@@ -888,36 +911,26 @@ body {
 
 /* Enhanced Professional Main Content - Desktop Only */
 .main {
-    margin-left: var(--sidebar-width);
-    padding: 0;
-    position: fixed;
+    position: fixed !important;
     top: 60px;
+    left: var(--sidebar-width);
     right: 0;
     bottom: 0;
-    left: var(--sidebar-width);
+    padding: 30px 40px;
     background: var(--bg-main);
+    overflow-y: auto;
     z-index: 1;
-    overflow: hidden;
 }
 
 .main::before {
     content: '';
-    position: fixed;
-    top: 60px;
-    left: var(--sidebar-width);
+    position: absolute;
+    top: 0;
+    left: 0;
     right: 0;
     bottom: 0;
     background: var(--bg-main);
     z-index: -1;
-}
-
-/* Content area with internal scrolling */
-.content {
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 30px 40px;
-    box-sizing: border-box;
 }
 
 .dashboard-title {
@@ -4997,42 +5010,6 @@ body {
         justify-content: center;
         min-height: 36px;
     }
-    
-    /* Mobile user-list: show user-info instead of user-avatar */
-    .user-list .user-card .user-avatar {
-        display: none !important;
-    }
-    
-    .user-list .user-card {
-        padding: 1rem;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .user-list .user-card .user-info {
-        width: 100%;
-        text-align: left;
-    }
-    
-    .user-list .user-card .user-info h4 {
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-        color: var(--text-primary);
-    }
-    
-    .user-list .user-card .user-info .user-id {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.25rem;
-    }
-    
-    .user-list .user-card .user-info .user-role {
-        font-size: 0.85rem;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        display: inline-block;
-    }
 }
 
 @media (max-width: 480px) {
@@ -8367,12 +8344,6 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* Mobile responsive for shift management */
 @media (max-width: 768px) {
-    /* Mobile body scrolling */
-    body {
-        overflow-y: auto !important;
-        height: auto !important;
-    }
-    
     .shift-assignment-container,
     .work-shifts-container,
     .attendance-container {
@@ -8409,8 +8380,7 @@ button:focus, .btn:focus, .menu-link:focus {
    MOBILE-FIRST RESPONSIVE DESIGN WITH CSS
    ============================================ */
 
-/* Base Mobile Styles (Default) - Mobile Only */
-@media (max-width: 768px) {
+/* Base Mobile Styles (Default) */
 .menu-toggle {
     display: flex !important;
     align-items: center;
@@ -8532,25 +8502,21 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* Main Content - Mobile Optimized */
 .main {
-    margin-left: 0 !important;
-    width: 100% !important;
-    padding: calc(60px + 1rem) 1rem 2rem 1rem !important;
-    min-height: 100vh;
+    position: fixed !important;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 1rem;
     background: var(--bg-main);
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    bottom: auto !important;
-    overflow: visible !important;
+    overflow-y: auto;
+    z-index: 1;
 }
 
 .content {
     margin: 0;
     padding: 0;
     max-width: 100%;
-    height: auto !important;
-    overflow: visible !important;
 }
 
 /* Enhanced Mobile Statistics Grid */
@@ -8874,8 +8840,6 @@ button:focus, .btn:focus, .menu-link:focus {
     color: white;
 }
 
-}
-
 /* Desktop Overrides */
 @media (min-width: 769px) {
     .menu-toggle {
@@ -8896,33 +8860,23 @@ button:focus, .btn:focus, .menu-link:focus {
     
     .show-user {
         position: fixed !important;
-        left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
+        left: 0;
+        right: 0;
+        width: 100%;
         padding: 0 2rem;
         margin-left: 0;
     }
     
     .main {
-        margin-left: var(--sidebar-width) !important;
-        width: calc(100% - var(--sidebar-width)) !important;
         position: fixed !important;
-        top: 60px !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        left: var(--sidebar-width) !important;
-        padding: 0 !important;
-        overflow: hidden !important;
-        background: var(--bg-main);
-        z-index: 1;
-    }
-    
-    .content {
-        height: 100% !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        padding: 30px 40px !important;
-        box-sizing: border-box !important;
-        margin: 0 !important;
+        top: 60px;
+        left: var(--sidebar-width);
+        right: 0;
+        bottom: 0;
+        padding: 30px 40px;
+        width: calc(100% - var(--sidebar-width));
+        margin-left: 0;
+        overflow-y: auto;
     }
     
     .stats-grid {
@@ -8975,6 +8929,33 @@ button:focus, .btn:focus, .menu-link:focus {
     
     .section-title {
         font-size: 1.1rem;
+    }
+}
+
+/* Mobile responsive overrides for fixed layout */
+@media (max-width: 768px) {
+    body {
+        overflow: hidden;
+    }
+    
+    .main {
+        position: fixed !important;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+    
+    .sidebar {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 280px;
+        height: 100vh;
+        transform: translateX(-100%);
+        z-index: 10000;
     }
 }
 
@@ -9732,11 +9713,6 @@ button:focus, .btn:focus, .menu-link:focus {
 /* Mobile AppHeader Responsive */
 @media (max-width: 768px) {
     .AppHeader-globalBar {
-        position: fixed !important;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 9999;
         padding: 0 3.5rem 0 1rem;
         height: 48px;
     }
