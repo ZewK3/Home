@@ -12,6 +12,32 @@
 
 </head>
 <body>
+    <!-- Dashboard Loading Screen -->
+    <div id="dashboardLoader" class="dashboard-loader">
+        <div class="loader-content">
+            <div class="dual-spinner-container">
+                <div class="spinner-outer"></div>
+                <div class="spinner-inner"></div>
+            </div>
+            <h3 class="loader-title">Đang tải Dashboard...</h3>
+            <p class="loader-subtitle">Vui lòng đợi trong giây lát</p>
+            <div class="loader-progress">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+        <div class="loader-background">
+            <div class="floating-particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content (initially hidden) -->
+    <div id="dashboardContent" class="dashboard-content">
     <!-- Mobile Menu Toggle - GitHub Style -->
     <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
         <span class="menu-icon">
@@ -427,5 +453,6 @@
     </div>
 
     <script src="main.js"></script>
+    </div> <!-- End dashboardContent -->
 </body>
 </html>

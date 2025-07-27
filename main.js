@@ -3734,18 +3734,14 @@ class AuthManager {
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
     
+    // Show dashboard loader immediately
+    showDashboardLoader();
+    
     // Set initial CSS classes for dashboard elements
-    const main = document.querySelector('.main');
-    const statCards = document.querySelectorAll('.stat-card');
-    const quickActionBtns = document.querySelectorAll('.quick-action-btn');
-    
-    // Set initial hidden state for CSS animations
-    if (main) main.classList.add('dashboard-hidden');
-    statCards.forEach(card => card.classList.add('dashboard-hidden'));
-    quickActionBtns.forEach(btn => btn.classList.add('dashboard-hidden'));
-    
-    // Show loading screen immediately
-    showLoadingScreen();
+    const dashboardContent = document.getElementById('dashboardContent');
+    if (dashboardContent) {
+        dashboardContent.classList.add('dashboard-hidden');
+    }
     
     // Initialize time display
     initializeTimeDisplay();
@@ -3788,8 +3784,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
 
-        // Hide loading screen after initialization is complete
-        hideLoadingScreen();
+        // Hide dashboard loader and show content after initialization is complete
+        await hideDashboardLoader();
 
         // Setup company logo click handler
         const companyLogoLink = document.getElementById('companyLogoLink');
@@ -3811,8 +3807,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             setupMobileMenu();
         }, 2000);
     } else {
-        // Hide loading screen if authentication fails
-        hideLoadingScreen();
+        // Hide dashboard loader if authentication fails
+        await hideDashboardLoader();
     }
 });
 
@@ -4623,6 +4619,36 @@ function setupMobileMenu() {
     
     // Mobile menu item handlers - mirror desktop functionality
     function setupMobileMenuHandlers() {
+        // Mobile submenu toggle functionality
+        const mobileMenuItems = document.querySelectorAll('.mobile-menu-item');
+        mobileMenuItems.forEach(item => {
+            const menuLink = item.querySelector('.mobile-menu-link');
+            const submenu = item.querySelector('.mobile-submenu');
+            
+            if (menuLink && submenu) {
+                menuLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Toggle submenu visibility
+                    const isOpen = item.classList.contains('submenu-open');
+                    
+                    // Close all other submenus
+                    mobileMenuItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('submenu-open');
+                        }
+                    });
+                    
+                    // Toggle current submenu
+                    if (isOpen) {
+                        item.classList.remove('submenu-open');
+                    } else {
+                        item.classList.add('submenu-open');
+                    }
+                });
+            }
+        });
+        
         // Shift Management
         document.getElementById('mobileShiftAssignment')?.addEventListener('click', (e) => {
             e.preventDefault();
@@ -4790,6 +4816,55 @@ function hideLoadingScreen() {
         setTimeout(() => {
             loadingScreen.style.display = 'none';
             loadingScreen.classList.remove('loading-fade-in', 'loading-fade-out');
+            
+            const loadingContent = loadingScreen.querySelector('.loading-content');
+            if (loadingContent) {
+                loadingContent.classList.remove('loading-content-slide-in', 'loading-content-slide-out');
+            }
+            
+            const spinner = loadingScreen.querySelector('.loading-spinner');
+            if (spinner) {
+                spinner.classList.remove('loading-spinner-rotate');
+            }
+        }, 400);
+    }
+}
+
+// Enhanced Dashboard Loader Functions
+function showDashboardLoader() {
+    const dashboardLoader = document.getElementById('dashboardLoader');
+    if (dashboardLoader) {
+        dashboardLoader.classList.remove('hidden');
+        dashboardLoader.style.display = 'flex';
+        
+        console.log('✅ Dashboard loader shown');
+    }
+}
+
+async function hideDashboardLoader() {
+    const dashboardLoader = document.getElementById('dashboardLoader');
+    const dashboardContent = document.getElementById('dashboardContent');
+    
+    // Simulate minimum loading time for better UX
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    if (dashboardLoader) {
+        dashboardLoader.classList.add('hidden');
+        
+        setTimeout(() => {
+            dashboardLoader.style.display = 'none';
+        }, 800);
+        
+        console.log('✅ Dashboard loader hidden');
+    }
+    
+    if (dashboardContent) {
+        dashboardContent.classList.remove('dashboard-hidden');
+        dashboardContent.classList.add('loaded');
+        
+        console.log('✅ Dashboard content shown');
+    }
+}
             
             // Clean up content classes
             if (loadingContent) {

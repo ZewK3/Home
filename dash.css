@@ -9627,3 +9627,312 @@ button:focus, .btn:focus, .menu-link:focus {
         transition: none;
     }
 }
+
+/* ============================================
+   DASHBOARD LOADING SCREEN
+   ============================================ */
+
+/* Dashboard Loading Screen */
+.dashboard-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, 
+        rgba(13, 17, 23, 0.98) 0%, 
+        rgba(30, 41, 59, 0.95) 25%,
+        rgba(37, 99, 235, 0.08) 50%, 
+        rgba(30, 41, 59, 0.95) 75%,
+        rgba(13, 17, 23, 0.98) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background-size: 400% 400%;
+    animation: dashboardGradientFlow 6s ease-in-out infinite;
+    transition: opacity 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                visibility 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes dashboardGradientFlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.dashboard-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-content {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3rem 2.5rem;
+    border-radius: 24px;
+    box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.3),
+        0 12px 25px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    max-width: 420px;
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+    transform: scale(0.95);
+    animation: dashboardLoaderEntrance 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes dashboardLoaderEntrance {
+    0% {
+        transform: scale(0.8) translateY(30px);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.loader-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        #3b82f6 20%,
+        #60a5fa 50%,
+        #3b82f6 80%,
+        transparent 100%);
+    animation: dashboardShimmer 2.5s ease-in-out infinite;
+    border-radius: 24px 24px 0 0;
+}
+
+@keyframes dashboardShimmer {
+    0% { left: -100%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+}
+
+.dual-spinner-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 2rem;
+}
+
+.spinner-outer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid #3b82f6;
+    border-right: 3px solid rgba(59, 130, 246, 0.7);
+    animation: dashboardSpinOuter 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+}
+
+.spinner-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    height: 60%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    border-bottom: 2px solid #60a5fa;
+    border-left: 2px solid rgba(96, 165, 250, 0.8);
+    transform: translate(-50%, -50%);
+    animation: dashboardSpinInner 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite reverse;
+    box-shadow: inset 0 0 15px rgba(96, 165, 250, 0.2);
+}
+
+@keyframes dashboardSpinOuter {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes dashboardSpinInner {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.loader-title {
+    color: #f0f6fc;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+    animation: dashboardTitleGlow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes dashboardTitleGlow {
+    0% { 
+        text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2);
+        transform: scale(1);
+    }
+    100% { 
+        text-shadow: 0 2px 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.4);
+        transform: scale(1.02);
+    }
+}
+
+.loader-subtitle {
+    color: rgba(240, 246, 252, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    font-weight: 400;
+}
+
+.loader-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #93c5fd);
+    border-radius: 2px;
+    width: 0%;
+    animation: dashboardProgressFill 3s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+@keyframes dashboardProgressFill {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+.loader-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.floating-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    animation: dashboardParticleFloat 8s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+.particle:nth-child(1) {
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 6s;
+}
+
+.particle:nth-child(2) {
+    left: 30%;
+    animation-delay: 1s;
+    animation-duration: 8s;
+}
+
+.particle:nth-child(3) {
+    left: 60%;
+    animation-delay: 2s;
+    animation-duration: 7s;
+}
+
+.particle:nth-child(4) {
+    left: 80%;
+    animation-delay: 3s;
+    animation-duration: 9s;
+}
+
+.particle:nth-child(5) {
+    left: 50%;
+    animation-delay: 4s;
+    animation-duration: 6.5s;
+}
+
+@keyframes dashboardParticleFloat {
+    0%, 100% {
+        transform: translateY(100vh) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(90vh) scale(1);
+    }
+    90% {
+        opacity: 1;
+        transform: translateY(-10vh) scale(1);
+    }
+    100% {
+        transform: translateY(-20vh) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Dashboard Content Initially Hidden */
+.dashboard-content {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.dashboard-content.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Mobile submenu visibility control */
+.mobile-submenu {
+    display: none;
+}
+
+.mobile-menu-item.submenu-open .mobile-submenu {
+    display: block;
+    animation: submenuSlideDown 0.3s ease-out;
+}
+
+@keyframes submenuSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide menu toggle on desktop */
+@media (min-width: 769px) {
+    .menu-toggle {
+        display: none !important;
+    }
+}
+}
