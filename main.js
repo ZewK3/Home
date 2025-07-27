@@ -4863,19 +4863,11 @@ async function hideDashboardLoader() {
         dashboardContent.classList.add('loaded');
         
         console.log('✅ Dashboard content shown');
-    }
-}
-            
-            // Clean up content classes
-            if (loadingContent) {
-                loadingContent.classList.remove('loading-content-slide-in', 'loading-content-slide-out');
-            }
-            
-            // Animate dashboard content after loading screen is hidden
-            setTimeout(() => {
-                animateDashboardContent();
-            }, 100);
-        }, 400);
+        
+        // Animate dashboard content after loading screen is hidden
+        setTimeout(() => {
+            animateDashboardContent();
+        }, 100);
     }
 }
 

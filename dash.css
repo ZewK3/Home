@@ -9682,19 +9682,21 @@ button:focus, .btn:focus, .menu-link:focus {
     -webkit-backdrop-filter: blur(30px);
     max-width: 420px;
     width: 90%;
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
     overflow: hidden;
-    transform: scale(0.95);
     animation: dashboardLoaderEntrance 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
 
 @keyframes dashboardLoaderEntrance {
     0% {
-        transform: scale(0.8) translateY(30px);
+        transform: translate(-50%, -50%) scale(0.8) translateY(30px);
         opacity: 0;
     }
     100% {
-        transform: scale(1) translateY(0);
+        transform: translate(-50%, -50%) scale(1) translateY(0);
         opacity: 1;
     }
 }
