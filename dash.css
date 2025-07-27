@@ -9277,6 +9277,351 @@ button:focus, .btn:focus, .menu-link:focus {
     .sidebar {
         transition: none;
     }
+}
+
+/* ============================================
+   GITHUB-STYLE MOBILE NAVIGATION DIALOG
+   ============================================ */
+
+/* Enhanced Mobile Menu Toggle - GitHub Style */
+.menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 100000;
+    background: rgba(13, 17, 23, 0.8);
+    color: #f0f6fc;
+    border: 1px solid rgba(48, 54, 61, 0.8);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.menu-toggle:hover {
+    background: rgba(13, 17, 23, 0.95);
+    border-color: rgba(48, 54, 61, 1);
+    transform: scale(1.05);
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
+}
+
+.menu-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 16px;
+    height: 16px;
+    justify-content: center;
+}
+
+.menu-line {
+    width: 100%;
+    height: 2px;
+    background: #f0f6fc;
+    border-radius: 1px;
+    transition: all 0.2s ease;
+}
+
+.menu-toggle:hover .menu-line {
+    background: #58a6ff;
+}
+
+/* Mobile Navigation Dialog */
+.mobile-nav-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    background: rgba(13, 17, 23, 0.95);
+    border: none;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 99999;
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.mobile-nav-dialog[open] {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.mobile-nav-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    overflow-y: auto;
+}
+
+.mobile-nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+    background: rgba(13, 17, 23, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.mobile-nav-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f0f6fc;
+    margin: 0;
+}
+
+.close-dialog {
+    background: none;
+    border: none;
+    color: #7d8590;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-dialog:hover {
+    color: #f0f6fc;
+    background: rgba(48, 54, 61, 0.3);
+}
+
+.mobile-nav {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.mobile-menu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mobile-menu-item {
+    margin: 0;
+}
+
+.mobile-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 1.5rem;
+    color: #f0f6fc;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.mobile-menu-link:hover,
+.mobile-menu-link:focus {
+    background: rgba(48, 54, 61, 0.3);
+    border-left-color: #58a6ff;
+    color: #58a6ff;
+}
+
+.mobile-submenu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: rgba(22, 27, 34, 0.5);
+}
+
+.mobile-submenu-item {
+    margin: 0;
+}
+
+.mobile-submenu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem 0.75rem 3rem;
+    color: #7d8590;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.mobile-submenu-link:hover,
+.mobile-submenu-link:focus {
+    background: rgba(48, 54, 61, 0.2);
+    border-left-color: #f78166;
+    color: #f0f6fc;
+}
+
+.mobile-nav-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(48, 54, 61, 0.5);
+    background: rgba(13, 17, 23, 0.8);
+}
+
+.mobile-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: linear-gradient(135deg, #da3633, #b91c1c);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-logout-btn:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-1px);
+}
+
+.mobile-logout-btn:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   GITHUB-STYLE APPHEADER COMPONENT
+   ============================================ */
+
+/* AppHeader Global Bar - GitHub Style */
+.AppHeader-globalBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height, 64px);
+    background: rgba(13, 17, 23, 0.95);
+    border-bottom: 1px solid rgba(48, 54, 61, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+}
+
+.AppHeader-context {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.AppHeader-logo {
+    display: flex;
+    align-items: center;
+    color: #f0f6fc !important;
+    text-decoration: none !important;
+}
+
+.AppHeader-logo:hover {
+    color: #58a6ff !important;
+}
+
+.company-name-desktop {
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: block;
+}
+
+.company-name-mobile {
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: none;
+}
+
+.AppHeader-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.AppHeader-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info {
+    color: #f0f6fc;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.current-time {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(48, 54, 61, 0.3);
+    border-radius: 6px;
+    color: #7d8590;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.time-icon {
+    font-size: 1rem !important;
+    color: #f78166;
+}
+
+/* Mobile AppHeader Responsive */
+@media (max-width: 768px) {
+    .AppHeader-globalBar {
+        padding: 0 3.5rem 0 1rem;
+        height: 48px;
+    }
+    
+    .company-name-desktop {
+        display: none;
+    }
+    
+    .company-name-mobile {
+        display: block;
+        font-size: 1.25rem;
+    }
+    
+    .AppHeader-actions {
+        gap: 0.5rem;
+    }
+    
+    .user-info {
+        display: none;
+    }
+    
+    .current-time {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .time-icon {
+        font-size: 0.875rem !important;
+    }
+}
     
     .sidebar-overlay {
         transition: none;

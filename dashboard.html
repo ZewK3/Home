@@ -12,27 +12,103 @@
 
 </head>
 <body>
-    <!-- Mobile Menu Toggle -->
-    <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu">
-        <span>☰</span>
+    <!-- Mobile Menu Toggle - GitHub Style -->
+    <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
+        <span class="menu-icon">
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+        </span>
     </button>
+
+    <!-- Mobile Navigation Dialog - GitHub Style -->
+    <dialog id="mobile-nav-dialog" class="mobile-nav-dialog">
+        <div class="mobile-nav-content">
+            <div class="mobile-nav-header">
+                <h2>Menu</h2>
+                <button type="button" class="close-dialog" aria-label="Close navigation">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <nav class="mobile-nav">
+                <ul id="mobileMenuList" class="mobile-menu-list">
+                    <li class="mobile-menu-item" data-role="AD,QL,NV">
+                        <a href="#" id="mobileShiftManagement" class="mobile-menu-link">Quản Lý Ca</a>
+                        <ul class="mobile-submenu">
+                            <li class="mobile-submenu-item" data-role="AD,AM,QL">
+                                <a href="#" id="mobileShiftAssignment" class="mobile-submenu-link">Phân Ca</a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
+                                <a href="#" id="mobileWorkShifts" class="mobile-submenu-link">Ca Làm</a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
+                                <a href="#" id="mobileAttendance" class="mobile-submenu-link">Chấm Công</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="mobile-menu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="mobileReward" class="mobile-menu-link">Thưởng/Phạt</a>
+                    </li>
+                    <li class="mobile-menu-item" data-role="AD,NV">
+                        <a href="#" id="mobileSubmitTask" class="mobile-menu-link">Gửi Yêu Cầu</a>
+                    </li>
+                    <li class="mobile-menu-item" data-role="AD,QL">
+                        <a href="#" id="mobileTaskProcessing" class="mobile-menu-link">Xử Lý Yêu Cầu</a>
+                        <ul class="mobile-submenu">
+                            <li class="mobile-submenu-item" data-role="AD">
+                                <a href="#" id="mobileTaskPersonnel" class="mobile-submenu-link">Nhân Sự</a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD,QL">
+                                <a href="#" id="mobileTaskStore" class="mobile-submenu-link">Cửa Hàng</a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD">
+                                <a href="#" id="mobileTaskFinance" class="mobile-submenu-link">Tài Chính</a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD,QL">
+                                <a href="#" id="mobileTaskApproval" class="mobile-submenu-link">Xét Duyệt</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="mobile-menu-item" data-role="AD,QL">
+                        <a href="#" id="mobileRegistrationApproval" class="mobile-menu-link">Duyệt Đăng Ký</a>
+                    </li>
+                    <li class="mobile-menu-item" data-role="AD">
+                        <a href="#" id="mobileGrantAccess" class="mobile-menu-link">Phân Quyền</a>
+                    </li>
+                    <li class="mobile-menu-item" data-role="AD,QL,AM,NV">
+                        <a href="#" id="mobilePersonalInformation" class="mobile-menu-link">Thông Tin Cá Nhân</a>
+                    </li>
+                </ul>
+                <div class="mobile-nav-footer">
+                    <button id="mobileLogout" class="mobile-logout-btn">
+                        <span class="material-icons-round">logout</span>
+                        Đăng xuất
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </dialog>
 
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-    <!-- User Info Header -->
-    <div class="show-user">
-        <div class="company-logo">
-            <h1><a href="#" id="companyLogoLink" style="text-decoration: none; color: inherit; cursor: pointer;">
-                <span class="company-name-desktop">ZewK Management System</span>
-                <span class="company-name-mobile">ZewK</span>
-            </a></h1>
+    <!-- User Info Header - GitHub AppHeader Style -->
+    <div class="show-user AppHeader-globalBar pb-2 js-global-bar">
+        <div class="AppHeader-context">
+            <div class="company-logo">
+                <h1><a href="#" id="companyLogoLink" class="AppHeader-logo" style="text-decoration: none; color: inherit; cursor: pointer;">
+                    <span class="company-name-desktop">ZewK Management System</span>
+                    <span class="company-name-mobile">ZewK</span>
+                </a></h1>
+            </div>
         </div>
-        <div class="user-header-info">
-            <div id="userInfo" class="user-info"></div>
-            <div id="currentTime" class="current-time">
-                <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
-                <span id="timeDisplay" class="time-display">00:00</span>
+        <div class="AppHeader-actions">
+            <div class="AppHeader-user">
+                <div id="userInfo" class="user-info"></div>
+                <div id="currentTime" class="current-time">
+                    <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                    <span id="timeDisplay" class="time-display">00:00</span>
+                </div>
             </div>
         </div>
     </div>

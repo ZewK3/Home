@@ -4538,111 +4538,176 @@ async function initializeFinanceDashboard() {
     if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
 }
 
-// Enhanced Mobile Menu Setup with CSS Animations
+// GitHub-Style Mobile Menu Dialog Handler
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
+    const mobileDialog = document.getElementById('mobile-nav-dialog');
+    const closeDialog = document.querySelector('.close-dialog');
     
-    if (menuToggle && sidebar) {
-        let isMenuOpen = false;
-        
-        // Remove any existing event listeners first
-        const oldHandler = menuToggle._mobileMenuHandler;
-        if (oldHandler) {
-            menuToggle.removeEventListener('click', oldHandler);
-            menuToggle.removeEventListener('touchend', oldHandler);
-        }
-        
-        // Enhanced mobile menu toggle handler with CSS animations
-        function handleMenuToggle(e) {
-            e.preventDefault();
-            e.stopPropagation();
+    if (!menuToggle || !mobileDialog) {
+        console.warn('Mobile menu elements not found');
+        return;
+    }
+    
+    let isMenuOpen = false;
+    
+    // Remove any existing event listeners first
+    const oldHandler = menuToggle._mobileMenuHandler;
+    if (oldHandler) {
+        menuToggle.removeEventListener('click', oldHandler);
+    }
+    
+    // Open dialog function
+    function openMobileMenu() {
+        if (!isMenuOpen) {
+            mobileDialog.showModal();
+            document.body.style.overflow = 'hidden';
+            isMenuOpen = true;
             
-            // Add touch feedback
-            menuToggle.classList.add('menu-toggle-pressed');
-            setTimeout(() => {
-                menuToggle.classList.remove('menu-toggle-pressed');
-            }, 150);
-            
-            if (isMenuOpen) {
-                // Close menu
-                sidebar.classList.remove('sidebar-open');
-                overlay?.classList.remove('overlay-visible');
-                document.body.style.overflow = '';
-                isMenuOpen = false;
-                
-                // Animate menu button
-                menuToggle.classList.remove('menu-toggle-open');
-            } else {
-                // Open menu
-                sidebar.classList.add('sidebar-open');
-                overlay?.classList.add('overlay-visible');
-                document.body.style.overflow = 'hidden';
-                isMenuOpen = true;
-                
-                // Animate menu button
-                menuToggle.classList.add('menu-toggle-open');
-            }
-        }
-        
-        // Store handler reference for cleanup
-        menuToggle._mobileMenuHandler = handleMenuToggle;
-        
-        // Add event listeners
-        menuToggle.addEventListener('click', handleMenuToggle);
-        menuToggle.addEventListener('touchend', handleMenuToggle);
-
-        // Enhanced touch feedback
-        menuToggle.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            menuToggle.classList.add('menu-toggle-active');
-        });
-
-        menuToggle.addEventListener('touchcancel', (e) => {
-            menuToggle.classList.remove('menu-toggle-active');
-        });
-
-        // Close sidebar when clicking overlay
-        if (overlay) {
-            overlay.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (isMenuOpen) {
-                    handleMenuToggle(e);
-                }
+            // Add animation class
+            requestAnimationFrame(() => {
+                mobileDialog.style.opacity = '1';
+                mobileDialog.style.transform = 'translateX(0)';
             });
         }
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && 
-                isMenuOpen &&
-                !sidebar.contains(e.target) && 
-                !menuToggle.contains(e.target) &&
-                e.target !== overlay) {
-                
-                handleMenuToggle(e);
-            }
-        });
-
-        // Handle escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && isMenuOpen) {
-                handleMenuToggle(e);
-            }
-        });
-        
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768 && isMenuOpen) {
-                handleMenuToggle(new Event('resize'));
-            }
-        });
-        
-        console.log('✅ Mobile menu initialized with CSS animations');
-    } else {
-        console.warn('Mobile menu elements not found');
     }
+    
+    // Close dialog function
+    function closeMobileMenu() {
+        if (isMenuOpen) {
+            mobileDialog.style.opacity = '0';
+            mobileDialog.style.transform = 'translateX(-100%)';
+            
+            setTimeout(() => {
+                mobileDialog.close();
+                document.body.style.overflow = '';
+                isMenuOpen = false;
+            }, 300);
+        }
+    }
+    
+    // Menu toggle click handler
+    function handleMenuToggle(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openMobileMenu();
+    }
+    
+    // Store handler reference for cleanup
+    menuToggle._mobileMenuHandler = handleMenuToggle;
+    
+    // Add event listeners
+    menuToggle.addEventListener('click', handleMenuToggle);
+    
+    // Close dialog button
+    if (closeDialog) {
+        closeDialog.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+        });
+    }
+    
+    // Close on backdrop click
+    mobileDialog.addEventListener('click', (e) => {
+        if (e.target === mobileDialog) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isMenuOpen) {
+            closeMobileMenu();
+        }
+    });
+    
+    // Mobile menu item handlers - mirror desktop functionality
+    function setupMobileMenuHandlers() {
+        // Shift Management
+        document.getElementById('mobileShiftAssignment')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showShiftAssignment(), 300);
+        });
+        
+        document.getElementById('mobileWorkShifts')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showWorkShifts(), 300);
+        });
+        
+        document.getElementById('mobileAttendance')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showAttendance(), 300);
+        });
+        
+        // Other menu items
+        document.getElementById('mobileReward')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showReward(), 300);
+        });
+        
+        document.getElementById('mobileSubmitTask')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showSubmitTask(), 300);
+        });
+        
+        document.getElementById('mobileTaskPersonnel')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showTaskPersonnel(), 300);
+        });
+        
+        document.getElementById('mobileTaskStore')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showTaskStore(), 300);
+        });
+        
+        document.getElementById('mobileTaskFinance')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showTaskFinance(), 300);
+        });
+        
+        document.getElementById('mobileTaskApproval')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showTaskApproval(), 300);
+        });
+        
+        document.getElementById('mobileRegistrationApproval')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showRegistrationApproval(), 300);
+        });
+        
+        document.getElementById('mobileGrantAccess')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showGrantAccess(), 300);
+        });
+        
+        document.getElementById('mobilePersonalInformation')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showPersonalInformation(), 300);
+        });
+        
+        // Mobile logout
+        document.getElementById('mobileLogout')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => logout(), 300);
+        });
+    }
+    
+    setupMobileMenuHandlers();
+    
+    console.log('✅ GitHub-style mobile menu dialog initialized');
 }
 
 // Function to ensure dashboard content is visible

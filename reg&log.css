@@ -746,23 +746,33 @@ body {
     left: 100%;
 }
 
-/* Loading State */
+/* Loading State - GitHub Style */
 .btn-loader {
     display: none;
-    width: 1.25rem;
-    height: 1.25rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.25);
     border-radius: 50%;
-    border-top-color: white;
-    animation: spin 0.8s linear infinite;
+    border-top-color: #ffffff;
+    animation: spin 0.6s linear infinite;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
+.btn.loading {
+    position: relative;
+    pointer-events: none;
+    cursor: wait;
+}
+
 .btn.loading .btn-loader {
     display: block;
+}
+
+.btn.loading .btn-text {
+    opacity: 0.7;
 }
 
 /* Checkbox - Cosmic Theme */
@@ -892,9 +902,13 @@ body {
 /* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
     body {
-        padding: 0.5rem;
+        padding: 1rem;
         min-height: 100vh;
         min-height: 100svh; /* Use small viewport height for mobile */
+        background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .auth-container {
@@ -902,93 +916,158 @@ body {
         margin: 0;
         width: 100%;
         min-height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .form-container {
-        padding: 1.75rem 1.25rem;
-        margin: 0.25rem 0;
-        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        margin: 0;
+        border-radius: 12px;
         min-height: auto;
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        background: rgba(13, 17, 23, 0.9);
+        border: 1px solid rgba(48, 54, 61, 0.8);
+        box-shadow: 
+            0 16px 32px rgba(1, 4, 9, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        width: 100%;
+        max-width: 400px;
+        position: relative;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
     }
 
     .form-header h2 {
-        font-size: 1.8rem;
-        margin-bottom: 1.25rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #ffffff, #e2e8f0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #f0f6fc;
+        text-shadow: none;
+    }
+
+    .form-header .form-subtitle {
+        font-size: 0.875rem;
+        color: #7d8590;
+        margin-top: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
     }
 
     .input-group {
-        margin-bottom: 1.25rem;
+        position: relative;
+        margin-bottom: 0;
     }
 
-    .input-group input {
+    .input-group input,
+    .input-group select {
         font-size: 16px; /* Prevents zoom on iOS */
-        padding: 0.925rem 1rem 0.925rem 2.75rem;
-        min-height: 50px; /* Enhanced touch target */
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.15);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
+        padding: 0.75rem 1rem 0.75rem 2.75rem;
+        min-height: 48px; /* Enhanced touch target */
+        border-radius: 8px;
+        background: rgba(13, 17, 23, 0.8);
+        border: 1px solid rgba(48, 54, 61, 0.8);
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        color: #f0f6fc;
+        width: 100%;
+        outline: none;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
     }
 
-    .input-group input:focus {
-        border-color: rgba(59, 130, 246, 0.6);
-        background: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1),
-                    0 4px 20px rgba(59, 130, 246, 0.2);
-        transform: translateY(-1px);
+    .input-group input:focus,
+    .input-group select:focus {
+        border-color: #1f6feb;
+        box-shadow: 
+            0 0 0 3px rgba(31, 111, 235, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.025);
+        background: rgba(13, 17, 23, 0.95);
     }
-    
-    .input-group label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: rgba(255, 255, 255, 0.9);
     }
 
     .input-icon {
-        font-size: 1.25rem !important;
-        color: rgba(255, 255, 255, 0.7);
-        transition: color 0.3s ease;
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.125rem !important;
+        color: #7d8590;
+        transition: color 0.2s ease;
+        z-index: 2;
     }
 
     .input-group:focus-within .input-icon {
-        color: #3b82f6;
+        color: #1f6feb;
+    }
+
+    .input-group label {
+        position: absolute;
+        left: 2.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.875rem;
+        color: #7d8590;
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background: transparent;
+        padding: 0;
+        z-index: 1;
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label,
+    .input-group select:focus + label,
+    .input-group select:not([value=""]) + label {
+        top: -0.5rem;
+        left: 0.75rem;
+        font-size: 0.75rem;
+        color: #1f6feb;
+        background: rgba(13, 17, 23, 0.9);
+        padding: 0 0.25rem;
+        border-radius: 4px;
     }
     
     .btn {
-        min-height: 50px; /* Enhanced touch target */
-        font-size: 1.05rem;
-        font-weight: 600;
-        border-radius: 12px;
+        min-height: 48px; /* Enhanced touch target */
+        font-size: 1rem;
+        font-weight: 500;
+        border-radius: 8px;
         padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, #3b82f6, #2563eb);
-        border: none;
-        box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        background: linear-gradient(135deg, #238636, #1f6feb);
+        border: 1px solid rgba(31, 111, 235, 0.3);
+        color: #ffffff;
+        box-shadow: 
+            0 1px 3px rgba(1, 4, 9, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
     }
 
     .btn:hover,
     .btn:focus {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-1px);
+        box-shadow: 
+            0 4px 12px rgba(1, 4, 9, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        background: linear-gradient(135deg, #2ea043, #2970ff);
     }
 
     .btn:active {
         transform: translateY(0);
+        box-shadow: 
+            0 1px 3px rgba(1, 4, 9, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         transition: transform 0.1s ease;
     }
 
@@ -996,114 +1075,121 @@ body {
     .checkbox-container {
         margin: 1.25rem 0;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 0.75rem;
         padding: 0.5rem 0;
     }
 
     .checkbox-container input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         margin: 0;
-        accent-color: #3b82f6;
+        accent-color: #1f6feb;
+        border-radius: 4px;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
     }
 
-    .checkbox-container label {
-        font-size: 0.9rem;
-        line-height: 1.4;
-        color: rgba(255, 255, 255, 0.9);
+    .checkbox-container span {
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: #f0f6fc;
         cursor: pointer;
         user-select: none;
     }
 
-    /* Enhanced form actions */
-    .form-actions {
-        margin-top: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+    .form-options {
+        margin: 1rem 0 1.5rem 0;
     }
 
-    .toggle-form {
+    .form-footer {
         text-align: center;
-        padding: 1rem 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem 0 0 0;
+        border-top: 1px solid rgba(48, 54, 61, 0.5);
         margin-top: 1.5rem;
     }
 
-    .toggle-form a {
-        color: #60a5fa;
+    .form-footer p {
+        font-size: 0.875rem;
+        color: #7d8590;
+        margin: 0;
+    }
+
+    .form-link {
+        color: #58a6ff;
         text-decoration: none;
         font-weight: 500;
-        transition: color 0.3s ease;
+        transition: color 0.2s ease;
     }
 
-    .toggle-form a:hover {
-        color: #3b82f6;
+    .form-link:hover {
+        color: #1f6feb;
         text-decoration: underline;
     }
     
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #7d8590;
+        cursor: pointer;
+        padding: 0.25rem;
+        font-size: 1.125rem;
+        transition: color 0.2s ease;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        z-index: 2;
+    }
+
+    .password-toggle:hover {
+        color: #f0f6fc;
+    }
+
+    .password-toggle:focus {
+        outline: 2px solid #1f6feb;
+        outline-offset: 2px;
+        border-radius: 4px;
+    }
+
     /* Hide large background circles on mobile for better performance */
     .circle-1, .circle-2 {
         display: none;
     }
 
     .circle-3 {
-        width: 180px;
-        height: 180px;
-        opacity: 0.6;
+        width: 160px;
+        height: 160px;
+        opacity: 0.4;
+        background: radial-gradient(circle at center, rgba(31, 111, 235, 0.08), rgba(31, 111, 235, 0.02));
     }
 
-    /* Enhanced mobile theme toggle */
-    .theme-switch {
+    /* Mobile optimizations */
+    .aurora,
+    .light-streaks {
+        opacity: 0.3;
+    }
+
+    .stars {
+        opacity: 0.5;
+    }
+
+    /* Enhanced mobile notification */
+    .notification {
+        position: fixed;
         top: 1rem;
+        left: 1rem;
         right: 1rem;
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
+        max-width: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        z-index: 10000;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
     }
-
-    .theme-switch:hover,
-    .theme-switch:focus {
-        transform: scale(1.05);
-        background: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    .theme-switch:active {
-        transform: scale(0.95);
-        transition: transform 0.1s ease;
-    }
-
-    /* Enhanced error and success messages for mobile */
-    .error-message,
-    .success-message {
-        padding: 0.875rem 1rem;
-        border-radius: 10px;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-    }
-
-    .error-message {
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        color: #fca5a5;
-    }
-
-    .success-message {
-        background: rgba(34, 197, 94, 0.15);
-        border: 1px solid rgba(34, 197, 94, 0.3);
-        color: #86efac;
+}
     }
 }
     
