@@ -1724,7 +1724,7 @@ class ContentManager {
             if (response.status === 200) {
                 utils.showNotification('Cập nhật thông tin thành công', 'success');
                 // Reload personal info to show updated data
-                setTimeout(() => this.showPersonalInfo(), 200);
+                this.showPersonalInfo();
             } else {
                 utils.showNotification('Không thể cập nhật thông tin', 'error');
             }
@@ -3750,7 +3750,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupMobileMenu();
     
     // Wait a moment for all elements to be rendered
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 10));
     
     // Setup security
     document.addEventListener("keydown", (e) => {
@@ -3805,7 +3805,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Additional failsafe - ensure mobile menu is setup after everything else
         setTimeout(() => {
             setupMobileMenu();
-        }, 2000);
+        }, 100);
     } else {
         // Hide dashboard loader if authentication fails
         await hideDashboardLoader();
@@ -3820,7 +3820,7 @@ window.addEventListener('load', () => {
 // Additional backup initialization for mobile menu
 setTimeout(() => {
     setupMobileMenu();
-}, 3000);
+}, 50);
 
 // Enhanced Dashboard Stats Initialization - Using unified dashboard API
 async function getDashboardStats() {
@@ -3847,7 +3847,7 @@ async function getDashboardStats() {
     }
     
     // Wait a moment for DOM to be ready
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 10));
     
     const elements = {
         totalEmployees: document.getElementById('totalEmployees'),
@@ -3978,7 +3978,7 @@ async function updateStatsGrid() {
     }
     
     // Force a re-layout
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 10));
 }
 
 // Role-based UI Management  
@@ -4056,7 +4056,7 @@ async function initializeRoleBasedUI() {
         ];
         
         // Wait for DOM to be fully ready before checking sections
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 10));
         
         adSections.forEach(selector => {
             // Use more flexible selector approach
@@ -4653,81 +4653,81 @@ function setupMobileMenu() {
         document.getElementById('mobileShiftAssignment')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showShiftAssignment(), 150);
+            window.contentManager?.showShiftAssignment()
         });
         
         document.getElementById('mobileWorkShifts')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showWorkShifts(), 150);
+            window.contentManager?.showWorkShifts()
         });
         
         document.getElementById('mobileAttendance')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showAttendance(), 150);
+            window.contentManager?.showAttendance()
         });
         
         // Other menu items
         document.getElementById('mobileReward')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showReward(), 150);
+            window.contentManager?.showReward()
         });
         
         document.getElementById('mobileSubmitTask')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showSubmitTask(), 150);
+            window.contentManager?.showSubmitTask()
         });
         
         document.getElementById('mobileTaskPersonnel')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showTaskPersonnel(), 150);
+            window.contentManager?.showTaskPersonnel()
         });
         
         document.getElementById('mobileTaskStore')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showTaskStore(), 150);
+            window.contentManager?.showTaskStore()
         });
         
         document.getElementById('mobileTaskFinance')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showTaskFinance(), 150);
+            window.contentManager?.showTaskFinance()
         });
         
         document.getElementById('mobileTaskApproval')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showTaskApproval(), 150);
+            window.contentManager?.showTaskApproval()
         });
         
         document.getElementById('mobileRegistrationApproval')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showRegistrationApproval(), 150);
+            window.contentManager?.showRegistrationApproval()
         });
         
         document.getElementById('mobileGrantAccess')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showGrantAccess(), 150);
+            window.contentManager?.showGrantAccess()
         });
         
         document.getElementById('mobilePersonalInformation')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showPersonalInformation(), 150);
+            window.contentManager?.showPersonalInformation()
         });
         
         // Mobile logout
         document.getElementById('mobileLogout')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => logout(), 150);
+            logout()
         });
     }
     
@@ -4846,7 +4846,7 @@ async function hideDashboardLoader() {
     const dashboardContent = document.getElementById('dashboardContent');
     
     // Simulate minimum loading time for better UX
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     if (dashboardLoader) {
         dashboardLoader.classList.add('hidden');
