@@ -115,6 +115,7 @@ body {
     min-height: 100vh;
     letter-spacing: -0.025em;
     position: relative;
+    padding-top: var(--header-height);
 }
 
 /* Enhanced Professional Header Styles */
@@ -123,7 +124,7 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: var(--header-height);
     background: var(--bg-header);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
@@ -442,10 +443,10 @@ body {
 /* Enhanced Professional Sidebar - Desktop Only */
 .sidebar {
     position: fixed;
-    top: var(--header-height);
+    top: 0;
     left: 0;
     width: var(--sidebar-width);
-    height: calc(100vh - var(--header-height));
+    height: 100vh;
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
@@ -455,6 +456,7 @@ body {
     flex-direction: column;
     box-shadow: var(--shadow-lg);
     backdrop-filter: var(--glass-blur);
+    padding-top: var(--header-height);
 }
 
 /* Company Logo Responsive Text */
@@ -888,7 +890,7 @@ body {
 /* Enhanced Professional Main Content - Desktop Only */
 .main {
     margin-left: var(--sidebar-width);
-    margin-top: var(--header-height);
+    margin-top: 0;
     padding: 30px 40px;
     height: calc(100vh - var(--header-height));
     overflow-y: auto;
@@ -901,7 +903,7 @@ body {
 .main::before {
     content: '';
     position: fixed;
-    top: var(--header-height);
+    top: 0;
     left: var(--sidebar-width);
     right: 0;
     bottom: 0;
@@ -2786,7 +2788,7 @@ body {
 /* Notifications */
 .notification {
     position: fixed;
-    top: calc(var(--header-height) + 20px);
+    top: 80px;
     right: 20px;
     padding: 16px 20px;
     background: var(--bg-card);
@@ -5169,6 +5171,10 @@ body {
         line-height: 1.4;
         z-index: 10000;
         animation: slideInDown 0.3s ease-out;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));
+        border: 1px solid rgba(255,255,255,0.2);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
     }
     
     /* Enhanced scrollbar for mobile */
@@ -8783,7 +8789,7 @@ button:focus, .btn:focus, .menu-link:focus {
 /* Enhanced Notifications for Mobile */
 .notification {
     position: fixed;
-    top: calc(var(--header-height) + 1rem);
+    top: 80px;
     left: 1rem;
     right: 1rem;
     z-index: 10000;
