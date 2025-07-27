@@ -3770,7 +3770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ThemeManager.initialize();
 
         // Initialize features
-        new ContentManager(user);
+        window.contentManager = new ContentManager(user);
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();
