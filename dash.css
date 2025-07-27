@@ -822,6 +822,22 @@ body {
     transition: margin-left 0.3s ease;
 }
 
+/* Dashboard Main Content Animation */
+.dashboard-main-fade-in {
+    animation: dashboardFadeIn 0.6s ease-out;
+}
+
+@keyframes dashboardFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .content {
     max-width: 1200px;
     margin: 0 auto;
@@ -1297,4 +1313,453 @@ body {
     background: transparent;
     border: 1px solid var(--color-border-default);
     color: var(--color-fg-default);
+}
+
+/* =================================================
+   SPECIFIC FUNCTION STYLING FOR MAIN CONTENT AREA
+   ================================================= */
+
+/* Phân Quyền (Permissions) Styling */
+.permissions-container, 
+.grant-access-container {
+    background: linear-gradient(135deg, #f6f9fc 0%, #e8f3ff 100%);
+    border: 2px solid var(--color-accent-emphasis);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 24px 0;
+    box-shadow: 0 8px 32px rgba(9, 105, 218, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.permissions-container::before {
+    content: '🔐';
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 48px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.permissions-header {
+    background: linear-gradient(135deg, var(--color-accent-emphasis), #2ea043);
+    color: white;
+    padding: 24px 32px;
+    margin: -32px -32px 24px -32px;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 4px 16px rgba(9, 105, 218, 0.3);
+}
+
+.permissions-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.permissions-header .header-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.user-role-card {
+    background: var(--color-canvas-default);
+    border: 2px solid var(--color-border-default);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    box-shadow: var(--color-shadow-medium);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.user-role-card:hover {
+    border-color: var(--color-accent-emphasis);
+    box-shadow: 0 8px 24px rgba(9, 105, 218, 0.15);
+    transform: translateY(-2px);
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 8px 0 0;
+}
+
+.role-badge.admin { background: #ffeaa7; color: #2d3436; }
+.role-badge.manager { background: #74b9ff; color: white; }
+.role-badge.assistant { background: #fd79a8; color: white; }
+.role-badge.employee { background: #00b894; color: white; }
+
+.btn-edit-role {
+    background: linear-gradient(135deg, var(--color-accent-emphasis), #2ea043);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
+}
+
+.btn-edit-role:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(9, 105, 218, 0.4);
+}
+
+/* Duyệt Đăng Ký (Registration Approval) Styling */
+.registration-approval-container,
+.approval-container {
+    background: linear-gradient(135deg, #f0f9f4 0%, #e6f7ea 100%);
+    border: 2px solid var(--color-success-fg);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 24px 0;
+    box-shadow: 0 8px 32px rgba(26, 127, 55, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.registration-approval-container::before {
+    content: '✅';
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 48px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.approval-header {
+    background: linear-gradient(135deg, var(--color-success-fg), #2ea043);
+    color: white;
+    padding: 24px 32px;
+    margin: -32px -32px 24px -32px;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 4px 16px rgba(26, 127, 55, 0.3);
+}
+
+.approval-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.approval-header .header-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.pending-registration-card {
+    background: var(--color-canvas-default);
+    border: 2px solid var(--color-border-default);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+    box-shadow: var(--color-shadow-medium);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.pending-registration-card:hover {
+    border-color: var(--color-success-fg);
+    box-shadow: 0 8px 24px rgba(26, 127, 55, 0.15);
+    transform: translateY(-2px);
+}
+
+.btn-approve {
+    background: linear-gradient(135deg, var(--color-success-fg), #2ea043);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(26, 127, 55, 0.3);
+    margin-right: 8px;
+}
+
+.btn-approve:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26, 127, 55, 0.4);
+}
+
+.btn-reject {
+    background: linear-gradient(135deg, var(--color-danger-fg), #ff6b6b);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(207, 34, 46, 0.3);
+}
+
+.btn-reject:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(207, 34, 46, 0.4);
+}
+
+/* Thông Tin Cá Nhân (Personal Information) Styling */
+.personal-info-container,
+.personal-information-container {
+    background: linear-gradient(135deg, #f8f4ff 0%, #f0e6ff 100%);
+    border: 2px solid #8b5cf6;
+    border-radius: 16px;
+    padding: 32px;
+    margin: 24px 0;
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+.personal-info-container::before {
+    content: '👤';
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 48px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.personal-info-header {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    color: white;
+    padding: 24px 32px;
+    margin: -32px -32px 24px -32px;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+}
+
+.personal-info-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.personal-info-header .header-subtitle {
+    font-size: 16px;
+    opacity: 0.9;
+    margin: 8px 0 0 0;
+    font-weight: 400;
+}
+
+.personal-info-card {
+    background: var(--color-canvas-default);
+    border: 2px solid var(--color-border-default);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: var(--color-shadow-medium);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.personal-info-card:hover {
+    border-color: #8b5cf6;
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+    transform: translateY(-2px);
+}
+
+.info-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border-muted);
+}
+
+.info-field:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--color-fg-muted);
+    font-size: 14px;
+}
+
+.info-value {
+    font-weight: 500;
+    color: var(--color-fg-default);
+    font-size: 14px;
+}
+
+.btn-edit-info {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-edit-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
+/* Form styling for all functions */
+.function-form {
+    background: var(--color-canvas-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 20px 0;
+    box-shadow: var(--color-shadow-small);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    color: var(--color-fg-default);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--color-border-default);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent-emphasis);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-approved {
+    background: #d1edff;
+    color: #0969da;
+    border: 1px solid #74b9ff;
+}
+
+.status-active {
+    background: #dafbe1;
+    color: #137547;
+    border: 1px solid #00b894;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #ff6b6b;
+}
+
+/* Animation for function content loading */
+.function-content {
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments for function styling */
+@media (max-width: 768px) {
+    .permissions-container,
+    .registration-approval-container,
+    .personal-info-container {
+        padding: 20px;
+        margin: 16px 0;
+        border-radius: 12px;
+    }
+    
+    .permissions-header,
+    .approval-header,
+    .personal-info-header {
+        padding: 20px;
+        margin: -20px -20px 20px -20px;
+        border-radius: 12px 12px 0 0;
+    }
+    
+    .permissions-header h1,
+    .approval-header h1,
+    .personal-info-header h1 {
+        font-size: 24px;
+    }
+    
+    .user-role-card,
+    .pending-registration-card,
+    .personal-info-card {
+        padding: 16px;
+    }
+    
+    .btn-edit-role,
+    .btn-approve,
+    .btn-reject,
+    .btn-edit-info {
+        width: 100%;
+        margin: 8px 0;
+    }
 }
