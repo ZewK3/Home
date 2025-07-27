@@ -3770,7 +3770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ThemeManager.initialize();
 
         // Initialize features
-        new ContentManager(user);
+        window.contentManager = new ContentManager(user);
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();
@@ -4626,6 +4626,7 @@ function setupMobileMenu() {
             const submenu = item.querySelector('.mobile-submenu');
             
             if (menuLink && submenu) {
+                // Menu item with submenu - toggle submenu
                 menuLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     
@@ -4644,6 +4645,32 @@ function setupMobileMenu() {
                         item.classList.remove('submenu-open');
                     } else {
                         item.classList.add('submenu-open');
+                    }
+                });
+            } else if (menuLink && !submenu) {
+                // Menu item without submenu - handle direct navigation
+                menuLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    closeMobileMenu();
+                    
+                    // Handle different menu actions
+                    const linkId = menuLink.id;
+                    switch(linkId) {
+                        case 'mobileReward':
+                            window.contentManager?.showReward();
+                            break;
+                        case 'mobileSubmitTask':
+                            window.contentManager?.showSubmitTask();
+                            break;
+                        case 'mobileRegistrationApproval':
+                            window.contentManager?.showRegistrationApproval();
+                            break;
+                        case 'mobileGrantAccess':
+                            window.contentManager?.showGrantAccess();
+                            break;
+                        case 'mobilePersonalInformation':
+                            window.contentManager?.showPersonalInformation();
+                            break;
                     }
                 });
             }
