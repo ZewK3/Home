@@ -915,6 +915,7 @@ body {
 .content {
     height: 100%;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 30px 40px;
     box-sizing: border-box;
 }
@@ -8408,7 +8409,8 @@ button:focus, .btn:focus, .menu-link:focus {
    MOBILE-FIRST RESPONSIVE DESIGN WITH CSS
    ============================================ */
 
-/* Base Mobile Styles (Default) */
+/* Base Mobile Styles (Default) - Mobile Only */
+@media (max-width: 768px) {
 .menu-toggle {
     display: flex !important;
     align-items: center;
@@ -8872,6 +8874,8 @@ button:focus, .btn:focus, .menu-link:focus {
     color: white;
 }
 
+}
+
 /* Desktop Overrides */
 @media (min-width: 769px) {
     .menu-toggle {
@@ -8901,7 +8905,24 @@ button:focus, .btn:focus, .menu-link:focus {
     .main {
         margin-left: var(--sidebar-width) !important;
         width: calc(100% - var(--sidebar-width)) !important;
-        padding: calc(60px + 2rem) 2rem 2rem 2rem !important;
+        position: fixed !important;
+        top: 60px !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: var(--sidebar-width) !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: var(--bg-main);
+        z-index: 1;
+    }
+    
+    .content {
+        height: 100% !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        padding: 30px 40px !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
     }
     
     .stats-grid {
