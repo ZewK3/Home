@@ -11,41 +11,7 @@ const CONFIG = {
     MAX_RETRY_ATTEMPTS: 3
 };
 
-// Enhanced Function Loading Utilities
-const LoadingManager = {
-    // Show function-specific loading indicator
-    showFunctionLoading(message = 'Đang tải dữ liệu...') {
-        // Remove existing loading if any
-        this.hideFunctionLoading();
-        
-        const loadingHTML = `
-            <div class="function-loading" id="functionLoading">
-                <div class="function-loading-content">
-                    <div class="function-loading-spinner"></div>
-                    <div class="function-loading-text">${message}</div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', loadingHTML);
-    },
-    
-    // Hide function loading indicator
-    hideFunctionLoading() {
-        const existingLoading = document.getElementById('functionLoading');
-        if (existingLoading) {
-            existingLoading.remove();
-        }
-    },
-    
-    // Update loading message
-    updateLoadingMessage(message) {
-        const loadingText = document.querySelector('.function-loading-text');
-        if (loadingText) {
-            loadingText.textContent = message;
-        }
-    }
-};
+
 
 // Global cache for API data with enhanced call tracking
 const API_CACHE = {
@@ -2930,7 +2896,6 @@ class ContentManager {
     // Registration Approval Management
     async showRegistrationApproval() {
         const content = document.getElementById('content');
-        LoadingManager.showFunctionLoading('Đang tải chức năng duyệt đăng ký...');
         
         try {
             content.innerHTML = `
@@ -3079,8 +3044,6 @@ class ContentManager {
         } catch (error) {
             console.error('Registration approval error:', error);
             utils.showNotification("Không thể tải danh sách đăng ký", "error");
-        } finally {
-            LoadingManager.hideFunctionLoading();
         }
     }
 
@@ -3206,7 +3169,6 @@ class ContentManager {
         }
         
         this.isLoadingRegistrations = true;
-        LoadingManager.showFunctionLoading('Đang tải danh sách đăng ký...');
         
         try {
             const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
@@ -3291,9 +3253,8 @@ class ContentManager {
                 `;
             }
         } finally {
-            // Reset loading state and hide loading indicator
+            // Reset loading state
             this.isLoadingRegistrations = false;
-            LoadingManager.hideFunctionLoading();
         }
     }
 
