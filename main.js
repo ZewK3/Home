@@ -3761,14 +3761,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
     // Initialize managers
-    // const authManager = new AuthManager();
-    // const user = await authManager.checkAuthentication();
-    
-    // TEMPORARY: Skip auth for testing
-    const user = { fullName: "Test User", employeeId: "TEST001", position: "AD" };
+    const authManager = new AuthManager();
+    const user = await authManager.checkAuthentication();
 
     if (user) {
-        // authManager.setupLogoutHandler();
+        authManager.setupLogoutHandler();
         MenuManager.setupMenuInteractions();
         ThemeManager.initialize();
 
