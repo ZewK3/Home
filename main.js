@@ -11,6 +11,42 @@ const CONFIG = {
     MAX_RETRY_ATTEMPTS: 3
 };
 
+// Enhanced Function Loading Utilities
+const LoadingManager = {
+    // Show function-specific loading indicator
+    showFunctionLoading(message = 'Đang tải dữ liệu...') {
+        // Remove existing loading if any
+        this.hideFunctionLoading();
+        
+        const loadingHTML = `
+            <div class="function-loading" id="functionLoading">
+                <div class="function-loading-content">
+                    <div class="function-loading-spinner"></div>
+                    <div class="function-loading-text">${message}</div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', loadingHTML);
+    },
+    
+    // Hide function loading indicator
+    hideFunctionLoading() {
+        const existingLoading = document.getElementById('functionLoading');
+        if (existingLoading) {
+            existingLoading.remove();
+        }
+    },
+    
+    // Update loading message
+    updateLoadingMessage(message) {
+        const loadingText = document.querySelector('.function-loading-text');
+        if (loadingText) {
+            loadingText.textContent = message;
+        }
+    }
+};
+
 // Global cache for API data with enhanced call tracking
 const API_CACHE = {
     userData: null,
@@ -517,7 +553,8 @@ class ContentManager {
     // Helper functions for shift management
     async loadStoresForShiftAssignment() {
         try {
-            const response = await API_CACHE.getStoresData();
+            // Use AuthManager's cached stores data
+            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -541,7 +578,8 @@ class ContentManager {
 
     async loadStoresForAttendance() {
         try {
-            const response = await API_CACHE.getStoresData();
+            // Use AuthManager's cached stores data
+            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -916,8 +954,8 @@ class ContentManager {
     async showTaskStore() {
         const content = document.getElementById('content');
         try {
-            // Use cached stores data instead of direct API call
-            const stores = await API_CACHE.getStoresData();
+            // Use AuthManager's cached stores data
+            const stores = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
             
             content.innerHTML = `
                 <div class="card">
@@ -2309,8 +2347,8 @@ class ContentManager {
 
     async loadStoresForPermissionEdit() {
         try {
-            // Use cached stores data instead of direct API call
-            const response = await API_CACHE.getStoresData();
+            // Use AuthManager's cached stores data
+            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -2892,6 +2930,8 @@ class ContentManager {
     // Registration Approval Management
     async showRegistrationApproval() {
         const content = document.getElementById('content');
+        LoadingManager.showFunctionLoading('Đang tải chức năng duyệt đăng ký...');
+        
         try {
             content.innerHTML = `
                 <div class="card">
@@ -3039,13 +3079,15 @@ class ContentManager {
         } catch (error) {
             console.error('Registration approval error:', error);
             utils.showNotification("Không thể tải danh sách đăng ký", "error");
+        } finally {
+            LoadingManager.hideFunctionLoading();
         }
     }
 
     async loadStoreMapping() {
         try {
-            // Use cached stores data instead of direct API call
-            const response = await API_CACHE.getStoresData();
+            // Use AuthManager's cached stores data
+            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -3088,8 +3130,8 @@ class ContentManager {
 
     async loadStoresForFilter() {
         try {
-            // Use cached stores data instead of direct API call
-            const response = await API_CACHE.getStoresData();
+            // Use AuthManager's cached stores data 
+            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
             console.log('Stores API response:', response);
             
             let allStores = [];
@@ -3106,7 +3148,7 @@ class ContentManager {
             }
             
             // Get user's current info to apply proper filtering using cached data
-            const currentUser = await API_CACHE.getUserData();
+            const currentUser = window.authManager ? await window.authManager.getUserData() : await API_CACHE.getUserData();
             if (!currentUser) {
                 throw new Error('Could not get user data from cache');
             }
@@ -3164,6 +3206,7 @@ class ContentManager {
         }
         
         this.isLoadingRegistrations = true;
+        LoadingManager.showFunctionLoading('Đang tải danh sách đăng ký...');
         
         try {
             const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
@@ -3248,8 +3291,9 @@ class ContentManager {
                 `;
             }
         } finally {
-            // Reset loading state
+            // Reset loading state and hide loading indicator
             this.isLoadingRegistrations = false;
+            LoadingManager.hideFunctionLoading();
         }
     }
 
@@ -3823,6 +3867,112 @@ class AuthManager {
     constructor() {
         this.token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
         this.userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA));
+        // Initialize cache for API data
+        this.cachedStores = null;
+        this.cachedUser = null;
+        this.cachedDashboardStats = null;
+        this.cacheTimestamp = {
+            stores: null,
+            user: null,
+            dashboardStats: null
+        };
+        this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
+    }
+
+    // Check if cache is valid
+    isCacheValid(cacheType) {
+        const timestamp = this.cacheTimestamp[cacheType];
+        return timestamp && (Date.now() - timestamp) < this.cacheTimeout;
+    }
+
+    // Get stores data with caching
+    async getStoresData() {
+        if (this.cachedStores && this.isCacheValid('stores')) {
+            console.log('Using cached stores data');
+            return this.cachedStores;
+        }
+
+        try {
+            console.log('Fetching fresh stores data');
+            const stores = await utils.fetchAPI(`?action=getStores&token=${this.token}`);
+            this.cachedStores = stores;
+            this.cacheTimestamp.stores = Date.now();
+            return stores;
+        } catch (error) {
+            console.error('Error fetching stores:', error);
+            // Return cached data if available, even if expired
+            return this.cachedStores || [];
+        }
+    }
+
+    // Get user data with caching
+    async getUserData() {
+        if (this.cachedUser && this.isCacheValid('user')) {
+            console.log('Using cached user data');
+            return this.cachedUser;
+        }
+
+        try {
+            const employeeId = this.userData?.employeeId || this.userData?.loginEmployeeId;
+            if (!employeeId) {
+                throw new Error("No employee ID in user data");
+            }
+            
+            console.log('Fetching fresh user data');
+            const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            if (user) {
+                this.cachedUser = user;
+                this.cacheTimestamp.user = Date.now();
+                return user;
+            }
+            throw new Error("Invalid user data");
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            // Return cached data if available, even if expired
+            return this.cachedUser || this.userData;
+        }
+    }
+
+    // Get dashboard stats with caching
+    async getDashboardStats() {
+        if (this.cachedDashboardStats && this.isCacheValid('dashboardStats')) {
+            console.log('Using cached dashboard stats');
+            return this.cachedDashboardStats;
+        }
+
+        try {
+            console.log('Fetching fresh dashboard stats');
+            const stats = await utils.fetchAPI(`?action=getDashboardStats&token=${this.token}`);
+            this.cachedDashboardStats = stats;
+            this.cacheTimestamp.dashboardStats = Date.now();
+            return stats;
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+            // Return cached data if available, even if expired
+            return this.cachedDashboardStats || {
+                totalEmployees: 0,
+                todayShifts: 0,
+                pendingRequests: 0
+            };
+        }
+    }
+
+    // Clear specific cache
+    clearCache(cacheType = null) {
+        if (cacheType) {
+            this[`cached${cacheType.charAt(0).toUpperCase() + cacheType.slice(1)}`] = null;
+            this.cacheTimestamp[cacheType] = null;
+        } else {
+            // Clear all cache
+            this.cachedStores = null;
+            this.cachedUser = null;
+            this.cachedDashboardStats = null;
+            this.cacheTimestamp = {
+                stores: null,
+                user: null,
+                dashboardStats: null
+            };
+        }
     }
 
     async checkAuthentication() {
@@ -3832,13 +3982,8 @@ class AuthManager {
         }
 
         try {
-            // Handle both employeeId and loginEmployeeId for compatibility
-            const employeeId = this.userData.employeeId || this.userData.loginEmployeeId;
-            if (!employeeId) {
-                throw new Error("No employee ID in user data");
-            }
-            
-            const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            // Use cached user data method
+            const user = await this.getUserData();
             if (user) {
                 const userInfoElement = document.getElementById("userInfo");
                 if (userInfoElement) {
@@ -3860,6 +4005,7 @@ class AuthManager {
     }
 
     logout() {
+        this.clearCache(); // Clear all cached data
         localStorage.removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
         localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
         window.location.href = "index.html";
@@ -3896,43 +4042,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
     // Initialize managers
-    // Temporarily disabled AuthManager for testing to avoid redirects
-    // const authManager = new AuthManager();
-    // const user = await authManager.checkAuthentication();
+    // Keep AuthManager disabled for testing as requested, but enhance with caching capabilities
+    const TESTING_MODE = true; // Set to false for production
     
-    // For testing purposes, get user data from localStorage or API cache
-    let userData = null;
-    try {
-        // Try to get user data from localStorage first
-        const storedUserData = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
-        if (storedUserData) {
-            userData = JSON.parse(storedUserData);
-        } else {
-            // If no stored data, create fallback user data structure for testing
+    let authManager, userData;
+    
+    if (!TESTING_MODE) {
+        // Re-enable AuthManager with enhanced caching capabilities
+        authManager = new AuthManager();
+        
+        // Pre-load and cache essential data during initialization
+        try {
+            // Pre-cache stores data for the session
+            await authManager.getStoresData();
+            console.log('Stores data pre-cached during initialization');
+        } catch (error) {
+            console.warn('Could not pre-cache stores data:', error);
+        }
+        
+        // Check authentication with cached user data
+        userData = await authManager.checkAuthentication();
+        
+        if (userData) {
+            authManager.setupLogoutHandler();
+            // Make authManager globally accessible for other functions
+            window.authManager = authManager;
+        }
+    } else {
+        // Testing mode - create AuthManager but don't check authentication
+        authManager = new AuthManager();
+        window.authManager = authManager;
+        
+        // For testing purposes, get user data from localStorage or create fallback
+        try {
+            // Try to get user data from localStorage first
+            const storedUserData = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
+            if (storedUserData) {
+                userData = JSON.parse(storedUserData);
+            } else {
+                // If no stored data, create fallback user data structure for testing
+                userData = {
+                    employeeId: 'TEST001',
+                    fullName: 'Test User',
+                    position: 'AD',
+                    email: 'test@example.com'
+                };
+                // Store the fallback data so AuthManager can find it
+                localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+            }
+            
+            // Update user info display for testing
+            const userInfoElement = document.getElementById("userInfo");
+            if (userInfoElement) {
+                userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
+            }
+            
+            // Pre-cache data for testing
+            try {
+                await authManager.getStoresData();
+                console.log('Stores data pre-cached during testing initialization');
+            } catch (error) {
+                console.warn('Could not pre-cache stores data in testing mode:', error);
+            }
+            
+        } catch (error) {
+            console.error('Error getting user data in testing mode:', error);
+            // Fallback user data structure for testing
             userData = {
                 employeeId: 'TEST001',
                 fullName: 'Test User',
                 position: 'AD',
                 email: 'test@example.com'
             };
-            // Store the fallback data so API_CACHE can find it
+            // Store the fallback data
             localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
         }
-    } catch (error) {
-        console.error('Error getting user data:', error);
-        // Fallback user data structure for testing
-        userData = {
-            employeeId: 'TEST001',
-            fullName: 'Test User',
-            position: 'AD',
-            email: 'test@example.com'
-        };
-        // Store the fallback data so API_CACHE can find it
-        localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
     }
 
     if (userData) {
-        // authManager.setupLogoutHandler();
         MenuManager.setupMenuInteractions();
         ThemeManager.initialize();
 
