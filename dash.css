@@ -8368,11 +8368,14 @@ button:focus, .btn:focus, .menu-link:focus {
         font-size: 1.5rem;
     }
 }
+
 /* ============================================
    MOBILE-FIRST RESPONSIVE DESIGN WITH CSS
    ============================================ */
 
-/* Base Mobile Styles (Default) */
+/* Mobile Styles (max-width: 768px) */
+@media (max-width: 768px) {
+
 .menu-toggle {
     display: flex !important;
     align-items: center;
@@ -8835,6 +8838,8 @@ button:focus, .btn:focus, .menu-link:focus {
     background: linear-gradient(135deg, var(--error), #b91c1c);
     color: white;
 }
+
+} /* End mobile media query (max-width: 768px) */
 
 /* Desktop Overrides */
 @media (min-width: 769px) {
