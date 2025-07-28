@@ -15,16 +15,28 @@ const CONFIG = {
 const API_CACHE = {
     userData: null,
     storesData: null,
+    dashboardStats: null,
     lastUserDataFetch: null,
     lastStoresDataFetch: null,
+    lastDashboardStatsFetch: null,
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
+    
+    // Loading flags to prevent concurrent calls
+    isLoadingUserData: false,
+    isLoadingStoresData: false,
+    isLoadingDashboardStats: false,
     
     // Clear cache
     clear() {
         this.userData = null;
         this.storesData = null;
+        this.dashboardStats = null;
         this.lastUserDataFetch = null;
         this.lastStoresDataFetch = null;
+        this.lastDashboardStatsFetch = null;
+        this.isLoadingUserData = false;
+        this.isLoadingStoresData = false;
+        this.isLoadingDashboardStats = false;
     },
     
     // Check if cache is valid
@@ -34,43 +46,79 @@ const API_CACHE = {
     
     // Get cached user data or fetch new
     async getUserData() {
+        // Return cached data if valid
         if (this.userData && this.isCacheValid(this.lastUserDataFetch)) {
             return this.userData;
         }
         
-        const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const employeeId = userData.employeeId || userData.loginEmployeeId;
-        
-        if (!employeeId) {
-            throw new Error('No employee ID found');
+        // Prevent concurrent calls
+        if (this.isLoadingUserData) {
+            // Wait for the ongoing request to complete
+            while (this.isLoadingUserData) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            // Return the result from the concurrent call
+            if (this.userData && this.isCacheValid(this.lastUserDataFetch)) {
+                return this.userData;
+            }
         }
         
+        this.isLoadingUserData = true;
+        
         try {
+            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
+            
+            if (!employeeId) {
+                throw new Error('No employee ID found');
+            }
+            
+            console.log('🌐 Fetching user data from API for employeeId:', employeeId);
             this.userData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
             this.lastUserDataFetch = Date.now();
             return this.userData;
         } catch (error) {
             console.error('Failed to fetch user data:', error);
             throw error;
+        } finally {
+            this.isLoadingUserData = false;
         }
     },
     
     // Get cached stores data or fetch new
     async getStoresData() {
+        // Return cached data if valid
         if (this.storesData && this.isCacheValid(this.lastStoresDataFetch)) {
             return this.storesData;
         }
         
+        // Prevent concurrent calls
+        if (this.isLoadingStoresData) {
+            // Wait for the ongoing request to complete
+            while (this.isLoadingStoresData) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            // Return the result from the concurrent call
+            if (this.storesData && this.isCacheValid(this.lastStoresDataFetch)) {
+                return this.storesData;
+            }
+        }
+        
+        this.isLoadingStoresData = true;
+        
         try {
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            console.log('🌐 Fetching stores data from API...');
             this.storesData = await utils.fetchAPI(`?action=getStores&token=${token}`);
             this.lastStoresDataFetch = Date.now();
             return this.storesData;
         } catch (error) {
             console.error('Failed to fetch stores data:', error);
             throw error;
+        } finally {
+            this.isLoadingStoresData = false;
         }
-    }
+    },
 };
 
 // Utility Functions
@@ -153,6 +201,40 @@ const utils = {
         } catch (error) {
             console.error('API Error:', error);
             throw error;
+        }
+    },
+    
+    // Get cached dashboard stats or fetch new
+    async getDashboardStats() {
+        // Return cached data if valid
+        if (this.dashboardStats && this.isCacheValid(this.lastDashboardStatsFetch)) {
+            return this.dashboardStats;
+        }
+        
+        // Prevent concurrent calls
+        if (this.isLoadingDashboardStats) {
+            // Wait for the ongoing request to complete
+            while (this.isLoadingDashboardStats) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            // Return the result from the concurrent call
+            if (this.dashboardStats && this.isCacheValid(this.lastDashboardStatsFetch)) {
+                return this.dashboardStats;
+            }
+        }
+        
+        this.isLoadingDashboardStats = true;
+        
+        try {
+            console.log('🌐 Fetching dashboard stats from API...');
+            this.dashboardStats = await utils.fetchAPI('?action=getDashboardStats');
+            this.lastDashboardStatsFetch = Date.now();
+            return this.dashboardStats;
+        } catch (error) {
+            console.error('Failed to fetch dashboard stats:', error);
+            throw error;
+        } finally {
+            this.isLoadingDashboardStats = false;
         }
     }
 };
@@ -1337,7 +1419,7 @@ class ContentManager {
     async showPersonalInfo() {
         const content = document.getElementById('content');
         try {
-            // Get user data - use cached data or fetch from API
+            // Get user data - use cached data only to prevent duplicate API calls
             let userData = this.user;
             if (!userData || !userData.employeeId) {
                 // Try to get from API cache if user data is not available
@@ -1345,8 +1427,8 @@ class ContentManager {
                 this.user = userData; // Update the instance user data
             }
             
-            // Use getUser API to get personal information
-            const response = await utils.fetchAPI(`?action=getUser&employeeId=${userData.employeeId}`);
+            // Use cached user data for personal information to prevent duplicate API calls
+            const response = userData;
             
             content.innerHTML = `
                 <div class="personal-info-container">
@@ -3968,9 +4050,8 @@ async function getDashboardStats() {
     });
 
     try {
-        console.log('🌐 Fetching dashboard stats from API...');
-        // Use the new unified dashboard stats API
-        const stats = await utils.fetchAPI('?action=getDashboardStats');
+        // Use cached dashboard stats API to prevent duplicate calls
+        const stats = await API_CACHE.getDashboardStats();
         
         console.log('📈 Dashboard stats response:', stats);
         
@@ -4092,7 +4173,8 @@ async function initializeRoleBasedUI() {
     try {
         const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
         if (employeeId) {
-            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+            // Use cached API call to prevent duplicate requests
+            const freshUserData = await API_CACHE.getUserData();
             if (freshUserData && freshUserData.position) {
                 userPosition = freshUserData.position;
                 console.log('🔐 Using fresh role from API for UI initialization:', userPosition);
@@ -4474,7 +4556,8 @@ async function refreshDashboardStats() {
 // Load report data
 async function loadReportData() {
     try {
-        const stats = await utils.fetchAPI('?action=getDashboardStats');
+        // Use cached dashboard stats to prevent duplicate API calls
+        const stats = await API_CACHE.getDashboardStats();
         if (stats) {
             document.getElementById('reportTotalEmployees').textContent = stats.totalEmployees || '0';
             document.getElementById('reportTodayActive').textContent = stats.todaySchedules || '0';
@@ -4498,8 +4581,8 @@ async function refreshUserRoleAndPermissions() {
         const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
         if (!employeeId) return;
 
-        // Get fresh user data from API
-        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+        // Get fresh user data from API cache to prevent duplicate calls
+        const freshUserData = await API_CACHE.getUserData();
         if (freshUserData && freshUserData.position) {
             
             // Update role-based UI with fresh data
