@@ -383,6 +383,11 @@ async function handleLogin(event) {
             showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
             if (buttonText) buttonText.textContent = "Thành công!";
             
+            // Hide loginFormContainer to prevent user interaction during redirect
+            if (elements.loginContainer) {
+                elements.loginContainer.style.display = "none";
+            }
+            
             setTimeout(() => window.location.href = "dashboard.html", 1500);
         } else {
             const errorData = await response.json().catch(() => ({}));
