@@ -133,7 +133,7 @@ body {
 /* Enhanced Professional Header Styles */
 .show-user {
     grid-area: header;
-    position: fixed;
+    position: fixed !important;
     top: 0;
     left: 0;
     right: 0;
@@ -528,14 +528,15 @@ body {
 .menu-link:hover {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: var(--text-light);
-    transform: translateX(8px);
-    box-shadow: var(--shadow-glow);
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
     border-color: var(--primary);
 }
 
 .menu-link:active {
     background: var(--primary-dark);
-    transform: translateX(4px);
+    transform: translateX(2px);
+    transition: all 0.1s ease;
 }
 
 /* Enhanced Professional Submenu - Compact */
@@ -576,8 +577,8 @@ body {
 .submenu-link:hover {
     background: linear-gradient(135deg, var(--secondary) 0%, #10b981 100%);
     color: var(--text-light);
-    transform: translateX(6px);
-    box-shadow: var(--shadow);
+    transform: translateX(3px);
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
     border-color: var(--secondary);
 }
 
@@ -8726,7 +8727,7 @@ button:focus, .btn:focus, .menu-link:focus {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(135deg, var(--bg-main));
+    background: var(--bg-main);
     z-index: 99999;
     display: flex;
     align-items: center;
@@ -8734,6 +8735,7 @@ button:focus, .btn:focus, .menu-link:focus {
     opacity: 1;
     visibility: visible;
     transition: all 0.5s ease;
+    backdrop-filter: blur(20px);
 }
 
 .loading-screen.hidden {
@@ -8744,9 +8746,67 @@ button:focus, .btn:focus, .menu-link:focus {
 
 .loading-content {
     text-align: center;
-    padding: 2rem;
+    padding: 2.5rem 2rem;
     background: var(--bg-card);
     border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    backdrop-filter: var(--glass-blur);
+    max-width: 320px;
+    width: 90%;
+}
+
+[data-theme="dark"] .loading-content {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid var(--border-color);
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1.5rem;
+}
+
+.loading-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.loading-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.loading-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 50%;
+    animation: loadingDotBounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dot:nth-child(2) { animation-delay: -0.16s; }
+.loading-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loadingDotBounce {
+    0%, 80%, 100% { 
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+    40% { 
+        transform: scale(1.2);
+        opacity: 1;
+    }
+}
     box-shadow: var(--shadow-lg);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
@@ -9402,9 +9462,9 @@ button:focus, .btn:focus, .menu-link:focus {
     align-items: center;
     justify-content: center;
     position: relative;
-    background: rgba(13, 17, 23, 0.8);
-    color: #f0f6fc;
-    border: 1px solid rgba(48, 54, 61, 0.8);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     width: 40px;
     height: 40px;
     border-radius: 8px;
@@ -9416,6 +9476,7 @@ button:focus, .btn:focus, .menu-link:focus {
     -webkit-tap-highlight-color: transparent;
     margin-right: 12px;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Show menu toggle on mobile */
@@ -9432,9 +9493,10 @@ button:focus, .btn:focus, .menu-link:focus {
 }
 
 .menu-toggle:hover {
-    background: rgba(13, 17, 23, 0.95);
-    border-color: rgba(48, 54, 61, 1);
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
     transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .menu-toggle:active {
@@ -9453,13 +9515,13 @@ button:focus, .btn:focus, .menu-link:focus {
 .menu-line {
     width: 100%;
     height: 2px;
-    background: #f0f6fc;
+    background: #ffffff;
     border-radius: 1px;
     transition: all 0.2s ease;
 }
 
 .menu-toggle:hover .menu-line {
-    background: #58a6ff;
+    background: #a5b4fc;
 }
 
 /* Mobile Navigation Dialog */
@@ -9473,10 +9535,10 @@ button:focus, .btn:focus, .menu-link:focus {
     max-height: none;
     margin: 0;
     padding: 0;
-    background: rgba(13, 17, 23, 0.95);
+    background: var(--bg-glass);
     border: none;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     z-index: 99999;
     opacity: 0;
     transform: translateX(-100%);
@@ -9494,8 +9556,14 @@ button:focus, .btn:focus, .menu-link:focus {
     max-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    background: var(--bg-sidebar);
     overflow-y: auto;
+    border-right: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .mobile-nav-content {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
 }
 
 .mobile-nav-header {
@@ -9503,29 +9571,57 @@ button:focus, .btn:focus, .menu-link:focus {
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
-    background: rgba(13, 17, 23, 0.8);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    min-height: 60px;
+}
+
+[data-theme="dark"] .mobile-nav-header {
+    background: rgba(13, 17, 23, 0.8);
+    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
 }
 
 .mobile-nav-header h2 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #f0f6fc;
+    color: var(--text-primary);
     margin: 0;
+}
+
+[data-theme="dark"] .mobile-nav-header h2 {
+    color: #f0f6fc;
 }
 
 .close-dialog {
     background: none;
     border: none;
-    color: #7d8590;
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 6px;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+[data-theme="dark"] .close-dialog {
+    color: #7d8590;
+}
+
+.close-dialog:hover {
+    background: var(--bg-glass);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .close-dialog:hover {
+    background: rgba(48, 54, 61, 0.5);
+    color: #f0f6fc;
+}
     justify-content: center;
 }
 
@@ -9554,11 +9650,21 @@ button:focus, .btn:focus, .menu-link:focus {
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    color: #f0f6fc;
+    color: var(--text-primary);
     text-decoration: none;
     font-size: 1rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    border-radius: 0 8px 8px 0;
+    margin: 0 0.5rem;
+    background: transparent;
+}
+
+[data-theme="dark"] .mobile-menu-link {
+    color: #f0f6fc;
+    background: linear-gradient(135deg, transparent 0%, rgba(88, 166, 255, 0.05) 100%);
+}
     border-left: 3px solid transparent;
     border-radius: 0 8px 8px 0;
     margin: 0 0.5rem;
@@ -9567,11 +9673,20 @@ button:focus, .btn:focus, .menu-link:focus {
 
 .mobile-menu-link:hover,
 .mobile-menu-link:focus {
+    background: linear-gradient(135deg, var(--primary-light) 0.1, var(--primary) 0.15);
+    border-left-color: var(--primary);
+    color: var(--primary);
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .mobile-menu-link:hover,
+[data-theme="dark"] .mobile-menu-link:focus {
     background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(88, 166, 255, 0.15) 100%);
     border-left-color: #58a6ff;
     color: #58a6ff;
-    transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
 }
 
 .mobile-submenu {
@@ -9702,12 +9817,22 @@ button:focus, .btn:focus, .menu-link:focus {
     align-items: center;
     flex: 1;
     min-width: 0;
+    gap: 1rem;
 }
 
-.AppHeader-logo {
+.AppHeader-actions {
     display: flex;
     align-items: center;
-    color: #f0f6fc !important;
+    gap: 1.5rem;
+    height: 100%;
+}
+
+.AppHeader-user {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 100%;
+}
     text-decoration: none !important;
 }
 

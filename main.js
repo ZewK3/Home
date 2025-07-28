@@ -2911,6 +2911,7 @@ class ContentManager {
             this.allRegistrations = [];
             this.storeMap = new Map(); // Store ID -> Store Name mapping
             this.regionMap = new Map(); // Store ID -> Region mapping
+            this.isLoadingRegistrations = false; // Prevent duplicate API calls
 
             await this.loadStoreMapping();
             await this.loadStoresForFilter();
@@ -3044,9 +3045,28 @@ class ContentManager {
     }
 
     async loadPendingRegistrations(store = '') {
+        // Prevent duplicate calls with loading state
+        if (this.isLoadingRegistrations) {
+            console.log('Already loading registrations, skipping duplicate call');
+            return;
+        }
+        
+        this.isLoadingRegistrations = true;
+        
         try {
             const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            
+            // Show loading state
+            const container = document.getElementById('pendingRegistrationsList');
+            if (container) {
+                container.innerHTML = `
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Đang tải danh sách đăng ký...</p>
+                    </div>
+                `;
+            }
             
             // Improved URL construction 
             let url = `?action=getPendingRegistrations&token=${token}`;
@@ -3115,6 +3135,9 @@ class ContentManager {
                     </div>
                 `;
             }
+        } finally {
+            // Reset loading state
+            this.isLoadingRegistrations = false;
         }
     }
 
@@ -3762,8 +3785,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize managers
     const authManager = new AuthManager();
-    // TEMPORARILY DISABLED FOR TESTING - const user = await authManager.checkAuthentication();
-    const user = { employeeId: 'test123', role: 'AD' }; // Mock user for testing
+    const user = await authManager.checkAuthentication();
 
     if (user) {
         authManager.setupLogoutHandler();
