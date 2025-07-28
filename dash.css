@@ -7766,23 +7766,24 @@ select option:checked {
             display: none;
         }
         
-        .user-avatar {
+        .user-card .user-avatar {
             display: flex !important;
             width: 40px;
             height: 40px;
         }
         
-        .user-info {
+        .user-card .user-info {
             width: auto !important;
             flex: 1 !important;
         }
     }
     
-    .user-avatar {
+    /* Standard user-card styles for small screens when mobile cards are not available */
+    .user-card .user-avatar {
         display: none !important;
     }
     
-    .user-info {
+    .user-card .user-info {
         width: 100% !important;
         flex: 1 !important;
         display: block !important;
