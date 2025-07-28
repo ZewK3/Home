@@ -1226,9 +1226,10 @@ class ContentManager {
                                     const userRole = user.position || 'NV';
                                     const userName = user.fullName || 'Không rõ';
                                     const userId = user.employeeId || 'Unknown';
-                                    
+                                    const userEmail = user.email || 'Không có email';
                                     
                                     return `
+                                        <!-- Standard user card for desktop/tablet -->
                                         <div class="user-card" data-user-id="${userId}" data-role="${userRole}">
                                             <div class="user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
                                             <div class="user-info">
@@ -1239,6 +1240,35 @@ class ContentManager {
                                             <div class="user-actions">
                                                 <button class="btn-edit-role" onclick="window.editUserRole('${userId}')" title="Chỉnh sửa phân quyền">
                                                     <span class="material-icons-round">edit</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Mobile-optimized user card for better data display -->
+                                        <div class="user-card-mobile" data-user-id="${userId}" data-role="${userRole}">
+                                            <div class="mobile-header">
+                                                <div class="mobile-avatar">${userName.substring(0, 2).toUpperCase()}</div>
+                                                <div class="mobile-name">
+                                                    <h4>${userName}</h4>
+                                                </div>
+                                                <div class="mobile-role role-${userRole.toLowerCase()}">${this.getRoleDisplayName(userRole)}</div>
+                                            </div>
+                                            
+                                            <div class="mobile-details">
+                                                <div class="mobile-detail-item">
+                                                    <div class="mobile-detail-label">ID Nhân viên</div>
+                                                    <div class="mobile-detail-value">${userId}</div>
+                                                </div>
+                                                <div class="mobile-detail-item">
+                                                    <div class="mobile-detail-label">Email</div>
+                                                    <div class="mobile-detail-value">${userEmail.length > 15 ? userEmail.substring(0, 15) + '...' : userEmail}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mobile-actions">
+                                                <button class="btn-edit-role-mobile" onclick="window.editUserRole('${userId}')" title="Chỉnh sửa phân quyền">
+                                                    <span class="material-icons-round">edit</span>
+                                                    Chỉnh sửa phân quyền
                                                 </button>
                                             </div>
                                         </div>
@@ -2203,8 +2233,12 @@ class ContentManager {
         
         const searchTerm = searchInput.value.toLowerCase();
         const roleFilterValue = roleFilter.value;
+        
+        // Handle both standard and mobile user cards
         const userCards = document.querySelectorAll('.user-card');
+        const mobileUserCards = document.querySelectorAll('.user-card-mobile');
 
+        // Filter standard user cards
         userCards.forEach(card => {
             const userName = card.querySelector('h4').textContent.toLowerCase();
             const userId = card.querySelector('.user-id').textContent.toLowerCase();
@@ -2218,6 +2252,23 @@ class ContentManager {
 
             // Show card only if both search and role filter match
             card.style.display = matchesSearch && matchesRole ? 'flex' : 'none';
+        });
+        
+        // Filter mobile user cards with same logic
+        mobileUserCards.forEach(card => {
+            const userName = card.querySelector('h4').textContent.toLowerCase();
+            const userIdElement = card.querySelector('.mobile-detail-value');
+            const userId = userIdElement ? userIdElement.textContent.toLowerCase() : '';
+            const userRole = card.dataset.role;
+
+            // Enhanced search logic: search text ONLY in name and ID, not role
+            const matchesSearch = !searchTerm || userName.includes(searchTerm) || userId.includes(searchTerm);
+            
+            // Role filter: exact match ONLY when role filter is selected
+            const matchesRole = !roleFilterValue || userRole === roleFilterValue;
+
+            // Show card only if both search and role filter match
+            card.style.display = matchesSearch && matchesRole ? 'block' : 'none';
         });
     }
 
@@ -2593,10 +2644,13 @@ class ContentManager {
             return;
         }
 
+        // Declare originalText in function scope to be available in finally block
+        let originalText = '';
+        
         try {
             // Show loading state
             const saveButton = document.getElementById('savePermissionChanges');
-            const originalText = saveButton.innerHTML;
+            originalText = saveButton.innerHTML;
             saveButton.innerHTML = '<span class="material-icons-round">hourglass_empty</span> Đang lưu...';
             saveButton.disabled = true;
 
@@ -4945,7 +4999,7 @@ function setupMobileMenu() {
         document.getElementById('mobilePersonalInformation')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showPersonalInformation(), 300);
+            setTimeout(() => window.contentManager?.showPersonalInfo(), 300);
         });
         
         // Mobile logout
