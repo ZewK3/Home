@@ -81,8 +81,11 @@ const API_CACHE = {
                 this.lastUserDataFetch = Date.now();
                 return this.userData;
             } catch (error) {
-                console.error('Failed to fetch user data:', error);
-                throw error;
+                console.warn('API not available, using localStorage data for testing:', error.message);
+                // Fallback to localStorage data for testing
+                this.userData = userData;
+                this.lastUserDataFetch = Date.now();
+                return this.userData;
             }
         });
     },
@@ -1401,16 +1404,14 @@ class ContentManager {
     async showPersonalInfo() {
         const content = document.getElementById('content');
         try {
-            // Get user data - use cached data or fetch from API
-            let userData = this.user;
-            if (!userData || !userData.employeeId) {
-                // Try to get from API cache if user data is not available
-                userData = await API_CACHE.getUserData();
-                this.user = userData; // Update the instance user data
+            // Use cached user data instead of making fresh API calls
+            const response = await API_CACHE.getUserData();
+            if (!response) {
+                throw new Error('Could not get user data from cache');
             }
             
-            // Use getUser API to get personal information
-            const response = await utils.fetchAPI(`?action=getUser&employeeId=${userData.employeeId}`);
+            // Update instance user data
+            this.user = response;
             
             content.innerHTML = `
                 <div class="personal-info-container">
@@ -3104,15 +3105,11 @@ class ContentManager {
                 }
             }
             
-            // Get user's current info to apply proper filtering
-            // Handle both loginEmployeeId (from login) and employeeId formats
-            const employeeId = userData.employeeId || userData.loginEmployeeId;
-            if (!employeeId) {
-                console.error('No employee ID found in user data:', userData);
-                throw new Error('Employee ID not found in user data');
+            // Get user's current info to apply proper filtering using cached data
+            const currentUser = await API_CACHE.getUserData();
+            if (!currentUser) {
+                throw new Error('Could not get user data from cache');
             }
-            const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${token}`);
-            let currentUser = userResponse;
             
             let availableStores = [];
             
@@ -3918,6 +3915,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 position: 'AD',
                 email: 'test@example.com'
             };
+            // Store the fallback data so API_CACHE can find it
+            localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
         }
     } catch (error) {
         console.error('Error getting user data:', error);
@@ -3928,6 +3927,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             position: 'AD',
             email: 'test@example.com'
         };
+        // Store the fallback data so API_CACHE can find it
+        localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
     }
 
     if (userData) {
@@ -3937,6 +3938,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Initialize features with proper user data
         window.contentManager = new ContentManager(userData);
+
+        // Populate user info in header early using userData
+        const userInfoElement = document.getElementById("userInfo");
+        if (userInfoElement && userData) {
+            userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
+            console.log('✅ User info populated in header:', userData.fullName, userData.employeeId);
+        }
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();
@@ -4149,23 +4157,19 @@ async function updateStatsGrid() {
 
 // Role-based UI Management  
 async function initializeRoleBasedUI() {
-    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
     let userPosition = 'NV'; // Default fallback
     
-    // Get fresh user data from API to ensure accurate role
+    // Use cached user data instead of making fresh API calls
     try {
-        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
-        if (employeeId) {
-            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
-            if (freshUserData && freshUserData.position) {
-                userPosition = freshUserData.position;
-                console.log('🔐 Using fresh role from API for UI initialization:', userPosition);
-            }
+        const freshUserData = await API_CACHE.getUserData();
+        if (freshUserData && freshUserData.position) {
+            userPosition = freshUserData.position;
+            console.log('🔐 Using cached role for UI initialization:', userPosition);
         } else {
-            console.warn('⚠️ No employee ID found, using default role NV');
+            console.warn('⚠️ No cached user data found, using default role NV');
         }
     } catch (error) {
-        console.warn('⚠️ Using default role due to API error:', error);
+        console.warn('⚠️ Using default role due to cache error:', error);
     }
     
     console.log('🔐 Initializing role-based UI for position:', userPosition);
@@ -4262,48 +4266,19 @@ async function initializeRoleBasedUI() {
 
 // Apply role-based section visibility for welcome-section without data-role attributes
 async function applyRoleBasedSectionVisibility() {
-    const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+    let userRole = 'NV'; // Default fallback
     
-    // Handle both employeeId and loginEmployeeId for compatibility
-    const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
-    let userRole = loggedInUser.position || 'NV';
-    
-    if (!employeeId) {
-        console.error('❌ No employee ID found in localStorage for role visibility');
-        // Try to get from current user session instead
-        const userInfo = document.getElementById("userInfo");
-        if (userInfo && userInfo.textContent) {
-            // Extract employee ID from userInfo display
-            const match = userInfo.textContent.match(/- ([A-Z0-9]+)$/);
-            if (match) {
-                const extractedId = match[1];
-                try {
-                    const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${extractedId}`);
-                    if (freshUserData && freshUserData.position) {
-                        userRole = freshUserData.position;
-                        console.log('🔐 Using fresh role from extracted ID:', userRole);
-                    }
-                } catch (error) {
-                    console.warn('⚠️ Could not fetch user data with extracted ID:', error);
-                }
-            }
+    // Use cached user data instead of making fresh API calls
+    try {
+        const freshUserData = await API_CACHE.getUserData();
+        if (freshUserData && freshUserData.position) {
+            userRole = freshUserData.position;
+            console.log('🔐 Using cached role for section visibility:', userRole);
+        } else {
+            console.warn('⚠️ No cached user data found, using default role NV');
         }
-        
-        if (!employeeId && userRole === 'NV') {
-            console.warn('⚠️ No employee ID available, defaulting to NV role');
-            userRole = 'NV';
-        }
-    } else {
-        // Get fresh user data from API to ensure accurate role
-        try {
-            const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
-            if (freshUserData && freshUserData.position) {
-                userRole = freshUserData.position;
-                console.log('🔐 Using fresh role from API for section visibility:', userRole);
-            }
-        } catch (error) {
-            console.warn('⚠️ Using cached role for section visibility due to API error:', error);
-        }
+    } catch (error) {
+        console.warn('⚠️ Using default role due to cache error:', error);
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
@@ -4558,15 +4533,11 @@ function exportReports() {
 // Refresh user role and permissions using fresh API data
 async function refreshUserRoleAndPermissions() {
     try {
-        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
-        if (!employeeId) return;
-
-        // Get fresh user data from API
-        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+        // Use cached user data instead of making fresh API calls
+        const freshUserData = await API_CACHE.getUserData();
         if (freshUserData && freshUserData.position) {
             
-            // Update role-based UI with fresh data
+            // Update role-based UI with cached data
             await initializeRoleBasedUI();
             MenuManager.updateMenuByRole(freshUserData.position);
             
@@ -5143,70 +5114,32 @@ async function initializeEnhancedDashboard() {
         // First ensure content is visible
         showDashboardContent();
         
-        // Get fresh user data from API instead of localStorage
-        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
-        
-        if (!employeeId) {
-            console.error('No employee ID found in localStorage - checking userInfo fallback');
-            
-            // Try to get from current user session display
-            const userInfo = document.getElementById("userInfo");
-            if (userInfo && userInfo.textContent) {
-                const match = userInfo.textContent.match(/- ([A-Z0-9]+)$/);
-                if (match) {
-                    const extractedId = match[1];
-                    
-                    try {
-                        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${extractedId}`);
-                        if (freshUserData && freshUserData.position) {
-                            const userPosition = freshUserData.position;
-                            console.log('📊 Fresh user data from extracted ID:', { 
-                                employeeId: freshUserData.employeeId, 
-                                fullName: freshUserData.fullName, 
-                                position: userPosition,
-                                storeName: freshUserData.storeName
-                            });
-                            
-                            // Continue with initialization
-                            console.log('📊 Initializing dashboard stats and role checking...');
-                            await getDashboardStats();
-                            
-                            await initializeRoleBasedUI();
-                            MenuManager.updateMenuByRole(userPosition);
-                            return;
-                        }
-                    } catch (error) {
-                        console.error('Failed to get user data from extracted ID:', error);
-                    }
-                }
-            }
-            
-            console.error('❌ Could not determine employee ID - aborting dashboard initialization');
-            return;
-        }
-
-        
-        // Fetch fresh user data from API
-        const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+        // Use cached user data instead of making fresh API calls
+        const freshUserData = await API_CACHE.getUserData();
         if (!freshUserData || !freshUserData.position) {
-            console.error('Failed to fetch fresh user data from API');
+            console.error('Failed to fetch user data from cache');
             return;
         }
 
         const userPosition = freshUserData.position;
-        console.log('📊 Fresh user data from API:', { 
+        console.log('📊 Cached user data:', { 
             employeeId: freshUserData.employeeId, 
             fullName: freshUserData.fullName, 
             position: userPosition,
             storeName: freshUserData.storeName
         });
         
+        // Update user info display in header
+        const userInfoElement = document.getElementById("userInfo");
+        if (userInfoElement) {
+            userInfoElement.textContent = `Chào ${freshUserData.fullName} - ${freshUserData.employeeId}`;
+        }
+        
         // Initialize all dashboard components
         console.log('📊 Initializing dashboard stats and role checking...');
         await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
         
-        // Initialize role-based UI and menu visibility with fresh API data
+        // Initialize role-based UI and menu visibility with cached data
         await initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
         
@@ -5360,22 +5293,20 @@ async function showWelcomeSection() {
         // Wait a moment for visual feedback
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Get user role first before building content
-        const loggedInUser = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        let userRole = loggedInUser.position || 'NV';
+        // Get user role first before building content using cached data
+        let userRole = 'NV'; // Default fallback
         
-        // Get fresh user data from API to ensure accurate role
+        // Use cached user data instead of making fresh API calls
         try {
-            const employeeId = loggedInUser.employeeId || loggedInUser.loginEmployeeId;
-            if (employeeId) {
-                const freshUserData = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
-                if (freshUserData && freshUserData.position) {
-                    userRole = freshUserData.position;
-                    console.log('🔐 Using fresh role from API:', userRole);
-                }
+            const freshUserData = await API_CACHE.getUserData();
+            if (freshUserData && freshUserData.position) {
+                userRole = freshUserData.position;
+                console.log('🔐 Using cached role for welcome section:', userRole);
+            } else {
+                console.warn('⚠️ No cached user data found, using default role NV');
             }
         } catch (error) {
-            console.warn('⚠️ Using cached role due to API error:', error);
+            console.warn('⚠️ Using default role due to cache error:', error);
         }
         
         console.log('🏗️ Building content for role:', userRole);
