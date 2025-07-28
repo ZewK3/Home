@@ -5009,13 +5009,34 @@ function setupMobileMenu() {
         document.getElementById('mobileLogout')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => logout(), 300);
+            setTimeout(() => {
+                if (window.authManager) {
+                    window.authManager.logout();
+                } else {
+                    // Fallback logout if authManager is not available
+                    localStorage.removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                    localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
+                    window.location.href = "index.html";
+                }
+            }, 300);
         });
     }
     
     setupMobileMenuHandlers();
     
     console.log('✅ GitHub-style mobile menu dialog initialized');
+}
+
+// Global logout function for sidebar button and other components
+function logout() {
+    if (window.authManager) {
+        window.authManager.logout();
+    } else {
+        // Fallback logout if authManager is not available
+        localStorage.removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
+        window.location.href = "index.html";
+    }
 }
 
 // Function to ensure dashboard content is visible

@@ -129,7 +129,7 @@ function showVerificationForm() {
 // Notification System - Fixed with null checks
 function showNotification(message, type = "success", duration = 3000) {
     if (!elements.notification) {
-        console.warn("Notification element not found");
+        showNotification("Warning", "Notification element not found", "warning");
         return;
     }
 
@@ -156,7 +156,7 @@ function showNotification(message, type = "success", duration = 3000) {
 // Password Strength Checker - Fixed with null checks
 function checkPasswordStrength(password) {
     if (!elements.strengthMeter || !elements.strengthText) {
-        console.warn("Password strength elements not found");
+        // Password strength elements not found - silent fail for better UX
         return;
     }
 
@@ -230,7 +230,7 @@ function isValidForm(data) {
 async function loadStores() {
     const storeSelect = document.getElementById("storeName");
     if (!storeSelect) {
-        console.warn("Store select element not found");
+        // Store select element not found - silent fail for better UX
         return;
     }
     
@@ -239,7 +239,7 @@ async function loadStores() {
     storeSelect.disabled = true;
     
     try {
-        console.log("Loading stores from API...");
+        // Loading stores from API silently
         const response = await fetch(`${API_URL}?action=getStores`, {
             method: "GET",
             headers: { 
@@ -248,11 +248,11 @@ async function loadStores() {
             }
         });
         
-        console.log("Store API response status:", response.status);
+        // Store API response received
         
         if (response.ok) {
             const data = await response.json();
-            console.log("Stores data received:", data);
+            // Stores data processed successfully
             
             // Check multiple possible data formats
             let stores = [];
@@ -270,7 +270,7 @@ async function loadStores() {
                     item && typeof item === 'object' && 
                     (item.storeId || item.storeName)
                 );
-                console.log("Converted object to stores array:", stores);
+                // Converted object to stores array successfully
             }
             
             if (stores && stores.length > 0) {
@@ -284,24 +284,24 @@ async function loadStores() {
                     option.value = storeId;
                     option.textContent = storeName;
                     storeSelect.appendChild(option);
-                    console.log(`Added store: ${storeName} (ID: ${storeId})`);
+                    // Store added to dropdown
                 });
                 
                 storeSelect.disabled = false;
-                console.log(`Successfully loaded ${stores.length} stores`);
-                showNotification(`Đã tải ${stores.length} cửa hàng`, "success", 3000);
+                // All stores loaded successfully
+                // Stores loaded successfully - silent completion for better UX
             } else {
-                console.warn("No stores found in response");
+                // No stores found in response
                 storeSelect.innerHTML = '<option value="">Không có cửa hàng nào</option>';
                 showNotification("Không tìm thấy cửa hàng nào", "warning", 3000);
             }
         } else {
             const errorText = await response.text();
-            console.error(`Store API error: ${response.status} - ${errorText}`);
+            // Store API error - silent handling for better UX
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
     } catch (error) {
-        console.error("Error loading stores:", error);
+        // Error loading stores - using fallback
         
         // Fallback: Use static stores data for testing when API is blocked
         const fallbackStores = [
@@ -311,7 +311,7 @@ async function loadStores() {
             { storeId: "ST004", storeName: "Cửa hàng Tân Bình" }
         ];
         
-        console.log("Using fallback stores data for testing");
+        // Using fallback stores data for testing
         storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
         
         fallbackStores.forEach(store => {
@@ -337,6 +337,11 @@ async function handleLogin(event) {
     const button = elements.loginForm.querySelector("button");
     const buttonText = button?.querySelector(".btn-text");
     
+    // Add loading state to loginFormContainer to prevent user interaction
+    if (elements.loginContainer) {
+        elements.loginContainer.classList.add("loading");
+    }
+    
     if (button) {
         button.classList.add("loading");
     }
@@ -354,6 +359,7 @@ async function handleLogin(event) {
         showNotification("Vui lòng nhập đầy đủ thông tin đăng nhập", "warning");
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng nhập";
+        if (elements.loginContainer) elements.loginContainer.classList.remove("loading");
         return;
     }
 
@@ -397,6 +403,7 @@ async function handleLogin(event) {
     } finally {
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng nhập";
+        if (elements.loginContainer) elements.loginContainer.classList.remove("loading");
     }
 }
 
@@ -765,7 +772,7 @@ document.addEventListener("contextmenu", (e) => e.preventDefault());
 
 // Modern CSS Animation System (GSAP Replacement)
 function initializeModernAnimations() {
-    console.log('🎬 Initializing CSS-based animations for login page...');
+    // CSS-based animations initialized for login page
 
     // Add entrance animation class to elements
     const authContainer = document.querySelector('.auth-container');
@@ -832,7 +839,7 @@ function initializeModernAnimations() {
         });
     });
 
-    console.log('✨ CSS-based animations initialized successfully!');
+    // CSS-based animations initialized successfully
 }
 
 // CSS-based form transition system

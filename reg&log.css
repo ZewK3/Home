@@ -554,6 +554,70 @@ body {
     animation: formAppear 0.3s ease-out;
 }
 
+/* Enhanced Form Loading State */
+.form-container.loading {
+    position: relative;
+    pointer-events: none; /* Prevent all interactions */
+    opacity: 0.7;
+}
+
+.form-container.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: inherit;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+    z-index: 11;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Dark theme loading state */
+[data-theme="dark"] .form-container.loading::before {
+    background: rgba(30, 41, 59, 0.8);
+}
+
+[data-theme="dark"] .form-container.loading::after {
+    border-color: rgba(248, 250, 252, 0.3);
+    border-top-color: #60a5fa;
+}
+
+/* Light theme loading state */
+[data-theme="light"] .form-container.loading::before {
+    background: rgba(248, 250, 252, 0.9);
+}
+
+[data-theme="light"] .form-container.loading::after {
+    border-color: rgba(15, 23, 42, 0.3);
+    border-top-color: #4f46e5;
+}
+
 @keyframes formAppear {
     from {
         opacity: 0;
