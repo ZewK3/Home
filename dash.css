@@ -9241,13 +9241,8 @@ button:focus, .btn:focus, .menu-link:focus {
     border: 3px solid var(--border-color);
     border-top: 3px solid var(--primary);
     border-radius: 50%;
-    animation: loadingSpin 1s linear infinite;
+    animation: spin 1s linear infinite;
     margin: 0 auto 1.5rem auto;
-}
-
-@keyframes loadingSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 
 /* Mobile Optimization for Loading States */
