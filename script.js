@@ -7,6 +7,8 @@ const SUCCESS_STATUS = 200;
 const ACCOUNT_EXISTS_STATUS = 209;
 const PHONE_EXISTS_STATUS = 210;
 const EMAIL_EXISTS_STATUS = 211;
+// Testing mode configuration
+const TESTING_MODE = true; // Set to false for production
 
 // Thêm đoạn này vào cuối file hoặc sau khi DOMContentLoaded
 document.addEventListener('DOMContentLoaded', function(){
@@ -364,11 +366,40 @@ async function handleLogin(event) {
     }
 
     try {
-        const response = await fetch(`${API_URL}?action=login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        });
+        let response;
+        
+        // Testing mode simulation
+        if (TESTING_MODE) {
+            // Simulate successful login for testing credentials
+            if (formData.loginEmployeeId === "TEST001" && formData.loginPassword === "lock") {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                response = {
+                    ok: true,
+                    json: async () => ({
+                        token: "test-token-" + Date.now(),
+                        user: {
+                            employeeId: "TEST001",
+                            fullName: "Test User",
+                            position: "AD",
+                            email: "test@example.com"
+                        }
+                    })
+                };
+            } else {
+                // Simulate login failure
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                throw new Error("Mật khẩu không chính xác");
+            }
+        } else {
+            // Production API call
+            response = await fetch(`${API_URL}?action=login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            });
+        }
 
         if (response.ok) {
             const result = await response.json();
