@@ -4000,82 +4000,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener("contextmenu", (e) => e.preventDefault());
 
     // Initialize managers
-    // Keep AuthManager disabled for testing as requested, but enhance with caching capabilities
-    const TESTING_MODE = true; // Set to false for production
+    // Re-enable AuthManager with enhanced caching capabilities
+    const authManager = new AuthManager();
     
-    let authManager, userData;
-    
-    if (!TESTING_MODE) {
-        // Re-enable AuthManager with enhanced caching capabilities
-        authManager = new AuthManager();
-        
-        // Pre-load and cache essential data during initialization
-        try {
-            // Pre-cache stores data for the session
-            await authManager.getStoresData();
-            console.log('Stores data pre-cached during initialization');
-        } catch (error) {
-            console.warn('Could not pre-cache stores data:', error);
-        }
-        
-        // Check authentication with cached user data
-        userData = await authManager.checkAuthentication();
-        
-        if (userData) {
-            authManager.setupLogoutHandler();
-            // Make authManager globally accessible for other functions
-            window.authManager = authManager;
-        }
-    } else {
-        // Testing mode - create AuthManager but don't check authentication
-        authManager = new AuthManager();
-        window.authManager = authManager;
-        
-        // For testing purposes, get user data from localStorage or create fallback
-        try {
-            // Try to get user data from localStorage first
-            const storedUserData = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
-            if (storedUserData) {
-                userData = JSON.parse(storedUserData);
-            } else {
-                // If no stored data, create fallback user data structure for testing
-                userData = {
-                    employeeId: 'TEST001',
-                    fullName: 'Test User',
-                    position: 'AD',
-                    email: 'test@example.com'
-                };
-                // Store the fallback data so AuthManager can find it
-                localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
-            }
-            
-            // Update user info display for testing
-            const userInfoElement = document.getElementById("userInfo");
-            if (userInfoElement) {
-                userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
-            }
-            
-            // Pre-cache data for testing
-            try {
-                await authManager.getStoresData();
-                console.log('Stores data pre-cached during testing initialization');
-            } catch (error) {
-                console.warn('Could not pre-cache stores data in testing mode:', error);
-            }
-            
-        } catch (error) {
-            console.error('Error getting user data in testing mode:', error);
-            // Fallback user data structure for testing
-            userData = {
-                employeeId: 'TEST001',
-                fullName: 'Test User',
-                position: 'AD',
-                email: 'test@example.com'
-            };
-            // Store the fallback data
-            localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
-        }
+    // Pre-load and cache essential data during initialization
+    try {
+        // Pre-cache stores data for the session
+        await authManager.getStoresData();
+        console.log('Stores data pre-cached during initialization');
+    } catch (error) {
+        console.warn('Could not pre-cache stores data:', error);
     }
+    
+    // Check authentication with cached user data
+    const userData = await authManager.checkAuthentication();
+    
+    if (userData) {
+        authManager.setupLogoutHandler();
+        // Make authManager globally accessible for other functions
+        window.authManager = authManager;
 
     if (userData) {
         MenuManager.setupMenuInteractions();
