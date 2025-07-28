@@ -487,6 +487,7 @@ body {
     background: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
+    overflow-x: hidden;
     transition: transform var(--transition);
     z-index: 500;
     display: flex;
@@ -544,6 +545,10 @@ body {
     position: relative;
     overflow: hidden;
     backdrop-filter: var(--glass-blur);
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .menu-link:hover {
@@ -593,6 +598,11 @@ body {
     margin-bottom: 2px;
     font-weight: 500;
     backdrop-filter: var(--glass-blur);
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .submenu-link:hover {
@@ -5026,10 +5036,14 @@ body {
 
 .role-visible.menu-item {
     display: block !important;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .role-visible.submenu-item {
     display: block !important;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .role-visible.quick-action-btn {
@@ -6715,9 +6729,11 @@ body {
     }
     
     .permission-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 0.75rem;
         padding: 1rem;
+        max-width: 100%;
+        overflow-x: auto;
     }
     
     .permission-stat-card {
@@ -7116,9 +7132,25 @@ body {
     }
     
     .user-avatar {
-        width: 35px;
-        height: 35px;
-        font-size: 0.75rem;
+        display: none !important;
+    }
+    
+    .user-info {
+        width: 100% !important;
+        flex: 1 !important;
+        display: block !important;
+    }
+    
+    .user-info h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-info .user-id {
+        display: block !important;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
     }
     
     .search-controls .form-control {
