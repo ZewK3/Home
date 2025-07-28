@@ -1106,9 +1106,8 @@ class ContentManager {
         try {
             // Show loading state
             content.innerHTML = `
-                <div class="loading-container" style="display: flex; justify-content: center; align-items: center; height: 400px;">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-left: 1rem; color: var(--text-muted);">Đang tải danh sách người dùng...</p>
+                <div class="user-list">
+                    <div class="loading-text">Đang tải danh sách người dùng...</div>
                 </div>
             `;
 
@@ -2981,9 +2980,8 @@ class ContentManager {
 
                         <!-- Registration List -->
                         <div id="pendingRegistrationsList" class="registrations-container-enhanced">
-                            <div class="loading-state">
-                                <div class="loading-spinner"></div>
-                                <p class="loading-text">Đang tải danh sách đăng ký...</p>
+                            <div class="registrations-list">
+                                <div class="loading-text">Đang tải danh sách đăng ký...</div>
                             </div>
                         </div>
 
@@ -3178,9 +3176,8 @@ class ContentManager {
             const container = document.getElementById('pendingRegistrationsList');
             if (container) {
                 container.innerHTML = `
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <p class="loading-text">Đang tải danh sách đăng ký...</p>
+                    <div class="registrations-list">
+                        <div class="loading-text">Đang tải danh sách đăng ký...</div>
                     </div>
                 `;
             }
@@ -5717,7 +5714,7 @@ function buildRoleBasedDashboard(userRole) {
                         </div>
                     </div>
                     <div id="pendingRegistrationsList" class="registrations-list">
-                        <p class="loading-text">Đang tải danh sách...</p>
+                        <div class="loading-text">Đang tải danh sách...</div>
                     </div>
                 </div>
             </div>
@@ -5761,7 +5758,7 @@ function buildRoleBasedDashboard(userRole) {
             <h2 class="section-title">Hoạt Động Gần Đây</h2>
             <div class="activities-container">
                 <div id="recentActivities" class="activities-list">
-                    <p class="loading-text">Đang tải hoạt động...</p>
+                    <div class="loading-text">Đang tải hoạt động...</div>
                 </div>
                 <div class="activities-footer">
                     <button class="btn-outline" onclick="loadMoreActivities()">Xem thêm</button>
