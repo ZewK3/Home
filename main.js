@@ -5130,17 +5130,19 @@ async function hideDashboardLoader() {
     const dashboardLoader = document.getElementById('dashboardLoader');
     const dashboardContent = document.getElementById('dashboardContent');
     
-    // Simulate minimum loading time for better UX
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Remove artificial delay to improve LCP performance
+    // Only wait for content to be actually ready
+    await new Promise(resolve => setTimeout(resolve, 300));
     
     if (dashboardLoader) {
-        dashboardLoader.classList.add('hidden');
+        dashboardLoader.classList.add('fade-out');
         
         setTimeout(() => {
             dashboardLoader.style.display = 'none';
-        }, 800);
+            dashboardLoader.classList.remove('fade-out');
+        }, 400);
         
-        console.log('✅ Dashboard loader hidden');
+        console.log('✅ Dashboard loader hidden (optimized for LCP)');
     }
     
     if (dashboardContent) {

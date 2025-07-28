@@ -2085,7 +2085,7 @@ body {
     color: var(--text-primary);
 }
 
-/* Enhanced Loading States for Functions */
+/* Enhanced Loading States for Functions - Professional Design */
 .empty-state-enhanced, .error-state, .loading-state {
     text-align: center;
     padding: 60px 30px;
@@ -2097,30 +2097,136 @@ body {
     backdrop-filter: blur(10px);
     box-shadow: var(--shadow-sm);
     transition: var(--transition);
-}
-
-/* Enhanced loading state specifically for registrations and other functions */
-.loading-state {
-    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(37, 99, 235, 0.02) 100%);
-    border: 1px solid rgba(37, 99, 235, 0.1);
     position: relative;
     overflow: hidden;
 }
 
+/* Professional Loading State with Modern Design */
+.loading-state {
+    background: linear-gradient(135deg, 
+        var(--bg-card) 0%, 
+        rgba(37, 99, 235, 0.04) 50%,
+        var(--bg-card) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modern Loading Spinner */
 .loading-state::before {
+    content: '';
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(37, 99, 235, 0.1);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: professionalSpin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes professionalSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Professional Progress Bar */
+.loading-state::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--primary), 
+        rgba(37, 99, 235, 0.5),
+        transparent);
+    animation: progressMove 2s linear infinite;
+}
+
+@keyframes progressMove {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Enhanced Loading Text */
+.loading-state .loading-text,
+.loading-text {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.5;
+    opacity: 0.9;
+    animation: textPulse 2s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.6; }
+}
+
+/* Specific Loading Styles for Different Functions */
+.registrations-list .loading-text,
+.user-list .loading-text,
+.permission-list .loading-text,
+.activities-list .loading-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 50px 30px;
+    background: linear-gradient(135deg, 
+        var(--bg-card) 0%, 
+        rgba(37, 99, 235, 0.03) 100%);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(37, 99, 235, 0.08);
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+}
+
+/* Professional Loading Spinner for Function Lists */
+.registrations-list .loading-text::before,
+.user-list .loading-text::before,
+.permission-list .loading-text::before,
+.activities-list .loading-text::before {
+    content: '';
+    width: 28px;
+    height: 28px;
+    border: 2.5px solid rgba(37, 99, 235, 0.1);
+    border-top: 2.5px solid var(--primary);
+    border-radius: 50%;
+    animation: professionalSpin 1s linear infinite;
+    margin-bottom: 12px;
+    display: block;
+}
+
+/* Enhanced Progress Bar for Function Lists */
+.registrations-list .loading-text::after,
+.user-list .loading-text::after,
+.permission-list .loading-text::after,
+.activities-list .loading-text::after {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    animation: loadingBarMove 2s linear infinite;
-}
-
-@keyframes loadingBarMove {
-    0% { left: -100%; }
-    100% { left: 100%; }
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--primary), 
+        rgba(37, 99, 235, 0.4),
+        transparent);
+    animation: progressMove 2.5s linear infinite;
 }
 
 .loading-spinner {
@@ -2173,20 +2279,57 @@ body {
     border: 1px solid rgba(100, 116, 139, 0.1);
 }
 
-/* Dark mode support for enhanced loading states */
+/* Dark Mode Support for Enhanced Loading States */
 [data-theme="dark"] .loading-state {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(96, 165, 250, 0.05) 100%);
-    border: 1px solid rgba(96, 165, 250, 0.15);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, 
+        rgba(30, 41, 59, 0.95) 0%, 
+        rgba(96, 165, 250, 0.06) 50%,
+        rgba(30, 41, 59, 0.95) 100%);
+    border: 1px solid rgba(96, 165, 250, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-[data-theme="dark"] .loading-spinner {
-    border-color: #334155;
+[data-theme="dark"] .loading-state::before {
+    border-color: rgba(96, 165, 250, 0.15);
     border-top-color: #60a5fa;
 }
 
-[data-theme="dark"] .loading-spinner::after {
-    border-top-color: rgba(96, 165, 250, 0.3);
+[data-theme="dark"] .loading-state::after {
+    background: linear-gradient(90deg, 
+        transparent, 
+        #60a5fa, 
+        rgba(96, 165, 250, 0.5),
+        transparent);
+}
+
+[data-theme="dark"] .registrations-list .loading-text,
+[data-theme="dark"] .user-list .loading-text,
+[data-theme="dark"] .permission-list .loading-text,
+[data-theme="dark"] .activities-list .loading-text {
+    background: linear-gradient(135deg, 
+        rgba(30, 41, 59, 0.95) 0%, 
+        rgba(96, 165, 250, 0.04) 100%);
+    border: 1px solid rgba(96, 165, 250, 0.1);
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .registrations-list .loading-text::before,
+[data-theme="dark"] .user-list .loading-text::before,
+[data-theme="dark"] .permission-list .loading-text::before,
+[data-theme="dark"] .activities-list .loading-text::before {
+    border-color: rgba(96, 165, 250, 0.15);
+    border-top-color: #60a5fa;
+}
+
+[data-theme="dark"] .registrations-list .loading-text::after,
+[data-theme="dark"] .user-list .loading-text::after,
+[data-theme="dark"] .permission-list .loading-text::after,
+[data-theme="dark"] .activities-list .loading-text::after {
+    background: linear-gradient(90deg, 
+        transparent, 
+        #60a5fa, 
+        rgba(96, 165, 250, 0.4),
+        transparent);
 }
 
 [data-theme="dark"] .error-state {
@@ -9109,13 +9252,73 @@ button:focus, .btn:focus, .menu-link:focus {
     100% { transform: rotate(360deg); }
 }
 
-/* Enhanced mobile loading */
-.loading-text {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0;
-    padding: 20px;
+/* Mobile Optimization for Loading States */
+@media (max-width: 768px) {
+    .loading-state {
+        padding: 40px 20px;
+        margin: 15px 0;
+        min-height: 100px;
+    }
+    
+    .loading-state::before {
+        width: 28px;
+        height: 28px;
+        border-width: 2.5px;
+        margin-bottom: 12px;
+    }
+    
+    .loading-state .loading-text,
+    .registrations-list .loading-text,
+    .user-list .loading-text,
+    .permission-list .loading-text,
+    .activities-list .loading-text {
+        font-size: 0.95rem;
+        padding: 35px 20px;
+        min-height: 80px;
+    }
+    
+    .registrations-list .loading-text::before,
+    .user-list .loading-text::before,
+    .permission-list .loading-text::before,
+    .activities-list .loading-text::before {
+        width: 24px;
+        height: 24px;
+        border-width: 2px;
+        margin-bottom: 10px;
+    }
+    
+    /* Enhanced mobile loading screen */
+    .dashboard-loader {
+        padding: 20px;
+    }
+    
+    .loader-title {
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .loader-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Touch-friendly loading interactions */
+@media (max-width: 480px) {
+    .loading-state {
+        padding: 30px 15px;
+        margin: 10px 0;
+        border-radius: 12px;
+    }
+    
+    .loading-state .loading-text {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+    
+    .loader-title {
+        font-size: 1.2rem;
+    }
 }
     margin-bottom: 0.5rem;
 }
@@ -10224,7 +10427,7 @@ button:focus, .btn:focus, .menu-link:focus {
    DASHBOARD LOADING SCREEN
    ============================================ */
 
-/* Dashboard Loading Screen */
+/* Dashboard Loading Screen - Optimized for LCP Performance */
 .dashboard-loader {
     position: fixed !important;
     top: 0;
@@ -10241,6 +10444,13 @@ button:focus, .btn:focus, .menu-link:focus {
     align-items: center;
     justify-content: center;
     z-index: 999999;
+    /* Optimize for faster rendering and LCP */
+    will-change: opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    /* Reduce repaints */
+    contain: layout style paint;
+}
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     background-size: 400% 400%;
@@ -10261,6 +10471,12 @@ button:focus, .btn:focus, .menu-link:focus {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+    transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+}
+
+.dashboard-loader.fade-out {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
 }
 
 .loader-content {
@@ -10274,6 +10490,11 @@ button:focus, .btn:focus, .menu-link:focus {
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(30px);
+    /* Optimize for performance */
+    will-change: transform;
+    transform: translateZ(0);
+    contain: layout style;
+}
     -webkit-backdrop-filter: blur(30px);
     max-width: 420px;
     width: 90%;
@@ -10370,19 +10591,29 @@ button:focus, .btn:focus, .menu-link:focus {
     font-weight: 700;
     margin-bottom: 0.75rem;
     letter-spacing: 0.5px;
-    text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
-    animation: dashboardTitleGlow 2.5s ease-in-out infinite alternate;
+    /* Simplified for better LCP performance */
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    /* Remove complex animation that impacts LCP */
+    opacity: 0.95;
+    will-change: opacity;
+    animation: simpleFadeIn 0.6s ease-out;
 }
 
-@keyframes dashboardTitleGlow {
+@keyframes simpleFadeIn {
     0% { 
-        text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2);
-        transform: scale(1);
+        opacity: 0;
+        transform: translateY(10px);
     }
     100% { 
-        text-shadow: 0 2px 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.4);
-        transform: scale(1.02);
+        opacity: 0.95;
+        transform: translateY(0);
     }
+}
+
+/* Add fade-out class for smooth transition */
+.dashboard-loader.fade-out {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
 }
 
 .loader-subtitle {
