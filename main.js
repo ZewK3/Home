@@ -26,11 +26,6 @@ const API_CACHE = {
     isLoadingStoresData: false,
     isLoadingDashboardStats: false,
     
-    // Promise tracking for concurrent calls
-    pendingUserDataPromise: null,
-    pendingStoresDataPromise: null,
-    pendingDashboardStatsPromise: null,
-    
     // Clear cache
     clear() {
         this.userData = null;
@@ -42,9 +37,6 @@ const API_CACHE = {
         this.isLoadingUserData = false;
         this.isLoadingStoresData = false;
         this.isLoadingDashboardStats = false;
-        this.pendingUserDataPromise = null;
-        this.pendingStoresDataPromise = null;
-        this.pendingDashboardStatsPromise = null;
     },
     
     // Check if cache is valid
@@ -216,29 +208,23 @@ const utils = {
     async getDashboardStats() {
         // Return cached data if valid
         if (this.dashboardStats && this.isCacheValid(this.lastDashboardStatsFetch)) {
-            console.log('🔄 Using cached dashboard stats');
             return this.dashboardStats;
         }
         
-        // If there's already a pending request, wait for it
-        if (this.pendingDashboardStatsPromise) {
-            console.log('⏳ Waiting for existing dashboard stats request...');
-            return await this.pendingDashboardStatsPromise;
+        // Prevent concurrent calls
+        if (this.isLoadingDashboardStats) {
+            // Wait for the ongoing request to complete
+            while (this.isLoadingDashboardStats) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            // Return the result from the concurrent call
+            if (this.dashboardStats && this.isCacheValid(this.lastDashboardStatsFetch)) {
+                return this.dashboardStats;
+            }
         }
         
-        // Create new request promise
-        this.pendingDashboardStatsPromise = this._fetchDashboardStats();
+        this.isLoadingDashboardStats = true;
         
-        try {
-            const result = await this.pendingDashboardStatsPromise;
-            return result;
-        } finally {
-            // Clear the pending promise when done
-            this.pendingDashboardStatsPromise = null;
-        }
-    },
-    
-    async _fetchDashboardStats() {
         try {
             console.log('🌐 Fetching dashboard stats from API...');
             this.dashboardStats = await utils.fetchAPI('?action=getDashboardStats');
@@ -247,6 +233,8 @@ const utils = {
         } catch (error) {
             console.error('Failed to fetch dashboard stats:', error);
             throw error;
+        } finally {
+            this.isLoadingDashboardStats = false;
         }
     }
 };
@@ -3136,9 +3124,9 @@ class ContentManager {
             
             // Get user's current info to apply proper filtering
             // Handle both loginEmployeeId (from login) and employeeId formats
-            const employeeId = this.user?.employeeId || this.user?.loginEmployeeId;
+            const employeeId = userData.employeeId || userData.loginEmployeeId;
             if (!employeeId) {
-                console.error('No employee ID found in user data:', this.user);
+                console.error('No employee ID found in user data:', userData);
                 throw new Error('Employee ID not found in user data');
             }
             const userResponse = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${token}`);
@@ -3968,8 +3956,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize features with proper user data
         window.contentManager = new ContentManager(userData);
 
-        // Dashboard stats will be loaded in the main initialization flow
-        // await getDashboardStats(); // Removed to prevent duplicate calls
+        // Load dashboard stats immediately when page loads
+        await getDashboardStats();
         
         // Ensure stats-grid is visible and updated
         await updateStatsGrid();
@@ -5161,7 +5149,6 @@ function restoreOriginalDashboardContent() {
         
         // Update stats and apply role-based visibility
         setTimeout(async () => {
-            await getDashboardStats(); // Refresh dashboard stats when returning to main dashboard
             await updateStatsGrid();
             await applyRoleBasedSectionVisibility();
         }, 100);
@@ -5202,7 +5189,7 @@ async function initializeEnhancedDashboard() {
                             
                             // Continue with initialization
                             console.log('📊 Initializing dashboard stats and role checking...');
-                            // getDashboardStats will be called in the main initialization flow
+                            await getDashboardStats();
                             
                             await initializeRoleBasedUI();
                             MenuManager.updateMenuByRole(userPosition);
