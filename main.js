@@ -4019,8 +4019,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         authManager.setupLogoutHandler();
         // Make authManager globally accessible for other functions
         window.authManager = authManager;
-
-    if (userData) {
+        
+        // Additional authentication setup
         MenuManager.setupMenuInteractions();
         ThemeManager.initialize();
 
