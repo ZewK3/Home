@@ -554,14 +554,15 @@ body {
 .menu-link:hover {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
     color: var(--text-light);
-    transform: translateX(4px);
+    transform: translateX(2px);
     box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
     border-color: var(--primary);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-link:active {
     background: var(--primary-dark);
-    transform: translateX(2px);
+    transform: translateX(1px);
     transition: all 0.1s ease;
 }
 
@@ -608,9 +609,10 @@ body {
 .submenu-link:hover {
     background: linear-gradient(135deg, var(--secondary) 0%, #10b981 100%);
     color: var(--text-light);
-    transform: translateX(3px);
+    transform: translateX(1px);
     box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
     border-color: var(--secondary);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Professional Logout Button - Compact */
@@ -9786,7 +9788,7 @@ button:focus, .btn:focus, .menu-link:focus {
     background: var(--primary);
     border-left-color: var(--secondary);
     color: var(--text-light);
-    transform: translateX(2px);
+    transform: translateX(1px);
 }
 
 .mobile-submenu-link:hover::before,
