@@ -2802,17 +2802,21 @@ class ContentManager {
                     type: 'personal_info_change'
                 };
             
-            try {
-                await utils.fetchAPI('?action=createTask', {
-                    method: 'POST',
-                    body: JSON.stringify(requestData)
-                });
-                
-                utils.showNotification("Yêu cầu thay đổi đã được gửi", "success");
-                closeChangeRequestModal();
+                try {
+                    await utils.fetchAPI('?action=createTask', {
+                        method: 'POST',
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    utils.showNotification("Yêu cầu thay đổi đã được gửi", "success");
+                    closeChangeRequestModal();
+                } catch (error) {
+                    console.error('Change request error:', error);
+                    utils.showNotification("Không thể gửi yêu cầu", "error");
+                }
             } catch (error) {
-                console.error('Change request error:', error);
-                utils.showNotification("Không thể gửi yêu cầu", "error");
+                console.error('Change request form error:', error);
+                utils.showNotification("Không thể xử lý yêu cầu", "error");
             }
         });
         
