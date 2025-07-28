@@ -171,6 +171,22 @@ class ContentManager {
         this.setupMenuHandlers();
     }
 
+    // Helper method to safely get user employeeId
+    async getUserEmployeeId() {
+        if (this.user && this.user.employeeId) {
+            return this.user.employeeId;
+        }
+        
+        try {
+            const userData = await API_CACHE.getUserData();
+            this.user = userData; // Update the instance user data
+            return userData.employeeId;
+        } catch (error) {
+            console.error('Unable to get user employeeId:', error);
+            throw new Error('User data not available');
+        }
+    }
+
     setupMenuHandlers() {
         // Shift Management
         document.getElementById('openShiftAssignment')?.addEventListener('click', () => 
@@ -766,12 +782,14 @@ class ContentManager {
             try {
                 const formData = new FormData(e.target);
                 const taskData = Object.fromEntries(formData);
+                // Get user employee ID safely
+                const employeeId = await this.getUserEmployeeId();
                 
                 // Use createTask API to create a proper task
                 await utils.fetchAPI('?action=createTask', {
                     method: 'POST',
                     body: JSON.stringify({
-                        employeeId: this.user.employeeId,
+                        employeeId: employeeId,
                         fullName: this.user.fullName || 'Nhân viên',
                         position: this.user.position || 'NV',
                         taskType: taskData.taskType,
@@ -831,8 +849,8 @@ class ContentManager {
     async showTaskStore() {
         const content = document.getElementById('content');
         try {
-            // Use getStores API to show store information
-            const stores = await utils.fetchAPI('?action=getStores');
+            // Use cached stores data instead of direct API call
+            const stores = await API_CACHE.getStoresData();
             
             content.innerHTML = `
                 <div class="card">
@@ -1319,8 +1337,16 @@ class ContentManager {
     async showPersonalInfo() {
         const content = document.getElementById('content');
         try {
+            // Get user data - use cached data or fetch from API
+            let userData = this.user;
+            if (!userData || !userData.employeeId) {
+                // Try to get from API cache if user data is not available
+                userData = await API_CACHE.getUserData();
+                this.user = userData; // Update the instance user data
+            }
+            
             // Use getUser API to get personal information
-            const response = await utils.fetchAPI(`?action=getUser&employeeId=${this.user.employeeId}`);
+            const response = await utils.fetchAPI(`?action=getUser&employeeId=${userData.employeeId}`);
             
             content.innerHTML = `
                 <div class="personal-info-container">
@@ -1671,11 +1697,14 @@ class ContentManager {
             const password = document.getElementById('confirmPassword').value;
             
             try {
+                // Get user employee ID safely
+                const employeeId = await this.getUserEmployeeId();
+                
                 // Verify password first
                 const verifyResponse = await utils.fetchAPI(`?action=login`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        employeeId: this.user.employeeId,
+                        employeeId: employeeId,
                         password: password
                     })
                 });
@@ -1710,8 +1739,11 @@ class ContentManager {
             btnText.style.display = 'none';
             btnLoader.style.display = 'inline-block';
             
+            // Get user employee ID safely
+            const employeeId = await this.getUserEmployeeId();
+            
             const updateData = {
-                employeeId: this.user.employeeId,
+                employeeId: employeeId,
                 email: formData.get('email'),
                 phone: formData.get('phone')
             };
@@ -1774,8 +1806,11 @@ class ContentManager {
 
     async submitChangeRequest(field, currentValue, newValue, reason) {
         try {
+            // Get user employee ID safely
+            const employeeId = await this.getUserEmployeeId();
+            
             const requestData = {
-                employeeId: this.user.employeeId,
+                employeeId: employeeId,
                 field: field,
                 currentValue: currentValue,
                 newValue: newValue,
@@ -1803,8 +1838,11 @@ class ContentManager {
 
     async loadPersonalStats() {
         try {
+            // Get user employee ID safely
+            const employeeId = await this.getUserEmployeeId();
+            
             // Load personal statistics
-            const statsResponse = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${this.user.employeeId}`);
+            const statsResponse = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
             
             if (statsResponse && statsResponse.stats) {
                 const stats = statsResponse.stats;
@@ -1823,25 +1861,33 @@ class ContentManager {
         }
     }
 
-    exportPersonalInfo() {
-        // Create downloadable personal info summary
-        const userInfo = {
-            employeeId: this.user.employeeId,
-            timestamp: new Date().toISOString(),
-            // Add other relevant info here
-        };
-        
-        const dataStr = JSON.stringify(userInfo, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `personal-info-${this.user.employeeId}-${new Date().toISOString().split('T')[0]}.json`;
-        link.click();
-        
-        URL.revokeObjectURL(url);
-        utils.showNotification('Đã xuất thông tin cá nhân', 'success');
+    async exportPersonalInfo() {
+        try {
+            // Get user employee ID safely
+            const employeeId = await this.getUserEmployeeId();
+            
+            // Create downloadable personal info summary
+            const userInfo = {
+                employeeId: employeeId,
+                timestamp: new Date().toISOString(),
+                // Add other relevant info here
+            };
+            
+            const dataStr = JSON.stringify(userInfo, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `personal-info-${employeeId}-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            utils.showNotification('Đã xuất thông tin cá nhân', 'success');
+        } catch (error) {
+            console.error('Export personal info error:', error);
+            utils.showNotification('Không thể xuất thông tin cá nhân', 'error');
+        }
     }
 
 
@@ -2198,8 +2244,8 @@ class ContentManager {
 
     async loadStoresForPermissionEdit() {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            // Use cached stores data instead of direct API call
+            const response = await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -2742,15 +2788,19 @@ class ContentManager {
         document.getElementById('changeRequestForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const formData = new FormData(e.target);
-            const requestData = {
-                employeeId: this.user.employeeId,
-                field: document.getElementById('changeRequestForm').dataset.field,
-                currentValue: formData.get('currentValue'),
-                newValue: formData.get('newValue'),
-                reason: formData.get('reason'),
-                type: 'personal_info_change'
-            };
+            try {
+                // Get user employee ID safely
+                const employeeId = await this.getUserEmployeeId();
+                
+                const formData = new FormData(e.target);
+                const requestData = {
+                    employeeId: employeeId,
+                    field: document.getElementById('changeRequestForm').dataset.field,
+                    currentValue: formData.get('currentValue'),
+                    newValue: formData.get('newValue'),
+                    reason: formData.get('reason'),
+                    type: 'personal_info_change'
+                };
             
             try {
                 await utils.fetchAPI('?action=createTask', {
@@ -2925,8 +2975,8 @@ class ContentManager {
 
     async loadStoreMapping() {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            // Use cached stores data instead of direct API call
+            const response = await API_CACHE.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -2969,11 +3019,8 @@ class ContentManager {
 
     async loadStoresForFilter() {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-            
-            // Get all stores from API
-            const response = await utils.fetchAPI(`?action=getStores&token=${token}`);
+            // Use cached stores data instead of direct API call
+            const response = await API_CACHE.getStoresData();
             console.log('Stores API response:', response);
             
             let allStores = [];
@@ -3788,16 +3835,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     // const authManager = new AuthManager();
     // const user = await authManager.checkAuthentication();
     
-    // For testing purposes, simulate user existence
-    const user = true;
+    // For testing purposes, get user data from localStorage or API cache
+    let userData = null;
+    try {
+        // Try to get user data from localStorage first
+        const storedUserData = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
+        if (storedUserData) {
+            userData = JSON.parse(storedUserData);
+        } else {
+            // If no stored data, create fallback user data structure for testing
+            userData = {
+                employeeId: 'TEST001',
+                fullName: 'Test User',
+                position: 'AD',
+                email: 'test@example.com'
+            };
+        }
+    } catch (error) {
+        console.error('Error getting user data:', error);
+        // Fallback user data structure for testing
+        userData = {
+            employeeId: 'TEST001',
+            fullName: 'Test User',
+            position: 'AD',
+            email: 'test@example.com'
+        };
+    }
 
-    if (user) {
+    if (userData) {
         // authManager.setupLogoutHandler();
         MenuManager.setupMenuInteractions();
         ThemeManager.initialize();
 
-        // Initialize features
-        window.contentManager = new ContentManager(user);
+        // Initialize features with proper user data
+        window.contentManager = new ContentManager(userData);
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();
