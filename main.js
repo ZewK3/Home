@@ -263,9 +263,11 @@ class ContentManager {
         document.getElementById('openAttendance')?.addEventListener('click', () => 
             this.showAttendance());
 
-        // Tasks
-        document.getElementById('openSubmitTask')?.addEventListener('click', () => 
-            this.showSubmitTask());
+        // Request submission - separate handlers for attendance and task
+        document.getElementById('openAttendanceRequest')?.addEventListener('click', () => 
+            this.showAttendanceRequest());
+        document.getElementById('openTaskAssignment')?.addEventListener('click', () => 
+            this.showTaskAssignment());
         document.getElementById('taskPersonnel')?.addEventListener('click', () => 
             this.showTaskPersonnel());
         document.getElementById('taskStore')?.addEventListener('click', () => 
@@ -812,66 +814,74 @@ class ContentManager {
         return statusMap[status] || status;
     }
 
-    // Enhanced Request Submission System
-    async showSubmitTask() {
+    // Attendance Request System
+    async showAttendanceRequest() {
         const content = document.getElementById('content');
         content.innerHTML = `
             <div class="card">
                 <div class="card-header">
-                    <h2>Gửi Yêu Cầu</h2>
+                    <h2><span class="material-icons-round">assignment</span> Gửi Đơn Từ Chấm Công</h2>
+                    <p>Gửi yêu cầu liên quan đến chấm công và ca làm việc</p>
                 </div>
                 <div class="card-body">
-                    <!-- Request Category Selection -->
-                    <div class="form-group">
-                        <label>Danh mục yêu cầu</label>
-                        <select id="requestCategory" class="form-control" required>
-                            <option value="">Chọn danh mục yêu cầu</option>
-                            <option value="attendance">Đơn Từ Chấm Công</option>
-                            <option value="task">Nhiệm Vụ</option>
-                        </select>
-                    </div>
+                    <form id="attendanceForm">
+                        <div class="form-group">
+                            <label>Loại đơn từ chấm công</label>
+                            <select name="attendanceType" class="form-control" required>
+                                <option value="">Chọn loại đơn từ</option>
+                                <option value="forgotten_checkin">Quên Check In</option>
+                                <option value="forgotten_checkout">Quên Check Out</option>
+                                <option value="shift_change">Đơn Đổi Ca</option>
+                                <option value="absence">Đơn Vắng Mặt</option>
+                                <option value="leave">Đơn Nghỉ Phép</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày áp dụng</label>
+                            <input type="date" name="requestDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Thời gian (nếu có)</label>
+                            <input type="time" name="requestTime" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Lý do chi tiết</label>
+                            <textarea name="reason" class="form-control" rows="4" required placeholder="Mô tả chi tiết lý do và tình huống..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons-round">send</span>
+                                Gửi đơn từ
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
 
-                    <!-- Attendance Request Form -->
-                    <div id="attendanceRequestForm" class="request-form" style="display: none;">
-                        <form id="attendanceForm">
-                            <div class="form-group">
-                                <label>Loại đơn từ chấm công</label>
-                                <select name="attendanceType" class="form-control" required>
-                                    <option value="">Chọn loại đơn từ</option>
-                                    <option value="forgotten_checkin">Quên Check In</option>
-                                    <option value="forgotten_checkout">Quên Check Out</option>
-                                    <option value="shift_change">Đơn Đổi Ca</option>
-                                    <option value="absence">Đơn Vắng Mặt</option>
-                                    <option value="leave">Đơn Nghỉ Phép</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Ngày áp dụng</label>
-                                <input type="date" name="requestDate" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Thời gian (nếu có)</label>
-                                <input type="time" name="requestTime" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label>Lý do chi tiết</label>
-                                <textarea name="reason" class="form-control" rows="4" required placeholder="Mô tả chi tiết lý do và tình huống..."></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Gửi đơn từ</button>
-                        </form>
-                    </div>
+        this.setupAttendanceRequestForm();
+    }
 
-                    <!-- Task Assignment Form -->
-                    <div id="taskAssignmentForm" class="request-form" style="display: none;">
-                        <form id="taskForm">
-                            <div class="form-group">
-                                <label>Tiêu đề nhiệm vụ</label>
-                                <input type="text" name="taskTitle" class="form-control" required placeholder="Nhập tiêu đề nhiệm vụ...">
-                            </div>
-                            <div class="form-group">
-                                <label>Mô tả nhiệm vụ</label>
-                                <textarea name="taskDescription" class="form-control" rows="4" required placeholder="Mô tả chi tiết nhiệm vụ..."></textarea>
-                            </div>
+    // Task Assignment System
+    async showTaskAssignment() {
+        const content = document.getElementById('content');
+        content.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <h2><span class="material-icons-round">task</span> Tạo Nhiệm Vụ</h2>
+                    <p>Tạo và phân công nhiệm vụ cho nhân viên</p>
+                </div>
+                <div class="card-body">
+                    <form id="taskForm">
+                        <div class="form-group">
+                            <label>Tiêu đề nhiệm vụ</label>
+                            <input type="text" name="taskTitle" class="form-control" required placeholder="Nhập tiêu đề nhiệm vụ...">
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả nhiệm vụ</label>
+                            <textarea name="taskDescription" class="form-control" rows="4" required placeholder="Mô tả chi tiết nhiệm vụ..."></textarea>
+                        </div>
+                        <div class="form-row">
                             <div class="form-group">
                                 <label>Hạn hoàn thành</label>
                                 <input type="datetime-local" name="deadline" class="form-control" required>
@@ -886,46 +896,59 @@ class ContentManager {
                                     <option value="urgent">Khẩn cấp</option>
                                 </select>
                             </div>
-                            
-                            <!-- User Selection for Task -->
-                            <div class="form-group">
-                                <label>Người tham gia</label>
-                                <div id="participantSelection" class="user-selection-container">
-                                    <input type="text" id="participantSearch" class="form-control" placeholder="Tìm kiếm nhân viên để thêm...">
-                                    <div id="participantList" class="selected-users-list"></div>
-                                    <div id="participantDropdown" class="user-dropdown" style="display: none;"></div>
-                                </div>
+                        </div>
+                        
+                        <!-- User Selection for Task -->
+                        <div class="form-group">
+                            <label>Người tham gia</label>
+                            <div id="participantSelection" class="user-selection-container">
+                                <input type="text" id="participantSearch" class="form-control" placeholder="Tìm kiếm nhân viên để thêm...">
+                                <div id="participantList" class="selected-users-list"></div>
+                                <div id="participantDropdown" class="user-dropdown" style="display: none;"></div>
                             </div>
-                            
-                            <div class="form-group">
-                                <label>Người hỗ trợ</label>
-                                <div id="supporterSelection" class="user-selection-container">
-                                    <input type="text" id="supporterSearch" class="form-control" placeholder="Tìm kiếm nhân viên hỗ trợ...">
-                                    <div id="supporterList" class="selected-users-list"></div>
-                                    <div id="supporterDropdown" class="user-dropdown" style="display: none;"></div>
-                                </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Người hỗ trợ</label>
+                            <div id="supporterSelection" class="user-selection-container">
+                                <input type="text" id="supporterSearch" class="form-control" placeholder="Tìm kiếm nhân viên hỗ trợ...">
+                                <div id="supporterList" class="selected-users-list"></div>
+                                <div id="supporterDropdown" class="user-dropdown" style="display: none;"></div>
                             </div>
-                            
-                            <div class="form-group">
-                                <label>Người giao nhiệm vụ</label>
-                                <div id="assignerSelection" class="user-selection-container">
-                                    <input type="text" id="assignerSearch" class="form-control" placeholder="Tìm kiếm người giao nhiệm vụ...">
-                                    <div id="assignerList" class="selected-users-list"></div>
-                                    <div id="assignerDropdown" class="user-dropdown" style="display: none;"></div>
-                                </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Người giao nhiệm vụ</label>
+                            <div id="assignerSelection" class="user-selection-container">
+                                <input type="text" id="assignerSearch" class="form-control" placeholder="Tìm kiếm người giao nhiệm vụ...">
+                                <div id="assignerList" class="selected-users-list"></div>
+                                <div id="assignerDropdown" class="user-dropdown" style="display: none;"></div>
                             </div>
-                            
-                            <button type="submit" class="btn btn-primary">Tạo nhiệm vụ</button>
-                        </form>
-                    </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <span class="material-icons-round">add_task</span>
+                                Tạo nhiệm vụ
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         `;
 
-        this.setupRequestForms();
+        this.setupTaskAssignmentForm();
     }
 
-    setupRequestForms() {
+    setupAttendanceRequestForm() {
+        // Setup attendance request form
+        document.getElementById('attendanceForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleAttendanceRequest(e);
+        });
+    }
+
+    setupTaskAssignmentForm() {
         // Users cache for dropdowns
         this.usersCache = [];
         this.selectedUsers = {
@@ -933,22 +956,6 @@ class ContentManager {
             supporters: [],
             assigners: []
         };
-
-        // Handle category selection
-        const categorySelect = document.getElementById('requestCategory');
-        categorySelect.addEventListener('change', (e) => {
-            const category = e.target.value;
-            document.getElementById('attendanceRequestForm').style.display = 
-                category === 'attendance' ? 'block' : 'none';
-            document.getElementById('taskAssignmentForm').style.display = 
-                category === 'task' ? 'block' : 'none';
-        });
-
-        // Setup attendance request form
-        document.getElementById('attendanceForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleAttendanceRequest(e);
-        });
 
         // Setup task assignment form
         document.getElementById('taskForm')?.addEventListener('submit', async (e) => {
@@ -988,8 +995,6 @@ class ContentManager {
             
             utils.showNotification("Đơn từ chấm công đã được gửi", "success");
             document.getElementById('attendanceForm').reset();
-            document.getElementById('requestCategory').value = '';
-            document.getElementById('attendanceRequestForm').style.display = 'none';
         } catch (error) {
             utils.showNotification("Không thể gửi đơn từ", "error");
         }
@@ -1020,8 +1025,6 @@ class ContentManager {
             
             utils.showNotification("Nhiệm vụ đã được tạo", "success");
             document.getElementById('taskForm').reset();
-            document.getElementById('requestCategory').value = '';
-            document.getElementById('taskAssignmentForm').style.display = 'none';
             this.clearSelectedUsers();
         } catch (error) {
             utils.showNotification("Không thể tạo nhiệm vụ", "error");
@@ -5078,10 +5081,16 @@ function setupMobileMenu() {
             setTimeout(() => window.contentManager?.showReward(), 300);
         });
         
-        document.getElementById('mobileSubmitTask')?.addEventListener('click', (e) => {
+        document.getElementById('mobileAttendanceRequest')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showSubmitTask(), 300);
+            setTimeout(() => window.contentManager?.showAttendanceRequest(), 300);
+        });
+        
+        document.getElementById('mobileTaskAssignment')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showTaskAssignment(), 300);
         });
         
         document.getElementById('mobileTaskPersonnel')?.addEventListener('click', (e) => {
