@@ -4332,7 +4332,297 @@ class ContentManager {
                         <span class="material-icons-round error-icon">error</span>
                         <h3>Lỗi tải đơn từ</h3>
                         <p>Không thể tải form đơn từ. Vui lòng thử lại.</p>
-                        <button onclick="window.contentManager.showAttendanceRequest()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    setupRequestTypeSelector() {
+        document.querySelectorAll('.request-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.request-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.showRequestForm(btn.dataset.type);
+            });
+        });
+    }
+
+    showRequestForm(type) {
+        const formContainer = document.getElementById('requestForm');
+        
+        const forms = {
+            'forgot-checkin': this.getForgotCheckinForm(),
+            'shift-change': this.getShiftChangeForm(),
+            'absence': this.getAbsenceForm(),
+            'leave': this.getLeaveForm()
+        };
+        
+        formContainer.innerHTML = forms[type] || '';
+        this.setupRequestFormSubmission(type);
+    }
+
+    getShiftChangeForm() {
+        return `
+            <form id="shiftChangeForm" class="request-specific-form">
+                <h3>Đơn Đổi Ca</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="changeDate">Ngày:</label>
+                        <input type="date" id="changeDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="currentShift">Ca hiện tại:</label>
+                        <select id="currentShift" class="form-control" required>
+                            <option value="">Chọn ca hiện tại</option>
+                            <option value="morning">Ca sáng (6:00 - 14:00)</option>
+                            <option value="afternoon">Ca chiều (14:00 - 22:00)</option>
+                            <option value="night">Ca đêm (22:00 - 6:00)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="requestedShift">Ca muốn đổi:</label>
+                    <select id="requestedShift" class="form-control" required>
+                        <option value="">Chọn ca muốn đổi</option>
+                        <option value="morning">Ca sáng (6:00 - 14:00)</option>
+                        <option value="afternoon">Ca chiều (14:00 - 22:00)</option>
+                        <option value="night">Ca đêm (22:00 - 6:00)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="changeReason">Lý do đổi ca:</label>
+                    <textarea id="changeReason" class="form-control" rows="3" placeholder="Lý do cần đổi ca làm việc..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round">send</span>
+                    Gửi Đơn
+                </button>
+            </form>
+        `;
+    }
+
+    getAbsenceForm() {
+        return `
+            <form id="absenceForm" class="request-specific-form">
+                <h3>Đơn Báo Vắng</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="absenceDate">Ngày vắng:</label>
+                        <input type="date" id="absenceDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="absenceType">Loại vắng mặt:</label>
+                        <select id="absenceType" class="form-control" required>
+                            <option value="">Chọn loại</option>
+                            <option value="sick">Ốm đau</option>
+                            <option value="personal">Việc cá nhân</option>
+                            <option value="family">Việc gia đình</option>
+                            <option value="emergency">Khẩn cấp</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="absenceReason">Lý do chi tiết:</label>
+                    <textarea id="absenceReason" class="form-control" rows="3" placeholder="Mô tả chi tiết lý do vắng mặt..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round">send</span>
+                    Gửi Đơn
+                </button>
+            </form>
+        `;
+    }
+
+    getLeaveForm() {
+        return `
+            <form id="leaveForm" class="request-specific-form">
+                <h3>Đơn Nghỉ Phép</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="leaveStartDate">Từ ngày:</label>
+                        <input type="date" id="leaveStartDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="leaveEndDate">Đến ngày:</label>
+                        <input type="date" id="leaveEndDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="leaveType">Loại nghỉ phép:</label>
+                    <select id="leaveType" class="form-control" required>
+                        <option value="">Chọn loại nghỉ phép</option>
+                        <option value="annual">Nghỉ phép năm</option>
+                        <option value="sick">Nghỉ ốm</option>
+                        <option value="maternity">Nghỉ sinh</option>
+                        <option value="personal">Nghỉ cá nhân</option>
+                        <option value="unpaid">Nghỉ không lương</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="leaveReason">Lý do nghỉ phép:</label>
+                    <textarea id="leaveReason" class="form-control" rows="3" placeholder="Lý do chi tiết về việc nghỉ phép..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round">send</span>
+                    Gửi Đơn
+                </button>
+            </form>
+        `;
+    }
+
+    setupRequestFormSubmission(type) {
+        const form = document.querySelector('.request-specific-form');
+        if (!form) return;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.submitAttendanceRequest(type, new FormData(form));
+        });
+    }
+
+    async submitAttendanceRequest(type, formData) {
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            const requestData = {
+                type: type,
+                employeeId: userResponse.employeeId,
+                timestamp: new Date().toISOString()
+            };
+
+            // Extract form data based on type
+            const form = document.querySelector('.request-specific-form');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.value) {
+                    requestData[input.id] = input.value;
+                }
+            });
+
+            const response = await utils.fetchAPI('?action=createAttendanceRequest', {
+                method: 'POST',
+                body: JSON.stringify(requestData)
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đơn từ đã được gửi thành công!', 'success');
+                form.reset();
+            } else {
+                throw new Error(response.message || 'Gửi đơn từ thất bại');
+            }
+
+        } catch (error) {
+            console.error('Error submitting attendance request:', error);
+            utils.showNotification('Lỗi gửi đơn từ: ' + error.message, 'error');
+        }
+    }
+
+    async showTaskAssignment() {
+        const content = document.getElementById('content');
+        try {
+            content.innerHTML = `
+                <div class="task-assignment-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span class="material-icons-round">task_alt</span> Nhiệm Vụ</h2>
+                            <p>Tạo và giao nhiệm vụ cho nhân viên</p>
+                        </div>
+                        <div class="card-body">
+                            <form id="taskAssignmentForm" class="task-form">
+                                <div class="form-group">
+                                    <label for="taskTitle">Tiêu đề nhiệm vụ:</label>
+                                    <input type="text" id="taskTitle" class="form-control" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="taskDescription">Mô tả chi tiết:</label>
+                                    <textarea id="taskDescription" class="form-control" rows="4" required></textarea>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="taskPriority">Mức độ ưu tiên:</label>
+                                        <select id="taskPriority" class="form-control" required>
+                                            <option value="">Chọn mức độ</option>
+                                            <option value="low">Thấp</option>
+                                            <option value="medium">Trung bình</option>
+                                            <option value="high">Cao</option>
+                                            <option value="urgent">Khẩn cấp</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskDeadline">Thời hạn:</label>
+                                        <input type="datetime-local" id="taskDeadline" class="form-control" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="user-selection-section">
+                                    <h3><span class="material-icons-round">people</span> Phân Công Nhân Viên</h3>
+                                    
+                                    <div class="user-selector">
+                                        <label>Người tham gia:</label>
+                                        <div class="user-selection-panel" id="participantsPanel">
+                                            <div class="user-search">
+                                                <input type="text" id="participantSearch" placeholder="Tìm kiếm nhân viên..." class="form-control">
+                                                <span class="material-icons-round">search</span>
+                                            </div>
+                                            <div class="user-list" id="participantsList"></div>
+                                            <div class="selected-users" id="selectedParticipants"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="user-selector">
+                                        <label>Người hỗ trợ:</label>
+                                        <div class="user-selection-panel" id="supportersPanel">
+                                            <div class="user-search">
+                                                <input type="text" id="supporterSearch" placeholder="Tìm kiếm nhân viên..." class="form-control">
+                                                <span class="material-icons-round">search</span>
+                                            </div>
+                                            <div class="user-list" id="supportersList"></div>
+                                            <div class="selected-users" id="selectedSupporters"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="user-selector">
+                                        <label>Người giao nhiệm vụ:</label>
+                                        <div class="user-selection-panel" id="assignersPanel">
+                                            <div class="user-search">
+                                                <input type="text" id="assignerSearch" placeholder="Tìm kiếm nhân viên..." class="form-control">
+                                                <span class="material-icons-round">search</span>
+                                            </div>
+                                            <div class="user-list" id="assignersList"></div>
+                                            <div class="selected-users" id="selectedAssigners"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <span class="material-icons-round">send</span>
+                                        Gửi Nhiệm Vụ
+                                    </button>
+                                    <button type="reset" class="btn btn-secondary">
+                                        <span class="material-icons-round">refresh</span>
+                                        Làm Lại
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            await this.setupTaskAssignmentForm();
+
+        } catch (error) {
+            console.error('Error loading task assignment:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải nhiệm vụ</h3>
+                        <p>Không thể tải form nhiệm vụ. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showTaskAssignment()" class="btn btn-primary">Thử lại</button>
                     </div>
                 </div>
             `;
