@@ -257,17 +257,37 @@ class ContentManager {
     }
 
     setupMenuHandlers() {
-        // Shift Management
+        // Work Management
+        document.getElementById('openTimesheet')?.addEventListener('click', () => 
+            this.showTimesheet());
+        document.getElementById('openAttendance')?.addEventListener('click', () => 
+            this.showAttendanceGPS());
+
+        // Request Management
+        document.getElementById('openAttendanceRequest')?.addEventListener('click', () => 
+            this.showAttendanceRequest());
+        document.getElementById('openTaskAssignment')?.addEventListener('click', () => 
+            this.showTaskAssignment());
         document.getElementById('openShiftAssignment')?.addEventListener('click', () => 
             this.showShiftAssignment());
+
+        // Mobile handlers
+        document.getElementById('mobileTimesheet')?.addEventListener('click', () => 
+            this.showTimesheet());
+        document.getElementById('mobileAttendance')?.addEventListener('click', () => 
+            this.showAttendanceGPS());
+        document.getElementById('mobileAttendanceRequest')?.addEventListener('click', () => 
+            this.showAttendanceRequest());
+        document.getElementById('mobileTaskAssignment')?.addEventListener('click', () => 
+            this.showTaskAssignment());
+        document.getElementById('mobileShiftAssignment')?.addEventListener('click', () => 
+            this.showShiftAssignment());
+
+        // Legacy handlers for existing functions
         document.getElementById('openWorkShifts')?.addEventListener('click', () => 
             this.showWorkShifts());
-        document.getElementById('openAttendance')?.addEventListener('click', () => 
-            this.showAttendance());
 
         // Tasks
-        document.getElementById('openSubmitTask')?.addEventListener('click', () => 
-            this.showSubmitTask());
         document.getElementById('taskPersonnel')?.addEventListener('click', () => 
             this.showTaskPersonnel());
         document.getElementById('taskStore')?.addEventListener('click', () => 
@@ -496,6 +516,183 @@ class ContentManager {
                         <h3>Lỗi tải chấm công</h3>
                         <p>Không thể tải dữ liệu chấm công. Vui lòng thử lại.</p>
                         <button onclick="window.contentManager.showAttendance()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    async showTimesheet() {
+        const content = document.getElementById('content');
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            const employeeId = userResponse.employeeId;
+
+            content.innerHTML = `
+                <div class="timesheet-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span class="material-icons-round">calendar_view_month</span> Bảng Công</h2>
+                            <p>Theo dõi chi tiết thời gian làm việc theo tháng</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="timesheet-controls">
+                                <div class="filter-group">
+                                    <label for="timesheetMonth">Tháng/Năm:</label>
+                                    <input type="month" id="timesheetMonth" class="form-control" value="${this.getCurrentMonth()}">
+                                </div>
+                                <button id="loadTimesheetData" class="btn btn-primary">
+                                    <span class="material-icons-round">refresh</span>
+                                    Tải dữ liệu
+                                </button>
+                            </div>
+                            
+                            <div class="timesheet-content">
+                                <div class="timesheet-calendar" id="timesheetCalendar">
+                                    <div class="loading-text">Đang tải bảng công...</div>
+                                </div>
+                                
+                                <div class="timesheet-statistics" id="timesheetStats">
+                                    <h3><span class="material-icons-round">analytics</span> Thống kê T8, 2025</h3>
+                                    <div class="stats-grid">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Công thực tế</span>
+                                            <span class="stat-value" id="actualDays">0.9/1</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Giờ làm thực tế</span>
+                                            <span class="stat-value" id="actualHours">8/8</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Công làm việc</span>
+                                            <span class="stat-value" id="workDays">0.9</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Giờ làm việc thực tính</span>
+                                            <span class="stat-value" id="actualWorkHours">8</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số công chuẩn</span>
+                                            <span class="stat-value" id="standardDays">1</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số lần đi muộn</span>
+                                            <span class="stat-value" id="lateDays">0</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số lần về sớm</span>
+                                            <span class="stat-value" id="earlyLeave">1</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số phút đi muộn</span>
+                                            <span class="stat-value" id="lateMinutes">0</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số phút về sớm</span>
+                                            <span class="stat-value" id="earlyMinutes">60</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số công nghỉ không lý do</span>
+                                            <span class="stat-value" id="absentDays">0</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Số lần quên check in/out</span>
+                                            <span class="stat-value" id="forgotCheckin">0</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Giờ làm việc thực tính ban đêm</span>
+                                            <span class="stat-value" id="nightHours">1.8167</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Giờ làm việc thực tính ban ngày</span>
+                                            <span class="stat-value" id="dayHours">6.1833</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Công làm thêm</span>
+                                            <span class="stat-value" id="overtimeDays">0</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Giờ làm thêm</span>
+                                            <span class="stat-value" id="overtimeHours">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Load timesheet data
+            await this.loadTimesheetData(employeeId);
+            this.setupTimesheetHandlers();
+
+        } catch (error) {
+            console.error('Error loading timesheet:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải bảng công</h3>
+                        <p>Không thể tải dữ liệu bảng công. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showTimesheet()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    async showAttendanceGPS() {
+        const content = document.getElementById('content');
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            const employeeId = userResponse.employeeId;
+
+            content.innerHTML = `
+                <div class="attendance-gps-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span class="material-icons-round">location_on</span> Chấm Công GPS</h2>
+                            <p>Hệ thống chấm công dựa trên vị trí địa lý</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="attendance-actions">
+                                <div class="location-status" id="locationStatus">
+                                    <span class="material-icons-round location-icon">location_searching</span>
+                                    <span class="location-text">Đang định vị...</span>
+                                </div>
+                                <div class="store-info" id="storeInfo" style="display: none;">
+                                    <span class="material-icons-round">store</span>
+                                    <span id="currentStore">Không xác định</span>
+                                </div>
+                                <button id="attendanceButton" class="attendance-btn" disabled>
+                                    <span class="material-icons-round">access_time</span>
+                                    <span class="btn-text">Chấm Công</span>
+                                </button>
+                            </div>
+                            <div class="attendance-history">
+                                <h3><span class="material-icons-round">history</span> Lịch sử chấm công hôm nay</h3>
+                                <div id="attendanceHistoryToday" class="attendance-list">
+                                    <div class="loading-text">Đang tải lịch sử...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Initialize GPS attendance system
+            await this.initializeGPSAttendance(employeeId);
+
+        } catch (error) {
+            console.error('Error loading GPS attendance:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải chấm công GPS</h3>
+                        <p>Không thể tải hệ thống chấm công. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showAttendanceGPS()" class="btn btn-primary">Thử lại</button>
                     </div>
                 </div>
             `;
@@ -1114,6 +1311,10 @@ class ContentManager {
             // Use getUsers API to get user list with enhanced error handling
             const response = await utils.fetchAPI('?action=getUsers');
             
+            // Check if response is valid before proceeding
+            if (!response || !response.ok) {
+                throw new Error('Không thể tải danh sách người dùng');
+            }
             
             // Extract users data - handle multiple response formats
             let users = [];
@@ -3735,6 +3936,406 @@ class ContentManager {
             case 'approved': return '✅ Đã duyệt';
             case 'rejected': return '❌ Đã hủy';
             default: return '❓ Không xác định';
+        }
+    }
+
+    // Timesheet Management Functions
+    async loadTimesheetData(employeeId) {
+        try {
+            const selectedMonth = document.getElementById('timesheetMonth')?.value || this.getCurrentMonth();
+            const response = await utils.fetchAPI(`?action=getTimesheet&employeeId=${employeeId}&month=${selectedMonth}`);
+            
+            if (response && response.success) {
+                this.renderTimesheetCalendar(response.data);
+                this.updateTimesheetStatistics(response.statistics);
+            } else {
+                throw new Error('Failed to load timesheet data');
+            }
+        } catch (error) {
+            console.error('Error loading timesheet:', error);
+            document.getElementById('timesheetCalendar').innerHTML = `
+                <div class="error-message">
+                    <span class="material-icons-round">error</span>
+                    Không thể tải dữ liệu bảng công
+                </div>
+            `;
+        }
+    }
+
+    renderTimesheetCalendar(data) {
+        const calendar = document.getElementById('timesheetCalendar');
+        const selectedMonth = document.getElementById('timesheetMonth')?.value || this.getCurrentMonth();
+        const [year, month] = selectedMonth.split('-').map(Number);
+        
+        // Create calendar grid
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0);
+        const daysInMonth = lastDay.getDate();
+        const startDay = firstDay.getDay();
+        
+        let calendarHTML = `
+            <div class="calendar-header">
+                <div class="day-name">CN</div>
+                <div class="day-name">T2</div>
+                <div class="day-name">T3</div>
+                <div class="day-name">T4</div>
+                <div class="day-name">T5</div>
+                <div class="day-name">T6</div>
+                <div class="day-name">T7</div>
+            </div>
+            <div class="calendar-grid">
+        `;
+        
+        // Add empty cells for days before month start
+        for (let i = 0; i < startDay; i++) {
+            calendarHTML += '<div class="calendar-day empty"></div>';
+        }
+        
+        // Add days of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayData = data.find(d => new Date(d.date).getDate() === day);
+            const isToday = new Date().getDate() === day && new Date().getMonth() + 1 === month;
+            
+            calendarHTML += `
+                <div class="calendar-day ${isToday ? 'today' : ''}">
+                    <div class="day-number">${day}</div>
+                    ${dayData ? `
+                        <div class="day-hours">${dayData.hoursWorked || 0}</div>
+                        <div class="day-times">
+                            ${dayData.checkIn ? `<div class="check-in">${dayData.checkIn}</div>` : ''}
+                            ${dayData.checkOut ? `<div class="check-out">${dayData.checkOut}</div>` : ''}
+                        </div>
+                    ` : '<div class="day-off">0</div>'}
+                </div>
+            `;
+        }
+        
+        calendarHTML += '</div>';
+        calendar.innerHTML = calendarHTML;
+    }
+
+    updateTimesheetStatistics(stats) {
+        if (!stats) return;
+        
+        // Update all statistical elements
+        const elements = {
+            'actualDays': stats.actualDays || '0/0',
+            'actualHours': stats.actualHours || '0/0', 
+            'workDays': stats.workDays || '0',
+            'actualWorkHours': stats.actualWorkHours || '0',
+            'standardDays': stats.standardDays || '0',
+            'lateDays': stats.lateDays || '0',
+            'earlyLeave': stats.earlyLeave || '0',
+            'lateMinutes': stats.lateMinutes || '0',
+            'earlyMinutes': stats.earlyMinutes || '0',
+            'absentDays': stats.absentDays || '0',
+            'forgotCheckin': stats.forgotCheckin || '0',
+            'nightHours': stats.nightHours || '0',
+            'dayHours': stats.dayHours || '0',
+            'overtimeDays': stats.overtimeDays || '0',
+            'overtimeHours': stats.overtimeHours || '0'
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+    }
+
+    setupTimesheetHandlers() {
+        document.getElementById('loadTimesheetData')?.addEventListener('click', async () => {
+            const userResponse = await API_CACHE.getUserData();
+            await this.loadTimesheetData(userResponse.employeeId);
+        });
+
+        document.getElementById('timesheetMonth')?.addEventListener('change', async () => {
+            const userResponse = await API_CACHE.getUserData();
+            await this.loadTimesheetData(userResponse.employeeId);
+        });
+    }
+
+    // GPS Attendance Functions
+    async initializeGPSAttendance(employeeId) {
+        this.userLocation = null;
+        this.stores = [];
+        
+        try {
+            // Load stores data
+            const storesResponse = await utils.fetchAPI('?action=getStores');
+            this.stores = storesResponse || [];
+            
+            // Load today's attendance history
+            await this.loadAttendanceHistoryToday(employeeId);
+            
+            // Get user location
+            await this.getCurrentLocation();
+            
+        } catch (error) {
+            console.error('Error initializing GPS attendance:', error);
+            this.updateLocationStatus('error', 'Lỗi khởi tạo hệ thống');
+        }
+    }
+
+    async getCurrentLocation() {
+        const locationStatus = document.getElementById('locationStatus');
+        
+        if (!navigator.geolocation) {
+            this.updateLocationStatus('error', 'Thiết bị không hỗ trợ định vị GPS');
+            return;
+        }
+
+        this.updateLocationStatus('searching', 'Đang định vị...');
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                this.userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                this.checkStoreProximity();
+            },
+            (error) => {
+                console.error('Location error:', error);
+                this.updateLocationStatus('error', 'Không thể định vị. Vui lòng bật GPS');
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    }
+
+    checkStoreProximity() {
+        if (!this.userLocation || !this.stores.length) {
+            this.updateLocationStatus('error', 'Không có dữ liệu vị trí hoặc cửa hàng');
+            return;
+        }
+
+        let nearestStore = null;
+        let minDistance = Infinity;
+
+        this.stores.forEach(store => {
+            if (store.latitude && store.longitude) {
+                const distance = this.calculateDistance(
+                    this.userLocation.lat,
+                    this.userLocation.lng,
+                    parseFloat(store.latitude),
+                    parseFloat(store.longitude)
+                );
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestStore = { ...store, distance };
+                }
+            }
+        });
+
+        if (nearestStore && minDistance <= 50) { // Within 50 meters
+            this.updateLocationStatus('success', `Trong phạm vi ${nearestStore.storeName}`);
+            this.showStoreInfo(nearestStore);
+            this.enableAttendanceButton();
+        } else {
+            this.updateLocationStatus('warning', 
+                nearestStore 
+                    ? `Cách ${nearestStore.storeName} ${Math.round(minDistance)}m`
+                    : 'Không ở gần cửa hàng nào'
+            );
+            this.disableAttendanceButton();
+        }
+    }
+
+    calculateDistance(lat1, lng1, lat2, lng2) {
+        const R = 6371000; // Earth's radius in meters
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    updateLocationStatus(status, message) {
+        const locationStatus = document.getElementById('locationStatus');
+        const icon = locationStatus.querySelector('.location-icon');
+        const text = locationStatus.querySelector('.location-text');
+
+        locationStatus.className = `location-status ${status}`;
+        
+        const icons = {
+            searching: 'location_searching',
+            success: 'location_on',
+            warning: 'location_disabled',
+            error: 'location_off'
+        };
+
+        icon.textContent = icons[status] || 'location_searching';
+        text.textContent = message;
+    }
+
+    showStoreInfo(store) {
+        const storeInfo = document.getElementById('storeInfo');
+        const storeName = document.getElementById('currentStore');
+        
+        storeInfo.style.display = 'flex';
+        storeName.textContent = store.storeName;
+    }
+
+    enableAttendanceButton() {
+        const button = document.getElementById('attendanceButton');
+        button.disabled = false;
+        button.classList.add('enabled');
+        button.onclick = () => this.processAttendance();
+    }
+
+    disableAttendanceButton() {
+        const button = document.getElementById('attendanceButton');
+        button.disabled = true;
+        button.classList.remove('enabled');
+        button.onclick = null;
+    }
+
+    async processAttendance() {
+        const button = document.getElementById('attendanceButton');
+        const originalText = button.innerHTML;
+        
+        try {
+            button.disabled = true;
+            button.innerHTML = `
+                <span class="material-icons-round spin">sync</span>
+                <span class="btn-text">Đang xử lý...</span>
+            `;
+
+            const userResponse = await API_CACHE.getUserData();
+            const response = await utils.fetchAPI('?action=processAttendance', {
+                method: 'POST',
+                body: JSON.stringify({
+                    employeeId: userResponse.employeeId,
+                    location: this.userLocation,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification(response.message || 'Chấm công thành công!', 'success');
+                await this.loadAttendanceHistoryToday(userResponse.employeeId);
+            } else {
+                throw new Error(response.message || 'Chấm công thất bại');
+            }
+
+        } catch (error) {
+            console.error('Attendance error:', error);
+            utils.showNotification('Lỗi chấm công: ' + error.message, 'error');
+        } finally {
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    }
+
+    async loadAttendanceHistoryToday(employeeId) {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${today}`);
+            
+            const historyContainer = document.getElementById('attendanceHistoryToday');
+            
+            if (response && response.length > 0) {
+                let historyHTML = '';
+                response.forEach(record => {
+                    const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
+                    const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
+                    
+                    historyHTML += `
+                        <div class="attendance-record ${statusClass}">
+                            <span class="material-icons-round">${record.type === 'check_in' ? 'login' : 'logout'}</span>
+                            <div class="record-info">
+                                <div class="record-time">${time}</div>
+                                <div class="record-status">${status}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                historyContainer.innerHTML = historyHTML;
+            } else {
+                historyContainer.innerHTML = `
+                    <div class="no-records">
+                        <span class="material-icons-round">event_available</span>
+                        <p>Chưa có bản ghi chấm công hôm nay</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading attendance history:', error);
+            document.getElementById('attendanceHistoryToday').innerHTML = `
+                <div class="error-message">
+                    <span class="material-icons-round">error</span>
+                    Không thể tải lịch sử chấm công
+                </div>
+            `;
+        }
+    }
+
+    // Request Management Functions
+    async showAttendanceRequest() {
+        const content = document.getElementById('content');
+        try {
+            content.innerHTML = `
+                <div class="attendance-request-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span class="material-icons-round">assignment</span> Đơn Từ Chấm Công</h2>
+                            <p>Gửi yêu cầu liên quan đến chấm công và nghỉ phép</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="request-type-selector">
+                                <div class="request-types">
+                                    <button class="request-type-btn active" data-type="forgot-checkin">
+                                        <span class="material-icons-round">schedule</span>
+                                        Quên Check In/Out
+                                    </button>
+                                    <button class="request-type-btn" data-type="shift-change">
+                                        <span class="material-icons-round">swap_horiz</span>
+                                        Đổi Ca
+                                    </button>
+                                    <button class="request-type-btn" data-type="absence">
+                                        <span class="material-icons-round">event_busy</span>
+                                        Báo Vắng
+                                    </button>
+                                    <button class="request-type-btn" data-type="leave">
+                                        <span class="material-icons-round">beach_access</span>
+                                        Nghỉ Phép
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="requestForm" class="request-form">
+                                <!-- Form content will be dynamically loaded -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupRequestTypeSelector();
+            this.showRequestForm('forgot-checkin');
+
+        } catch (error) {
+            console.error('Error loading attendance request:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải đơn từ</h3>
+                        <p>Không thể tải form đơn từ. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showAttendanceRequest()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
         }
     }
 }

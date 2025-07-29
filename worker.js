@@ -1601,7 +1601,8 @@ export default {
         "updateUser", "getPendingRegistrations",
         "getPendingRequests", "getTasks", "getRewards", "getPermissions",
         "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
-        "getAttendanceData", "checkIn", "checkOut"
+        "getAttendanceData", "checkIn", "checkOut", "getTimesheet", "processAttendance",
+        "getAttendanceHistory", "createAttendanceRequest", "createTaskAssignment"
       ];
       if (protectedActions.includes(action)) {
         const session = await checkSessionMiddleware(token, db, ALLOWED_ORIGIN);
@@ -1688,6 +1689,16 @@ export default {
             return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
           case "getPersonalStats":
             return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
+          case "getTimesheet":
+            return await handleGetTimesheet(url, db, ALLOWED_ORIGIN);
+          case "processAttendance":
+            return await handleProcessAttendance(body, db, ALLOWED_ORIGIN);
+          case "getAttendanceHistory":
+            return await handleGetAttendanceHistory(url, db, ALLOWED_ORIGIN);
+          case "createAttendanceRequest":
+            return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
+          case "createTaskAssignment":
+            return await handleCreateTaskAssignment(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -1700,3 +1711,344 @@ export default {
     }
   },
 };
+
+// New API Handlers for HR Management System
+
+// Handle timesheet data retrieval
+async function handleGetTimesheet(url, db, origin) {
+  try {
+    const employeeId = url.searchParams.get("employeeId");
+    const month = url.searchParams.get("month");
+    
+    if (!employeeId || !month) {
+      return jsonResponse({ message: "employeeId và month là bắt buộc!" }, 400, origin);
+    }
+
+    const [year, monthNum] = month.split('-').map(Number);
+    const startDate = `${year}-${monthNum.toString().padStart(2, '0')}-01`;
+    const endDate = `${year}-${(monthNum + 1).toString().padStart(2, '0')}-01`;
+
+    // Get attendance data for the month
+    const attendanceData = await db
+      .prepare(`
+        SELECT 
+          DATE(checkIn) as date,
+          TIME(checkIn) as checkIn,
+          TIME(checkOut) as checkOut,
+          CASE 
+            WHEN checkIn IS NOT NULL AND checkOut IS NOT NULL 
+            THEN ROUND((JULIANDAY(checkOut) - JULIANDAY(checkIn)) * 24, 2)
+            ELSE 0 
+          END as hoursWorked
+        FROM attendance 
+        WHERE employeeId = ? AND DATE(checkIn) >= ? AND DATE(checkIn) < ?
+        ORDER BY DATE(checkIn)
+      `)
+      .bind(employeeId, startDate, endDate)
+      .all();
+
+    // Calculate statistics
+    const totalDays = attendanceData.length;
+    const totalHours = attendanceData.reduce((sum, day) => sum + (day.hoursWorked || 0), 0);
+    const standardWorkDays = 26; // Standard work days per month
+    const standardHours = standardWorkDays * 8;
+
+    const statistics = {
+      actualDays: `${totalDays}/${standardWorkDays}`,
+      actualHours: `${Math.round(totalHours)}/${standardHours}`,
+      workDays: totalDays.toString(),
+      actualWorkHours: Math.round(totalHours).toString(),
+      standardDays: standardWorkDays.toString(),
+      lateDays: "0", // Could be calculated based on shift start times
+      earlyLeave: "0", // Could be calculated based on shift end times
+      lateMinutes: "0",
+      earlyMinutes: "0",
+      absentDays: Math.max(0, standardWorkDays - totalDays).toString(),
+      forgotCheckin: "0",
+      nightHours: "0", // Could be calculated based on time ranges
+      dayHours: Math.round(totalHours).toString(),
+      overtimeDays: "0",
+      overtimeHours: "0"
+    };
+
+    return jsonResponse({
+      success: true,
+      data: attendanceData,
+      statistics: statistics
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting timesheet:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi lấy dữ liệu bảng công", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle GPS attendance processing
+async function handleProcessAttendance(body, db, origin) {
+  try {
+    const { employeeId, location, timestamp } = body;
+    
+    if (!employeeId || !location || !timestamp) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Thiếu thông tin bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Check if user exists
+    const employee = await db
+      .prepare("SELECT * FROM employees WHERE employeeId = ?")
+      .bind(employeeId)
+      .first();
+
+    if (!employee) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Nhân viên không tồn tại!" 
+      }, 404, origin);
+    }
+
+    // Get today's attendance records
+    const today = new Date(timestamp).toISOString().split('T')[0];
+    const existingRecords = await db
+      .prepare(`
+        SELECT * FROM attendance 
+        WHERE employeeId = ? AND DATE(checkIn) = ?
+        ORDER BY checkIn DESC
+      `)
+      .bind(employeeId, today)
+      .all();
+
+    // Determine if this should be check-in or check-out
+    const lastRecord = existingRecords[0];
+    const isCheckIn = !lastRecord || lastRecord.checkOut;
+
+    if (isCheckIn) {
+      // Process check-in
+      await db
+        .prepare(`
+          INSERT INTO attendance (employeeId, checkIn, location, status)
+          VALUES (?, ?, ?, 'active')
+        `)
+        .bind(employeeId, timestamp, JSON.stringify(location))
+        .run();
+
+      return jsonResponse({
+        success: true,
+        message: "Chấm công vào ca thành công!",
+        type: "check-in",
+        timestamp: timestamp
+      }, 200, origin);
+
+    } else {
+      // Process check-out
+      await db
+        .prepare(`
+          UPDATE attendance 
+          SET checkOut = ?, status = 'completed'
+          WHERE employeeId = ? AND DATE(checkIn) = ? AND checkOut IS NULL
+        `)
+        .bind(timestamp, employeeId, today)
+        .run();
+
+      return jsonResponse({
+        success: true,
+        message: "Chấm công tan ca thành công!",
+        type: "check-out",
+        timestamp: timestamp
+      }, 200, origin);
+    }
+
+  } catch (error) {
+    console.error("Error processing attendance:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi xử lý chấm công", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle attendance history retrieval
+async function handleGetAttendanceHistory(url, db, origin) {
+  try {
+    const employeeId = url.searchParams.get("employeeId");
+    const date = url.searchParams.get("date");
+    
+    if (!employeeId || !date) {
+      return jsonResponse({ message: "employeeId và date là bắt buộc!" }, 400, origin);
+    }
+
+    const records = await db
+      .prepare(`
+        SELECT 
+          'check_in' as type,
+          checkIn as timestamp,
+          location
+        FROM attendance 
+        WHERE employeeId = ? AND DATE(checkIn) = ?
+        UNION ALL
+        SELECT 
+          'check_out' as type,
+          checkOut as timestamp,
+          location
+        FROM attendance 
+        WHERE employeeId = ? AND DATE(checkIn) = ? AND checkOut IS NOT NULL
+        ORDER BY timestamp
+      `)
+      .bind(employeeId, date, employeeId, date)
+      .all();
+
+    return jsonResponse(records, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting attendance history:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy lịch sử chấm công", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle attendance request creation
+async function handleCreateAttendanceRequest(body, db, origin) {
+  try {
+    const { type, employeeId, timestamp, ...requestData } = body;
+    
+    if (!type || !employeeId) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Thiếu thông tin bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Create attendance request record
+    const requestId = `REQ_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db
+      .prepare(`
+        INSERT INTO requests (
+          requestId, employeeId, type, status, data, createdAt
+        ) VALUES (?, ?, ?, 'pending', ?, ?)
+      `)
+      .bind(
+        requestId,
+        employeeId,
+        `attendance_${type}`,
+        JSON.stringify(requestData),
+        timestamp || new Date().toISOString()
+      )
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đơn từ đã được gửi thành công!",
+      requestId: requestId
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error creating attendance request:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi tạo đơn từ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle task assignment creation
+async function handleCreateTaskAssignment(body, db, origin) {
+  try {
+    const { 
+      title, description, priority, deadline, 
+      participants, supporters, assigners, createdBy, timestamp 
+    } = body;
+    
+    if (!title || !description || !participants || participants.length === 0) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Thiếu thông tin bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Create task record
+    const taskId = `TASK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db
+      .prepare(`
+        INSERT INTO tasks (
+          taskId, title, description, priority, deadline, status,
+          createdBy, createdAt, data
+        ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)
+      `)
+      .bind(
+        taskId,
+        title,
+        description,
+        priority,
+        deadline,
+        createdBy,
+        timestamp || new Date().toISOString(),
+        JSON.stringify({
+          participants,
+          supporters,
+          assigners
+        })
+      )
+      .run();
+
+    // Create task assignments for participants
+    for (const participantId of participants) {
+      await db
+        .prepare(`
+          INSERT INTO task_assignments (
+            taskId, employeeId, role, assignedAt
+          ) VALUES (?, ?, 'participant', ?)
+        `)
+        .bind(taskId, participantId, timestamp || new Date().toISOString())
+        .run();
+    }
+
+    // Create task assignments for supporters
+    for (const supporterId of supporters || []) {
+      await db
+        .prepare(`
+          INSERT INTO task_assignments (
+            taskId, employeeId, role, assignedAt
+          ) VALUES (?, ?, 'supporter', ?)
+        `)
+        .bind(taskId, supporterId, timestamp || new Date().toISOString())
+        .run();
+    }
+
+    // Create task assignments for assigners
+    for (const assignerId of assigners || []) {
+      await db
+        .prepare(`
+          INSERT INTO task_assignments (
+            taskId, employeeId, role, assignedAt
+          ) VALUES (?, ?, 'assigner', ?)
+        `)
+        .bind(taskId, assignerId, timestamp || new Date().toISOString())
+        .run();
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Nhiệm vụ đã được tạo thành công!",
+      taskId: taskId
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error creating task assignment:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi tạo nhiệm vụ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}

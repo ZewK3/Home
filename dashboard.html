@@ -51,16 +51,22 @@
             <nav class="mobile-nav">
                 <ul id="mobileMenuList" class="mobile-menu-list">
                     <li class="mobile-menu-item" data-role="AD,QL,NV">
-                        <a href="#" id="mobileShiftManagement" class="mobile-menu-link">Quản Lý Ca</a>
+                        <a href="#" id="mobileWorkManagement" class="mobile-menu-link">
+                            <span class="material-icons-round">schedule</span>
+                            Quản Lý Công
+                        </a>
                         <ul class="mobile-submenu">
-                            <li class="mobile-submenu-item" data-role="AD,AM,QL">
-                                <a href="#" id="mobileShiftAssignment" class="mobile-submenu-link">Phân Ca</a>
+                            <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
+                                <a href="#" id="mobileTimesheet" class="mobile-submenu-link">
+                                    <span class="material-icons-round">calendar_view_month</span>
+                                    Bảng Công
+                                </a>
                             </li>
                             <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
-                                <a href="#" id="mobileWorkShifts" class="mobile-submenu-link">Ca Làm</a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
-                                <a href="#" id="mobileAttendance" class="mobile-submenu-link">Chấm Công</a>
+                                <a href="#" id="mobileAttendance" class="mobile-submenu-link">
+                                    <span class="material-icons-round">location_on</span>
+                                    Chấm Công
+                                </a>
                             </li>
                         </ul>
                     </li>
@@ -68,7 +74,30 @@
                         <a href="#" id="mobileReward" class="mobile-menu-link">Thưởng/Phạt</a>
                     </li>
                     <li class="mobile-menu-item" data-role="AD,NV">
-                        <a href="#" id="mobileSubmitTask" class="mobile-menu-link">Gửi Yêu Cầu</a>
+                        <a href="#" id="mobileSubmitRequest" class="mobile-menu-link">
+                            <span class="material-icons-round">send</span>
+                            Gửi Yêu Cầu
+                        </a>
+                        <ul class="mobile-submenu">
+                            <li class="mobile-submenu-item" data-role="AD,NV">
+                                <a href="#" id="mobileAttendanceRequest" class="mobile-submenu-link">
+                                    <span class="material-icons-round">assignment</span>
+                                    Đơn Từ
+                                </a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD,NV">
+                                <a href="#" id="mobileTaskAssignment" class="mobile-submenu-link">
+                                    <span class="material-icons-round">task_alt</span>
+                                    Nhiệm Vụ
+                                </a>
+                            </li>
+                            <li class="mobile-submenu-item" data-role="AD,AM,QL">
+                                <a href="#" id="mobileShiftAssignment" class="mobile-submenu-link">
+                                    <span class="material-icons-round">schedule_send</span>
+                                    Phân Ca
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="mobile-menu-item" data-role="AD,QL">
                         <a href="#" id="mobileTaskProcessing" class="mobile-menu-link">Xử Lý Yêu Cầu</a>
@@ -144,16 +173,22 @@
     <div class="sidebar">
         <ul id="menuList" class="menu-list">
             <li class="menu-item" data-role="AD,QL,NV">
-                <a href="#" id="openShiftManagement" class="menu-link">Quản Lý Ca</a>
+                <a href="#" id="openWorkManagement" class="menu-link">
+                    <span class="material-icons-round">schedule</span>
+                    Quản Lý Công
+                </a>
                 <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,AM,QL">
-                        <a href="#" id="openShiftAssignment" class="submenu-link">Phân Ca</a>
+                    <li class="submenu-item" data-role="AD,AM,QL,NV">
+                        <a href="#" id="openTimesheet" class="submenu-link">
+                            <span class="material-icons-round">calendar_view_month</span>
+                            Bảng Công
+                        </a>
                     </li>
                     <li class="submenu-item" data-role="AD,AM,QL,NV">
-                        <a href="#" id="openWorkShifts" class="submenu-link">Ca Làm</a>
-                    </li>
-                    <li class="submenu-item" data-role="AD,AM,QL,NV">
-                        <a href="#" id="openAttendance" class="submenu-link">Chấm Công</a>
+                        <a href="#" id="openAttendance" class="submenu-link">
+                            <span class="material-icons-round">location_on</span>
+                            Chấm Công
+                        </a>
                     </li>
                 </ul>
             </li>
@@ -161,7 +196,30 @@
                 <a href="#" id="openReward" class="menu-link">Thưởng/Phạt</a>
             </li>
             <li class="menu-item" data-role="AD,NV">
-                <a href="#" id="openSubmitTask" class="menu-link">Gửi Yêu Cầu</a>
+                <a href="#" id="openSubmitRequest" class="menu-link">
+                    <span class="material-icons-round">send</span>
+                    Gửi Yêu Cầu
+                </a>
+                <ul class="submenu">
+                    <li class="submenu-item" data-role="AD,NV">
+                        <a href="#" id="openAttendanceRequest" class="submenu-link">
+                            <span class="material-icons-round">assignment</span>
+                            Đơn Từ
+                        </a>
+                    </li>
+                    <li class="submenu-item" data-role="AD,NV">
+                        <a href="#" id="openTaskAssignment" class="submenu-link">
+                            <span class="material-icons-round">task_alt</span>
+                            Nhiệm Vụ
+                        </a>
+                    </li>
+                    <li class="submenu-item" data-role="AD,AM,QL">
+                        <a href="#" id="openShiftAssignment" class="submenu-link">
+                            <span class="material-icons-round">schedule_send</span>
+                            Phân Ca
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="menu-item" data-role="AD,QL">
                 <a href="#" id="openTaskProcessing" class="menu-link">Xử Lý Yêu Cầu</a>
