@@ -46,6 +46,7 @@ const API_CACHE = {
     async safeAPICall(endpoint, apiFunction) {
         // If call is already in progress, wait for it
         if (this.ongoingCalls.has(endpoint)) {
+            console.log(`API call for ${endpoint} already in progress, waiting...`);
             return await this.ongoingCalls.get(endpoint);
         }
         
@@ -202,6 +203,7 @@ const utils = {
 
     async fetchAPI(endpoint, options = {}) {
         const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        console.log(`API Call: ${endpoint}`); // Debug logging for API tracking
         try {
             const response = await fetch(`${CONFIG.API_URL}${endpoint}`, {
                 ...options,
@@ -263,11 +265,9 @@ class ContentManager {
         document.getElementById('openAttendance')?.addEventListener('click', () => 
             this.showAttendance());
 
-        // Request submission - separate handlers for attendance and task
-        document.getElementById('openAttendanceRequest')?.addEventListener('click', () => 
-            this.showAttendanceRequest());
-        document.getElementById('openTaskAssignment')?.addEventListener('click', () => 
-            this.showTaskAssignment());
+        // Tasks
+        document.getElementById('openSubmitTask')?.addEventListener('click', () => 
+            this.showSubmitTask());
         document.getElementById('taskPersonnel')?.addEventListener('click', () => 
             this.showTaskPersonnel());
         document.getElementById('taskStore')?.addEventListener('click', () => 
@@ -814,326 +814,67 @@ class ContentManager {
         return statusMap[status] || status;
     }
 
-    // Attendance Request System
-    async showAttendanceRequest() {
+    // Task Management Functions
+    async showSubmitTask() {
         const content = document.getElementById('content');
         content.innerHTML = `
             <div class="card">
                 <div class="card-header">
-                    <h2><span class="material-icons-round">assignment</span> Gửi Đơn Từ Chấm Công</h2>
-                    <p>Gửi yêu cầu liên quan đến chấm công và ca làm việc</p>
-                </div>
-                <div class="card-body">
-                    <form id="attendanceForm">
-                        <div class="form-group">
-                            <label>Loại đơn từ chấm công</label>
-                            <select name="attendanceType" class="form-control" required>
-                                <option value="">Chọn loại đơn từ</option>
-                                <option value="forgotten_checkin">Quên Check In</option>
-                                <option value="forgotten_checkout">Quên Check Out</option>
-                                <option value="shift_change">Đơn Đổi Ca</option>
-                                <option value="absence">Đơn Vắng Mặt</option>
-                                <option value="leave">Đơn Nghỉ Phép</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Ngày áp dụng</label>
-                            <input type="date" name="requestDate" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Thời gian (nếu có)</label>
-                            <input type="time" name="requestTime" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>Lý do chi tiết</label>
-                            <textarea name="reason" class="form-control" rows="4" required placeholder="Mô tả chi tiết lý do và tình huống..."></textarea>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <span class="material-icons-round">send</span>
-                                Gửi đơn từ
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-
-        this.setupAttendanceRequestForm();
-    }
-
-    // Task Assignment System
-    async showTaskAssignment() {
-        const content = document.getElementById('content');
-        content.innerHTML = `
-            <div class="card">
-                <div class="card-header">
-                    <h2><span class="material-icons-round">task</span> Tạo Nhiệm Vụ</h2>
-                    <p>Tạo và phân công nhiệm vụ cho nhân viên</p>
+                    <h2>Gửi Yêu Cầu</h2>
                 </div>
                 <div class="card-body">
                     <form id="taskForm">
                         <div class="form-group">
-                            <label>Tiêu đề nhiệm vụ</label>
-                            <input type="text" name="taskTitle" class="form-control" required placeholder="Nhập tiêu đề nhiệm vụ...">
+                            <label>Loại yêu cầu</label>
+                            <select name="taskType" class="form-control" required>
+                                <option value="">Chọn loại yêu cầu</option>
+                                <option value="leave">Nghỉ phép</option>
+                                <option value="overtime">Tăng ca</option>
+                                <option value="equipment">Thiết bị</option>
+                                <option value="other">Khác</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label>Mô tả nhiệm vụ</label>
-                            <textarea name="taskDescription" class="form-control" rows="4" required placeholder="Mô tả chi tiết nhiệm vụ..."></textarea>
+                            <label>Nội dung</label>
+                            <textarea name="content" class="form-control" rows="4" required></textarea>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Hạn hoàn thành</label>
-                                <input type="datetime-local" name="deadline" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Mức độ ưu tiên</label>
-                                <select name="priority" class="form-control" required>
-                                    <option value="">Chọn mức độ ưu tiên</option>
-                                    <option value="low">Thấp</option>
-                                    <option value="medium">Trung bình</option>
-                                    <option value="high">Cao</option>
-                                    <option value="urgent">Khẩn cấp</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- User Selection for Task -->
-                        <div class="form-group">
-                            <label>Người tham gia</label>
-                            <div id="participantSelection" class="user-selection-container">
-                                <input type="text" id="participantSearch" class="form-control" placeholder="Tìm kiếm nhân viên để thêm...">
-                                <div id="participantList" class="selected-users-list"></div>
-                                <div id="participantDropdown" class="user-dropdown" style="display: none;"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Người hỗ trợ</label>
-                            <div id="supporterSelection" class="user-selection-container">
-                                <input type="text" id="supporterSearch" class="form-control" placeholder="Tìm kiếm nhân viên hỗ trợ...">
-                                <div id="supporterList" class="selected-users-list"></div>
-                                <div id="supporterDropdown" class="user-dropdown" style="display: none;"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Người giao nhiệm vụ</label>
-                            <div id="assignerSelection" class="user-selection-container">
-                                <input type="text" id="assignerSearch" class="form-control" placeholder="Tìm kiếm người giao nhiệm vụ...">
-                                <div id="assignerList" class="selected-users-list"></div>
-                                <div id="assignerDropdown" class="user-dropdown" style="display: none;"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <span class="material-icons-round">add_task</span>
-                                Tạo nhiệm vụ
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
                     </form>
                 </div>
             </div>
         `;
 
-        this.setupTaskAssignmentForm();
+        this.setupTaskForm();
     }
 
-    setupAttendanceRequestForm() {
-        // Setup attendance request form
-        document.getElementById('attendanceForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await this.handleAttendanceRequest(e);
-        });
-    }
-
-    setupTaskAssignmentForm() {
-        // Users cache for dropdowns
-        this.usersCache = [];
-        this.selectedUsers = {
-            participants: [],
-            supporters: [],
-            assigners: []
-        };
-
-        // Setup task assignment form
+    setupTaskForm() {
         document.getElementById('taskForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await this.handleTaskAssignment(e);
-        });
-
-        // Setup user selection for task assignments
-        this.setupUserSelection('participant');
-        this.setupUserSelection('supporter');
-        this.setupUserSelection('assigner');
-
-        // Load users for dropdowns
-        this.loadUsersForSelection();
-    }
-
-    async handleAttendanceRequest(e) {
-        try {
-            const formData = new FormData(e.target);
-            const requestData = Object.fromEntries(formData);
-            const employeeId = await this.getUserEmployeeId();
-            
-            await utils.fetchAPI('?action=createAttendanceRequest', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId: employeeId,
-                    fullName: this.user.fullName || 'Nhân viên',
-                    position: this.user.position || 'NV',
-                    attendanceType: requestData.attendanceType,
-                    requestDate: requestData.requestDate,
-                    requestTime: requestData.requestTime,
-                    reason: requestData.reason,
-                    status: 'pending',
-                    submittedAt: new Date().toISOString()
-                })
-            });
-            
-            utils.showNotification("Đơn từ chấm công đã được gửi", "success");
-            document.getElementById('attendanceForm').reset();
-        } catch (error) {
-            utils.showNotification("Không thể gửi đơn từ", "error");
-        }
-    }
-
-    async handleTaskAssignment(e) {
-        try {
-            const formData = new FormData(e.target);
-            const taskData = Object.fromEntries(formData);
-            const employeeId = await this.getUserEmployeeId();
-            
-            await utils.fetchAPI('?action=createTaskAssignment', {
-                method: 'POST',
-                body: JSON.stringify({
-                    createdBy: employeeId,
-                    creatorName: this.user.fullName || 'Nhân viên',
-                    title: taskData.taskTitle,
-                    description: taskData.taskDescription,
-                    deadline: taskData.deadline,
-                    priority: taskData.priority,
-                    participants: this.selectedUsers.participants,
-                    supporters: this.selectedUsers.supporters,
-                    assigners: this.selectedUsers.assigners,
-                    status: 'active',
-                    createdAt: new Date().toISOString()
-                })
-            });
-            
-            utils.showNotification("Nhiệm vụ đã được tạo", "success");
-            document.getElementById('taskForm').reset();
-            this.clearSelectedUsers();
-        } catch (error) {
-            utils.showNotification("Không thể tạo nhiệm vụ", "error");
-        }
-    }
-
-    setupUserSelection(type) {
-        const searchInput = document.getElementById(`${type}Search`);
-        const dropdown = document.getElementById(`${type}Dropdown`);
-        const selectedList = document.getElementById(`${type}List`);
-
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            this.showUserDropdown(type, query);
-        });
-
-        searchInput.addEventListener('focus', () => {
-            this.showUserDropdown(type, '');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest(`#${type}Selection`)) {
-                dropdown.style.display = 'none';
+            try {
+                const formData = new FormData(e.target);
+                const taskData = Object.fromEntries(formData);
+                // Get user employee ID safely
+                const employeeId = await this.getUserEmployeeId();
+                
+                // Use createTask API to create a proper task
+                await utils.fetchAPI('?action=createTask', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        employeeId: employeeId,
+                        fullName: this.user.fullName || 'Nhân viên',
+                        position: this.user.position || 'NV',
+                        taskType: taskData.taskType,
+                        content: taskData.content
+                    })
+                });
+                
+                utils.showNotification("Yêu cầu đã được gửi", "success");
+                document.getElementById('taskForm').reset();
+            } catch (error) {
+                console.error('Submit task error:', error);
+                utils.showNotification("Không thể gửi yêu cầu", "error");
             }
         });
-    }
-
-    showUserDropdown(type, query) {
-        const dropdown = document.getElementById(`${type}Dropdown`);
-        const filteredUsers = this.usersCache.filter(user => 
-            (user.fullName?.toLowerCase().includes(query) || 
-             user.employeeId?.toLowerCase().includes(query)) &&
-            !this.selectedUsers[type + 's'].some(selected => selected.employeeId === user.employeeId)
-        );
-
-        dropdown.innerHTML = filteredUsers.map(user => `
-            <div class="user-dropdown-item" data-user='${JSON.stringify(user)}' data-type="${type}">
-                <div class="user-avatar">${user.fullName?.charAt(0) || 'U'}</div>
-                <div class="user-info">
-                    <div class="user-name">${user.fullName || 'Unnamed'}</div>
-                    <div class="user-id">${user.employeeId} - ${user.position || 'NV'}</div>
-                </div>
-            </div>
-        `).join('');
-
-        dropdown.style.display = filteredUsers.length > 0 ? 'block' : 'none';
-
-        // Add click handlers for dropdown items
-        dropdown.querySelectorAll('.user-dropdown-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                const userData = JSON.parse(e.currentTarget.dataset.user);
-                const userType = e.currentTarget.dataset.type;
-                this.addSelectedUser(userType, userData);
-            });
-        });
-    }
-
-    addSelectedUser(type, user) {
-        const listContainer = document.getElementById(`${type}List`);
-        const searchInput = document.getElementById(`${type}Search`);
-        const dropdown = document.getElementById(`${type}Dropdown`);
-
-        this.selectedUsers[type + 's'].push(user);
-        
-        const userTag = document.createElement('div');
-        userTag.className = 'selected-user-tag';
-        userTag.innerHTML = `
-            <span class="user-tag-name">${user.fullName} (${user.employeeId})</span>
-            <button type="button" class="remove-user-btn" data-type="${type}" data-id="${user.employeeId}">×</button>
-        `;
-        
-        listContainer.appendChild(userTag);
-        searchInput.value = '';
-        dropdown.style.display = 'none';
-
-        // Add remove handler
-        userTag.querySelector('.remove-user-btn').addEventListener('click', (e) => {
-            const userId = e.target.dataset.id;
-            const userType = e.target.dataset.type;
-            this.removeSelectedUser(userType, userId);
-            userTag.remove();
-        });
-    }
-
-    removeSelectedUser(type, userId) {
-        const index = this.selectedUsers[type + 's'].findIndex(user => user.employeeId === userId);
-        if (index > -1) {
-            this.selectedUsers[type + 's'].splice(index, 1);
-        }
-    }
-
-    clearSelectedUsers() {
-        this.selectedUsers = {
-            participants: [],
-            supporters: [],
-            assigners: []
-        };
-        document.getElementById('participantList').innerHTML = '';
-        document.getElementById('supporterList').innerHTML = '';
-        document.getElementById('assignerList').innerHTML = '';
-    }
-
-    async loadUsersForSelection() {
-        try {
-            const users = await utils.fetchAPI('?action=getUsers');
-            this.usersCache = Array.isArray(users) ? users : [];
-        } catch (error) {
-            this.usersCache = [];
-        }
     }
 
     async showTaskPersonnel() {
@@ -2179,6 +1920,7 @@ class ContentManager {
                 document.getElementById('rewardsCount').textContent = stats.rewardsCount || 0;
             }
         } catch (error) {
+            console.log('Stats not available:', error);
             // Set default values if stats API is not available
             document.getElementById('workDaysThisMonth').textContent = '0';
             document.getElementById('totalHoursThisMonth').textContent = '0 giờ';
@@ -2744,6 +2486,7 @@ class ContentManager {
                 const historyKeys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
                 if (historyKeys.length > 0) {
                     history = historyKeys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                    console.log('Converted history object to array:', history);
                 }
             }
             
@@ -2921,6 +2664,7 @@ class ContentManager {
                 })
             });
 
+            console.log('Update result:', result);
             
             // Update the UI
             const userCard = document.querySelector(`[data-user-id="${userId}"]`);
@@ -2997,6 +2741,7 @@ class ContentManager {
 
                 // For now, just show success message as the API doesn't exist
                 utils.showNotification("Đã cập nhật quyền hạn (demo)", "success");
+                console.log('Permissions would be saved:', { employeeId, permissions });
             } catch (error) {
                 console.error('Update permissions error:', error);
                 utils.showNotification("Không thể cập nhật quyền hạn", "error");
@@ -3329,6 +3074,8 @@ class ContentManager {
                 }
             });
             
+            console.log('Store mapping loaded:', this.storeMap);
+            console.log('Region mapping loaded:', this.regionMap);
         } catch (error) {
             console.error('Error loading store mapping:', error);
         }
@@ -3346,6 +3093,7 @@ class ContentManager {
         try {
             // Use AuthManager's cached stores data 
             const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            console.log('Stores API response:', response);
             
             let allStores = [];
             if (Array.isArray(response)) {
@@ -3392,6 +3140,7 @@ class ContentManager {
                 }
             }
             
+            console.log('Available stores for user:', availableStores);
             const storeFilter = document.getElementById('storeFilterSelect');
             if (storeFilter && availableStores.length > 0) {
                 storeFilter.innerHTML = '<option value="">Tất cả cửa hàng</option>' +
@@ -3399,6 +3148,7 @@ class ContentManager {
                         `<option value="${store.storeId}">${store.storeName} (${store.storeId})</option>`
                     ).join('');
             } else {
+                console.log('⚠️ No stores available for this user');
                 if (storeFilter) {
                     storeFilter.innerHTML = '<option value="">Không có cửa hàng nào</option>';
                 }
@@ -3412,6 +3162,7 @@ class ContentManager {
     async loadPendingRegistrations(store = '') {
         // Prevent duplicate calls with loading state
         if (this.isLoadingRegistrations) {
+            console.log('Already loading registrations, skipping duplicate call');
             return;
         }
         
@@ -3440,18 +3191,24 @@ class ContentManager {
                 url += `&status=${statusFilter}`;
             }
             
+            console.log('Loading pending registrations from:', CONFIG.API_URL + url);
             const response = await utils.fetchAPI(url);
+            console.log('Full API response:', response);
             
             // Convert object format {0: {data}, 1: {data}, ...} to array
             let registrations = [];
             if (Array.isArray(response)) {
                 registrations = response;
+                console.log('Response is already an array:', registrations);
             } else if (response && typeof response === 'object') {
                 // Check if response has numeric keys (API returns {0: {}, 1: {}, ...})
                 const keys = Object.keys(response).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                console.log('Numeric keys found:', keys);
                 if (keys.length > 0) {
                     registrations = keys.map(key => response[key]).filter(item => item && typeof item === 'object');
+                    console.log('Converted to array:', registrations);
                 } else {
+                    console.log('No numeric keys found, checking for data property');
                     if (response.data && Array.isArray(response.data)) {
                         registrations = response.data;
                     } else if (response.data && typeof response.data === 'object') {
@@ -3461,6 +3218,7 @@ class ContentManager {
                 }
             }
             
+            console.log('Final registrations array:', registrations);
             this.allRegistrations = registrations;
             
             // Update pending count
@@ -3471,6 +3229,8 @@ class ContentManager {
             }
             
             // Show detailed debug info
+            console.log(`Found ${this.allRegistrations.length} total registrations`);
+            console.log(`${pendingCount} are pending (status: 'Wait')`);
             
             this.filterRegistrations();
         } catch (error) {
@@ -3681,6 +3441,8 @@ class ContentManager {
         const dateFilter = document.getElementById('dateFilterSelect')?.value || '';
         const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
         
+        console.log('Filtering with:', { searchTerm, storeFilter, dateFilter, statusFilter });
+        console.log('All registrations before filter:', this.allRegistrations);
 
         this.filteredRegistrations = this.allRegistrations.filter(reg => {
             // Search filter
@@ -3732,9 +3494,18 @@ class ContentManager {
 
             const result = matchesSearch && matchesStore && matchesDate && matchesStatus;
             
+            // Debug individual filter results
+            if (this.allRegistrations.length > 0) {
+                console.log(`Registration ${reg.employeeId}:`, {
+                    matchesSearch, matchesStore, matchesDate, matchesStatus, result,
+                    status: reg.status, storeName: reg.storeName, storeId: reg.storeId
+                });
+            }
+            
             return result;
         });
         
+        console.log('Filtered registrations:', this.filteredRegistrations);
 
         this.currentPage = 1;
         this.renderRegistrations();
@@ -3751,6 +3522,7 @@ class ContentManager {
         const endIndex = startIndex + this.pageSize;
         const pageRegistrations = this.filteredRegistrations.slice(startIndex, endIndex);
         
+        console.log(`Rendering page ${this.currentPage}, showing ${pageRegistrations.length} of ${this.filteredRegistrations.length} registrations`);
 
         if (!pageRegistrations.length) {
             const hasData = this.allRegistrations.length > 0;
@@ -4074,10 +3846,12 @@ class AuthManager {
     // Get stores data with caching
     async getStoresData() {
         if (this.cachedStores && this.isCacheValid('stores')) {
+            console.log('Using cached stores data');
             return this.cachedStores;
         }
 
         try {
+            console.log('Fetching fresh stores data');
             const stores = await utils.fetchAPI(`?action=getStores&token=${this.token}`);
             this.cachedStores = stores;
             this.cacheTimestamp.stores = Date.now();
@@ -4092,6 +3866,7 @@ class AuthManager {
     // Get user data with caching
     async getUserData() {
         if (this.cachedUser && this.isCacheValid('user')) {
+            console.log('Using cached user data');
             return this.cachedUser;
         }
 
@@ -4101,6 +3876,7 @@ class AuthManager {
                 throw new Error("No employee ID in user data");
             }
             
+            console.log('Fetching fresh user data');
             const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
             if (user) {
                 this.cachedUser = user;
@@ -4118,10 +3894,12 @@ class AuthManager {
     // Get dashboard stats with caching
     async getDashboardStats() {
         if (this.cachedDashboardStats && this.isCacheValid('dashboardStats')) {
+            console.log('Using cached dashboard stats');
             return this.cachedDashboardStats;
         }
 
         try {
+            console.log('Fetching fresh dashboard stats');
             const stats = await utils.fetchAPI(`?action=getDashboardStats&token=${this.token}`);
             this.cachedDashboardStats = stats;
             this.cacheTimestamp.dashboardStats = Date.now();
@@ -4229,6 +4007,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Pre-cache stores data for the session
         await authManager.getStoresData();
+        console.log('Stores data pre-cached during initialization');
     } catch (error) {
         console.warn('Could not pre-cache stores data:', error);
     }
@@ -4252,6 +4031,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userInfoElement = document.getElementById("userInfo");
         if (userInfoElement && userData) {
             userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
+            console.log('✅ User info populated in header:', userData.fullName, userData.employeeId);
         }
 
         // Load dashboard stats immediately when page loads
@@ -4339,10 +4119,20 @@ async function getDashboardStats() {
         todayScheduleDay: document.getElementById('todayScheduleDay')
     };
 
+    console.log('📊 Stats elements found:', {
+        totalEmployees: !!elements.totalEmployees,
+        todaySchedule: !!elements.todaySchedule,
+        pendingRequests: !!elements.pendingRequests,
+        recentMessages: !!elements.recentMessages,
+        todayScheduleDay: !!elements.todayScheduleDay
+    });
+
     try {
+        console.log('🌐 Fetching dashboard stats from API...');
         // Use the new unified dashboard stats API
         const stats = await utils.fetchAPI('?action=getDashboardStats');
         
+        console.log('📈 Dashboard stats response:', stats);
         
         if (stats && typeof stats === 'object') {
             
@@ -4350,21 +4140,25 @@ async function getDashboardStats() {
             if (elements.totalEmployees) {
                 const value = stats.totalEmployees?.toString() || '0';
                 elements.totalEmployees.textContent = value;
+                console.log(`Updated totalEmployees: ${value}`);
             }
             
             if (elements.todaySchedule) {
                 const value = stats.todaySchedules?.toString() || '0';
                 elements.todaySchedule.textContent = value;
+                console.log(`Updated todaySchedule: ${value}`);
             }
             
             if (elements.pendingRequests) {
                 const value = stats.pendingRequests?.toString() || '0';
                 elements.pendingRequests.textContent = value;
+                console.log(`Updated pendingRequests: ${value}`);
             }
 
             if (elements.recentMessages) {
                 const value = stats.recentMessages?.toString() || '0';
                 elements.recentMessages.textContent = value;
+                console.log(`Updated recentMessages: ${value}`);
             }
             
             // Update day info
@@ -4375,6 +4169,7 @@ async function getDashboardStats() {
                 };
                 const value = dayNames[stats.currentDay] || 'Hôm nay';
                 elements.todayScheduleDay.textContent = value;
+                console.log(`Updated todayScheduleDay: ${value}`);
             }
             
         } else {
@@ -4395,18 +4190,23 @@ async function getDashboardStats() {
         // Set default values on error
         if (elements.totalEmployees) {
             elements.totalEmployees.textContent = '0';
+            console.log('Set totalEmployees default: 0');
         }
         if (elements.todaySchedule) {
             elements.todaySchedule.textContent = '0';
+            console.log('Set todaySchedule default: 0');
         }
         if (elements.pendingRequests) {
             elements.pendingRequests.textContent = '0';
+            console.log('Set pendingRequests default: 0');
         }
         if (elements.recentMessages) {
             elements.recentMessages.textContent = '0';
+            console.log('Set recentMessages default: 0');
         }
         if (elements.todayScheduleDay) {
             elements.todayScheduleDay.textContent = 'Hôm nay';
+            console.log('Set todayScheduleDay default: Hôm nay');
         }
         
         // Show error notification
@@ -4416,6 +4216,7 @@ async function getDashboardStats() {
 
 // Function to specifically ensure stats-grid is visible and updated
 async function updateStatsGrid() {
+    console.log('📊 Updating stats-grid visibility and content...');
     
     const statsGrid = document.querySelector('.stats-grid');
     const welcomeSection = document.querySelector('.welcome-section');
@@ -4451,6 +4252,7 @@ async function initializeRoleBasedUI() {
         const freshUserData = await API_CACHE.getUserData();
         if (freshUserData && freshUserData.position) {
             userPosition = freshUserData.position;
+            console.log('🔐 Using cached role for UI initialization:', userPosition);
         } else {
             console.warn('⚠️ No cached user data found, using default role NV');
         }
@@ -4458,6 +4260,7 @@ async function initializeRoleBasedUI() {
         console.warn('⚠️ Using default role due to cache error:', error);
     }
     
+    console.log('🔐 Initializing role-based UI for position:', userPosition);
     
     // Show/hide elements based on role (simple direct matching like original)
     const allRoleElements = document.querySelectorAll('[data-role]');
@@ -4499,6 +4302,7 @@ async function initializeRoleBasedUI() {
     });
     
     if (userPosition === 'AD') {
+        console.log(`🔍 AD Role Summary: Found ${adElementsFound} AD elements, Shown ${adElementsShown} elements`);
         
         // Additional verification for all AD-specific sections - with improved error handling
         const adSections = [
@@ -4539,6 +4343,7 @@ async function initializeRoleBasedUI() {
                         classSection.classList.add('role-visible');
                         classSection.classList.remove('role-hidden');
                     } else {
+                        console.log(`ℹ️ AD Section ${selector} not found - likely due to DOM timing or authentication`);
                     }
                 }
             }
@@ -4556,6 +4361,7 @@ async function applyRoleBasedSectionVisibility() {
         const freshUserData = await API_CACHE.getUserData();
         if (freshUserData && freshUserData.position) {
             userRole = freshUserData.position;
+            console.log('🔐 Using cached role for section visibility:', userRole);
         } else {
             console.warn('⚠️ No cached user data found, using default role NV');
         }
@@ -4563,6 +4369,7 @@ async function applyRoleBasedSectionVisibility() {
         console.warn('⚠️ Using default role due to cache error:', error);
     }
     
+    console.log('🎛️ Applying role-based section visibility for role:', userRole);
     
     // Role-based section visibility map
     const sectionVisibility = {
@@ -4604,10 +4411,12 @@ async function applyRoleBasedSectionVisibility() {
         }
     };
     
+    console.log('📋 Available sections to configure:', Object.keys(sectionVisibility.AD));
     const roleConfig = sectionVisibility[userRole] || sectionVisibility['NV'];
     
     // Count sections that should be visible
     const visibleSections = Object.entries(roleConfig).filter(([_, isVisible]) => isVisible);
+    console.log(`📊 Expected ${visibleSections.length} sections to be visible for ${userRole} role`);
     
     // Apply visibility settings
     Object.entries(roleConfig).forEach(([selector, isVisible]) => {
@@ -4623,6 +4432,7 @@ async function applyRoleBasedSectionVisibility() {
                 section.style.visibility = 'hidden';
                 section.classList.add('role-hidden');
                 section.classList.remove('role-visible');
+                console.log(`❌ Section hidden for ${userRole}: ${selector}`);
             }
         } else {
             console.warn(`⚠️ Section not found: ${selector}`);
@@ -4631,9 +4441,17 @@ async function applyRoleBasedSectionVisibility() {
     
     // Summary log
     const actualVisibleSections = document.querySelectorAll('.role-visible').length;
+    console.log(`📈 Result: ${actualVisibleSections} sections are now visible`);
     
     // Special debug for AD role
     if (userRole === 'AD') {
+        console.log('🔍 AD Role Special Debug:');
+        console.log('  - Quick Actions:', !!document.querySelector('.quick-actions-section.role-visible'));
+        console.log('  - Analytics:', !!document.querySelector('.analytics-section.role-visible'));
+        console.log('  - Store Management:', !!document.querySelector('.store-management-section.role-visible'));
+        console.log('  - Finance:', !!document.querySelector('.finance-section.role-visible'));
+        console.log('  - Registration Approval:', !!document.querySelector('.registration-approval-section.role-visible'));
+        console.log('  - Activities:', !!document.querySelector('.activities-section.role-visible'));
     }
     
     // Also apply role-based visibility to quick action buttons within the visible section
@@ -4655,6 +4473,7 @@ async function applyRoleBasedSectionVisibility() {
             } else {
                 btn.style.display = 'none';
                 btn.style.visibility = 'hidden';
+                console.log(`❌ Quick action hidden for ${userRole}: ${action}`);
             }
         });
     }
@@ -5081,16 +4900,10 @@ function setupMobileMenu() {
             setTimeout(() => window.contentManager?.showReward(), 300);
         });
         
-        document.getElementById('mobileAttendanceRequest')?.addEventListener('click', (e) => {
+        document.getElementById('mobileSubmitTask')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showAttendanceRequest(), 300);
-        });
-        
-        document.getElementById('mobileTaskAssignment')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMobileMenu();
-            setTimeout(() => window.contentManager?.showTaskAssignment(), 300);
+            setTimeout(() => window.contentManager?.showSubmitTask(), 300);
         });
         
         document.getElementById('mobileTaskPersonnel')?.addEventListener('click', (e) => {
@@ -5154,6 +4967,7 @@ function setupMobileMenu() {
     
     setupMobileMenuHandlers();
     
+    console.log('✅ GitHub-style mobile menu dialog initialized');
 }
 
 // Global logout function for sidebar button and other components
@@ -5192,6 +5006,17 @@ function showDashboardContent() {
         statsGrid.style.display = 'grid';
         statsGrid.style.visibility = 'visible';
     }
+    
+    // Log element existence
+    console.log('📊 Dashboard elements status:', {
+        content: !!content,
+        welcomeSection: !!welcomeSection,
+        statsGrid: !!statsGrid,
+        totalEmployees: !!document.getElementById('totalEmployees'),
+        todaySchedule: !!document.getElementById('todaySchedule'),
+        pendingRequests: !!document.getElementById('pendingRequests'),
+        recentMessages: !!document.getElementById('recentMessages')
+    });
 }
 
 // Enhanced Loading Screen Management with CSS Animations
@@ -5258,6 +5083,7 @@ function showDashboardLoader() {
         dashboardLoader.classList.remove('hidden');
         dashboardLoader.style.display = 'flex';
         
+        console.log('✅ Dashboard loader shown');
     }
 }
 
@@ -5277,12 +5103,14 @@ async function hideDashboardLoader() {
             dashboardLoader.classList.remove('fade-out');
         }, 400);
         
+        console.log('✅ Dashboard loader hidden (optimized for LCP)');
     }
     
     if (dashboardContent) {
         dashboardContent.classList.remove('dashboard-hidden');
         dashboardContent.classList.add('loaded');
         
+        console.log('✅ Dashboard content shown');
         
         // Animate dashboard content after loading screen is hidden
         setTimeout(() => {
@@ -5293,6 +5121,7 @@ async function hideDashboardLoader() {
 
 // Enhanced Dashboard Content Animation with CSS
 function animateDashboardContent() {
+    console.log('✨ Animating dashboard content with CSS...');
     
     // Animate main content container
     const main = document.querySelector('.main');
@@ -5324,6 +5153,7 @@ function animateDashboardContent() {
         }, index * 200 + 600);
     });
     
+    console.log('✅ Dashboard animations applied');
 }
 
 // Time Display Management
@@ -5366,6 +5196,7 @@ function saveOriginalDashboardContent() {
     const content = document.getElementById('content');
     if (content && !originalDashboardContent) {
         originalDashboardContent = content.innerHTML;
+        console.log('💾 Original dashboard content saved');
     }
 }
 
@@ -5373,6 +5204,7 @@ function restoreOriginalDashboardContent() {
     const content = document.getElementById('content');
     if (content && originalDashboardContent) {
         content.innerHTML = originalDashboardContent;
+        console.log('🔄 Dashboard content restored to original state');
         
         // Re-initialize any necessary event handlers for the restored content
         MenuManager.setupMenuInteractions();
@@ -5401,6 +5233,12 @@ async function initializeEnhancedDashboard() {
         }
 
         const userPosition = freshUserData.position;
+        console.log('📊 Cached user data:', { 
+            employeeId: freshUserData.employeeId, 
+            fullName: freshUserData.fullName, 
+            position: userPosition,
+            storeName: freshUserData.storeName
+        });
         
         // Update user info display in header
         const userInfoElement = document.getElementById("userInfo");
@@ -5409,6 +5247,7 @@ async function initializeEnhancedDashboard() {
         }
         
         // Initialize all dashboard components
+        console.log('📊 Initializing dashboard stats and role checking...');
         await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
         
         // Initialize role-based UI and menu visibility with cached data
@@ -5417,14 +5256,17 @@ async function initializeEnhancedDashboard() {
         
         // Comprehensive AD functions verification
         if (userPosition === 'AD') {
+            console.log('🔍 Verifying AD role functions visibility...');
             
             // Force show all AD elements immediately
             const adElements = document.querySelectorAll('[data-role*="AD"]');
+            console.log(`Found ${adElements.length} AD elements to show`);
             
             adElements.forEach((element, index) => {
                 element.style.display = 'block';
                 element.classList.add('role-visible');
                 element.classList.remove('role-hidden');
+                console.log(`AD Element ${index + 1}: ${element.tagName}.${element.className} - Made visible`);
             });
             
             // Special handling for quick action buttons
@@ -5432,6 +5274,7 @@ async function initializeEnhancedDashboard() {
             quickActionBtns.forEach((btn, index) => {
                 btn.style.display = 'flex';
                 btn.classList.add('role-visible');
+                console.log(`AD Quick Action ${index + 1}: ${btn.dataset.action} - Made visible`);
             });
             
             // Verification check after a short delay
@@ -5439,6 +5282,11 @@ async function initializeEnhancedDashboard() {
                 const visibleADElements = Array.from(adElements).filter(el => 
                     el.style.display !== 'none' && !el.classList.contains('role-hidden')
                 );
+                console.log('AD elements visibility check:', {
+                    total: adElements.length,
+                    visible: visibleADElements.length,
+                    success: visibleADElements.length === adElements.length
+                });
                 
                 if (visibleADElements.length < adElements.length) {
                     console.warn('⚠️ Some AD elements still not visible. Re-applying...');
@@ -5477,6 +5325,7 @@ async function refreshSystemData() {
         await refreshUserRoleAndPermissions();
         
     } catch (error) {
+        console.log('⚠️ System refresh failed:', error.message);
     }
 }
 
@@ -5531,6 +5380,7 @@ function getFieldDisplayName(field) {
 
 // Function to show welcome section when clicking HR Management System title
 async function showWelcomeSection() {
+    console.log('📍 Showing welcome section - Building role-based content');
     
     const content = document.getElementById('content');
     if (!content) {
@@ -5562,6 +5412,7 @@ async function showWelcomeSection() {
             const freshUserData = await API_CACHE.getUserData();
             if (freshUserData && freshUserData.position) {
                 userRole = freshUserData.position;
+                console.log('🔐 Using cached role for welcome section:', userRole);
             } else {
                 console.warn('⚠️ No cached user data found, using default role NV');
             }
@@ -5569,6 +5420,7 @@ async function showWelcomeSection() {
             console.warn('⚠️ Using default role due to cache error:', error);
         }
         
+        console.log('🏗️ Building content for role:', userRole);
         
         // Build role-specific content
         const roleBasedContent = buildRoleBasedDashboard(userRole);
@@ -5595,6 +5447,7 @@ async function showWelcomeSection() {
 
 // Helper function to build role-based dashboard content
 function buildRoleBasedDashboard(userRole) {
+    console.log('🏗️ Building dashboard sections for role:', userRole);
     
     let content = '';
     
