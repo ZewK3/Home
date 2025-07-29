@@ -1562,6 +1562,143 @@ async function handleGetPersonalStats(url, db, origin) {
   }
 }
 
+// Enhanced Request System Handlers
+async function handleCreateAttendanceRequest(body, db, origin) {
+  try {
+    const { 
+      employeeId, 
+      fullName, 
+      position, 
+      attendanceType, 
+      requestDate, 
+      requestTime, 
+      reason, 
+      status = 'pending', 
+      submittedAt 
+    } = body;
+
+    if (!employeeId || !attendanceType || !requestDate || !reason) {
+      return jsonResponse({ message: "Thiếu thông tin bắt buộc!" }, 400, origin);
+    }
+
+    // Create attendance_requests table if not exists
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS attendance_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        employee_id TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        position TEXT NOT NULL,
+        attendance_type TEXT NOT NULL,
+        request_date TEXT NOT NULL,
+        request_time TEXT,
+        reason TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        submitted_at TEXT NOT NULL,
+        processed_at TEXT,
+        processed_by TEXT,
+        notes TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert the attendance request
+    const result = await db.prepare(`
+      INSERT INTO attendance_requests 
+      (employee_id, full_name, position, attendance_type, request_date, request_time, reason, status, submitted_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      employeeId, 
+      fullName, 
+      position, 
+      attendanceType, 
+      requestDate, 
+      requestTime, 
+      reason, 
+      status, 
+      submittedAt
+    ).run();
+
+    return jsonResponse({ 
+      message: "Đơn từ chấm công đã được gửi thành công!", 
+      requestId: result.lastRowId 
+    }, 201, origin);
+
+  } catch (error) {
+    console.error("Lỗi tạo đơn từ chấm công:", error);
+    return jsonResponse({ message: "Lỗi tạo đơn từ chấm công!", error: error.message }, 500, origin);
+  }
+}
+
+async function handleCreateTaskAssignment(body, db, origin) {
+  try {
+    const { 
+      createdBy, 
+      creatorName, 
+      title, 
+      description, 
+      deadline, 
+      priority, 
+      participants = [], 
+      supporters = [], 
+      assigners = [], 
+      status = 'active', 
+      createdAt 
+    } = body;
+
+    if (!createdBy || !title || !description || !deadline) {
+      return jsonResponse({ message: "Thiếu thông tin bắt buộc!" }, 400, origin);
+    }
+
+    // Create task_assignments table if not exists
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS task_assignments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        created_by TEXT NOT NULL,
+        creator_name TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        deadline TEXT NOT NULL,
+        priority TEXT NOT NULL,
+        participants TEXT, -- JSON array
+        supporters TEXT, -- JSON array
+        assigners TEXT, -- JSON array
+        status TEXT DEFAULT 'active',
+        created_at TEXT NOT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        completed_at TEXT
+      )
+    `);
+
+    // Insert the task assignment
+    const result = await db.prepare(`
+      INSERT INTO task_assignments 
+      (created_by, creator_name, title, description, deadline, priority, participants, supporters, assigners, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      createdBy, 
+      creatorName, 
+      title, 
+      description, 
+      deadline, 
+      priority, 
+      JSON.stringify(participants), 
+      JSON.stringify(supporters), 
+      JSON.stringify(assigners), 
+      status, 
+      createdAt
+    ).run();
+
+    return jsonResponse({ 
+      message: "Nhiệm vụ đã được tạo thành công!", 
+      taskId: result.lastRowId 
+    }, 201, origin);
+
+  } catch (error) {
+    console.error("Lỗi tạo nhiệm vụ:", error);
+    return jsonResponse({ message: "Lỗi tạo nhiệm vụ!", error: error.message }, 500, origin);
+  }
+}
+
 export default {
   async scheduled(event, env, ctx) {
     try {
@@ -1601,7 +1738,7 @@ export default {
         "updateUser", "getPendingRegistrations",
         "getPendingRequests", "getTasks", "getRewards", "getPermissions",
         "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
-        "getAttendanceData", "checkIn", "checkOut"
+        "getAttendanceData", "checkIn", "checkOut", "createAttendanceRequest", "createTaskAssignment"
       ];
       if (protectedActions.includes(action)) {
         const session = await checkSessionMiddleware(token, db, ALLOWED_ORIGIN);
@@ -1647,6 +1784,10 @@ export default {
             return await handleUpdateUserWithHistory(body, db, ALLOWED_ORIGIN);
           case "approveRegistration":
             return await handleApproveRegistration(body, db, ALLOWED_ORIGIN);
+          case "createAttendanceRequest":
+            return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
+          case "createTaskAssignment":
+            return await handleCreateTaskAssignment(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
