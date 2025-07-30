@@ -4154,9 +4154,29 @@ class ContentManager {
         this.stores = [];
         
         try {
-            // Load stores data
-            const storesResponse = await utils.fetchAPI('?action=getStores');
-            this.stores = storesResponse || [];
+            // Use cached stores data instead of making new API call
+            const storesResponse = await API_CACHE.getStoresData();
+            
+            // Handle different response formats
+            if (Array.isArray(storesResponse)) {
+                this.stores = storesResponse;
+            } else if (storesResponse && typeof storesResponse === 'object') {
+                // Extract stores from object keys
+                const keys = Object.keys(storesResponse).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    this.stores = keys.map(key => storesResponse[key]).filter(item => item && typeof item === 'object');
+                } else if (storesResponse.stores) {
+                    this.stores = Array.isArray(storesResponse.stores) ? storesResponse.stores : [];
+                } else if (storesResponse.results) {
+                    this.stores = Array.isArray(storesResponse.results) ? storesResponse.results : [];
+                } else {
+                    this.stores = [];
+                }
+            } else {
+                this.stores = [];
+            }
+            
+            console.log('GPS Attendance - Loaded stores:', this.stores.length, this.stores);
             
             // Load today's attendance history
             await this.loadAttendanceHistoryToday(employeeId);
@@ -4456,6 +4476,47 @@ class ContentManager {
         this.setupRequestFormSubmission(type);
     }
 
+    getForgotCheckinForm() {
+        return `
+            <form id="forgotCheckinForm" class="request-specific-form">
+                <h3>Đơn Quên Chấm Công</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="forgotDate">Ngày:</label>
+                        <input type="date" id="forgotDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="forgotType">Loại:</label>
+                        <select id="forgotType" class="form-control" required>
+                            <option value="">Chọn loại</option>
+                            <option value="check-in">Quên chấm vào</option>
+                            <option value="check-out">Quên chấm ra</option>
+                            <option value="both">Quên cả hai</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="forgotCheckinTime">Giờ vào:</label>
+                        <input type="time" id="forgotCheckinTime" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="forgotCheckoutTime">Giờ ra:</label>
+                        <input type="time" id="forgotCheckoutTime" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="forgotReason">Lý do:</label>
+                    <textarea id="forgotReason" class="form-control" rows="3" placeholder="Nhập lý do quên chấm công..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round">send</span>
+                    Gửi đơn
+                </button>
+            </form>
+        `;
+    }
+
     getShiftChangeForm() {
         return `
             <form id="shiftChangeForm" class="request-specific-form">
@@ -4721,6 +4782,195 @@ class ContentManager {
                 </div>
             `;
         }
+    }
+
+    async setupTaskAssignmentForm() {
+        try {
+            // Load all users for task assignment
+            const usersResponse = await API_CACHE.getUserData();
+            const allUsersResponse = await utils.fetchAPI('?action=getUsers');
+            
+            let allUsers = [];
+            if (Array.isArray(allUsersResponse)) {
+                allUsers = allUsersResponse;
+            } else if (allUsersResponse && typeof allUsersResponse === 'object') {
+                const keys = Object.keys(allUsersResponse).filter(key => !isNaN(key) && key !== 'timestamp' && key !== 'status');
+                if (keys.length > 0) {
+                    allUsers = keys.map(key => allUsersResponse[key]).filter(item => item && typeof item === 'object');
+                }
+            }
+
+            // Initialize user selection panels
+            this.initializeUserSelectionPanel('participantsList', 'selectedParticipants', 'participantSearch', allUsers, 'participants');
+            this.initializeUserSelectionPanel('supportersList', 'selectedSupporters', 'supporterSearch', allUsers, 'supporters');
+
+            // Set up form submission
+            const taskForm = document.getElementById('taskAssignmentForm');
+            if (taskForm) {
+                taskForm.addEventListener('submit', (e) => this.handleTaskAssignmentSubmission(e));
+            }
+
+            // Set up reset button
+            const resetBtn = document.getElementById('resetTaskForm');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => this.resetTaskAssignmentForm());
+            }
+
+        } catch (error) {
+            console.error('Error setting up task assignment form:', error);
+            utils.showNotification('Lỗi khởi tạo form nhiệm vụ', 'error');
+        }
+    }
+
+    initializeUserSelectionPanel(listId, selectedId, searchId, users, type) {
+        const listContainer = document.getElementById(listId);
+        const selectedContainer = document.getElementById(selectedId);
+        const searchInput = document.getElementById(searchId);
+
+        if (!listContainer || !selectedContainer || !searchInput) return;
+
+        let selectedUsers = [];
+
+        // Render user list
+        const renderUserList = (filteredUsers = users) => {
+            listContainer.innerHTML = '';
+            filteredUsers.forEach(user => {
+                if (!selectedUsers.find(u => u.employeeId === user.employeeId)) {
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    userCard.innerHTML = `
+                        <div class="user-info">
+                            <div class="user-name">${user.fullName}</div>
+                            <div class="user-details">${user.employeeId} • ${user.position}</div>
+                        </div>
+                        <button class="add-user-btn" data-user-id="${user.employeeId}">
+                            <span class="material-icons-round">add</span>
+                        </button>
+                    `;
+                    
+                    userCard.querySelector('.add-user-btn').addEventListener('click', () => {
+                        selectedUsers.push(user);
+                        renderUserList();
+                        renderSelectedUsers();
+                    });
+                    
+                    listContainer.appendChild(userCard);
+                }
+            });
+        };
+
+        // Render selected users
+        const renderSelectedUsers = () => {
+            selectedContainer.innerHTML = '';
+            selectedUsers.forEach(user => {
+                const selectedCard = document.createElement('div');
+                selectedCard.className = 'selected-user-card';
+                selectedCard.innerHTML = `
+                    <span class="user-name">${user.fullName}</span>
+                    <button class="remove-user-btn" data-user-id="${user.employeeId}">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                `;
+                
+                selectedCard.querySelector('.remove-user-btn').addEventListener('click', () => {
+                    selectedUsers = selectedUsers.filter(u => u.employeeId !== user.employeeId);
+                    renderUserList();
+                    renderSelectedUsers();
+                });
+                
+                selectedContainer.appendChild(selectedCard);
+            });
+
+            // Store selected users in a data attribute for form submission
+            selectedContainer.dataset.selectedUsers = JSON.stringify(selectedUsers.map(u => u.employeeId));
+        };
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = users.filter(user => 
+                user.fullName.toLowerCase().includes(searchTerm) ||
+                user.employeeId.toLowerCase().includes(searchTerm) ||
+                user.position.toLowerCase().includes(searchTerm)
+            );
+            renderUserList(filtered);
+        });
+
+        // Initial render
+        renderUserList();
+    }
+
+    async handleTaskAssignmentSubmission(e) {
+        e.preventDefault();
+        
+        try {
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            // Get selected users
+            const participantsContainer = document.getElementById('selectedParticipants');
+            const supportersContainer = document.getElementById('selectedSupporters');
+            
+            const participants = JSON.parse(participantsContainer.dataset.selectedUsers || '[]');
+            const supporters = JSON.parse(supportersContainer.dataset.selectedUsers || '[]');
+            
+            // Get current user as assigner
+            const userResponse = await API_CACHE.getUserData();
+            
+            const taskData = {
+                title: formData.get('taskTitle'),
+                description: formData.get('taskDescription'),
+                priority: formData.get('taskPriority'),
+                dueDate: formData.get('taskDueDate'),
+                participants: participants,
+                supporters: supporters,
+                assignerId: userResponse.employeeId,
+                visibility: formData.get('taskVisibility') || 'involved-only'
+            };
+
+            // Validate required fields
+            if (!taskData.title || !taskData.description || participants.length === 0) {
+                utils.showNotification('Vui lòng điền đầy đủ thông tin và chọn ít nhất một người thực hiện', 'error');
+                return;
+            }
+
+            // Submit task assignment
+            const response = await utils.fetchAPI('?action=createTaskAssignment', {
+                method: 'POST',
+                body: JSON.stringify(taskData)
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Tạo nhiệm vụ thành công!', 'success');
+                this.resetTaskAssignmentForm();
+            } else {
+                throw new Error(response.message || 'Tạo nhiệm vụ thất bại');
+            }
+
+        } catch (error) {
+            console.error('Error submitting task assignment:', error);
+            utils.showNotification('Lỗi tạo nhiệm vụ: ' + error.message, 'error');
+        }
+    }
+
+    resetTaskAssignmentForm() {
+        const form = document.getElementById('taskAssignmentForm');
+        if (form) {
+            form.reset();
+        }
+        
+        // Clear selected users
+        const selectedContainers = ['selectedParticipants', 'selectedSupporters'];
+        selectedContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '';
+                container.dataset.selectedUsers = '[]';
+            }
+        });
+        
+        // Re-render user lists
+        this.setupTaskAssignmentForm();
     }
 }
 
