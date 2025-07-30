@@ -317,8 +317,7 @@ async function updateUser(body, userId, db, origin) {
 // Hàm lấy danh sách cửa hàng
 async function handleGetStores(db, origin) {
   try {
-    const stores = await db.prepare("SELECT storeId, storeName, region, address FROM stores").all();
-    console.log("Raw stores query result:", stores);
+    const stores = await db.prepare("SELECT storeId, storeName, region, address, latitude, longitude FROM stores").all();
     
     // D1 database returns {results: [...], success: true}
     const storesList = stores.results || stores;
@@ -1624,8 +1623,6 @@ export default {
             return await handleRegister(body, db, ALLOWED_ORIGIN, env);
           case "update":
             return await handleUpdate(body, db, ALLOWED_ORIGIN);
-          case "getShiftAssignments":
-            return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
           case "assignShift":
             return await handleAssignShift(body, db, ALLOWED_ORIGIN);
           case "loginUser":
@@ -1697,6 +1694,8 @@ export default {
             return await handleGetTimesheet(url, db, ALLOWED_ORIGIN);
           case "getAttendanceHistory":
             return await handleGetAttendanceHistory(url, db, ALLOWED_ORIGIN);
+          case "getShiftAssignments":
+            return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
           case "getPersonalStats":
             return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
           default:
@@ -1729,7 +1728,7 @@ async function handleGetTimesheet(url, db, origin) {
     const endDate = `${year}-${(monthNum + 1).toString().padStart(2, '0')}-01`;
 
     // Get attendance data for the month
-    const attendanceData = await db
+    const attendanceQuery = await db
       .prepare(`
         SELECT 
           DATE(checkIn) as date,
@@ -1746,6 +1745,9 @@ async function handleGetTimesheet(url, db, origin) {
       `)
       .bind(employeeId, startDate, endDate)
       .all();
+
+    // Handle D1 database response format
+    const attendanceData = attendanceQuery.results || [];
 
     // Calculate statistics
     const totalDays = attendanceData.length;
@@ -1787,6 +1789,23 @@ async function handleGetTimesheet(url, db, origin) {
   }
 }
 
+// Calculate distance between two GPS coordinates using Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth's radius in meters
+  const φ1 = lat1 * Math.PI/180; // φ, λ in radians
+  const φ2 = lat2 * Math.PI/180;
+  const Δφ = (lat2-lat1) * Math.PI/180;
+  const Δλ = (lon2-lon1) * Math.PI/180;
+
+  const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+          Math.cos(φ1) * Math.cos(φ2) *
+          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+  const distance = R * c; // in meters
+  return distance;
+}
+
 // Handle GPS attendance processing
 async function handleProcessAttendance(body, db, origin) {
   try {
@@ -1799,7 +1818,7 @@ async function handleProcessAttendance(body, db, origin) {
       }, 400, origin);
     }
 
-    // Check if user exists
+    // Check if user exists and get their store
     const employee = await db
       .prepare("SELECT * FROM employees WHERE employeeId = ?")
       .bind(employeeId)
@@ -1812,9 +1831,45 @@ async function handleProcessAttendance(body, db, origin) {
       }, 404, origin);
     }
 
+    // Get store location for GPS verification
+    const storeQuery = await db
+      .prepare("SELECT latitude, longitude, storeName FROM stores WHERE storeName = ?")
+      .bind(employee.storeName)
+      .first();
+
+    if (!storeQuery || !storeQuery.latitude || !storeQuery.longitude) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Không tìm thấy thông tin vị trí cửa hàng!" 
+      }, 400, origin);
+    }
+
+    // Get attendance radius setting (default 50m)
+    const radiusSetting = await db
+      .prepare("SELECT settingValue FROM hr_settings WHERE settingKey = 'attendance_radius_meters' AND isActive = 1")
+      .first();
+    
+    const allowedRadius = radiusSetting ? parseInt(radiusSetting.settingValue) : 50;
+
+    // Calculate distance between user location and store
+    const distance = calculateDistance(
+      location.latitude, location.longitude,
+      storeQuery.latitude, storeQuery.longitude
+    );
+
+    // Check if user is within allowed radius
+    if (distance > allowedRadius) {
+      return jsonResponse({ 
+        success: false, 
+        message: `Bạn cần ở gần cửa hàng trong bán kính ${allowedRadius}m để chấm công. Khoảng cách hiện tại: ${Math.round(distance)}m`,
+        distance: Math.round(distance),
+        allowedRadius: allowedRadius
+      }, 400, origin);
+    }
+
     // Get today's attendance records
     const today = new Date(timestamp).toISOString().split('T')[0];
-    const existingRecords = await db
+    const existingRecordsQuery = await db
       .prepare(`
         SELECT * FROM attendance 
         WHERE employeeId = ? AND DATE(checkIn) = ?
@@ -1822,6 +1877,8 @@ async function handleProcessAttendance(body, db, origin) {
       `)
       .bind(employeeId, today)
       .all();
+      
+    const existingRecords = existingRecordsQuery.results || [];
 
     // Determine if this should be check-in or check-out
     const lastRecord = existingRecords[0];
@@ -1841,7 +1898,9 @@ async function handleProcessAttendance(body, db, origin) {
         success: true,
         message: "Chấm công vào ca thành công!",
         type: "check-in",
-        timestamp: timestamp
+        timestamp: timestamp,
+        distance: Math.round(distance),
+        store: employee.storeName
       }, 200, origin);
 
     } else {
@@ -1859,8 +1918,11 @@ async function handleProcessAttendance(body, db, origin) {
         success: true,
         message: "Chấm công tan ca thành công!",
         type: "check-out",
-        timestamp: timestamp
+        timestamp: timestamp,
+        distance: Math.round(distance),
+        store: employee.storeName
       }, 200, origin);
+    }
     }
 
   } catch (error) {
@@ -1883,7 +1945,7 @@ async function handleGetAttendanceHistory(url, db, origin) {
       return jsonResponse({ message: "employeeId và date là bắt buộc!" }, 400, origin);
     }
 
-    const records = await db
+    const recordsQuery = await db
       .prepare(`
         SELECT 
           'check_in' as type,
@@ -1902,6 +1964,9 @@ async function handleGetAttendanceHistory(url, db, origin) {
       `)
       .bind(employeeId, date, employeeId, date)
       .all();
+
+    // Handle D1 database response format
+    const records = recordsQuery.results || [];
 
     return jsonResponse(records, 200, origin);
 

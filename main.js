@@ -3997,12 +3997,16 @@ class ContentManager {
         for (let day = 1; day <= daysInMonth; day++) {
             const dayData = data ? data.find(d => new Date(d.date).getDate() === day) : null;
             const isToday = new Date().getDate() === day && new Date().getMonth() + 1 === monthNum;
+            const dateStr = `${year}-${monthNum.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
             
             calendarHTML += `
-                <div class="calendar-day ${isToday ? 'today' : ''}">
+                <div class="calendar-day ${isToday ? 'today' : ''} ${dayData ? 'has-data' : ''}" 
+                     data-date="${dateStr}" 
+                     onclick="contentManager.showDayDetails('${dateStr}')"
+                     style="cursor: pointer;">
                     <div class="day-number">${day}</div>
                     ${dayData ? `
-                        <div class="day-hours">${dayData.hoursWorked || 0}</div>
+                        <div class="day-hours">${dayData.hoursWorked || 0}h</div>
                         <div class="day-times">
                             ${dayData.checkIn ? `<div class="check-in">${dayData.checkIn}</div>` : ''}
                             ${dayData.checkOut ? `<div class="check-out">${dayData.checkOut}</div>` : ''}
@@ -4072,6 +4076,76 @@ class ContentManager {
             const userResponse = await API_CACHE.getUserData();
             await this.loadTimesheetData(userResponse.employeeId);
         });
+    }
+
+    // Show detailed view for selected day
+    async showDayDetails(date) {
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            const employeeId = userResponse.employeeId;
+            
+            // Get attendance history for the selected date
+            const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${date}`);
+            
+            const formattedDate = new Date(date).toLocaleDateString('vi-VN', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let historyHTML = '';
+            if (response && response.length > 0) {
+                historyHTML = response.map(record => {
+                    const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    const type = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
+                    const icon = record.type === 'check_in' ? '🟢' : '🔴';
+                    
+                    return `
+                        <div class="attendance-record">
+                            <span class="record-icon">${icon}</span>
+                            <span class="record-type">${type}</span>
+                            <span class="record-time">${time}</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                historyHTML = '<div class="no-data">Không có dữ liệu chấm công cho ngày này</div>';
+            }
+            
+            // Show modal with day details
+            const modalHTML = `
+                <div class="day-details-modal" id="dayDetailsModal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Chi tiết ngày ${formattedDate}</h3>
+                            <button class="close-btn" onclick="document.getElementById('dayDetailsModal').remove()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="attendance-section">
+                                <h4>📅 Lịch sử chấm công</h4>
+                                <div class="attendance-history">
+                                    ${historyHTML}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            document.getElementById('dayDetailsModal')?.remove();
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+        } catch (error) {
+            console.error('Error showing day details:', error);
+            this.showNotification('Lỗi khi tải chi tiết ngày', 'error');
+        }
     }
 
     // GPS Attendance Functions

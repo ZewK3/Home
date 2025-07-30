@@ -98,6 +98,8 @@ CREATE TABLE stores (
     storeName TEXT NOT NULL,
     region TEXT NOT NULL, -- Area/region for AM management (1, 2, 3, 4)
     address TEXT,
+    latitude REAL, -- GPS latitude coordinate
+    longitude REAL, -- GPS longitude coordinate  
     managerEmployeeId TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -633,4 +635,33 @@ INSERT OR IGNORE INTO notifications (employeeId, title, message, type, relatedTy
 -- Notifications: 30 days (configurable)
 -- GPS logs: 90 days recommended
 -- Task history: 6 months for completed tasks
+
+-- =====================================================
+-- SAMPLE DATA FOR TESTING
+-- =====================================================
+
+-- Sample store data with GPS coordinates (Ho Chi Minh City locations)
+INSERT INTO stores (storeId, storeName, region, address, latitude, longitude, managerEmployeeId) VALUES
+('MC001', 'TOCOToco Nguyễn Huệ', '1', '123 Đường Nguyễn Huệ, Quận 1, TP.HCM', 10.773996, 106.705070, 'ADMIN'),
+('MC002', 'TOCOToco Bitexco', '1', '2 Hai Trieu, Ben Nghe Ward, District 1, Ho Chi Minh City', 10.771971, 106.704324, 'ADMIN'),
+('MC003', 'TOCOToco Landmark 81', '1', '208 Nguyen Huu Canh, Binh Thanh District, Ho Chi Minh City', 10.794593, 106.721439, 'ADMIN'),
+('MC004', 'TOCOToco Aeon Mall', '2', '30 Bờ Bao Tân Thắng, Sơn Kỳ, Tân Phú, TP.HCM', 10.819252, 106.618639, 'ADMIN'),
+('MC005', 'TOCOToco Vincom Center', '2', '70-72 Le Thanh Ton, Ben Nghe Ward, District 1, Ho Chi Minh City', 10.779738, 106.700554, 'ADMIN');
+
+-- Sample employees for testing GPS attendance
+INSERT INTO employees (employeeId, fullName, storeName, position, joinDate, phone, email, password, salt) VALUES
+('EMP001', 'Nguyễn Văn Test', 'TOCOToco Nguyễn Huệ', 'NV', '2024-01-01', '0901234567', 'test@tocotoco.com', 'hashed_password', 'salt123'),
+('EMP002', 'Trần Thị Demo', 'TOCOToco Bitexco', 'NV', '2024-01-01', '0902345678', 'demo@tocotoco.com', 'hashed_password', 'salt456');
+
+-- Sample attendance data for testing timesheet
+INSERT INTO attendance (employeeId, checkIn, checkOut, location, status) VALUES
+('ADMIN', '2025-01-29 08:00:00', '2025-01-29 17:00:00', '{"latitude": 10.773996, "longitude": 106.705070}', 'completed'),
+('ADMIN', '2025-01-28 08:15:00', '2025-01-28 17:30:00', '{"latitude": 10.773996, "longitude": 106.705070}', 'completed'),
+('ADMIN', '2025-01-27 07:45:00', '2025-01-27 16:45:00', '{"latitude": 10.773996, "longitude": 106.705070}', 'completed');
+
+-- Sample HR settings for GPS attendance radius
+INSERT INTO hr_settings (settingKey, settingValue, category, description, dataType, isActive) VALUES
+('attendance_radius_meters', '50', 'attendance', 'GPS verification radius in meters for check-in/out', 'integer', 1),
+('work_hours_per_day', '8', 'attendance', 'Standard work hours per day', 'integer', 1),
+('work_days_per_month', '26', 'attendance', 'Standard work days per month', 'integer', 1);
 -- Attendance data: Permanent retention for compliance

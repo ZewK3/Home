@@ -11387,6 +11387,166 @@ button:focus, .btn:focus, .menu-link:focus {
     border-top: 1px solid var(--border-color);
 }
 
+/* ===== DAY DETAILS MODAL ===== */
+.day-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.day-details-modal .modal-content {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.day-details-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.day-details-modal .modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+}
+
+.day-details-modal .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+    padding: 5px;
+    border-radius: 50%;
+}
+
+.day-details-modal .close-btn:hover {
+    background: var(--error);
+    color: white;
+}
+
+.day-details-modal .modal-body {
+    padding: 20px;
+}
+
+.attendance-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.attendance-history {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.attendance-record {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-glass);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.record-icon {
+    font-size: 16px;
+}
+
+.record-type {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.record-time {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    background: var(--bg-main);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ===== ENHANCED CALENDAR STYLING ===== */
+.calendar-day.has-data {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-glass) 100%);
+    border: 1px solid var(--border-color);
+}
+
+.calendar-day.has-data:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+}
+
+.calendar-day.today {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.calendar-day.today .day-number {
+    color: white;
+    font-weight: 600;
+}
+
+.day-hours {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--success);
+}
+
+.check-in, .check-out {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .timesheet-content {
@@ -11418,5 +11578,10 @@ button:focus, .btn:focus, .menu-link:focus {
         flex-direction: column;
         text-align: center;
         gap: 10px;
+    }
+    
+    .day-details-modal .modal-content {
+        width: 95%;
+        margin: 20px;
     }
 }
