@@ -1312,8 +1312,8 @@ class ContentManager {
             const response = await utils.fetchAPI('?action=getUsers');
             
             // Check if response is valid before proceeding
-            if (!response || !response.ok) {
-                throw new Error('Không thể tải danh sách người dùng');
+            if (!response) {
+                throw new Error('Không thể tải danh sách người dùng - Không có phản hồi từ server');
             }
             
             // Extract users data - handle multiple response formats
@@ -3943,33 +3943,35 @@ class ContentManager {
     async loadTimesheetData(employeeId) {
         try {
             const selectedMonth = document.getElementById('timesheetMonth')?.value || this.getCurrentMonth();
+            
+            // Always render a calendar first, then load data
+            this.renderTimesheetCalendar(null, selectedMonth);
+            
             const response = await utils.fetchAPI(`?action=getTimesheet&employeeId=${employeeId}&month=${selectedMonth}`);
             
             if (response && response.success) {
-                this.renderTimesheetCalendar(response.data);
+                this.renderTimesheetCalendar(response.data, selectedMonth);
                 this.updateTimesheetStatistics(response.statistics);
             } else {
-                throw new Error('Failed to load timesheet data');
+                // Keep the calendar but show empty data
+                this.updateTimesheetStatistics(null);
             }
         } catch (error) {
             console.error('Error loading timesheet:', error);
-            document.getElementById('timesheetCalendar').innerHTML = `
-                <div class="error-message">
-                    <span class="material-icons-round">error</span>
-                    Không thể tải dữ liệu bảng công
-                </div>
-            `;
+            // Still show the calendar structure, just with no data
+            this.renderTimesheetCalendar(null, this.getCurrentMonth());
+            this.updateTimesheetStatistics(null);
         }
     }
 
-    renderTimesheetCalendar(data) {
+    renderTimesheetCalendar(data, selectedMonth) {
         const calendar = document.getElementById('timesheetCalendar');
-        const selectedMonth = document.getElementById('timesheetMonth')?.value || this.getCurrentMonth();
-        const [year, month] = selectedMonth.split('-').map(Number);
+        const month = selectedMonth || document.getElementById('timesheetMonth')?.value || this.getCurrentMonth();
+        const [year, monthNum] = month.split('-').map(Number);
         
         // Create calendar grid
-        const firstDay = new Date(year, month - 1, 1);
-        const lastDay = new Date(year, month, 0);
+        const firstDay = new Date(year, monthNum - 1, 1);
+        const lastDay = new Date(year, monthNum, 0);
         const daysInMonth = lastDay.getDate();
         const startDay = firstDay.getDay();
         
@@ -3993,8 +3995,8 @@ class ContentManager {
         
         // Add days of the month
         for (let day = 1; day <= daysInMonth; day++) {
-            const dayData = data.find(d => new Date(d.date).getDate() === day);
-            const isToday = new Date().getDate() === day && new Date().getMonth() + 1 === month;
+            const dayData = data ? data.find(d => new Date(d.date).getDate() === day) : null;
+            const isToday = new Date().getDate() === day && new Date().getMonth() + 1 === monthNum;
             
             calendarHTML += `
                 <div class="calendar-day ${isToday ? 'today' : ''}">
@@ -4015,25 +4017,43 @@ class ContentManager {
     }
 
     updateTimesheetStatistics(stats) {
-        if (!stats) return;
+        // Always update statistics, even if null/empty
+        const defaultStats = {
+            actualDays: '0/0',
+            actualHours: '0/0',
+            workDays: '0',
+            actualWorkHours: '0',
+            standardDays: '0',
+            lateDays: '0',
+            earlyLeave: '0',
+            lateMinutes: '0',
+            earlyMinutes: '0',
+            absentDays: '0',
+            forgotCheckin: '0',
+            nightHours: '0',
+            dayHours: '0',
+            overtimeDays: '0',
+            overtimeHours: '0'
+        };
         
-        // Update all statistical elements
+        
+        const finalStats = stats || defaultStats;
         const elements = {
-            'actualDays': stats.actualDays || '0/0',
-            'actualHours': stats.actualHours || '0/0', 
-            'workDays': stats.workDays || '0',
-            'actualWorkHours': stats.actualWorkHours || '0',
-            'standardDays': stats.standardDays || '0',
-            'lateDays': stats.lateDays || '0',
-            'earlyLeave': stats.earlyLeave || '0',
-            'lateMinutes': stats.lateMinutes || '0',
-            'earlyMinutes': stats.earlyMinutes || '0',
-            'absentDays': stats.absentDays || '0',
-            'forgotCheckin': stats.forgotCheckin || '0',
-            'nightHours': stats.nightHours || '0',
-            'dayHours': stats.dayHours || '0',
-            'overtimeDays': stats.overtimeDays || '0',
-            'overtimeHours': stats.overtimeHours || '0'
+            'actualDays': finalStats.actualDays || '0/0',
+            'actualHours': finalStats.actualHours || '0/0', 
+            'workDays': finalStats.workDays || '0',
+            'actualWorkHours': finalStats.actualWorkHours || '0',
+            'standardDays': finalStats.standardDays || '0',
+            'lateDays': finalStats.lateDays || '0',
+            'earlyLeave': finalStats.earlyLeave || '0',
+            'lateMinutes': finalStats.lateMinutes || '0',
+            'earlyMinutes': finalStats.earlyMinutes || '0',
+            'absentDays': finalStats.absentDays || '0',
+            'forgotCheckin': finalStats.forgotCheckin || '0',
+            'nightHours': finalStats.nightHours || '0',
+            'dayHours': finalStats.dayHours || '0',
+            'overtimeDays': finalStats.overtimeDays || '0',
+            'overtimeHours': finalStats.overtimeHours || '0'
         };
         
         Object.entries(elements).forEach(([id, value]) => {

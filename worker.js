@@ -341,7 +341,7 @@ async function handleGetUsers(url, db, origin) {
     .prepare("SELECT employeeId, fullName, storeName, position FROM employees")
     .all();
 
-  if (!users.results || users.results.length === 0) {
+  if (!users || !users.results || users.results.length === 0) {
     return jsonResponse({ message: "Không tìm thấy người dùng!" }, 404, origin);
   }
   return jsonResponse(users.results, 200, origin);
@@ -1648,6 +1648,16 @@ export default {
             return await handleUpdateUserWithHistory(body, db, ALLOWED_ORIGIN);
           case "approveRegistration":
             return await handleApproveRegistration(body, db, ALLOWED_ORIGIN);
+          case "checkIn":
+            return await handleCheckIn(body, db, ALLOWED_ORIGIN);
+          case "checkOut":
+            return await handleCheckOut(body, db, ALLOWED_ORIGIN);
+          case "processAttendance":
+            return await handleProcessAttendance(body, db, ALLOWED_ORIGIN);
+          case "createAttendanceRequest":
+            return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
+          case "createTaskAssignment":
+            return await handleCreateTaskAssignment(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -1671,10 +1681,6 @@ export default {
             return await handleGetWeeklyShifts(url, db, ALLOWED_ORIGIN);
           case "getAttendanceData":
             return await handleGetAttendanceData(url, db, ALLOWED_ORIGIN);
-          case "checkIn":
-            return await handleCheckIn(body, db, ALLOWED_ORIGIN);
-          case "checkOut":
-            return await handleCheckOut(body, db, ALLOWED_ORIGIN);
           case "getPendingRequests":
             return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
           case "getDashboardStats":
@@ -1687,18 +1693,12 @@ export default {
             return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
           case "getPendingRegistrations":
             return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
-          case "getPersonalStats":
-            return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
           case "getTimesheet":
             return await handleGetTimesheet(url, db, ALLOWED_ORIGIN);
-          case "processAttendance":
-            return await handleProcessAttendance(body, db, ALLOWED_ORIGIN);
           case "getAttendanceHistory":
             return await handleGetAttendanceHistory(url, db, ALLOWED_ORIGIN);
-          case "createAttendanceRequest":
-            return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
-          case "createTaskAssignment":
-            return await handleCreateTaskAssignment(body, db, ALLOWED_ORIGIN);
+          case "getPersonalStats":
+            return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }

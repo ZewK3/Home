@@ -10826,9 +10826,12 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* ===== TIMESHEET STYLES ===== */
 .timesheet-container {
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
     padding: 20px;
+    box-sizing: border-box;
+    overflow-x: auto;
 }
 
 .timesheet-controls {
@@ -10844,6 +10847,14 @@ button:focus, .btn:focus, .menu-link:focus {
     grid-template-columns: 2fr 1fr;
     gap: 25px;
     margin-top: 25px;
+    min-height: 0; /* Prevent grid overflow */
+}
+
+@media (max-width: 1200px) {
+    .timesheet-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
 }
 
 .timesheet-calendar {
@@ -10851,6 +10862,8 @@ button:focus, .btn:focus, .menu-link:focus {
     border-radius: var(--border-radius);
     padding: 20px;
     box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    min-width: 0; /* Prevent overflow */
 }
 
 .calendar-header {
