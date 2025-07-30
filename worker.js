@@ -1,5 +1,27 @@
 const ALLOWED_ORIGIN = "*";
 
+// Timezone utility for +7 Hanoi timezone
+const TimezoneUtils = {
+    // Get current date/time in +7 timezone
+    now() {
+        const now = new Date();
+        // Convert to +7 timezone (Vietnam/Hanoi)
+        return new Date(now.getTime() + (7 * 60 * 60 * 1000) - (now.getTimezoneOffset() * 60 * 1000));
+    },
+    
+    // Format datetime for database (ISO string)
+    formatDateTime(date = null) {
+        const d = date || this.now();
+        return d.toISOString();
+    },
+    
+    // Format date for API (YYYY-MM-DD)
+    formatDate(date = null) {
+        const d = date || this.now();
+        return d.toISOString().split('T')[0];
+    }
+};
+
 // Get SendGrid API key from KV storage
 async function getSendGridApiKey(env) {
   try {
@@ -105,7 +127,7 @@ function jsonResponse(body, status, origin = ALLOWED_ORIGIN) {
   
   return new Response(JSON.stringify({
     ...responseBody,
-    timestamp: new Date().toISOString(),
+    timestamp: TimezoneUtils.formatDateTime(),
     status: status
   }), {
     status,
@@ -185,9 +207,9 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
 // Hàm tạo hoặc cập nhật phiên người dùng
 async function createSession(employeeId, db, allowedOrigin) {
   const token = crypto.randomUUID();
-  const expiresAt = new Date();
+  const expiresAt = TimezoneUtils.now();
   expiresAt.setHours(expiresAt.getHours() + 8); // Phiên hết hạn sau 8 giờ (tăng thời gian để tránh hết hạn sớm)
-  const now = new Date().toISOString();
+  const now = TimezoneUtils.formatDateTime();
 
   try {
     // Xóa session cũ của user này trước
@@ -196,14 +218,14 @@ async function createSession(employeeId, db, allowedOrigin) {
     // Tạo session mới
     await db
       .prepare("INSERT INTO sessions (employeeId, token, expiresAt, lastAccess) VALUES (?, ?, ?, ?)")
-      .bind(employeeId, token, expiresAt.toISOString(), now)
+      .bind(employeeId, token, TimezoneUtils.formatDateTime(expiresAt), now)
       .run();
 
     // Trả về dữ liệu session trực tiếp
     return {
       token,
       employeeId,
-      expiresAt: expiresAt.toISOString(),
+      expiresAt: TimezoneUtils.formatDateTime(expiresAt),
       lastAccess: now,
       success: true
     };
@@ -1867,8 +1889,8 @@ async function handleProcessAttendance(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get today's attendance records
-    const today = new Date(timestamp).toISOString().split('T')[0];
+    // Get today's attendance records using +7 timezone
+    const today = TimezoneUtils.formatDate(new Date(timestamp));
     const existingRecordsQuery = await db
       .prepare(`
         SELECT * FROM attendance 
