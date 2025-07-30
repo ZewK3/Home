@@ -34,7 +34,11 @@
         <!-- Login Form -->
         <div id="loginFormContainer" class="form-container active">
             <div class="form-header">
-                <h2>Đăng nhập</h2>
+                <div class="logo-container">
+                    <span class="material-icons-round logo-icon">business</span>
+                    <h2>Đăng nhập</h2>
+                </div>
+                <p class="form-subtitle">Chào mừng bạn quay trở lại!</p>
             </div>
 
             <form id="loginForm" class="form">
@@ -43,6 +47,7 @@
                         <span class="material-icons-round input-icon">badge</span>
                         <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
                         <label for="loginEmployeeId">Mã nhân viên</label>
+                        <div class="input-border"></div>
                     </div>
                 </div>
 
@@ -54,25 +59,33 @@
                         <button type="button" class="password-toggle">
                             <span class="material-icons-round">visibility</span>
                         </button>
+                        <div class="input-border"></div>
                     </div>
                 </div>
 
                 <div class="form-options">
                     <label class="checkbox-container">
                         <input type="checkbox" id="rememberMe" name="rememberMe">
-                        <span class="checkmark"></span>
-                        <span>Ghi nhớ tôi</span>
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Ghi nhớ đăng nhập</span>
                     </label>
+                    <a href="#" class="forgot-password">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">login</span>
                     <span class="btn-text">Đăng nhập</span>
                     <span class="btn-loader"></span>
                 </button>
 
+                <div class="form-divider">
+                    <span>hoặc</span>
+                </div>
+
                 <div class="form-footer">
-                    <a href="#" id="goToRegister" class="form-link">Chưa có tài khoản?</a>
-                    <a href="#" class="form-link">Quên mật khẩu?</a>
+                    <p>Chưa có tài khoản? <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a></p>
                 </div>
             </form>
         </div>
@@ -80,7 +93,11 @@
         <!-- Register Form -->
         <div id="registerFormContainer" class="form-container">
             <div class="form-header">
-                <h2>Đăng ký</h2>
+                <div class="logo-container">
+                    <span class="material-icons-round logo-icon">person_add</span>
+                    <h2>Đăng ký</h2>
+                </div>
+                <p class="form-subtitle">Tạo tài khoản mới cho hệ thống</p>
             </div>
 
             <form id="registerForm" class="form">
@@ -89,6 +106,36 @@
                         <span class="material-icons-round input-icon">badge</span>
                         <input type="text" id="employeeId" name="employeeId" placeholder=" " required autocomplete="username">
                         <label for="employeeId">Mã nhân viên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
+                        <label for="fullName">Họ và tên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">phone</span>
+                        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder=" " required autocomplete="tel">
+                        <label for="phoneNumber">Số điện thoại</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">store</span>
+                        <select id="storeName" name="storeName" required>
+                            <option value="">Chọn cửa hàng</option>
+                        </select>
+                        <label for="storeName">Cửa hàng</label>
+                        <div class="input-border"></div>
                     </div>
                 </div>
 
@@ -100,6 +147,7 @@
                         <button type="button" class="password-toggle">
                             <span class="material-icons-round">visibility</span>
                         </button>
+                        <div class="input-border"></div>
                     </div>
                 </div>
 
@@ -111,54 +159,32 @@
                         <button type="button" class="password-toggle">
                             <span class="material-icons-round">visibility</span>
                         </button>
+                        <div class="input-border"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">person</span>
-                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
-                        <label for="fullName">Họ và tên</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">phone</span>
-                        <input type="tel" id="phoneNumber" name="phoneNumber" placeholder=" " required autocomplete="tel">
-                        <label for="phoneNumber">Số điện thoại</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">store</span>
-                        <select id="storeName" name="storeName" required>
-                            <option value="">Chọn cửa hàng</option>
-                        </select>
-                        <label for="storeName">Cửa hàng</label>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">work</span>
-                        <select id="position" name="position" required>
-                            <option value="">Chọn vị trí</option>
-                            <option value="NV">Nhân viên</option>
-                            <option value="QL">Quản lý</option>
-                        </select>
-                        <label for="position">Vị trí</label>
-                    </div>
+                    <label class="terms-container">
+                        <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Tôi đồng ý với <a href="#" class="terms-link">điều khoản sử dụng</a></span>
+                    </label>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
-                    <span class="btn-text">Đăng ký</span>
+                    <span class="material-icons-round btn-icon">person_add</span>
+                    <span class="btn-text">Tạo tài khoản</span>
                     <span class="btn-loader"></span>
                 </button>
 
+                <div class="form-divider">
+                    <span>hoặc</span>
+                </div>
+
                 <div class="form-footer">
-                    <a href="#" id="goToLogin" class="form-link">Đã có tài khoản?</a>
+                    <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
                 </div>
             </form>
         </div>

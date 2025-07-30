@@ -1,26 +1,64 @@
 const ALLOWED_ORIGIN = "*";
 
-// Timezone utility for +7 Hanoi timezone
-const TimezoneUtils = {
-    // Get current date/time in +7 timezone
-    now() {
-        const now = new Date();
-        // Convert to +7 timezone (Vietnam/Hanoi)
-        return new Date(now.getTime() + (7 * 60 * 60 * 1000) - (now.getTimezoneOffset() * 60 * 1000));
-    },
-    
-    // Format datetime for database (ISO string)
-    formatDateTime(date = null) {
-        const d = date || this.now();
-        return d.toISOString();
-    },
-    
-    // Format date for API (YYYY-MM-DD)
-    formatDate(date = null) {
-        const d = date || this.now();
-        return d.toISOString().split('T')[0];
+// Timezone Utility Class for +7 Hanoi Timezone
+class TimezoneUtils {
+  static HANOI_TIMEZONE = 'Asia/Ho_Chi_Minh';
+  static TIMEZONE_OFFSET = 7; // UTC +7
+
+  // Get current time in Hanoi timezone
+  static now() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    return new Date(utc + (7 * 3600000)); // UTC + 7 hours
+  }
+
+  // Format date to Hanoi timezone string
+  static formatDateTime(date, options = {}) {
+    if (typeof date === 'string') {
+      date = new Date(date);
     }
-};
+    
+    // Convert to Hanoi timezone
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    const hanoiDate = new Date(utc + (7 * 3600000));
+    
+    const year = hanoiDate.getFullYear();
+    const month = String(hanoiDate.getMonth() + 1).padStart(2, '0');
+    const day = String(hanoiDate.getDate()).padStart(2, '0');
+    const hour = String(hanoiDate.getHours()).padStart(2, '0');
+    const minute = String(hanoiDate.getMinutes()).padStart(2, '0');
+    const second = String(hanoiDate.getSeconds()).padStart(2, '0');
+    
+    if (options.dateOnly) {
+      return `${day}/${month}/${year}`;
+    }
+    if (options.timeOnly) {
+      return `${hour}:${minute}:${second}`;
+    }
+    
+    return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
+  }
+
+  // Get date in ISO format but adjusted for Hanoi timezone
+  static toHanoiISOString(date = null) {
+    const targetDate = date || this.now();
+    return targetDate.toISOString();
+  }
+
+  // Convert any date to Hanoi timezone
+  static toHanoiTime(date) {
+    if (typeof date === 'string') {
+      date = new Date(date);
+    }
+    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+    return new Date(utc + (7 * 3600000));
+  }
+
+  // Get timestamp in Hanoi timezone
+  static getHanoiTimestamp() {
+    return this.now().getTime();
+  }
+}
 
 // Get SendGrid API key from KV storage
 async function getSendGridApiKey(env) {
@@ -85,7 +123,7 @@ async function sendVerificationEmail(email, employeeId, fullName, env) {
                 <strong>Thông tin đăng ký:</strong><br>
                 Mã nhân viên: ${employeeId}<br>
                 Email: ${email}<br>
-                Thời gian đăng ký: ${new Date().toLocaleString('vi-VN')}
+                Thời gian đăng ký: ${TimezoneUtils.formatDateTime(TimezoneUtils.now())}
               </p>
             </div>
           </div>
@@ -127,7 +165,7 @@ function jsonResponse(body, status, origin = ALLOWED_ORIGIN) {
   
   return new Response(JSON.stringify({
     ...responseBody,
-    timestamp: TimezoneUtils.formatDateTime(),
+    timestamp: TimezoneUtils.toHanoiISOString(),
     status: status
   }), {
     status,
@@ -180,8 +218,8 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
       return jsonResponse("Phiên làm việc không hợp lệ - vui lòng đăng nhập lại", 401, allowedOrigin);
     }
 
-    const now = new Date();
-    const expiresAt = new Date(session.expiresAt);
+    const now = TimezoneUtils.now();
+    const expiresAt = TimezoneUtils.toHanoiTime(new Date(session.expiresAt));
     
     // Thêm buffer time 5 phút để tránh lỗi timezone
     const bufferTime = 5 * 60 * 1000; // 5 phút tính bằng milliseconds
@@ -194,7 +232,7 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
     // Cập nhật thời gian truy cập cuối để theo dõi session
     await db
       .prepare("UPDATE sessions SET lastAccess = ? WHERE token = ?")
-      .bind(now.toISOString(), token)
+      .bind(TimezoneUtils.toHanoiISOString(now), token)
       .run();
 
     return { employeeId: session.employeeId, valid: true };
@@ -209,7 +247,7 @@ async function createSession(employeeId, db, allowedOrigin) {
   const token = crypto.randomUUID();
   const expiresAt = TimezoneUtils.now();
   expiresAt.setHours(expiresAt.getHours() + 8); // Phiên hết hạn sau 8 giờ (tăng thời gian để tránh hết hạn sớm)
-  const now = TimezoneUtils.formatDateTime();
+  const now = TimezoneUtils.toHanoiISOString();
 
   try {
     // Xóa session cũ của user này trước
@@ -218,14 +256,14 @@ async function createSession(employeeId, db, allowedOrigin) {
     // Tạo session mới
     await db
       .prepare("INSERT INTO sessions (employeeId, token, expiresAt, lastAccess) VALUES (?, ?, ?, ?)")
-      .bind(employeeId, token, TimezoneUtils.formatDateTime(expiresAt), now)
+      .bind(employeeId, token, TimezoneUtils.toHanoiISOString(expiresAt), now)
       .run();
 
     // Trả về dữ liệu session trực tiếp
     return {
       token,
       employeeId,
-      expiresAt: TimezoneUtils.formatDateTime(expiresAt),
+      expiresAt: TimezoneUtils.toHanoiISOString(expiresAt),
       lastAccess: now,
       success: true
     };
@@ -783,7 +821,7 @@ async function handleUpdateUserWithHistory(body, db, origin) {
     }
 
     // Log changes to history
-    const timestamp = new Date().toISOString();
+    const timestamp = TimezoneUtils.toHanoiISOString();
     
     if (changes && Array.isArray(changes)) {
       for (const change of changes) {
@@ -872,7 +910,7 @@ async function handleApproveRegistrationWithHistory(body, db, origin) {
     // Add your approval logic here...
 
     // Log approval action to history
-    const timestamp = new Date().toISOString();
+    const timestamp = TimezoneUtils.toHanoiISOString();
     
     await db
       .prepare(
@@ -1889,8 +1927,9 @@ async function handleProcessAttendance(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get today's attendance records using +7 timezone
-    const today = TimezoneUtils.formatDate(new Date(timestamp));
+    // Get today's attendance records using Hanoi timezone
+    const hanoiDate = TimezoneUtils.toHanoiTime(new Date(timestamp));
+    const today = TimezoneUtils.formatDate(hanoiDate).split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
     const existingRecordsQuery = await db
       .prepare(`
         SELECT * FROM attendance 
@@ -1907,40 +1946,42 @@ async function handleProcessAttendance(body, db, origin) {
     const isCheckIn = !lastRecord || lastRecord.checkOut;
 
     if (isCheckIn) {
-      // Process check-in
+      // Process check-in using Hanoi timezone
+      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(new Date(timestamp));
       await db
         .prepare(`
           INSERT INTO attendance (employeeId, checkIn, location, status)
           VALUES (?, ?, ?, 'active')
         `)
-        .bind(employeeId, timestamp, JSON.stringify(location))
+        .bind(employeeId, hanoiTimestamp, JSON.stringify(location))
         .run();
 
       return jsonResponse({
         success: true,
         message: "Chấm công vào ca thành công!",
         type: "check-in",
-        timestamp: timestamp,
+        timestamp: hanoiTimestamp,
         distance: Math.round(distance),
         store: employee.storeName
       }, 200, origin);
 
     } else {
-      // Process check-out
+      // Process check-out using Hanoi timezone
+      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(new Date(timestamp));
       await db
         .prepare(`
           UPDATE attendance 
           SET checkOut = ?, status = 'completed'
           WHERE employeeId = ? AND DATE(checkIn) = ? AND checkOut IS NULL
         `)
-        .bind(timestamp, employeeId, today)
+        .bind(hanoiTimestamp, employeeId, today)
         .run();
 
       return jsonResponse({
         success: true,
         message: "Chấm công tan ca thành công!",
         type: "check-out",
-        timestamp: timestamp,
+        timestamp: hanoiTimestamp,
         distance: Math.round(distance),
         store: employee.storeName
       }, 200, origin);
@@ -2013,7 +2054,7 @@ async function handleCreateAttendanceRequest(body, db, origin) {
     }
 
     // Create attendance request record
-    const requestId = `REQ_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const requestId = `REQ_${TimezoneUtils.getHanoiTimestamp()}_${Math.random().toString(36).substr(2, 9)}`;
     
     await db
       .prepare(`

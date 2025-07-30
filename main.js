@@ -1,6 +1,6 @@
 // Constants and Configuration
 const CONFIG = {
-    API_URL: "https://zewk.tocotoca.workers.dev/",
+    API_URL: "https://zewk.tocotoco.workers.dev/",
     STORAGE_KEYS: {
         AUTH_TOKEN: "authToken",
         USER_DATA: "loggedInUser",
@@ -11,50 +11,76 @@ const CONFIG = {
     MAX_RETRY_ATTEMPTS: 3
 };
 
-// Timezone utility for +7 Hanoi timezone
-const TimezoneUtils = {
-    // Get current date/time in +7 timezone
-    now() {
-        const now = new Date();
-        // Convert to +7 timezone (Vietnam/Hanoi)
-        return new Date(now.getTime() + (7 * 60 * 60 * 1000) - (now.getTimezoneOffset() * 60 * 1000));
-    },
-    
-    // Format date for API (YYYY-MM-DD)
-    formatDate(date = null) {
-        const d = date || this.now();
-        return d.toISOString().split('T')[0];
-    },
-    
-    // Format datetime for API (ISO string in +7 timezone)
-    formatDateTime(date = null) {
-        const d = date || this.now();
-        return d.toISOString();
-    },
-    
-    // Format time for display (HH:MM)
-    formatTime(date = null) {
-        const d = date || this.now();
-        return d.toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Asia/Ho_Chi_Minh'
-        });
-    },
-    
-    // Format datetime for display
-    formatDisplayDateTime(date = null) {
-        const d = date || this.now();
-        return d.toLocaleString('vi-VN', {
-            timeZone: 'Asia/Ho_Chi_Minh',
+// Timezone Utility Class for +7 Hanoi Timezone
+class TimezoneUtils {
+    static HANOI_TIMEZONE = 'Asia/Ho_Chi_Minh';
+    static TIMEZONE_OFFSET = 7; // UTC +7
+
+    // Get current time in Hanoi timezone
+    static now() {
+        return new Date(new Date().toLocaleString("en-US", {timeZone: this.HANOI_TIMEZONE}));
+    }
+
+    // Format date to Hanoi timezone string
+    static formatDateTime(date, options = {}) {
+        const defaultOptions = {
+            timeZone: this.HANOI_TIMEZONE,
             year: 'numeric',
-            month: '2-digit',
+            month: '2-digit', 
             day: '2-digit',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        
+        const finalOptions = { ...defaultOptions, ...options };
+        
+        if (typeof date === 'string') {
+            date = new Date(date);
+        }
+        
+        return date.toLocaleString('vi-VN', finalOptions);
+    }
+
+    // Format date only (no time)
+    static formatDate(date) {
+        return this.formatDateTime(date, {
+            hour: undefined,
+            minute: undefined, 
+            second: undefined
         });
     }
-};
+
+    // Format time only (no date)
+    static formatTime(date) {
+        return this.formatDateTime(date, {
+            year: undefined,
+            month: undefined,
+            day: undefined
+        });
+    }
+
+    // Get date in ISO format but adjusted for Hanoi timezone
+    static toHanoiISOString(date = null) {
+        const targetDate = date || this.now();
+        const hanoiDate = new Date(targetDate.toLocaleString("en-US", {timeZone: this.HANOI_TIMEZONE}));
+        return hanoiDate.toISOString();
+    }
+
+    // Convert any date to Hanoi timezone
+    static toHanoiTime(date) {
+        if (typeof date === 'string') {
+            date = new Date(date);
+        }
+        return new Date(date.toLocaleString("en-US", {timeZone: this.HANOI_TIMEZONE}));
+    }
+
+    // Get timestamp in Hanoi timezone
+    static getHanoiTimestamp() {
+        return this.now().getTime();
+    }
+}
 
 
 
@@ -754,7 +780,7 @@ class ContentManager {
     }
 
     getCurrentMonth() {
-        const now = TimezoneUtils.now();
+        const now = new Date();
         return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
     }
 
@@ -4132,24 +4158,12 @@ class ContentManager {
             // Get attendance history for the selected date
             const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${date}`);
             
-            const formattedDate = new Date(date).toLocaleDateString('vi-VN', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                timeZone: 'Asia/Ho_Chi_Minh'
-            });
+            const formattedDate = TimezoneUtils.formatDate(new Date(date + 'T00:00:00'));
             
             let historyHTML = '';
             if (response && response.length > 0) {
                 historyHTML = response.map(record => {
-                    // Use +7 timezone for display
-                    const recordDate = new Date(record.timestamp);
-                    const time = recordDate.toLocaleTimeString('vi-VN', { 
-                        hour: '2-digit', 
-                        minute: '2-digit',
-                        timeZone: 'Asia/Ho_Chi_Minh'
-                    });
+                    const time = TimezoneUtils.formatTime(new Date(record.timestamp));
                     const type = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                     const icon = record.type === 'check_in' ? '🟢' : '🔴';
                     
@@ -4193,7 +4207,7 @@ class ContentManager {
             
         } catch (error) {
             console.error('Error showing day details:', error);
-            this.showNotification('Lỗi khi tải chi tiết ngày', 'error');
+            utils.showNotification('Lỗi khi tải chi tiết ngày', 'error');
         }
     }
 
@@ -4398,7 +4412,7 @@ class ContentManager {
 
     async loadAttendanceHistoryToday(employeeId) {
         try {
-            const today = TimezoneUtils.formatDate();
+            const today = TimezoneUtils.formatDate(TimezoneUtils.now()).split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
             const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${today}`);
             
             const historyContainer = document.getElementById('attendanceHistoryToday');
@@ -4406,13 +4420,7 @@ class ContentManager {
             if (response && response.length > 0) {
                 let historyHTML = '';
                 response.forEach(record => {
-                    // Use +7 timezone for display
-                    const recordDate = new Date(record.timestamp);
-                    const time = recordDate.toLocaleTimeString('vi-VN', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        timeZone: 'Asia/Ho_Chi_Minh'
-                    });
+                    const time = TimezoneUtils.formatTime(new Date(record.timestamp));
                     const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                     const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
                     
