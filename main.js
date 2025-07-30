@@ -4803,6 +4803,7 @@ class ContentManager {
             // Initialize user selection panels
             this.initializeUserSelectionPanel('participantsList', 'selectedParticipants', 'participantSearch', allUsers, 'participants');
             this.initializeUserSelectionPanel('supportersList', 'selectedSupporters', 'supporterSearch', allUsers, 'supporters');
+            this.initializeUserSelectionPanel('assignersList', 'selectedAssigners', 'assignerSearch', allUsers, 'assigners');
 
             // Set up form submission
             const taskForm = document.getElementById('taskAssignmentForm');
@@ -4910,12 +4911,15 @@ class ContentManager {
             // Get selected users
             const participantsContainer = document.getElementById('selectedParticipants');
             const supportersContainer = document.getElementById('selectedSupporters');
+            const assignersContainer = document.getElementById('selectedAssigners');
             
             const participants = JSON.parse(participantsContainer.dataset.selectedUsers || '[]');
             const supporters = JSON.parse(supportersContainer.dataset.selectedUsers || '[]');
+            const assigners = JSON.parse(assignersContainer.dataset.selectedUsers || '[]');
             
-            // Get current user as assigner
+            // Get current user as default assigner if no assigner selected
             const userResponse = await API_CACHE.getUserData();
+            const finalAssignerId = assigners.length > 0 ? assigners[0].employeeId : userResponse.employeeId;
             
             const taskData = {
                 title: formData.get('taskTitle'),
@@ -4924,7 +4928,7 @@ class ContentManager {
                 dueDate: formData.get('taskDueDate'),
                 participants: participants,
                 supporters: supporters,
-                assignerId: userResponse.employeeId,
+                assignerId: finalAssignerId,
                 visibility: formData.get('taskVisibility') || 'involved-only'
             };
 
@@ -4960,7 +4964,7 @@ class ContentManager {
         }
         
         // Clear selected users
-        const selectedContainers = ['selectedParticipants', 'selectedSupporters'];
+        const selectedContainers = ['selectedParticipants', 'selectedSupporters', 'selectedAssigners'];
         selectedContainers.forEach(containerId => {
             const container = document.getElementById(containerId);
             if (container) {

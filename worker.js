@@ -1923,7 +1923,6 @@ async function handleProcessAttendance(body, db, origin) {
         store: employee.storeName
       }, 200, origin);
     }
-    }
 
   } catch (error) {
     console.error("Error processing attendance:", error);
