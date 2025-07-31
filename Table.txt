@@ -1,19 +1,33 @@
 -- =====================================================
 -- COMPLETE D1 DATABASE SCHEMA FOR HR MANAGEMENT SYSTEM
 -- =====================================================
--- This file contains ALL tables required for the HR Management System
--- including the new professional timesheet, GPS attendance, and request features.
+-- This file contains ALL tables currently being used in the HR Management System
+-- Updated to reflect actual implementation and database queries
 -- 
--- Last Updated: January 2025
+-- Last Updated: January 2025 - Fixed table consistency issues
 -- Features Included:
 -- ✓ Core authentication and user management
 -- ✓ Business operations (orders, stores)  
--- ✓ HR management (schedules, rewards, permissions)
+-- ✓ HR management (schedules, task assignments, permissions)
 -- ✓ GPS-based attendance tracking system
 -- ✓ Professional timesheet with monthly calendar
--- ✓ Advanced request system (attendance requests, task assignments)
+-- ✓ Advanced request system (attendance requests using attendance_requests table)
 -- ✓ System notifications and settings
 -- ✓ Comprehensive analytics and reporting
+-- =====================================================
+
+-- CURRENT TABLES IN USE:
+-- ✓ employees - Employee data and authentication
+-- ✓ sessions - Authentication sessions
+-- ✓ stores - Store locations with GPS coordinates
+-- ✓ attendance - GPS attendance tracking
+-- ✓ timesheets - Monthly timesheet data
+-- ✓ shift_assignments - Required for attendance validation
+-- ✓ attendance_requests - Attendance-related requests (Đơn Từ)
+-- ✓ tasks - Work tasks and assignments
+-- ✓ task_assignments - Task assignment relationships
+-- ✓ notifications - System notifications
+-- ✓ hr_settings - System configuration
 -- =====================================================
 
 -- D1 Database Table Creation SQL Scripts
@@ -138,17 +152,17 @@ CREATE TABLE workSchedules (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
--- Table for rewards and penalties
-CREATE TABLE rewards (
-    id TEXT PRIMARY KEY,
-    employeeId TEXT NOT NULL,
-    employeeName TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('reward', 'penalty')),
-    amount REAL NOT NULL,
-    reason TEXT NOT NULL,
-    createdAt TEXT NOT NULL,
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
-);
+-- Table for rewards and penalties (REMOVED - replaced with Work Tasks system)
+-- CREATE TABLE rewards (
+--     id TEXT PRIMARY KEY,
+--     employeeId TEXT NOT NULL,
+--     employeeName TEXT NOT NULL,
+--     type TEXT NOT NULL CHECK (type IN ('reward', 'penalty')),
+--     amount REAL NOT NULL,
+--     reason TEXT NOT NULL,
+--     createdAt TEXT NOT NULL,
+--     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+-- );
 
 -- Enhanced table for task/request management (legacy format)
 CREATE TABLE tasks (
@@ -276,6 +290,23 @@ CREATE TABLE gps_attendance (
 -- =====================================================
 -- PROFESSIONAL REQUEST SYSTEM
 -- =====================================================
+
+-- Table for shift change requests (Store management)
+CREATE TABLE shift_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    requestId TEXT UNIQUE NOT NULL,
+    employeeId TEXT NOT NULL,
+    currentShift TEXT NOT NULL,
+    requestedShift TEXT NOT NULL,
+    date TEXT NOT NULL,  -- YYYY-MM-DD format
+    reason TEXT NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    approvedBy TEXT,
+    approvedAt TEXT,
+    note TEXT,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
 
 -- Table for attendance-related requests (Đơn Từ)
 CREATE TABLE attendance_requests (

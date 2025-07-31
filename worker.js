@@ -2039,21 +2039,31 @@ async function handleCreateAttendanceRequest(body, db, origin) {
       }, 400, origin);
     }
 
-    // Create attendance request record
+    // Create attendance request record in attendance_requests table
     const requestId = `REQ_${TimezoneUtils.getHanoiTimestamp()}_${Math.random().toString(36).substr(2, 9)}`;
+    const currentTime = TimezoneUtils.getHanoiTimestamp();
     
     await db
       .prepare(`
-        INSERT INTO requests (
-          requestId, employeeId, type, status, data, createdAt
-        ) VALUES (?, ?, ?, 'pending', ?, ?)
+        INSERT INTO attendance_requests (
+          requestId, employeeId, type, requestDate, reason, status, createdAt,
+          targetDate, targetTime, currentShift, requestedShift, leaveType, startDate, endDate
+        ) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)
       `)
       .bind(
         requestId,
         employeeId,
-        `attendance_${type}`,
-        JSON.stringify(requestData),
-        timestamp || new Date().toISOString()
+        type,
+        currentTime,
+        requestData.reason || '',
+        currentTime,
+        requestData.targetDate || null,
+        requestData.targetTime || null, 
+        requestData.currentShift || null,
+        requestData.requestedShift || null,
+        requestData.leaveType || null,
+        requestData.startDate || null,
+        requestData.endDate || null
       )
       .run();
 

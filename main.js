@@ -6049,9 +6049,18 @@ class ContentManager {
                 visibility: formData.get('taskVisibility') || 'involved-only'
             };
 
-            // Fixed validation - check if all people involved including supporters
+            // Fixed validation - check if all people involved
             const totalPeople = participants.length + supporters.length;
+            console.log('Task validation - Title:', taskData.title);
+            console.log('Task validation - Description length:', taskData.description.length);
+            console.log('Task validation - Total people:', totalPeople);
+            console.log('Task validation - Participants length:', participants.length);
+            console.log('Task validation - Supporters length:', supporters.length);
+            
             if (!taskData.title || !taskData.description || totalPeople === 0) {
+                console.log('Validation failed - Title check:', !taskData.title);
+                console.log('Validation failed - Description check:', !taskData.description);
+                console.log('Validation failed - People check:', totalPeople === 0);
                 utils.showNotification('Vui lòng điền đầy đủ thông tin và chọn ít nhất một người thực hiện hoặc hỗ trợ', 'error');
                 return;
             }
