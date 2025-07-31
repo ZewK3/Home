@@ -4229,7 +4229,14 @@ class ContentManager {
             
             if (records.length > 0) {
                 historyHTML = records.map(record => {
-                    const time = TimezoneUtils.formatTime(new Date(record.timestamp));
+                    // Use server timestamp directly without client-side timezone adjustment
+                    const serverTime = new Date(record.timestamp);
+                    const time = serverTime.toLocaleTimeString('vi-VN', { 
+                        hour: '2-digit', 
+                        minute: '2-digit', 
+                        second: '2-digit',
+                        hour12: false 
+                    });
                     const type = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                     const icon = record.type === 'check_in' ? '🟢' : '🔴';
                     
@@ -4451,11 +4458,18 @@ class ContentManager {
             `;
 
             const userResponse = await API_CACHE.getUserData();
+            
+            // Fix location field names to match worker.js expectations
+            const locationData = {
+                latitude: this.userLocation.lat,
+                longitude: this.userLocation.lng
+            };
+            
             const response = await utils.fetchAPI('?action=processAttendance', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId: userResponse.employeeId,
-                    location: this.userLocation
+                    location: locationData
                 })
             });
 
@@ -4499,7 +4513,14 @@ class ContentManager {
                 if (records.length > 0) {
                     let historyHTML = '';
                     records.forEach(record => {
-                        const time = TimezoneUtils.formatTime(new Date(record.timestamp));
+                        // Use server timestamp directly without client-side timezone adjustment
+                        const serverTime = new Date(record.timestamp);
+                        const time = serverTime.toLocaleTimeString('vi-VN', { 
+                            hour: '2-digit', 
+                            minute: '2-digit', 
+                            second: '2-digit',
+                            hour12: false 
+                        });
                         const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                         const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
                         

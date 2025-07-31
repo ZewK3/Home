@@ -217,6 +217,21 @@ CREATE TABLE timesheets (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
+-- Table for shift assignments (required for attendance validation)
+CREATE TABLE shift_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    date TEXT NOT NULL,  -- YYYY-MM-DD format
+    shiftName TEXT NOT NULL,  -- e.g., 'Ca sáng', 'Ca chiều', 'Ca tối'
+    startTime TEXT NOT NULL,  -- HH:MM format e.g., '08:00'
+    endTime TEXT NOT NULL,    -- HH:MM format e.g., '16:00'
+    storeId TEXT,
+    status TEXT DEFAULT 'assigned' CHECK (status IN ('assigned', 'confirmed', 'cancelled')),
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(employeeId, date),
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
 -- Table for attendance summary statistics
 CREATE TABLE attendance_summary (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -658,6 +673,16 @@ INSERT INTO attendance (employeeId, checkIn, checkOut, location, status) VALUES
 ('ADMIN', '2025-01-29 08:00:00', '2025-01-29 17:00:00', '{"latitude": 10.773996, "longitude": 106.705070}', 'completed'),
 ('ADMIN', '2025-01-28 08:15:00', '2025-01-28 17:30:00', '{"latitude": 10.773996, "longitude": 106.705070}', 'completed'),
 ('ADMIN', '2025-01-27 07:45:00', '2025-01-27 16:45:00', '{"latitude": 10.773996, "longitude": 106.705070}', 'completed');
+
+-- Sample shift assignments (required for timesheet display)
+INSERT INTO shift_assignments (employeeId, date, shiftName, startTime, endTime, storeId, status) VALUES
+('ADMIN', '2025-01-29', 'Ca sáng', '08:00', '17:00', 'MC001', 'confirmed'),
+('ADMIN', '2025-01-28', 'Ca sáng', '08:00', '17:00', 'MC001', 'confirmed'),
+('ADMIN', '2025-01-27', 'Ca sáng', '08:00', '17:00', 'MC001', 'confirmed'),
+('ADMIN', '2025-01-30', 'Ca sáng', '08:00', '17:00', 'MC001', 'assigned'),
+('ADMIN', '2025-01-31', 'Ca sáng', '08:00', '17:00', 'MC001', 'assigned'),
+('ADMIN', '2025-02-01', 'Ca chiều', '13:00', '22:00', 'MC001', 'assigned'),
+('ADMIN', '2025-02-02', 'Ca chiều', '13:00', '22:00', 'MC001', 'assigned');
 
 -- Sample HR settings for GPS attendance radius
 INSERT INTO hr_settings (settingKey, settingValue, category, description, dataType, isActive) VALUES

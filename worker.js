@@ -1787,13 +1787,32 @@ async function handleGetTimesheet(url, db, origin) {
     const startDate = `${year}-${monthNum.toString().padStart(2, '0')}-01`;
     const endDate = `${year}-${(monthNum + 1).toString().padStart(2, '0')}-01`;
 
-    // Get attendance data for the month
+    // First, get shift assignments for the month
+    const shiftQuery = await db
+      .prepare(`
+        SELECT 
+          date,
+          shiftName,
+          startTime,
+          endTime
+        FROM shift_assignments 
+        WHERE employeeId = ? AND date >= ? AND date < ?
+        ORDER BY date
+      `)
+      .bind(employeeId, startDate, endDate)
+      .all();
+
+    const shiftAssignments = shiftQuery.results || [];
+
+    // Get attendance data for the month, but only for days with shift assignments
     const attendanceQuery = await db
       .prepare(`
         SELECT 
           DATE(checkIn) as date,
           TIME(checkIn) as checkIn,
           TIME(checkOut) as checkOut,
+          checkIn as fullCheckIn,
+          checkOut as fullCheckOut,
           CASE 
             WHEN checkIn IS NOT NULL AND checkOut IS NOT NULL 
             THEN ROUND((JULIANDAY(checkOut) - JULIANDAY(checkIn)) * 24, 2)
@@ -1806,26 +1825,65 @@ async function handleGetTimesheet(url, db, origin) {
       .bind(employeeId, startDate, endDate)
       .all();
 
-    // Handle D1 database response format
     const attendanceData = attendanceQuery.results || [];
 
-    // Calculate statistics
-    const totalDays = attendanceData.length;
-    const totalHours = attendanceData.reduce((sum, day) => sum + (day.hoursWorked || 0), 0);
-    const standardWorkDays = 26; // Standard work days per month
-    const standardHours = standardWorkDays * 8;
+    // Process attendance data with shift assignment validation
+    const validAttendanceData = [];
+    
+    for (const attendance of attendanceData) {
+      // Find shift assignment for this date
+      const shift = shiftAssignments.find(s => s.date === attendance.date);
+      
+      if (!shift) {
+        // No shift assigned for this day, skip attendance record
+        continue;
+      }
+
+      // Apply 60-minute tolerance rules
+      const shiftStart = new Date(`${attendance.date} ${shift.startTime}`);
+      const shiftEnd = new Date(`${attendance.date} ${shift.endTime}`);
+      const checkInTime = new Date(attendance.fullCheckIn);
+      const checkOutTime = attendance.fullCheckOut ? new Date(attendance.fullCheckOut) : null;
+
+      // Check-in validation: not more than 60 minutes after shift start
+      const checkInDiff = (checkInTime - shiftStart) / (1000 * 60); // difference in minutes
+      const isValidCheckIn = checkInDiff <= 60;
+
+      // Check-out validation: not more than 60 minutes after shift end
+      let isValidCheckOut = true;
+      if (checkOutTime) {
+        const checkOutDiff = (checkOutTime - shiftEnd) / (1000 * 60); // difference in minutes
+        isValidCheckOut = checkOutDiff <= 60;
+      }
+
+      // Only include attendance if both check-in and check-out (if present) are valid
+      if (isValidCheckIn && isValidCheckOut) {
+        validAttendanceData.push({
+          ...attendance,
+          shiftName: shift.shiftName,
+          shiftStart: shift.startTime,
+          shiftEnd: shift.endTime
+        });
+      }
+    }
+
+    // Calculate statistics based on valid attendance only
+    const totalDays = validAttendanceData.length;
+    const totalHours = validAttendanceData.reduce((sum, day) => sum + (day.hoursWorked || 0), 0);
+    const totalShiftDays = shiftAssignments.length; // Total days with shift assignments
+    const standardHours = totalShiftDays * 8;
 
     const statistics = {
-      actualDays: `${totalDays}/${standardWorkDays}`,
+      actualDays: `${totalDays}/${totalShiftDays}`,
       actualHours: `${Math.round(totalHours)}/${standardHours}`,
       workDays: totalDays.toString(),
       actualWorkHours: Math.round(totalHours).toString(),
-      standardDays: standardWorkDays.toString(),
+      standardDays: totalShiftDays.toString(),
       lateDays: "0", // Could be calculated based on shift start times
       earlyLeave: "0", // Could be calculated based on shift end times
       lateMinutes: "0",
       earlyMinutes: "0",
-      absentDays: Math.max(0, standardWorkDays - totalDays).toString(),
+      absentDays: Math.max(0, totalShiftDays - totalDays).toString(),
       forgotCheckin: "0",
       nightHours: "0", // Could be calculated based on time ranges
       dayHours: Math.round(totalHours).toString(),
@@ -1835,7 +1893,7 @@ async function handleGetTimesheet(url, db, origin) {
 
     return jsonResponse({
       success: true,
-      data: attendanceData,
+      data: validAttendanceData,
       statistics: statistics
     }, 200, origin);
 
