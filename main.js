@@ -6015,24 +6015,65 @@ class ContentManager {
             const form = e.target;
             const formData = new FormData(form);
             
-            // Get selected users
+            // Get selected users with defensive checks
             const participantsContainer = document.getElementById('selectedParticipants');
             const supportersContainer = document.getElementById('selectedSupporters');
             const assignersContainer = document.getElementById('selectedAssigners');
             
-            // Get description from rich text editor
+            // Check if containers exist
+            if (!participantsContainer || !supportersContainer || !assignersContainer) {
+                console.error('Task assignment containers not found');
+                utils.showNotification('Lỗi giao diện: Không tìm thấy container', 'error');
+                return;
+            }
+            
+            // Get description from rich text editor and clean it
             const descriptionEditor = document.getElementById('taskDescription');
+            if (!descriptionEditor) {
+                console.error('Task description editor not found');
+                utils.showNotification('Lỗi giao diện: Không tìm thấy trình soạn thảo', 'error');
+                return;
+            }
+            
             const descriptionContent = descriptionEditor.innerHTML.trim();
+            // Remove HTML tags for validation to check actual text content
+            const textContent = descriptionEditor.textContent || descriptionEditor.innerText || '';
+            const hasActualText = textContent.trim().length > 0;
             
-            const participants = JSON.parse(participantsContainer.dataset.selectedUsers || '[]');
-            const supporters = JSON.parse(supportersContainer.dataset.selectedUsers || '[]');
-            const assigners = JSON.parse(assignersContainer.dataset.selectedUsers || '[]');
+            // Parse selected users with error handling
+            let participants = [];
+            let supporters = [];
+            let assigners = [];
             
-            // Debug logging
+            try {
+                participants = JSON.parse(participantsContainer.dataset.selectedUsers || '[]');
+                supporters = JSON.parse(supportersContainer.dataset.selectedUsers || '[]');
+                assigners = JSON.parse(assignersContainer.dataset.selectedUsers || '[]');
+            } catch (error) {
+                console.error('Error parsing selected users:', error);
+                utils.showNotification('Lỗi dữ liệu người dùng đã chọn', 'error');
+                return;
+            }
+            
+            // Debug logging with more details
+            console.log('=== TASK SUBMISSION DEBUG ===');
+            console.log('Containers found:', {
+                participants: !!participantsContainer,
+                supporters: !!supportersContainer, 
+                assigners: !!assignersContainer,
+                editor: !!descriptionEditor
+            });
+            console.log('Dataset values:', {
+                participants: participantsContainer.dataset.selectedUsers,
+                supporters: supportersContainer.dataset.selectedUsers,
+                assigners: assignersContainer.dataset.selectedUsers
+            });
             console.log('Task submission - Participants:', participants);
             console.log('Task submission - Supporters:', supporters);
             console.log('Task submission - Assigners:', assigners);
-            console.log('Task submission - Description:', descriptionContent);
+            console.log('Task submission - Description HTML:', descriptionContent);
+            console.log('Task submission - Description text:', textContent);
+            console.log('==========================');
             
             // Get current user as default assigner if no assigner selected
             const userResponse = await API_CACHE.getUserData();
@@ -6052,14 +6093,16 @@ class ContentManager {
             // Fixed validation - check if all people involved
             const totalPeople = participants.length + supporters.length;
             console.log('Task validation - Title:', taskData.title);
-            console.log('Task validation - Description length:', taskData.description.length);
+            console.log('Task validation - Description HTML:', descriptionContent);
+            console.log('Task validation - Description text:', textContent.trim());
+            console.log('Task validation - Has actual text:', hasActualText);
             console.log('Task validation - Total people:', totalPeople);
             console.log('Task validation - Participants length:', participants.length);
             console.log('Task validation - Supporters length:', supporters.length);
             
-            if (!taskData.title || !taskData.description || totalPeople === 0) {
+            if (!taskData.title || !hasActualText || totalPeople === 0) {
                 console.log('Validation failed - Title check:', !taskData.title);
-                console.log('Validation failed - Description check:', !taskData.description);
+                console.log('Validation failed - Description check:', !hasActualText);
                 console.log('Validation failed - People check:', totalPeople === 0);
                 utils.showNotification('Vui lòng điền đầy đủ thông tin và chọn ít nhất một người thực hiện hoặc hỗ trợ', 'error');
                 return;
