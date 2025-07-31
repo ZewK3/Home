@@ -624,67 +624,90 @@ class ContentManager {
                                 </div>
                                 
                                 <div class="timesheet-statistics" id="timesheetStats">
-                                    <h3><span class="material-icons-round">analytics</span> Thống kê T8, 2025</h3>
-                                    <div class="stats-grid">
-                                        <div class="stat-item">
-                                            <span class="stat-label">Công thực tế</span>
-                                            <span class="stat-value" id="actualDays">0.9/1</span>
+                                    <div class="stats-header">
+                                        <h3><span class="material-icons-round">analytics</span> Thống kê T8, 2025</h3>
+                                        <button class="stats-toggle-btn" onclick="contentManager.toggleStatsDetails()">
+                                            <span class="material-icons-round">expand_less</span>
+                                        </button>
+                                    </div>
+                                    <div class="stats-content">
+                                        <div class="stats-row primary-stats">
+                                            <div class="stat-card highlight">
+                                                <div class="stat-icon"><span class="material-icons-round">work</span></div>
+                                                <div class="stat-info">
+                                                    <span class="stat-value" id="actualDays">0.9/1</span>
+                                                    <span class="stat-label">Công thực tế</span>
+                                                </div>
+                                            </div>
+                                            <div class="stat-card highlight">
+                                                <div class="stat-icon"><span class="material-icons-round">schedule</span></div>
+                                                <div class="stat-info">
+                                                    <span class="stat-value" id="actualHours">8/8</span>
+                                                    <span class="stat-label">Giờ làm thực tế</span>
+                                                </div>
+                                            </div>
+                                            <div class="stat-card">
+                                                <div class="stat-info">
+                                                    <span class="stat-value" id="workDays">0.9</span>
+                                                    <span class="stat-label">Công làm việc</span>
+                                                </div>
+                                            </div>
+                                            <div class="stat-card">
+                                                <div class="stat-info">
+                                                    <span class="stat-value" id="actualWorkHours">8</span>
+                                                    <span class="stat-label">Giờ thực tế</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Giờ làm thực tế</span>
-                                            <span class="stat-value" id="actualHours">8/8</span>
+                                        
+                                        <div class="stats-row secondary-stats">
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="standardDays">1</span>
+                                                <span class="stat-label">Công chuẩn</span>
+                                            </div>
+                                            <div class="stat-mini warning">
+                                                <span class="stat-value" id="lateDays">0</span>
+                                                <span class="stat-label">Lần đi muộn</span>
+                                            </div>
+                                            <div class="stat-mini warning">
+                                                <span class="stat-value" id="earlyLeave">1</span>
+                                                <span class="stat-label">Lần về sớm</span>
+                                            </div>
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="lateMinutes">0</span>
+                                                <span class="stat-label">Phút muộn</span>
+                                            </div>
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="earlyMinutes">60</span>
+                                                <span class="stat-label">Phút sớm</span>
+                                            </div>
+                                            <div class="stat-mini danger">
+                                                <span class="stat-value" id="absentDays">0</span>
+                                                <span class="stat-label">Vắng ko lý do</span>
+                                            </div>
                                         </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Công làm việc</span>
-                                            <span class="stat-value" id="workDays">0.9</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Giờ làm việc thực tính</span>
-                                            <span class="stat-value" id="actualWorkHours">8</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số công chuẩn</span>
-                                            <span class="stat-value" id="standardDays">1</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số lần đi muộn</span>
-                                            <span class="stat-value" id="lateDays">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số lần về sớm</span>
-                                            <span class="stat-value" id="earlyLeave">1</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số phút đi muộn</span>
-                                            <span class="stat-value" id="lateMinutes">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số phút về sớm</span>
-                                            <span class="stat-value" id="earlyMinutes">60</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số công nghỉ không lý do</span>
-                                            <span class="stat-value" id="absentDays">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Số lần quên check in/out</span>
-                                            <span class="stat-value" id="forgotCheckin">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Giờ làm việc thực tính ban đêm</span>
-                                            <span class="stat-value" id="nightHours">1.8167</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Giờ làm việc thực tính ban ngày</span>
-                                            <span class="stat-value" id="dayHours">6.1833</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Công làm thêm</span>
-                                            <span class="stat-value" id="overtimeDays">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Giờ làm thêm</span>
-                                            <span class="stat-value" id="overtimeHours">0</span>
+                                        
+                                        <div class="stats-row details-stats collapsed">
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="forgotCheckin">0</span>
+                                                <span class="stat-label">Quên check</span>
+                                            </div>
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="nightHours">1.8167</span>
+                                                <span class="stat-label">Giờ đêm</span>
+                                            </div>
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="dayHours">6.1833</span>
+                                                <span class="stat-label">Giờ ngày</span>
+                                            </div>
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="overtimeDays">0</span>
+                                                <span class="stat-label">Công thêm</span>
+                                            </div>
+                                            <div class="stat-mini">
+                                                <span class="stat-value" id="overtimeHours">0</span>
+                                                <span class="stat-label">Giờ thêm</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1313,8 +1336,8 @@ class ContentManager {
     async showRewards() {
         const content = document.getElementById('content');
         try {
-            // Use getUsers API to populate employee dropdown
-            const employees = await utils.fetchAPI('?action=getUsers');
+            // Use cached getUsers API to populate employee dropdown
+            const employees = await API_CACHE.getUsersData();
             
             content.innerHTML = `
                 <div class="card">
@@ -1379,8 +1402,8 @@ class ContentManager {
                 </div>
             `;
 
-            // Use getUsers API to get user list with enhanced error handling
-            const response = await utils.fetchAPI('?action=getUsers');
+            // Use cached getUsers API to get user list with enhanced error handling
+            const response = await API_CACHE.getUsersData();
             
             // Check if response is valid before proceeding
             if (!response) {
@@ -4161,8 +4184,23 @@ class ContentManager {
             const formattedDate = TimezoneUtils.formatDate(new Date(date + 'T00:00:00'));
             
             let historyHTML = '';
-            if (response && response.length > 0) {
-                historyHTML = response.map(record => {
+            let records = [];
+            
+            // Handle different response formats
+            if (response) {
+                if (Array.isArray(response)) {
+                    records = response;
+                } else if (typeof response === 'object') {
+                    // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                    records = Object.keys(response)
+                        .filter(key => !isNaN(key)) // Only numeric keys
+                        .map(key => response[key])
+                        .filter(record => record && record.type); // Filter valid records
+                }
+            }
+            
+            if (records.length > 0) {
+                historyHTML = records.map(record => {
                     const time = TimezoneUtils.formatTime(new Date(record.timestamp));
                     const type = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                     const icon = record.type === 'check_in' ? '🟢' : '🔴';
@@ -4389,8 +4427,7 @@ class ContentManager {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId: userResponse.employeeId,
-                    location: this.userLocation,
-                    timestamp: new Date().toISOString()
+                    location: this.userLocation
                 })
             });
 
@@ -4417,24 +4454,46 @@ class ContentManager {
             
             const historyContainer = document.getElementById('attendanceHistoryToday');
             
-            if (response && response.length > 0) {
-                let historyHTML = '';
-                response.forEach(record => {
-                    const time = TimezoneUtils.formatTime(new Date(record.timestamp));
-                    const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
-                    const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
-                    
-                    historyHTML += `
-                        <div class="attendance-record ${statusClass}">
-                            <span class="material-icons-round">${record.type === 'check_in' ? 'login' : 'logout'}</span>
-                            <div class="record-info">
-                                <div class="record-time">${time}</div>
-                                <div class="record-status">${status}</div>
+            if (response) {
+                let records = [];
+                
+                // Handle different response formats
+                if (Array.isArray(response)) {
+                    records = response;
+                } else if (typeof response === 'object') {
+                    // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                    records = Object.keys(response)
+                        .filter(key => !isNaN(key)) // Only numeric keys
+                        .map(key => response[key])
+                        .filter(record => record && record.type); // Filter valid records
+                }
+                
+                if (records.length > 0) {
+                    let historyHTML = '';
+                    records.forEach(record => {
+                        const time = TimezoneUtils.formatTime(new Date(record.timestamp));
+                        const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
+                        const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
+                        
+                        historyHTML += `
+                            <div class="attendance-record ${statusClass}">
+                                <span class="material-icons-round">${record.type === 'check_in' ? 'login' : 'logout'}</span>
+                                <div class="record-info">
+                                    <div class="record-time">${time}</div>
+                                    <div class="record-status">${status}</div>
+                                </div>
                             </div>
+                        `;
+                    });
+                    historyContainer.innerHTML = historyHTML;
+                } else {
+                    historyContainer.innerHTML = `
+                        <div class="no-records">
+                            <span class="material-icons-round">event_available</span>
+                            <p>Chưa có bản ghi chấm công hôm nay</p>
                         </div>
                     `;
-                });
-                historyContainer.innerHTML = historyHTML;
+                }
             } else {
                 historyContainer.innerHTML = `
                     <div class="no-records">
@@ -4751,7 +4810,43 @@ class ContentManager {
                                 
                                 <div class="form-group">
                                     <label for="taskDescription">Mô tả chi tiết:</label>
-                                    <textarea id="taskDescription" class="form-control" rows="4" required></textarea>
+                                    <div class="text-editor-container">
+                                        <div class="editor-toolbar">
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('bold')" title="In đậm">
+                                                <span class="material-icons-round">format_bold</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('italic')" title="In nghiêng">
+                                                <span class="material-icons-round">format_italic</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('underline')" title="Gạch chân">
+                                                <span class="material-icons-round">format_underlined</span>
+                                            </button>
+                                            <div class="toolbar-separator"></div>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertUnorderedList')" title="Danh sách">
+                                                <span class="material-icons-round">format_list_bulleted</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertOrderedList')" title="Danh sách số">
+                                                <span class="material-icons-round">format_list_numbered</span>
+                                            </button>
+                                            <div class="toolbar-separator"></div>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyLeft')" title="Căn trái">
+                                                <span class="material-icons-round">format_align_left</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyCenter')" title="Căn giữa">
+                                                <span class="material-icons-round">format_align_center</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyRight')" title="Căn phải">
+                                                <span class="material-icons-round">format_align_right</span>
+                                            </button>
+                                        </div>
+                                        <div id="taskDescription" 
+                                             class="rich-text-editor" 
+                                             contenteditable="true" 
+                                             placeholder="Nhập mô tả chi tiết nhiệm vụ..."
+                                             style="min-height: 120px; border: 1px solid #ddd; padding: 12px; border-radius: 4px; background: white;">
+                                        </div>
+                                        <input type="hidden" name="taskDescription" id="taskDescriptionInput">
+                                    </div>
                                 </div>
                                 
                                 <div class="form-row">
@@ -4848,7 +4943,7 @@ class ContentManager {
         try {
             // Load all users for task assignment
             const usersResponse = await API_CACHE.getUserData();
-            const allUsersResponse = await utils.fetchAPI('?action=getUsers');
+            const allUsersResponse = await API_CACHE.getUsersData();
             
             let allUsers = [];
             if (Array.isArray(allUsersResponse)) {
@@ -4973,9 +5068,19 @@ class ContentManager {
             const supportersContainer = document.getElementById('selectedSupporters');
             const assignersContainer = document.getElementById('selectedAssigners');
             
+            // Get description from rich text editor
+            const descriptionEditor = document.getElementById('taskDescription');
+            const descriptionContent = descriptionEditor.innerHTML.trim();
+            
             const participants = JSON.parse(participantsContainer.dataset.selectedUsers || '[]');
             const supporters = JSON.parse(supportersContainer.dataset.selectedUsers || '[]');
             const assigners = JSON.parse(assignersContainer.dataset.selectedUsers || '[]');
+            
+            // Debug logging
+            console.log('Task submission - Participants:', participants);
+            console.log('Task submission - Supporters:', supporters);
+            console.log('Task submission - Assigners:', assigners);
+            console.log('Task submission - Description:', descriptionContent);
             
             // Get current user as default assigner if no assigner selected
             const userResponse = await API_CACHE.getUserData();
@@ -4983,7 +5088,7 @@ class ContentManager {
             
             const taskData = {
                 title: formData.get('taskTitle'),
-                description: formData.get('taskDescription'),
+                description: descriptionContent,
                 priority: formData.get('taskPriority'),
                 dueDate: formData.get('taskDueDate'),
                 participants: participants,
@@ -4992,9 +5097,10 @@ class ContentManager {
                 visibility: formData.get('taskVisibility') || 'involved-only'
             };
 
-            // Validate required fields
-            if (!taskData.title || !taskData.description || participants.length === 0) {
-                utils.showNotification('Vui lòng điền đầy đủ thông tin và chọn ít nhất một người thực hiện', 'error');
+            // Fixed validation - check if all people involved including supporters
+            const totalPeople = participants.length + supporters.length;
+            if (!taskData.title || !taskData.description || totalPeople === 0) {
+                utils.showNotification('Vui lòng điền đầy đủ thông tin và chọn ít nhất một người thực hiện hoặc hỗ trợ', 'error');
                 return;
             }
 
@@ -5023,6 +5129,12 @@ class ContentManager {
             form.reset();
         }
         
+        // Clear rich text editor
+        const descriptionEditor = document.getElementById('taskDescription');
+        if (descriptionEditor) {
+            descriptionEditor.innerHTML = '';
+        }
+        
         // Clear selected users
         const selectedContainers = ['selectedParticipants', 'selectedSupporters', 'selectedAssigners'];
         selectedContainers.forEach(containerId => {
@@ -5035,6 +5147,29 @@ class ContentManager {
         
         // Re-render user lists
         this.setupTaskAssignmentForm();
+    }
+
+    // Rich text editor formatting function
+    formatText(command) {
+        document.execCommand(command, false, null);
+        // Keep focus on editor after formatting
+        document.getElementById('taskDescription').focus();
+    }
+
+    // Toggle statistics details
+    toggleStatsDetails() {
+        const detailsStats = document.querySelector('.details-stats');
+        const toggleBtn = document.querySelector('.stats-toggle-btn span');
+        
+        if (detailsStats) {
+            if (detailsStats.classList.contains('collapsed')) {
+                detailsStats.classList.remove('collapsed');
+                toggleBtn.textContent = 'expand_less';
+            } else {
+                detailsStats.classList.add('collapsed');
+                toggleBtn.textContent = 'expand_more';
+            }
+        }
     }
 }
 
@@ -7038,4 +7173,322 @@ function buildRoleBasedDashboard(userRole) {
 
 
 
+// Inject professional CSS styles for enhanced interfaces
+document.addEventListener('DOMContentLoaded', () => {
+const professionalStyles = `
+<style>
+/* Rich Text Editor Styles */
+.text-editor-container {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.editor-toolbar {
+    display: flex;
+    padding: 8px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+    background: #e9ecef;
+}
+
+.toolbar-btn:active {
+    background: #dee2e6;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: #e0e0e0;
+    margin: 4px;
+}
+
+.rich-text-editor {
+    outline: none;
+    min-height: 120px !important;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.rich-text-editor:empty:before {
+    content: attr(placeholder);
+    color: #999;
+    font-style: italic;
+}
+
+/* Enhanced Statistics Styles */
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.stats-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stats-toggle-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-toggle-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.stats-content {
+    padding: 16px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+}
+
+.stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.stats-row:last-child {
+    margin-bottom: 0;
+}
+
+.primary-stats .stat-card {
+    flex: 1;
+    min-width: 150px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-card.highlight {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-top: 4px;
+}
+
+.secondary-stats, .details-stats {
+    justify-content: space-around;
+}
+
+.stat-mini {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    min-width: 80px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+}
+
+.stat-mini:hover {
+    background: #e9ecef;
+}
+
+.stat-mini.warning {
+    background: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+.stat-mini.danger {
+    background: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.stat-mini .stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.stat-mini .stat-label {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+
+.details-stats.collapsed {
+    display: none;
+}
+
+/* Timesheet Container Improvements */
+.timesheet-container {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.timesheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+.header-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subtitle {
+    margin: 4px 0 0 0;
+    opacity: 0.9;
+    font-size: 0.875rem;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.month-nav-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.month-nav-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.current-month {
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
+}
+
+.timesheet-content {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .stats-row {
+        flex-direction: column;
+    }
+    
+    .stat-card {
+        min-width: auto;
+    }
+    
+    .secondary-stats, .details-stats {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .stat-mini {
+        flex: 1;
+        min-width: 70px;
+    }
+    
+    .timesheet-header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .header-controls {
+        justify-content: center;
+    }
+}
+</style>
+`;
+
+// Apply professional styles
+document.head.insertAdjacentHTML('beforeend', professionalStyles);
+});
 

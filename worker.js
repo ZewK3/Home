@@ -1869,9 +1869,9 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 // Handle GPS attendance processing
 async function handleProcessAttendance(body, db, origin) {
   try {
-    const { employeeId, location, timestamp } = body;
+    const { employeeId, location } = body;
     
-    if (!employeeId || !location || !timestamp) {
+    if (!employeeId || !location) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu thông tin bắt buộc!" 
@@ -1891,9 +1891,9 @@ async function handleProcessAttendance(body, db, origin) {
       }, 404, origin);
     }
 
-    // Get store location for GPS verification
+    // Get store location for GPS verification - Fixed structure
     const storeQuery = await db
-      .prepare("SELECT latitude, longitude, storeName FROM stores WHERE storeName = ?")
+      .prepare("SELECT latitude, longitude, storeName FROM stores WHERE storeId = ?")
       .bind(employee.storeName)
       .first();
 
@@ -1927,9 +1927,9 @@ async function handleProcessAttendance(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get today's attendance records using Hanoi timezone
-    const hanoiDate = TimezoneUtils.toHanoiTime(new Date(timestamp));
-    const today = TimezoneUtils.formatDate(hanoiDate).split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
+    // Get today's attendance records using server Hanoi timezone
+    const serverTime = TimezoneUtils.now(); // Use server time instead of client timestamp
+    const today = TimezoneUtils.formatDate(serverTime).split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
     const existingRecordsQuery = await db
       .prepare(`
         SELECT * FROM attendance 
@@ -1946,8 +1946,8 @@ async function handleProcessAttendance(body, db, origin) {
     const isCheckIn = !lastRecord || lastRecord.checkOut;
 
     if (isCheckIn) {
-      // Process check-in using Hanoi timezone
-      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(new Date(timestamp));
+      // Process check-in using server Hanoi timezone
+      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(serverTime);
       await db
         .prepare(`
           INSERT INTO attendance (employeeId, checkIn, location, status)
@@ -1966,8 +1966,8 @@ async function handleProcessAttendance(body, db, origin) {
       }, 200, origin);
 
     } else {
-      // Process check-out using Hanoi timezone
-      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(new Date(timestamp));
+      // Process check-out using server Hanoi timezone
+      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(serverTime);
       await db
         .prepare(`
           UPDATE attendance 
