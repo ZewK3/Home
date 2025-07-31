@@ -2374,7 +2374,7 @@ async function handleGetEmployeesByStore(url, db, origin) {
       .prepare(`
         SELECT employeeId, fullName, position, email, storeName
         FROM employees 
-        WHERE storeName = ? AND status = 'active'
+        WHERE storeName = ?
         ORDER BY fullName
       `)
       .bind(storeId)
@@ -2565,11 +2565,10 @@ async function handleGetAttendanceRequests(url, db, origin) {
   try {
     const attendanceRequestsQuery = await db
       .prepare(`
-        SELECT ar.*, e.fullName as employeeName, s.storeName,
+        SELECT ar.*, e.fullName as employeeName, e.storeName,
                approver.fullName as approverName
         FROM attendance_requests ar
         LEFT JOIN employees e ON ar.employeeId = e.employeeId
-        LEFT JOIN stores s ON ar.storeId = s.storeId
         LEFT JOIN employees approver ON ar.approvedBy = approver.employeeId
         ORDER BY ar.createdAt DESC
       `)

@@ -66,3 +66,62 @@ CREATE INDEX IF NOT EXISTS idx_history_logs_target ON history_logs(target_employ
 CREATE INDEX IF NOT EXISTS idx_history_logs_action_by ON history_logs(action_by_employee_id);
 CREATE INDEX IF NOT EXISTS idx_history_logs_type ON history_logs(action_type);
 CREATE INDEX IF NOT EXISTS idx_history_logs_created ON history_logs(created_at);
+
+-- Employees table
+CREATE TABLE IF NOT EXISTS employees (
+    employeeId TEXT PRIMARY KEY,
+    password TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    fullName TEXT NOT NULL,
+    storeName TEXT NOT NULL,
+    position TEXT NOT NULL DEFAULT 'NV',
+    joinDate DATE NOT NULL,
+    phone TEXT UNIQUE,
+    email TEXT UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Shift requests table for handling shift change requests
+CREATE TABLE IF NOT EXISTS shift_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    storeId TEXT NOT NULL,
+    requestType TEXT NOT NULL, -- 'shift_change', 'schedule_modification'
+    currentShift TEXT,
+    requestedShift TEXT,
+    requestDate DATE NOT NULL,
+    reason TEXT,
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+    approvedBy TEXT,
+    approverNote TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId),
+    FOREIGN KEY (storeId) REFERENCES stores(storeId),
+    FOREIGN KEY (approvedBy) REFERENCES employees(employeeId)
+);
+
+-- Attendance requests table for handling attendance-related requests
+CREATE TABLE IF NOT EXISTS attendance_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    requestType TEXT NOT NULL, -- 'forgot_checkin', 'forgot_checkout', 'leave_request', 'sick_leave'
+    requestDate DATE NOT NULL,
+    requestTime TIME,
+    reason TEXT NOT NULL,
+    supportingDocument TEXT, -- file path or URL
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+    approvedBy TEXT,
+    approverNote TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId),
+    FOREIGN KEY (approvedBy) REFERENCES employees(employeeId)
+);
+
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_shift_requests_employee ON shift_requests(employeeId);
+CREATE INDEX IF NOT EXISTS idx_shift_requests_store ON shift_requests(storeId);
+CREATE INDEX IF NOT EXISTS idx_shift_requests_status ON shift_requests(status);
+CREATE INDEX IF NOT EXISTS idx_attendance_requests_employee ON attendance_requests(employeeId);
+CREATE INDEX IF NOT EXISTS idx_attendance_requests_status ON attendance_requests(status);
