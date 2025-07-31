@@ -87,9 +87,11 @@ class TimezoneUtils {
 // Global cache for API data with enhanced call tracking
 const API_CACHE = {
     userData: null,
+    usersData: null,
     storesData: null,
     dashboardStats: null,
     lastUserDataFetch: null,
+    lastUsersDataFetch: null,
     lastStoresDataFetch: null,
     lastDashboardStatsFetch: null,
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
@@ -100,9 +102,11 @@ const API_CACHE = {
     // Clear cache
     clear() {
         this.userData = null;
+        this.usersData = null;
         this.storesData = null;
         this.dashboardStats = null;
         this.lastUserDataFetch = null;
+        this.lastUsersDataFetch = null;
         this.lastStoresDataFetch = null;
         this.lastDashboardStatsFetch = null;
         this.ongoingCalls.clear();
@@ -182,6 +186,30 @@ const API_CACHE = {
                 return this.storesData;
             } catch (error) {
                 console.error('Failed to fetch stores data:', error);
+                throw error;
+            }
+        });
+    },
+    
+    // Get cached users data or fetch new with duplicate call prevention
+    async getUsersData() {
+        if (this.usersData && this.isCacheValid(this.lastUsersDataFetch)) {
+            return this.usersData;
+        }
+        
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) {
+            throw new Error('No auth token found');
+        }
+        
+        const endpoint = `getUsers_${token}`;
+        return await this.safeAPICall(endpoint, async () => {
+            try {
+                this.usersData = await utils.fetchAPI(`?action=getUsers&token=${token}`);
+                this.lastUsersDataFetch = Date.now();
+                return this.usersData;
+            } catch (error) {
+                console.error('Failed to fetch users data:', error);
                 throw error;
             }
         });
