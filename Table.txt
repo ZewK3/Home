@@ -23,11 +23,18 @@
 -- ✓ attendance - GPS attendance tracking
 -- ✓ timesheets - Monthly timesheet data
 -- ✓ shift_assignments - Required for attendance validation
--- ✓ attendance_requests - Attendance-related requests (Đơn Từ)
+-- ✓ attendance_requests - Attendance-related requests (Đơn Từ) - FIXED: Now used consistently
+-- ✓ shift_requests - Shift change requests (Store management) - ADDED: Missing table
 -- ✓ tasks - Work tasks and assignments
 -- ✓ task_assignments - Task assignment relationships
 -- ✓ notifications - System notifications
 -- ✓ hr_settings - System configuration
+-- 
+-- FIXED ISSUES:
+-- ✓ handleCreateAttendanceRequest now writes to attendance_requests (not requests)
+-- ✓ handleGetAttendanceRequests reads from attendance_requests
+-- ✓ Added missing shift_requests table for shift management
+-- ✓ Improved task assignment validation with defensive checks
 -- =====================================================
 
 -- D1 Database Table Creation SQL Scripts
