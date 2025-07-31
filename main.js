@@ -453,8 +453,31 @@ class ContentManager {
                                     <button id="loadShiftData" class="btn btn-primary">Tải dữ liệu</button>
                                 </div>
                             </div>
+                            
+                            <div class="employee-selection-section">
+                                <h3>Chọn Nhân Viên</h3>
+                                <div class="employee-grid" id="employeeGrid">
+                                    <p class="text-center">Chọn cửa hàng để xem danh sách nhân viên</p>
+                                </div>
+                                <div class="selected-employees">
+                                    <h4>Nhân viên đã chọn:</h4>
+                                    <div id="selectedEmployeesList" class="selected-list"></div>
+                                </div>
+                            </div>
+                            
                             <div id="shiftAssignmentGrid" class="shift-grid">
-                                <p class="text-center">Chọn cửa hàng và tuần để bắt đầu phân ca</p>
+                                <p class="text-center">Chọn cửa hàng và nhân viên để bắt đầu phân ca</p>
+                            </div>
+                            
+                            <div class="shift-actions">
+                                <button id="saveShiftAssignments" class="btn btn-success" style="display: none;">
+                                    <span class="material-icons-round">save</span>
+                                    Lưu Phân Ca
+                                </button>
+                                <button id="clearShiftAssignments" class="btn btn-secondary" style="display: none;">
+                                    <span class="material-icons-round">clear</span>
+                                    Xóa Tất Cả
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1025,6 +1048,18 @@ class ContentManager {
     }
 
     setupShiftAssignmentHandlers() {
+        // Store selection handler
+        document.getElementById('shiftStore')?.addEventListener('change', async (e) => {
+            const storeId = e.target.value;
+            if (storeId) {
+                await this.loadEmployeesForStore(storeId);
+            } else {
+                document.getElementById('employeeGrid').innerHTML = '<p class="text-center">Chọn cửa hàng để xem danh sách nhân viên</p>';
+                document.getElementById('selectedEmployeesList').innerHTML = '';
+            }
+        });
+
+        // Load shift data handler
         document.getElementById('loadShiftData')?.addEventListener('click', async () => {
             const store = document.getElementById('shiftStore')?.value;
             const week = document.getElementById('shiftWeek')?.value;
@@ -1034,25 +1069,264 @@ class ContentManager {
                 return;
             }
 
+            const selectedEmployees = this.getSelectedEmployees();
+            if (selectedEmployees.length === 0) {
+                utils.showNotification('Vui lòng chọn ít nhất một nhân viên', 'warning');
+                return;
+            }
+
             try {
-                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-                const response = await utils.fetchAPI(`?action=getShiftAssignments&store=${store}&week=${week}&token=${token}`);
-                
-                const shiftGrid = document.getElementById('shiftAssignmentGrid');
-                if (shiftGrid && response) {
-                    // Generate shift assignment grid here
-                    shiftGrid.innerHTML = `
-                        <div class="shift-assignment-grid">
-                            <p>Giao diện phân ca sẽ được triển khai ở đây</p>
-                            <p>Cửa hàng: ${store}, Tuần: ${week}</p>
-                        </div>
-                    `;
-                }
+                await this.loadShiftAssignmentGrid(store, week, selectedEmployees);
             } catch (error) {
                 console.error('Load shift assignment error:', error);
                 utils.showNotification('Không thể tải dữ liệu phân ca', 'error');
             }
         });
+
+        // Save shift assignments handler
+        document.getElementById('saveShiftAssignments')?.addEventListener('click', async () => {
+            await this.saveShiftAssignments();
+        });
+
+        // Clear shift assignments handler
+        document.getElementById('clearShiftAssignments')?.addEventListener('click', () => {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả phân ca?')) {
+                this.clearAllShiftAssignments();
+            }
+        });
+    }
+
+    async loadEmployeesForStore(storeId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const employees = await utils.fetchAPI(`?action=getEmployeesByStore&storeId=${storeId}&token=${token}`);
+            
+            const employeeGrid = document.getElementById('employeeGrid');
+            if (!Array.isArray(employees) || employees.length === 0) {
+                employeeGrid.innerHTML = '<p class="text-center">Không có nhân viên nào trong cửa hàng này</p>';
+                return;
+            }
+
+            employeeGrid.innerHTML = `
+                <div class="employee-cards">
+                    ${employees.map(emp => `
+                        <div class="employee-card" data-employee-id="${emp.employeeId}">
+                            <input type="checkbox" id="emp_${emp.employeeId}" class="employee-checkbox">
+                            <label for="emp_${emp.employeeId}">
+                                <div class="employee-info">
+                                    <h4>${emp.fullName}</h4>
+                                    <p>ID: ${emp.employeeId}</p>
+                                    <p>Chức vụ: ${emp.position}</p>
+                                </div>
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="employee-actions">
+                    <button id="selectAllEmployees" class="btn btn-secondary">Chọn tất cả</button>
+                    <button id="clearAllEmployees" class="btn btn-secondary">Bỏ chọn tất cả</button>
+                </div>
+            `;
+
+            // Set up employee selection handlers
+            this.setupEmployeeSelectionHandlers();
+
+        } catch (error) {
+            console.error('Error loading employees:', error);
+            utils.showNotification('Không thể tải danh sách nhân viên', 'error');
+        }
+    }
+
+    setupEmployeeSelectionHandlers() {
+        // Individual employee checkbox handlers
+        const checkboxes = document.querySelectorAll('.employee-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                this.updateSelectedEmployeesList();
+            });
+        });
+
+        // Select all handler
+        document.getElementById('selectAllEmployees')?.addEventListener('click', () => {
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+            this.updateSelectedEmployeesList();
+        });
+
+        // Clear all handler
+        document.getElementById('clearAllEmployees')?.addEventListener('click', () => {
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+            this.updateSelectedEmployeesList();
+        });
+    }
+
+    updateSelectedEmployeesList() {
+        const selectedList = document.getElementById('selectedEmployeesList');
+        const selectedEmployees = this.getSelectedEmployees();
+        
+        if (selectedEmployees.length === 0) {
+            selectedList.innerHTML = '<p>Chưa chọn nhân viên nào</p>';
+            return;
+        }
+
+        selectedList.innerHTML = selectedEmployees.map(emp => `
+            <span class="selected-employee-tag">
+                ${emp.fullName} (${emp.employeeId})
+                <button onclick="this.removeSelectedEmployee('${emp.employeeId}')" class="remove-btn">×</button>
+            </span>
+        `).join('');
+    }
+
+    getSelectedEmployees() {
+        const checkboxes = document.querySelectorAll('.employee-checkbox:checked');
+        return Array.from(checkboxes).map(checkbox => {
+            const card = checkbox.closest('.employee-card');
+            const employeeId = card.dataset.employeeId;
+            const employeeName = card.querySelector('h4').textContent;
+            return { employeeId, fullName: employeeName };
+        });
+    }
+
+    removeSelectedEmployee(employeeId) {
+        const checkbox = document.getElementById(`emp_${employeeId}`);
+        if (checkbox) {
+            checkbox.checked = false;
+            this.updateSelectedEmployeesList();
+        }
+    }
+
+    async loadShiftAssignmentGrid(store, week, employees) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const existingShifts = await utils.fetchAPI(`?action=getShiftAssignments&store=${store}&week=${week}&token=${token}`);
+            
+            const shiftGrid = document.getElementById('shiftAssignmentGrid');
+            const weekDates = this.getWeekDates(week);
+            
+            shiftGrid.innerHTML = `
+                <div class="shift-schedule-grid">
+                    <table class="shift-table">
+                        <thead>
+                            <tr>
+                                <th>Nhân viên</th>
+                                ${weekDates.map(date => `<th>${this.formatDateHeader(date)}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${employees.map(emp => `
+                                <tr data-employee-id="${emp.employeeId}">
+                                    <td class="employee-name">${emp.fullName}</td>
+                                    ${weekDates.map(date => `
+                                        <td class="shift-cell" data-date="${date.toISOString().split('T')[0]}">
+                                            <select class="shift-select" data-employee="${emp.employeeId}" data-date="${date.toISOString().split('T')[0]}">
+                                                <option value="">Nghỉ</option>
+                                                <option value="morning">Ca sáng (8:00-16:00)</option>
+                                                <option value="afternoon">Ca chiều (13:00-22:00)</option>
+                                                <option value="night">Ca đêm (22:00-6:00)</option>
+                                                <option value="full">Ca full (8:00-22:00)</option>
+                                            </select>
+                                        </td>
+                                    `).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Show action buttons
+            document.getElementById('saveShiftAssignments').style.display = 'inline-block';
+            document.getElementById('clearShiftAssignments').style.display = 'inline-block';
+
+            // Load existing shift assignments if any
+            this.loadExistingShifts(existingShifts);
+
+        } catch (error) {
+            console.error('Error loading shift grid:', error);
+            utils.showNotification('Không thể tải lưới phân ca', 'error');
+        }
+    }
+
+    getWeekDates(weekString) {
+        const [year, week] = weekString.split('-W');
+        const firstDayOfYear = new Date(year, 0, 1);
+        const days = 7 * (week - 1);
+        const weekStart = new Date(firstDayOfYear.getTime() + days * 24 * 60 * 60 * 1000);
+        
+        // Adjust to Monday
+        const monday = new Date(weekStart);
+        monday.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+        
+        const weekDates = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(monday);
+            date.setDate(monday.getDate() + i);
+            weekDates.push(date);
+        }
+        return weekDates;
+    }
+
+    formatDateHeader(date) {
+        const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        const dayName = dayNames[date.getDay()];
+        const dateStr = `${date.getDate()}/${date.getMonth() + 1}`;
+        return `${dayName}<br>${dateStr}`;
+    }
+
+    loadExistingShifts(existingShifts) {
+        if (!Array.isArray(existingShifts)) return;
+        
+        existingShifts.forEach(shift => {
+            const select = document.querySelector(`select[data-employee="${shift.employeeId}"][data-date="${shift.date}"]`);
+            if (select) {
+                select.value = shift.shiftType;
+            }
+        });
+    }
+
+    async saveShiftAssignments() {
+        try {
+            const store = document.getElementById('shiftStore').value;
+            const week = document.getElementById('shiftWeek').value;
+            const shiftData = [];
+
+            const selects = document.querySelectorAll('.shift-select');
+            selects.forEach(select => {
+                if (select.value) {
+                    shiftData.push({
+                        employeeId: select.dataset.employee,
+                        date: select.dataset.date,
+                        shiftType: select.value,
+                        storeId: store
+                    });
+                }
+            });
+
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=saveShiftAssignments', {
+                method: 'POST',
+                body: JSON.stringify({
+                    storeId: store,
+                    week: week,
+                    shifts: shiftData
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã lưu phân ca thành công!', 'success');
+            } else {
+                throw new Error(response.message || 'Không thể lưu phân ca');
+            }
+
+        } catch (error) {
+            console.error('Error saving shift assignments:', error);
+            utils.showNotification('Lỗi khi lưu phân ca', 'error');
+        }
+    }
+
+    clearAllShiftAssignments() {
+        const selects = document.querySelectorAll('.shift-select');
+        selects.forEach(select => select.value = '');
+        utils.showNotification('Đã xóa tất cả phân ca', 'info');
     }
 
     setupShiftCheckHandlers() {
@@ -5134,6 +5408,18 @@ class ContentManager {
                                 <div class="user-selection-section">
                                     <h3><span class="material-icons-round">people</span> Phân Công Nhân Viên</h3>
                                     
+                                    <!-- Role Filter Section -->
+                                    <div class="role-filter-section">
+                                        <label>Lọc theo chức vụ:</label>
+                                        <div class="role-filter-buttons">
+                                            <button type="button" class="role-filter-btn active" data-role="ALL">Tất cả</button>
+                                            <button type="button" class="role-filter-btn" data-role="AD">Admin</button>
+                                            <button type="button" class="role-filter-btn" data-role="AM">Quản lý phụ</button>
+                                            <button type="button" class="role-filter-btn" data-role="QL">Quản lý</button>
+                                            <button type="button" class="role-filter-btn" data-role="NV">Nhân viên</button>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="user-selector">
                                         <label>Người tham gia:</label>
                                         <div class="user-selection-panel" id="participantsPanel">
@@ -5221,9 +5507,14 @@ class ContentManager {
             }
 
             // Initialize user selection panels
+            this.currentFilteredUsers = allUsers; // Store all users for filtering
+            this.allUsersData = allUsers; // Keep original data
             this.initializeUserSelectionPanel('participantsList', 'selectedParticipants', 'participantSearch', allUsers, 'participants');
             this.initializeUserSelectionPanel('supportersList', 'selectedSupporters', 'supporterSearch', allUsers, 'supporters');
             this.initializeUserSelectionPanel('assignersList', 'selectedAssigners', 'assignerSearch', allUsers, 'assigners');
+
+            // Set up role filtering
+            this.setupRoleFiltering();
 
             // Set up form submission
             const taskForm = document.getElementById('taskAssignmentForm');
@@ -5241,6 +5532,37 @@ class ContentManager {
             console.error('Error setting up task assignment form:', error);
             utils.showNotification('Lỗi khởi tạo form nhiệm vụ', 'error');
         }
+    }
+
+    setupRoleFiltering() {
+        const roleFilterBtns = document.querySelectorAll('.role-filter-btn');
+        
+        roleFilterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update active state
+                roleFilterBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const selectedRole = e.target.dataset.role;
+                
+                // Filter users based on selected role
+                let filteredUsers = this.allUsersData;
+                if (selectedRole !== 'ALL') {
+                    filteredUsers = this.allUsersData.filter(user => user.position === selectedRole);
+                }
+                
+                // Update all user selection panels with filtered users
+                this.currentFilteredUsers = filteredUsers;
+                this.refreshUserSelectionPanels(filteredUsers);
+            });
+        });
+    }
+
+    refreshUserSelectionPanels(filteredUsers) {
+        // Clear existing lists and reinitialize with filtered users
+        this.initializeUserSelectionPanel('participantsList', 'selectedParticipants', 'participantSearch', filteredUsers, 'participants');
+        this.initializeUserSelectionPanel('supportersList', 'selectedSupporters', 'supporterSearch', filteredUsers, 'supporters');
+        this.initializeUserSelectionPanel('assignersList', 'selectedAssigners', 'assignerSearch', filteredUsers, 'assigners');
     }
 
     initializeUserSelectionPanel(listId, selectedId, searchId, users, type) {
