@@ -396,13 +396,13 @@ class ContentManager {
         document.getElementById('taskApproval')?.addEventListener('click', () => 
             this.showTaskApproval());
 
-        // Other functionality
-        document.getElementById('openReward')?.addEventListener('click', () => 
-            this.showRewards());
+
         document.getElementById('openGrantAccess')?.addEventListener('click', () => 
             this.showGrantAccess());
         document.getElementById('openPersonalInformation')?.addEventListener('click', () => 
             this.showPersonalInfo());
+        document.getElementById('openWorkTasks')?.addEventListener('click', () => 
+            this.showWorkTasks());
         
         // Registration Approval
         document.getElementById('openRegistrationApproval')?.addEventListener('click', () =>
@@ -1361,64 +1361,7 @@ class ContentManager {
         }
     }
 
-    async showRewards() {
-        const content = document.getElementById('content');
-        try {
-            // Use cached getUsers API to populate employee dropdown
-            const employees = await API_CACHE.getUsersData();
-            
-            content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Quản Lý Thưởng/Phạt</h2>
-                    </div>
-                    <div class="card-body">
-                        <form id="rewardForm" class="reward-form">
-                            <div class="form-group">
-                                <label>Nhân viên</label>
-                                <select name="employeeId" class="form-control" required>
-                                    <option value="">Chọn nhân viên</option>
-                                    ${Array.isArray(employees) ? employees.map(emp => 
-                                        `<option value="${emp.employeeId}">${emp.fullName} - ${emp.employeeId}</option>`
-                                    ).join('') : ''}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Loại</label>
-                                <select name="type" class="form-control" required>
-                                    <option value="reward">Thưởng</option>
-                                    <option value="penalty">Phạt</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Số tiền</label>
-                                <input type="number" name="amount" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Lý do</label>
-                                <textarea name="reason" class="form-control" rows="3" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Thêm thưởng/phạt</button>
-                        </form>
-                        
-                        <div class="reward-history">
-                            <h3>Lịch sử thưởng/phạt</h3>
-                            <p>⏳ Chức năng lịch sử thưởng/phạt đang được phát triển</p>
-                            <div class="placeholder-history">
-                                <p>📋 Danh sách thưởng/phạt sẽ được hiển thị ở đây</p>
-                                <p>💰 Theo dõi các khoản thưởng và phạt của nhân viên</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
 
-            this.setupRewardHandlers();
-        } catch (error) {
-            console.error('Rewards error:', error);
-            utils.showNotification("Không thể tải thông tin thưởng/phạt", "error");
-        }
-    }
 
     async showGrantAccess() {
         const content = document.getElementById('content');
@@ -1923,13 +1866,7 @@ class ContentManager {
                                             <div class="stat-label">Tỷ lệ chuyên cần</div>
                                         </div>
                                     </div>
-                                    <div class="stat-item">
-                                        <div class="stat-icon">🏆</div>
-                                        <div class="stat-info">
-                                            <div class="stat-value" id="rewardsCount">-</div>
-                                            <div class="stat-label">Lần được khen</div>
-                                        </div>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -2010,6 +1947,304 @@ class ContentManager {
                 </div>
             `;
         }
+    }
+
+    async showWorkTasks() {
+        const content = document.getElementById('content');
+        try {
+            // Get current user's information
+            const userResponse = await API_CACHE.getUserData();
+            if (!userResponse) {
+                throw new Error('Could not get user data');
+            }
+
+            // Get all tasks where the user is a participant
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const tasksResponse = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${userResponse.employeeId}&token=${token}`);
+            
+            content.innerHTML = `
+                <div class="work-tasks-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Công Việc Của Tôi</h2>
+                            <p>Danh sách các nhiệm vụ mà bạn tham gia</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="tasks-filter">
+                                <button class="filter-btn active" data-status="all">Tất cả</button>
+                                <button class="filter-btn" data-status="pending">Đang xử lý</button>
+                                <button class="filter-btn" data-status="completed">Hoàn thành</button>
+                            </div>
+                            <div id="tasksList" class="tasks-list">
+                                ${this.renderTasksList(tasksResponse || [])}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Detail Modal -->
+                <div id="taskDetailModal" class="modal">
+                    <div class="modal-content">
+                        <span class="close" onclick="this.closeTaskDetailModal()">&times;</span>
+                        <div id="taskDetailContent"></div>
+                    </div>
+                </div>
+            `;
+
+            this.setupWorkTasksHandlers();
+
+        } catch (error) {
+            console.error('Work tasks error:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Lỗi tải công việc</h3>
+                        <p>Không thể tải danh sách công việc. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showWorkTasks()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    renderTasksList(tasks) {
+        if (!Array.isArray(tasks) || tasks.length === 0) {
+            return '<div class="no-tasks"><p>Chưa có công việc nào được giao.</p></div>';
+        }
+
+        return tasks.map(task => `
+            <div class="task-item" data-status="${task.status}" onclick="this.showTaskDetail('${task.id}')">
+                <div class="task-header">
+                    <h4>${task.title}</h4>
+                    <span class="task-status ${task.status}">${this.getStatusText(task.status)}</span>
+                </div>
+                <div class="task-info">
+                    <p><strong>Mô tả:</strong> ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}</p>
+                    <p><strong>Người giao:</strong> ${task.assignerName}</p>
+                    <p><strong>Hạn:</strong> ${task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : 'Không giới hạn'}</p>
+                    <p><strong>Ưu tiên:</strong> <span class="priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
+                </div>
+                <div class="task-participants">
+                    <small>Tham gia: ${task.participantNames}</small>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            'pending': 'Đang xử lý',
+            'in_progress': 'Đang thực hiện', 
+            'completed': 'Hoàn thành',
+            'rejected': 'Từ chối'
+        };
+        return statusMap[status] || status;
+    }
+
+    getPriorityText(priority) {
+        const priorityMap = {
+            'low': 'Thấp',
+            'medium': 'Trung bình',
+            'high': 'Cao',
+            'urgent': 'Khẩn cấp'
+        };
+        return priorityMap[priority] || priority;
+    }
+
+    setupWorkTasksHandlers() {
+        // Filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const status = e.target.dataset.status;
+                const taskItems = document.querySelectorAll('.task-item');
+                
+                taskItems.forEach(item => {
+                    if (status === 'all' || item.dataset.status === status) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    }
+
+    async showTaskDetail(taskId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const taskResponse = await utils.fetchAPI(`?action=getTaskDetail&taskId=${taskId}&token=${token}`);
+            
+            if (!taskResponse) {
+                throw new Error('Cannot load task details');
+            }
+
+            const modal = document.getElementById('taskDetailModal');
+            const content = document.getElementById('taskDetailContent');
+            
+            content.innerHTML = `
+                <div class="task-detail">
+                    <h3>${taskResponse.title}</h3>
+                    <div class="task-meta">
+                        <span class="task-status ${taskResponse.status}">${this.getStatusText(taskResponse.status)}</span>
+                        <span class="task-priority priority-${taskResponse.priority}">${this.getPriorityText(taskResponse.priority)}</span>
+                    </div>
+                    
+                    <div class="task-description">
+                        <h4>Mô tả:</h4>
+                        <div class="description-content">${taskResponse.description}</div>
+                    </div>
+                    
+                    <div class="task-people">
+                        <div class="assigners">
+                            <h4>Người giao nhiệm vụ:</h4>
+                            <p>${taskResponse.assignerNames}</p>
+                        </div>
+                        <div class="participants">
+                            <h4>Người thực hiện:</h4>
+                            <p>${taskResponse.participantNames}</p>
+                        </div>
+                        ${taskResponse.supporterNames ? `
+                        <div class="supporters">
+                            <h4>Người hỗ trợ:</h4>
+                            <p>${taskResponse.supporterNames}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="task-timeline">
+                        <p><strong>Ngày tạo:</strong> ${new Date(taskResponse.createdAt).toLocaleString('vi-VN')}</p>
+                        ${taskResponse.dueDate ? `<p><strong>Hạn hoàn thành:</strong> ${new Date(taskResponse.dueDate).toLocaleString('vi-VN')}</p>` : ''}
+                    </div>
+                    
+                    <div class="task-comments">
+                        <h4>Bình luận</h4>
+                        <div id="commentsList">
+                            ${this.renderComments(taskResponse.comments || [])}
+                        </div>
+                        
+                        <div class="add-comment">
+                            <textarea id="newComment" placeholder="Thêm bình luận..." rows="3"></textarea>
+                            <button onclick="this.addComment('${taskId}')" class="btn btn-primary">Gửi bình luận</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading task detail:', error);
+            utils.showNotification('Không thể tải chi tiết nhiệm vụ', 'error');
+        }
+    }
+
+    renderComments(comments) {
+        if (!Array.isArray(comments) || comments.length === 0) {
+            return '<p class="no-comments">Chưa có bình luận nào.</p>';
+        }
+
+        return comments.map(comment => `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <strong>${comment.authorName}</strong>
+                    <span class="comment-time">${new Date(comment.createdAt).toLocaleString('vi-VN')}</span>
+                </div>
+                <div class="comment-content">${comment.content}</div>
+                ${comment.replies ? this.renderReplies(comment.replies) : ''}
+                <button onclick="this.replyToComment('${comment.id}')" class="reply-btn">Trả lời</button>
+            </div>
+        `).join('');
+    }
+
+    renderReplies(replies) {
+        if (!Array.isArray(replies) || replies.length === 0) return '';
+        
+        return `
+            <div class="comment-replies">
+                ${replies.map(reply => `
+                    <div class="reply-item">
+                        <div class="reply-header">
+                            <strong>${reply.authorName}</strong>
+                            <span class="reply-time">${new Date(reply.createdAt).toLocaleString('vi-VN')}</span>
+                        </div>
+                        <div class="reply-content">${reply.content}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    async addComment(taskId) {
+        try {
+            const commentText = document.getElementById('newComment').value.trim();
+            if (!commentText) {
+                utils.showNotification('Vui lòng nhập nội dung bình luận', 'error');
+                return;
+            }
+
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=addTaskComment', {
+                method: 'POST',
+                body: JSON.stringify({
+                    taskId: taskId,
+                    content: commentText
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã thêm bình luận', 'success');
+                // Refresh task detail
+                this.showTaskDetail(taskId);
+            } else {
+                throw new Error(response.message || 'Không thể thêm bình luận');
+            }
+
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            utils.showNotification('Lỗi khi thêm bình luận', 'error');
+        }
+    }
+
+    async replyToComment(commentId) {
+        const replyText = prompt('Nhập câu trả lời:');
+        if (!replyText) return;
+
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=replyToComment', {
+                method: 'POST',
+                body: JSON.stringify({
+                    commentId: commentId,
+                    content: replyText
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã trả lời bình luận', 'success');
+                // Refresh the current task detail modal
+                const modal = document.getElementById('taskDetailModal');
+                if (modal.style.display === 'block') {
+                    // Get the task ID from the modal and refresh
+                    location.reload(); // Simple refresh for now
+                }
+            } else {
+                throw new Error(response.message || 'Không thể trả lời bình luận');
+            }
+
+        } catch (error) {
+            console.error('Error replying to comment:', error);
+            utils.showNotification('Lỗi khi trả lời bình luận', 'error');
+        }
+    }
+
+    closeTaskDetailModal() {
+        const modal = document.getElementById('taskDetailModal');
+        modal.style.display = 'none';
     }
 
     getRoleBadgeClass(position) {
@@ -2240,7 +2475,6 @@ class ContentManager {
                 document.getElementById('workDaysThisMonth').textContent = stats.workDaysThisMonth || 0;
                 document.getElementById('totalHoursThisMonth').textContent = `${stats.totalHoursThisMonth || 0} giờ`;
                 document.getElementById('attendanceRate').textContent = `${stats.attendanceRate || 0}%`;
-                document.getElementById('rewardsCount').textContent = stats.rewardsCount || 0;
             }
         } catch (error) {
             console.log('Stats not available:', error);
@@ -2248,7 +2482,6 @@ class ContentManager {
             document.getElementById('workDaysThisMonth').textContent = '0';
             document.getElementById('totalHoursThisMonth').textContent = '0 giờ';
             document.getElementById('attendanceRate').textContent = '0%';
-            document.getElementById('rewardsCount').textContent = '0';
         }
     }
 
@@ -2425,22 +2658,7 @@ class ContentManager {
         };
     }
 
-    setupRewardHandlers() {
-        document.getElementById('rewardForm')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const formData = new FormData(e.target);
-                await utils.fetchAPI('?action=addReward', {
-                    method: 'POST',
-                    body: JSON.stringify(Object.fromEntries(formData))
-                });
-                utils.showNotification("Đã thêm thưởng/phạt", "success");
-                this.showRewards();
-            } catch (error) {
-                utils.showNotification("Không thể thêm thưởng/phạt", "error");
-            }
-        });
-    }
+
 
     getRoleDisplayName(role) {
         const roleNames = {
@@ -4230,8 +4448,7 @@ class ContentManager {
             if (records.length > 0) {
                 historyHTML = records.map(record => {
                     // Use server timestamp directly without client-side timezone adjustment
-                    const serverTime = new Date(record.timestamp);
-                    const time = serverTime.toLocaleTimeString('vi-VN', { 
+                    const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
                         hour: '2-digit', 
                         minute: '2-digit', 
                         second: '2-digit',
@@ -4514,8 +4731,7 @@ class ContentManager {
                     let historyHTML = '';
                     records.forEach(record => {
                         // Use server timestamp directly without client-side timezone adjustment
-                        const serverTime = new Date(record.timestamp);
-                        const time = serverTime.toLocaleTimeString('vi-VN', { 
+                        const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
                             hour: '2-digit', 
                             minute: '2-digit', 
                             second: '2-digit',
@@ -5940,8 +6156,8 @@ async function applyRoleBasedSectionVisibility() {
     // Also apply role-based visibility to quick action buttons within the visible section
     if (roleConfig['.quick-actions-section']) {
         const quickActionVisibility = {
-            'AD': ['addEmployee', 'createSchedule', 'manageRewards', 'viewReports'],
-            'QL': ['createSchedule', 'manageRewards'],
+            'AD': ['addEmployee', 'createSchedule', 'viewReports'],
+            'QL': ['createSchedule'],
             'NV': [],
             'AM': []
         };
@@ -5981,9 +6197,6 @@ function handleQuickAction(action) {
             break;
         case 'createSchedule':
             openModal('scheduleWork');
-            break;
-        case 'manageRewards':
-            openModal('reward');
             break;
         case 'viewReports':
             generateReports();
@@ -6140,7 +6353,7 @@ async function initializePersonalDashboard() {
     
     if (['NV', 'AM'].includes(position)) {
         await loadPersonalSchedule();
-        await loadPersonalRewards();
+
         await loadPersonalTasks();
     }
 }
@@ -6172,34 +6385,7 @@ async function loadPersonalSchedule() {
     }
 }
 
-// Load Personal Rewards
-async function loadPersonalRewards() {
-    const container = document.getElementById('personalRewards');
-    if (!container) return;
 
-    try {
-        const userInfo = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
-        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        const employeeId = userInfo.employeeId || userInfo.loginEmployeeId;
-        const rewards = await utils.fetchAPI(`?action=getRewards&employeeId=${employeeId}&limit=5&token=${token}`);
-        
-        if (rewards && Array.isArray(rewards) && rewards.length > 0) {
-            const rewardsHTML = rewards.map(reward => `
-                <div class="reward-item ${reward.type}">
-                    <span class="reward-type">${reward.type === 'reward' ? '🏆 Thưởng' : '⚠️ Phạt'}:</span>
-                    <span class="reward-amount">${reward.amount.toLocaleString('vi-VN')} ₫</span>
-                    <span class="reward-reason">${reward.reason}</span>
-                </div>
-            `).join('');
-            container.innerHTML = rewardsHTML;
-        } else {
-            container.innerHTML = '<p>Chưa có thưởng/phạt</p>';
-        }
-    } catch (error) {
-        console.error('Failed to load personal rewards:', error);
-        container.innerHTML = '<p>Không thể tải thưởng/phạt</p>';
-    }
-}
 
 // Load Personal Tasks
 async function loadPersonalTasks() {
@@ -6376,12 +6562,7 @@ function setupMobileMenu() {
             setTimeout(() => window.contentManager?.showAttendance(), 300);
         });
         
-        // Other menu items
-        document.getElementById('mobileReward')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeMobileMenu();
-            setTimeout(() => window.contentManager?.showReward(), 300);
-        });
+
         
         document.getElementById('mobileSubmitTask')?.addEventListener('click', (e) => {
             e.preventDefault();
@@ -6411,6 +6592,13 @@ function setupMobileMenu() {
             e.preventDefault();
             closeMobileMenu();
             setTimeout(() => window.contentManager?.showTaskApproval(), 300);
+        });
+        
+        // Work Tasks menu item
+        document.getElementById('mobileWorkTasks')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileMenu();
+            setTimeout(() => window.contentManager?.showWorkTasks(), 300);
         });
         
         document.getElementById('mobileRegistrationApproval')?.addEventListener('click', (e) => {
@@ -6997,10 +7185,6 @@ function buildRoleBasedDashboard(userRole) {
                         <span class="action-icon">📊</span>
                         <span class="action-text">Tạo Lịch Làm</span>
                     </button>
-                    <button class="quick-action-btn" data-action="manageRewards">
-                        <span class="action-icon">🏆</span>
-                        <span class="action-text">Quản Lý Thưởng</span>
-                    </button>
         `;
         
         if (userRole === 'AD') {
@@ -7038,12 +7222,7 @@ function buildRoleBasedDashboard(userRole) {
                             <p>Đang tải biểu đồ...</p>
                         </div>
                     </div>
-                    <div class="chart-card">
-                        <h3>Thưởng/Phạt</h3>
-                        <div class="chart-placeholder" id="rewardsChart">
-                            <p>Đang tải biểu đồ...</p>
-                        </div>
-                    </div>
+
                     <div class="chart-card">
                         <h3>Doanh Thu</h3>
                         <div class="chart-placeholder" id="revenueChart">
@@ -7181,12 +7360,7 @@ function buildRoleBasedDashboard(userRole) {
                             <p>Đang tải lịch làm...</p>
                         </div>
                     </div>
-                    <div class="personal-card rewards">
-                        <h3>Thưởng/Phạt Gần Đây</h3>
-                        <div id="personalRewards" class="rewards-preview">
-                            <p>Đang tải thông tin...</p>
-                        </div>
-                    </div>
+
                     <div class="personal-card tasks">
                         <h3>Yêu Cầu Của Tôi</h3>
                         <div id="personalTasks" class="tasks-preview">

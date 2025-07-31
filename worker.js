@@ -1120,104 +1120,9 @@ async function handleGetDashboardStats(db, origin) {
 
 
 
-// Hàm thêm thưởng/phạt
-async function handleAddReward(body, db, origin) {
-  const { employeeId, type, amount, reason } = body;
-  
-  if (!employeeId || !type || !amount || !reason) {
-    return jsonResponse({ message: "Thiếu thông tin cần thiết!" }, 400, origin);
-  }
 
-  if (!['reward', 'penalty'].includes(type)) {
-    return jsonResponse({ message: "Loại thưởng/phạt không hợp lệ!" }, 400, origin);
-  }
 
-  try {
-    // Kiểm tra nhân viên tồn tại
-    const employee = await db
-      .prepare("SELECT employeeId, fullName FROM employees WHERE employeeId = ?")
-      .bind(employeeId)
-      .first();
 
-    if (!employee) {
-      return jsonResponse({ message: "Nhân viên không tồn tại!" }, 404, origin);
-    }
-
-    // Thêm bản ghi thưởng/phạt
-    const rewardId = crypto.randomUUID();
-    const now = new Date().toISOString();
-
-    await db
-      .prepare("INSERT INTO rewards (id, employeeId, employeeName, type, amount, reason, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)")
-      .bind(rewardId, employeeId, employee.fullName, type, amount, reason, now)
-      .run();
-
-    return jsonResponse({ 
-      message: `Đã thêm ${type === 'reward' ? 'thưởng' : 'phạt'} cho nhân viên ${employee.fullName}`,
-      rewardId 
-    }, 200, origin);
-  } catch (error) {
-    console.error("Lỗi thêm thưởng/phạt:", error);
-    return jsonResponse({ message: "Lỗi thêm thưởng/phạt!", error: error.message }, 500, origin);
-  }
-}
-
-// Hàm lấy lịch sử thưởng/phạt
-async function handleGetRewards(url, db, origin) {
-  try {
-    // Check user session and get their role
-    const token = url.searchParams.get("token");
-    const session = await checkSessionMiddleware(token, db, origin);
-    if (session instanceof Response) return session;
-
-    // Get current user's position/role and store
-    const currentUser = await db
-      .prepare("SELECT position, storeName FROM employees WHERE employeeId = ?")
-      .bind(session.employeeId)
-      .first();
-
-    if (!currentUser) {
-      return jsonResponse({ message: "Không tìm thấy thông tin người dùng!" }, 404, origin);
-    }
-
-    const employeeId = url.searchParams.get("employeeId");
-    const limit = parseInt(url.searchParams.get("limit")) || 50;
-
-    // Build query with JOIN to get store information  
-    let query = `
-      SELECT r.*, e.storeName 
-      FROM rewards r 
-      JOIN employees e ON r.employeeId = e.employeeId 
-      WHERE 1=1
-    `;
-    let params = [];
-
-    // Only filter by store if user is NOT Admin (AD)
-    if (currentUser.position !== 'AD') {
-      query += " AND e.storeName = ?";
-      params.push(currentUser.storeName);
-    }
-
-    if (employeeId) {
-      query += " AND r.employeeId = ?";
-      params.push(employeeId);
-    }
-
-    query += " ORDER BY r.createdAt DESC LIMIT ?";
-    params.push(limit);
-
-    const rewards = await db.prepare(query).bind(...params).all();
-
-    if (!rewards.results || rewards.results.length === 0) {
-      return jsonResponse([], 200, origin);
-    }
-
-    return jsonResponse(rewards.results, 200, origin);
-  } catch (error) {
-    console.error("Lỗi lấy lịch sử thưởng/phạt:", error);
-    return jsonResponse({ message: "Lỗi lấy lịch sử thưởng/phạt!", error: error.message }, 500, origin);
-  }
-}
 
 // Hàm xử lý yêu cầu - duyệt
 async function handleApproveTask(body, db, origin) {
@@ -1610,8 +1515,7 @@ async function handleGetPersonalStats(url, db, origin) {
     const stats = {
       workDaysThisMonth: Math.floor(Math.random() * 22) + 8, // 8-30 days
       totalHoursThisMonth: Math.floor(Math.random() * 160) + 40, // 40-200 hours
-      attendanceRate: Math.floor(Math.random() * 20) + 80, // 80-100%
-      rewardsCount: Math.floor(Math.random() * 5) // 0-5 rewards
+      attendanceRate: Math.floor(Math.random() * 20) + 80 // 80-100%
     };
 
     return jsonResponse({ stats }, 200, origin);
@@ -1658,7 +1562,7 @@ export default {
       const protectedActions = [
         "update", "getUser", "getUsers", 
         "updateUser", "getPendingRegistrations",
-        "getPendingRequests", "getTasks", "getRewards", "getPermissions",
+        "getPendingRequests", "getTasks", "getPermissions",
         "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
         "getAttendanceData", "checkIn", "checkOut", "getTimesheet", "processAttendance",
         "getAttendanceHistory", "createAttendanceRequest", "createTaskAssignment"
@@ -1689,8 +1593,6 @@ export default {
             return await loginUser(body, db, ALLOWED_ORIGIN);
           case "updateUser":
             return await updateUser(body, request.userId, db, ALLOWED_ORIGIN);
-          case "addReward":
-            return await handleAddReward(body, db, ALLOWED_ORIGIN);
           case "approveTask":
             return await handleApproveTask(body, db, ALLOWED_ORIGIN);
           case "rejectTask":
@@ -1742,8 +1644,6 @@ export default {
             return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
           case "getDashboardStats":
             return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
-          case "getRewards":
-            return await handleGetRewards(url, db, ALLOWED_ORIGIN);
           case "getTasks":
             return await handleGetTasks(url, db, ALLOWED_ORIGIN);
           case "getPermissions":
