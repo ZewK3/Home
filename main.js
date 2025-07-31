@@ -1473,83 +1473,448 @@ class ContentManager {
     async showTaskPersonnel() {
         const content = document.getElementById('content');
         try {
-            // Load task data for dashboard
+            // Get current user role for permission check
+            const userResponse = await API_CACHE.getUserData();
+            if (!userResponse || !['QL', 'AD'].includes(userResponse.position)) {
+                content.innerHTML = `
+                    <div class="access-denied">
+                        <span class="material-icons-round">block</span>
+                        <h3>Không có quyền truy cập</h3>
+                        <p>Chỉ QL và AD mới có quyền xử lý yêu cầu nhân sự.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Load attendance requests (đơn từ)
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const tasks = await utils.fetchAPI(`?action=getTasks&token=${token}`);
+            const attendanceRequests = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
             
             content.innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <h2>Xử Lý Yêu Cầu Nhân Sự</h2>
+                        <h2>Xử Lý Yêu Cầu Nhân Sự - Đơn Từ</h2>
+                        <p>Duyệt các đơn từ và yêu cầu của nhân viên</p>
                     </div>
                     <div class="card-body">
-                        <div class="task-filters">
-                            <select id="taskStatusFilter" class="form-control">
+                        <div class="request-filters">
+                            <select id="attendanceRequestTypeFilter" class="form-control">
+                                <option value="">Tất cả loại đơn</option>
+                                <option value="forgot_checkin">Quên chấm công vào</option>
+                                <option value="forgot_checkout">Quên chấm công ra</option>
+                                <option value="shift_change">Thay đổi ca làm</option>
+                                <option value="leave">Xin nghỉ phép</option>
+                                <option value="sick_leave">Nghỉ ốm</option>
+                                <option value="personal_leave">Nghỉ cá nhân</option>
+                            </select>
+                            <select id="attendanceRequestStatusFilter" class="form-control">
                                 <option value="">Tất cả trạng thái</option>
-                                <option value="pending">Chờ xử lý</option>
+                                <option value="pending">Chờ duyệt</option>
                                 <option value="approved">Đã duyệt</option>
-                                <option value="rejected">Từ chối</option>
+                                <option value="rejected">Đã từ chối</option>
                             </select>
                         </div>
-                        <div class="task-list">
-                            <p>Chức năng xử lý yêu cầu nhân sự. Hiện tại hệ thống có ${Array.isArray(tasks) ? tasks.length : 0} yêu cầu chưa xử lý.</p>
-                            <div class="placeholder-content">
-                                <p>📋 Danh sách yêu cầu nhân sự sẽ được hiển thị ở đây</p>
-                                <p>💬 Các yêu cầu nghỉ phép, tăng ca, thay đổi lịch làm việc</p>
-                                <p>⏳ Trạng thái: Chờ phát triển chức năng</p>
-                            </div>
+                        <div class="requests-list" id="attendanceRequestsList">
+                            ${this.renderAttendanceRequests(attendanceRequests || [])}
                         </div>
                     </div>
                 </div>
             `;
 
-            this.setupTaskHandlers('personnel');
+            this.setupAttendanceRequestHandlers();
+
         } catch (error) {
             console.error('Personnel tasks error:', error);
             utils.showNotification("Không thể tải yêu cầu nhân sự", "error");
         }
     }
 
+    renderAttendanceRequests(requests) {
+        if (!Array.isArray(requests) || requests.length === 0) {
+            return '<div class="no-requests"><p>Không có đơn từ nào.</p></div>';
+        }
+
+        return requests.map(request => `
+            <div class="request-item ${request.status}" data-status="${request.status}" data-type="${request.requestType}">
+                <div class="request-header">
+                    <h4>${this.getRequestTypeDisplayName(request.requestType)}</h4>
+                    <span class="request-status ${request.status}">
+                        ${this.getRequestStatusText(request.status)}
+                    </span>
+                </div>
+                <div class="request-info">
+                    <div class="request-details">
+                        <p><strong>Nhân viên:</strong> ${request.employeeName} (${request.employeeId})</p>
+                        <p><strong>Cửa hàng:</strong> ${request.storeName}</p>
+                        <p><strong>Ngày yêu cầu:</strong> ${new Date(request.requestDate).toLocaleDateString('vi-VN')}</p>
+                        
+                        ${request.requestType.includes('forgot') ? `
+                            <p><strong>Thời gian:</strong> ${request.requestTime}</p>
+                            <p><strong>Vị trí:</strong> ${request.location || 'Không có'}</p>
+                        ` : ''}
+                        
+                        ${request.requestType === 'shift_change' ? `
+                            <p><strong>Ca hiện tại:</strong> ${this.getShiftDisplayName(request.currentShift)}</p>
+                            <p><strong>Ca mong muốn:</strong> ${this.getShiftDisplayName(request.requestedShift)}</p>
+                        ` : ''}
+                        
+                        ${request.requestType.includes('leave') ? `
+                            <p><strong>Từ ngày:</strong> ${new Date(request.startDate).toLocaleDateString('vi-VN')}</p>
+                            <p><strong>Đến ngày:</strong> ${new Date(request.endDate).toLocaleDateString('vi-VN')}</p>
+                            <p><strong>Số ngày:</strong> ${request.dayCount} ngày</p>
+                        ` : ''}
+                        
+                        <p><strong>Lý do:</strong> ${request.reason}</p>
+                        <p><strong>Ngày tạo:</strong> ${new Date(request.createdAt).toLocaleString('vi-VN')}</p>
+                    </div>
+                </div>
+                
+                ${request.status === 'pending' ? `
+                    <div class="request-actions">
+                        <button onclick="this.approveAttendanceRequest('${request.id}')" class="btn btn-success">
+                            <span class="material-icons-round">check</span>
+                            Duyệt
+                        </button>
+                        <button onclick="this.rejectAttendanceRequest('${request.id}')" class="btn btn-danger">
+                            <span class="material-icons-round">close</span>
+                            Từ chối
+                        </button>
+                    </div>
+                ` : ''}
+                
+                ${request.approvalNote ? `
+                    <div class="approval-note">
+                        <strong>Ghi chú duyệt:</strong> ${request.approvalNote}
+                        <br><strong>Người duyệt:</strong> ${request.approverName}
+                        <br><strong>Thời gian duyệt:</strong> ${new Date(request.approvalDate).toLocaleString('vi-VN')}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    getRequestTypeDisplayName(requestType) {
+        const typeMap = {
+            'forgot_checkin': 'Quên chấm công vào',
+            'forgot_checkout': 'Quên chấm công ra',
+            'shift_change': 'Thay đổi ca làm',
+            'leave': 'Xin nghỉ phép',
+            'sick_leave': 'Nghỉ ốm',
+            'personal_leave': 'Nghỉ cá nhân'
+        };
+        return typeMap[requestType] || requestType;
+    }
+
+    setupAttendanceRequestHandlers() {
+        // Type filter
+        document.getElementById('attendanceRequestTypeFilter')?.addEventListener('change', (e) => {
+            this.filterAttendanceRequests();
+        });
+
+        // Status filter
+        document.getElementById('attendanceRequestStatusFilter')?.addEventListener('change', (e) => {
+            this.filterAttendanceRequests();
+        });
+    }
+
+    filterAttendanceRequests() {
+        const typeFilter = document.getElementById('attendanceRequestTypeFilter').value;
+        const statusFilter = document.getElementById('attendanceRequestStatusFilter').value;
+        const requestItems = document.querySelectorAll('.request-item');
+        
+        requestItems.forEach(item => {
+            const type = item.dataset.type;
+            const status = item.dataset.status;
+            
+            const typeMatch = !typeFilter || type === typeFilter;
+            const statusMatch = !statusFilter || status === statusFilter;
+            
+            if (typeMatch && statusMatch) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    async approveAttendanceRequest(requestId) {
+        try {
+            const note = prompt('Ghi chú duyệt (tùy chọn):');
+            
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=approveAttendanceRequest', {
+                method: 'POST',
+                body: JSON.stringify({
+                    requestId: requestId,
+                    note: note
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã duyệt đơn từ', 'success');
+                this.showTaskPersonnel(); // Refresh the list
+            } else {
+                throw new Error(response.message || 'Không thể duyệt đơn từ');
+            }
+
+        } catch (error) {
+            console.error('Error approving attendance request:', error);
+            utils.showNotification('Lỗi khi duyệt đơn từ', 'error');
+        }
+    }
+
+    async rejectAttendanceRequest(requestId) {
+        try {
+            const note = prompt('Lý do từ chối:');
+            if (!note) {
+                utils.showNotification('Vui lòng nhập lý do từ chối', 'warning');
+                return;
+            }
+            
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=rejectAttendanceRequest', {
+                method: 'POST',
+                body: JSON.stringify({
+                    requestId: requestId,
+                    note: note
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã từ chối đơn từ', 'success');
+                this.showTaskPersonnel(); // Refresh the list
+            } else {
+                throw new Error(response.message || 'Không thể từ chối đơn từ');
+            }
+
+        } catch (error) {
+            console.error('Error rejecting attendance request:', error);
+            utils.showNotification('Lỗi khi từ chối đơn từ', 'error');
+        }
+    }
+
     async showTaskStore() {
         const content = document.getElementById('content');
         try {
-            // Use AuthManager's cached stores data
-            const stores = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            // Get current user role for permission check
+            const userResponse = await API_CACHE.getUserData();
+            if (!userResponse || !['AM', 'AD'].includes(userResponse.position)) {
+                content.innerHTML = `
+                    <div class="access-denied">
+                        <span class="material-icons-round">block</span>
+                        <h3>Không có quyền truy cập</h3>
+                        <p>Chỉ AM và AD mới có quyền xử lý yêu cầu cửa hàng.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Load shift assignment requests
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const shiftRequests = await utils.fetchAPI(`?action=getShiftRequests&token=${token}`);
             
             content.innerHTML = `
                 <div class="card">
                     <div class="card-header">
-                        <h2>Xử Lý Yêu Cầu Cửa Hàng</h2>
+                        <h2>Xử Lý Yêu Cầu Cửa Hàng - Phân Ca</h2>
+                        <p>Duyệt các yêu cầu thay đổi phân ca và lịch làm việc</p>
                     </div>
                     <div class="card-body">
-                        <div class="task-filters">
-                            <select id="taskStatusFilter" class="form-control">
+                        <div class="request-filters">
+                            <select id="shiftRequestStatusFilter" class="form-control">
                                 <option value="">Tất cả trạng thái</option>
-                                <option value="pending">Chờ xử lý</option>
+                                <option value="pending">Chờ duyệt</option>
                                 <option value="approved">Đã duyệt</option>
-                                <option value="rejected">Từ chối</option>
+                                <option value="rejected">Đã từ chối</option>
+                            </select>
+                            <select id="shiftRequestStoreFilter" class="form-control">
+                                <option value="">Tất cả cửa hàng</option>
                             </select>
                         </div>
-                        <div class="task-list">
-                            <p>Quản lý yêu cầu từ ${Array.isArray(stores) ? stores.length : 0} cửa hàng trong hệ thống.</p>
-                            <div class="store-list">
-                                ${Array.isArray(stores) ? stores.map(store => `
-                                    <div class="store-card">
-                                        <h4>${store.storeName || store.storeId}</h4>
-                                        <p>Mã cửa hàng: ${store.storeId}</p>
-                                        <p>Trạng thái: Hoạt động</p>
-                                    </div>
-                                `).join('') : '<p>Không có cửa hàng nào</p>'}
-                            </div>
+                        <div class="requests-list" id="shiftRequestsList">
+                            ${this.renderShiftRequests(shiftRequests || [])}
                         </div>
                     </div>
                 </div>
             `;
 
-            this.setupTaskHandlers('store');
+            this.setupShiftRequestHandlers();
+            await this.loadStoreFilterOptions();
+
         } catch (error) {
-            console.error('Store tasks error:', error);
-            utils.showNotification("Không thể tải thông tin cửa hàng", "error");
+            console.error('Store shift requests error:', error);
+            utils.showNotification("Không thể tải yêu cầu phân ca", "error");
+        }
+    }
+
+    renderShiftRequests(requests) {
+        if (!Array.isArray(requests) || requests.length === 0) {
+            return '<div class="no-requests"><p>Không có yêu cầu phân ca nào.</p></div>';
+        }
+
+        return requests.map(request => `
+            <div class="request-item ${request.status}" data-status="${request.status}" data-store="${request.storeId}">
+                <div class="request-header">
+                    <h4>${request.requestType === 'shift_change' ? 'Thay đổi ca làm' : 'Yêu cầu phân ca'}</h4>
+                    <span class="request-status ${request.status}">
+                        ${this.getRequestStatusText(request.status)}
+                    </span>
+                </div>
+                <div class="request-info">
+                    <div class="request-details">
+                        <p><strong>Nhân viên:</strong> ${request.employeeName} (${request.employeeId})</p>
+                        <p><strong>Cửa hàng:</strong> ${request.storeName}</p>
+                        <p><strong>Ngày:</strong> ${new Date(request.requestDate).toLocaleDateString('vi-VN')}</p>
+                        <p><strong>Ca hiện tại:</strong> ${this.getShiftDisplayName(request.currentShift)}</p>
+                        <p><strong>Ca mong muốn:</strong> ${this.getShiftDisplayName(request.requestedShift)}</p>
+                        <p><strong>Lý do:</strong> ${request.reason}</p>
+                        <p><strong>Ngày tạo:</strong> ${new Date(request.createdAt).toLocaleString('vi-VN')}</p>
+                    </div>
+                </div>
+                
+                ${request.status === 'pending' ? `
+                    <div class="request-actions">
+                        <button onclick="this.approveShiftRequest('${request.id}')" class="btn btn-success">
+                            <span class="material-icons-round">check</span>
+                            Duyệt
+                        </button>
+                        <button onclick="this.rejectShiftRequest('${request.id}')" class="btn btn-danger">
+                            <span class="material-icons-round">close</span>
+                            Từ chối
+                        </button>
+                    </div>
+                ` : ''}
+                
+                ${request.approvalNote ? `
+                    <div class="approval-note">
+                        <strong>Ghi chú duyệt:</strong> ${request.approvalNote}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    getRequestStatusText(status) {
+        const statusMap = {
+            'pending': 'Chờ duyệt',
+            'approved': 'Đã duyệt',
+            'rejected': 'Đã từ chối'
+        };
+        return statusMap[status] || status;
+    }
+
+    getShiftDisplayName(shiftType) {
+        const shiftMap = {
+            'morning': 'Ca sáng (8:00-16:00)',
+            'afternoon': 'Ca chiều (13:00-22:00)',
+            'night': 'Ca đêm (22:00-6:00)',
+            'full': 'Ca full (8:00-22:00)',
+            '': 'Nghỉ'
+        };
+        return shiftMap[shiftType] || shiftType;
+    }
+
+    setupShiftRequestHandlers() {
+        // Status filter
+        document.getElementById('shiftRequestStatusFilter')?.addEventListener('change', (e) => {
+            this.filterShiftRequests();
+        });
+
+        // Store filter
+        document.getElementById('shiftRequestStoreFilter')?.addEventListener('change', (e) => {
+            this.filterShiftRequests();
+        });
+    }
+
+    filterShiftRequests() {
+        const statusFilter = document.getElementById('shiftRequestStatusFilter').value;
+        const storeFilter = document.getElementById('shiftRequestStoreFilter').value;
+        const requestItems = document.querySelectorAll('.request-item');
+        
+        requestItems.forEach(item => {
+            const status = item.dataset.status;
+            const store = item.dataset.store;
+            
+            const statusMatch = !statusFilter || status === statusFilter;
+            const storeMatch = !storeFilter || store === storeFilter;
+            
+            if (statusMatch && storeMatch) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    async loadStoreFilterOptions() {
+        try {
+            const stores = await API_CACHE.getStoresData();
+            const storeFilter = document.getElementById('shiftRequestStoreFilter');
+            
+            if (Array.isArray(stores)) {
+                const storeOptions = stores.map(store => 
+                    `<option value="${store.storeId}">${store.storeName || store.storeId}</option>`
+                ).join('');
+                storeFilter.innerHTML += storeOptions;
+            }
+        } catch (error) {
+            console.error('Error loading store filter options:', error);
+        }
+    }
+
+    async approveShiftRequest(requestId) {
+        try {
+            const note = prompt('Ghi chú duyệt (tùy chọn):');
+            
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=approveShiftRequest', {
+                method: 'POST',
+                body: JSON.stringify({
+                    requestId: requestId,
+                    note: note
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã duyệt yêu cầu phân ca', 'success');
+                this.showTaskStore(); // Refresh the list
+            } else {
+                throw new Error(response.message || 'Không thể duyệt yêu cầu');
+            }
+
+        } catch (error) {
+            console.error('Error approving shift request:', error);
+            utils.showNotification('Lỗi khi duyệt yêu cầu', 'error');
+        }
+    }
+
+    async rejectShiftRequest(requestId) {
+        try {
+            const note = prompt('Lý do từ chối:');
+            if (!note) {
+                utils.showNotification('Vui lòng nhập lý do từ chối', 'warning');
+                return;
+            }
+            
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=rejectShiftRequest', {
+                method: 'POST',
+                body: JSON.stringify({
+                    requestId: requestId,
+                    note: note
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã từ chối yêu cầu phân ca', 'success');
+                this.showTaskStore(); // Refresh the list
+            } else {
+                throw new Error(response.message || 'Không thể từ chối yêu cầu');
+            }
+
+        } catch (error) {
+            console.error('Error rejecting shift request:', error);
+            utils.showNotification('Lỗi khi từ chối yêu cầu', 'error');
         }
     }
 

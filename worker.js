@@ -1565,7 +1565,11 @@ export default {
         "getPendingRequests", "getTasks", "getPermissions",
         "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
         "getAttendanceData", "checkIn", "checkOut", "getTimesheet", "processAttendance",
-        "getAttendanceHistory", "createAttendanceRequest", "createTaskAssignment"
+        "getAttendanceHistory", "createAttendanceRequest", "createTaskAssignment",
+        "getWorkTasks", "getTaskDetail", "addTaskComment", "replyToComment",
+        "getEmployeesByStore", "saveShiftAssignments", "getShiftRequests",
+        "approveShiftRequest", "rejectShiftRequest", "getAttendanceRequests",
+        "approveAttendanceRequest", "rejectAttendanceRequest"
       ];
       if (protectedActions.includes(action)) {
         const session = await checkSessionMiddleware(token, db, ALLOWED_ORIGIN);
@@ -1617,6 +1621,20 @@ export default {
             return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
           case "createTaskAssignment":
             return await handleCreateTaskAssignment(body, db, ALLOWED_ORIGIN);
+          case "addTaskComment":
+            return await handleAddTaskComment(body, db, ALLOWED_ORIGIN);
+          case "replyToComment":
+            return await handleReplyToComment(body, db, ALLOWED_ORIGIN);
+          case "saveShiftAssignments":
+            return await handleSaveShiftAssignments(body, db, ALLOWED_ORIGIN);
+          case "approveShiftRequest":
+            return await handleApproveShiftRequest(body, db, ALLOWED_ORIGIN);
+          case "rejectShiftRequest":
+            return await handleRejectShiftRequest(body, db, ALLOWED_ORIGIN);
+          case "approveAttendanceRequest":
+            return await handleApproveAttendanceRequest(body, db, ALLOWED_ORIGIN);
+          case "rejectAttendanceRequest":
+            return await handleRejectAttendanceRequest(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -1658,6 +1676,16 @@ export default {
             return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
           case "getPersonalStats":
             return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
+          case "getWorkTasks":
+            return await handleGetWorkTasks(url, db, ALLOWED_ORIGIN);
+          case "getTaskDetail":
+            return await handleGetTaskDetail(url, db, ALLOWED_ORIGIN);
+          case "getEmployeesByStore":
+            return await handleGetEmployeesByStore(url, db, ALLOWED_ORIGIN);
+          case "getShiftRequests":
+            return await handleGetShiftRequests(url, db, ALLOWED_ORIGIN);
+          case "getAttendanceRequests":
+            return await handleGetAttendanceRequests(url, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -2133,6 +2161,509 @@ async function handleCreateTaskAssignment(body, db, origin) {
     return jsonResponse({ 
       success: false, 
       message: "Lỗi khi tạo nhiệm vụ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// New API Handlers for Enhanced HR Management System
+
+// Handle getting work tasks for a user
+async function handleGetWorkTasks(url, db, origin) {
+  try {
+    const employeeId = url.searchParams.get("employeeId");
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "employeeId là bắt buộc!" }, 400, origin);
+    }
+
+    const tasksQuery = await db
+      .prepare(`
+        SELECT t.*, ta.role, 
+               GROUP_CONCAT(CASE WHEN ta2.role = 'assigner' THEN e2.fullName END) as assignerNames,
+               GROUP_CONCAT(CASE WHEN ta2.role = 'participant' THEN e2.fullName END) as participantNames,
+               GROUP_CONCAT(CASE WHEN ta2.role = 'supporter' THEN e2.fullName END) as supporterNames
+        FROM tasks t
+        JOIN task_assignments ta ON t.taskId = ta.taskId
+        LEFT JOIN task_assignments ta2 ON t.taskId = ta2.taskId
+        LEFT JOIN employees e2 ON ta2.employeeId = e2.employeeId
+        WHERE ta.employeeId = ?
+        GROUP BY t.taskId
+        ORDER BY t.createdAt DESC
+      `)
+      .bind(employeeId)
+      .all();
+
+    const tasks = tasksQuery.results || [];
+    return jsonResponse(tasks, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting work tasks:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy danh sách công việc", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle getting task detail with comments
+async function handleGetTaskDetail(url, db, origin) {
+  try {
+    const taskId = url.searchParams.get("taskId");
+    
+    if (!taskId) {
+      return jsonResponse({ message: "taskId là bắt buộc!" }, 400, origin);
+    }
+
+    // Get task details
+    const taskQuery = await db
+      .prepare(`
+        SELECT t.*, 
+               GROUP_CONCAT(CASE WHEN ta.role = 'assigner' THEN e.fullName END) as assignerNames,
+               GROUP_CONCAT(CASE WHEN ta.role = 'participant' THEN e.fullName END) as participantNames,
+               GROUP_CONCAT(CASE WHEN ta.role = 'supporter' THEN e.fullName END) as supporterNames
+        FROM tasks t
+        LEFT JOIN task_assignments ta ON t.taskId = ta.taskId
+        LEFT JOIN employees e ON ta.employeeId = e.employeeId
+        WHERE t.taskId = ?
+        GROUP BY t.taskId
+      `)
+      .bind(taskId)
+      .first();
+
+    if (!taskQuery) {
+      return jsonResponse({ message: "Không tìm thấy nhiệm vụ!" }, 404, origin);
+    }
+
+    // Get comments
+    const commentsQuery = await db
+      .prepare(`
+        SELECT tc.*, e.fullName as authorName
+        FROM task_comments tc
+        LEFT JOIN employees e ON tc.authorId = e.employeeId
+        WHERE tc.taskId = ?
+        ORDER BY tc.createdAt ASC
+      `)
+      .bind(taskId)
+      .all();
+
+    const task = taskQuery;
+    task.comments = commentsQuery.results || [];
+
+    return jsonResponse(task, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting task detail:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy chi tiết nhiệm vụ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle adding task comment
+async function handleAddTaskComment(body, db, origin) {
+  try {
+    const { taskId, content } = body;
+    
+    if (!taskId || !content) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Thiếu thông tin bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    const commentId = `COMMENT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db
+      .prepare(`
+        INSERT INTO task_comments (
+          commentId, taskId, authorId, content, createdAt
+        ) VALUES (?, ?, ?, ?, ?)
+      `)
+      .bind(
+        commentId,
+        taskId,
+        session.employeeId,
+        content,
+        TimezoneUtils.toHanoiISOString()
+      )
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đã thêm bình luận thành công!",
+      commentId: commentId
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error adding task comment:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi thêm bình luận", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle replying to comment
+async function handleReplyToComment(body, db, origin) {
+  try {
+    const { commentId, content } = body;
+    
+    if (!commentId || !content) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Thiếu thông tin bắt buộc!" 
+      }, 400, origin);
+     }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    const replyId = `REPLY_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    await db
+      .prepare(`
+        INSERT INTO comment_replies (
+          replyId, commentId, authorId, content, createdAt
+        ) VALUES (?, ?, ?, ?, ?)
+      `)
+      .bind(
+        replyId,
+        commentId,
+        session.employeeId,
+        content,
+        TimezoneUtils.toHanoiISOString()
+      )
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đã trả lời bình luận thành công!",
+      replyId: replyId
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error replying to comment:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi trả lời bình luận", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle getting employees by store
+async function handleGetEmployeesByStore(url, db, origin) {
+  try {
+    const storeId = url.searchParams.get("storeId");
+    
+    if (!storeId) {
+      return jsonResponse({ message: "storeId là bắt buộc!" }, 400, origin);
+    }
+
+    const employeesQuery = await db
+      .prepare(`
+        SELECT employeeId, fullName, position, email, storeName
+        FROM employees 
+        WHERE storeName = ? AND status = 'active'
+        ORDER BY fullName
+      `)
+      .bind(storeId)
+      .all();
+
+    const employees = employeesQuery.results || [];
+    return jsonResponse(employees, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting employees by store:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy danh sách nhân viên", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle saving shift assignments
+async function handleSaveShiftAssignments(body, db, origin) {
+  try {
+    const { storeId, week, shifts } = body;
+    
+    if (!storeId || !week || !Array.isArray(shifts)) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Thiếu thông tin bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    // Clear existing assignments for the week
+    await db
+      .prepare(`
+        DELETE FROM shift_assignments 
+        WHERE storeId = ? AND strftime('%Y-W%W', date) = ?
+      `)
+      .bind(storeId, week)
+      .run();
+
+    // Insert new assignments
+    for (const shift of shifts) {
+      await db
+        .prepare(`
+          INSERT INTO shift_assignments (
+            employeeId, storeId, date, shiftType, assignedBy, assignedAt
+          ) VALUES (?, ?, ?, ?, ?, ?)
+        `)
+        .bind(
+          shift.employeeId,
+          shift.storeId,
+          shift.date,
+          shift.shiftType,
+          session.employeeId,
+          TimezoneUtils.toHanoiISOString()
+        )
+        .run();
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Đã lưu phân ca thành công!",
+      shiftsCount: shifts.length
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error saving shift assignments:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi lưu phân ca", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle getting shift requests
+async function handleGetShiftRequests(url, db, origin) {
+  try {
+    const shiftRequestsQuery = await db
+      .prepare(`
+        SELECT sr.*, e.fullName as employeeName, s.storeName
+        FROM shift_requests sr
+        LEFT JOIN employees e ON sr.employeeId = e.employeeId
+        LEFT JOIN stores s ON sr.storeId = s.storeId
+        ORDER BY sr.createdAt DESC
+      `)
+      .all();
+
+    const requests = shiftRequestsQuery.results || [];
+    return jsonResponse(requests, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting shift requests:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy yêu cầu phân ca", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle approving shift request
+async function handleApproveShiftRequest(body, db, origin) {
+  try {
+    const { requestId, note } = body;
+    
+    if (!requestId) {
+      return jsonResponse({ 
+        success: false, 
+        message: "requestId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    await db
+      .prepare(`
+        UPDATE shift_requests 
+        SET status = 'approved', approvedBy = ?, approvedAt = ?, approvalNote = ?
+        WHERE id = ?
+      `)
+      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note || '', requestId)
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đã duyệt yêu cầu phân ca thành công!"
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error approving shift request:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi duyệt yêu cầu", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle rejecting shift request
+async function handleRejectShiftRequest(body, db, origin) {
+  try {
+    const { requestId, note } = body;
+    
+    if (!requestId || !note) {
+      return jsonResponse({ 
+        success: false, 
+        message: "requestId và note là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    await db
+      .prepare(`
+        UPDATE shift_requests 
+        SET status = 'rejected', approvedBy = ?, approvedAt = ?, approvalNote = ?
+        WHERE id = ?
+      `)
+      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note, requestId)
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đã từ chối yêu cầu phân ca!"
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error rejecting shift request:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi từ chối yêu cầu", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle getting attendance requests
+async function handleGetAttendanceRequests(url, db, origin) {
+  try {
+    const attendanceRequestsQuery = await db
+      .prepare(`
+        SELECT ar.*, e.fullName as employeeName, s.storeName,
+               approver.fullName as approverName
+        FROM attendance_requests ar
+        LEFT JOIN employees e ON ar.employeeId = e.employeeId
+        LEFT JOIN stores s ON ar.storeId = s.storeId
+        LEFT JOIN employees approver ON ar.approvedBy = approver.employeeId
+        ORDER BY ar.createdAt DESC
+      `)
+      .all();
+
+    const requests = attendanceRequestsQuery.results || [];
+    return jsonResponse(requests, 200, origin);
+
+  } catch (error) {
+    console.error("Error getting attendance requests:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy yêu cầu chấm công", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle approving attendance request
+async function handleApproveAttendanceRequest(body, db, origin) {
+  try {
+    const { requestId, note } = body;
+    
+    if (!requestId) {
+      return jsonResponse({ 
+        success: false, 
+        message: "requestId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    await db
+      .prepare(`
+        UPDATE attendance_requests 
+        SET status = 'approved', approvedBy = ?, approvalDate = ?, approvalNote = ?
+        WHERE id = ?
+      `)
+      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note || '', requestId)
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đã duyệt đơn từ thành công!"
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error approving attendance request:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi duyệt đơn từ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle rejecting attendance request
+async function handleRejectAttendanceRequest(body, db, origin) {
+  try {
+    const { requestId, note } = body;
+    
+    if (!requestId || !note) {
+      return jsonResponse({ 
+        success: false, 
+        message: "requestId và note là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get current user from session
+    const token = body.token || '';
+    const session = await checkSessionMiddleware(token, db, origin);
+    if (session instanceof Response) return session;
+
+    await db
+      .prepare(`
+        UPDATE attendance_requests 
+        SET status = 'rejected', approvedBy = ?, approvalDate = ?, approvalNote = ?
+        WHERE id = ?
+      `)
+      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note, requestId)
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đã từ chối đơn từ!"
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Error rejecting attendance request:", error);
+    return jsonResponse({ 
+      success: false, 
+      message: "Lỗi khi từ chối đơn từ", 
       error: error.message 
     }, 500, origin);
   }
