@@ -16,27 +16,44 @@
 -- ✓ Comprehensive analytics and reporting
 -- =====================================================
 
--- CURRENT TABLES IN USE:
--- ✓ employees - Employee data and authentication
--- ✓ sessions - Authentication sessions
--- ✓ stores - Store locations with GPS coordinates
--- ✓ attendance - GPS attendance tracking
--- ✓ timesheets - Monthly timesheet data
--- ✓ shift_assignments - Required for attendance validation
--- ✓ attendance_requests - Attendance-related requests (Đơn Từ) - FIXED: Now used consistently
--- ✓ shift_requests - Shift change requests (Store management) - ADDED: Missing table
--- ✓ tasks - Work tasks and assignments
--- ✓ task_assignments - Task assignment relationships
--- ✓ task_comments - Task comments and discussions - ADDED: Missing table
--- ✓ comment_replies - Comment replies for task discussions - ADDED: Missing table
--- ✓ notifications - System notifications
--- ✓ hr_settings - System configuration
--- 
--- FIXED ISSUES:
--- ✓ handleCreateAttendanceRequest now writes to attendance_requests (not requests)
--- ✓ handleGetAttendanceRequests reads from attendance_requests
--- ✓ Added missing shift_requests table for shift management
--- ✓ Improved task assignment validation with defensive checks
+-- CURRENT TABLES IN USE (Updated August 2025):
+-- ✅ employees - Employee data and authentication  
+-- ✅ sessions - Authentication sessions
+-- ✅ stores - Store locations with GPS coordinates
+-- ✅ attendance - GPS attendance tracking
+-- ✅ timesheets - Monthly timesheet data
+-- ✅ shift_assignments - Required for attendance validation
+-- ✅ attendance_requests - Attendance-related requests (Đơn Từ) - PRIMARY TABLE FOR REQUESTS
+-- ✅ shift_requests - Shift change requests (Store management)
+-- ✅ tasks - Work tasks and assignments (Updated schema with foreign key fixes)
+-- ✅ task_assignments - Task assignment relationships (Fixed foreign key to reference tasks.id)
+-- ✅ task_comments - Task comments and discussions (Fixed foreign key to reference tasks.id)
+-- ✅ comment_replies - Comment replies for task discussions
+-- ✅ notifications - System notifications
+-- ✅ hr_settings - System configuration
+-- ✅ users - Customer user accounts (for order system)
+-- ✅ queue - Employee registration queue
+-- ✅ email_verification - Email verification during registration
+-- ✅ workSchedules - Employee work schedules
+-- ✅ permissions - Role-based permissions
+-- ✅ attendance_summary - Monthly attendance statistics
+-- ✅ gps_attendance - Detailed GPS attendance logs
+-- ✅ requests - General requests (backward compatibility - DEPRECATED, use attendance_requests)
+-- ✅ history_logs - Action history tracking
+-- ✅ messages - Chat messages
+-- ✅ payment - Payment records
+-- ✅ transaction - Transaction records
+-- ✅ orders - Customer orders
+
+-- DEPRECATED TABLES (No longer used):
+-- ❌ rewards - Replaced with Work Tasks system (tasks/task_assignments)
+
+-- SCHEMA FIXES APPLIED:
+-- ✅ task_assignments.taskId now references tasks.id (not tasks.taskId)
+-- ✅ task_comments.taskId now references tasks.id (not tasks.taskId)  
+-- ✅ All attendance request functions use attendance_requests table consistently
+-- ✅ Tasks table includes both id (primary key) and taskId (legacy compatibility)
+-- ✅ Foreign key constraints aligned with actual database structure
 -- =====================================================
 
 -- D1 Database Table Creation SQL Scripts
@@ -362,7 +379,7 @@ CREATE TABLE task_assignments (
     role TEXT NOT NULL CHECK (role IN ('participant', 'supporter', 'assigner')),
     assignedAt TEXT DEFAULT CURRENT_TIMESTAMP,
     status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled')),
-    FOREIGN KEY (taskId) REFERENCES tasks(taskId),
+    FOREIGN KEY (taskId) REFERENCES tasks(id),
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
@@ -374,7 +391,7 @@ CREATE TABLE task_comments (
     authorId TEXT NOT NULL,
     content TEXT NOT NULL,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (taskId) REFERENCES tasks(taskId),
+    FOREIGN KEY (taskId) REFERENCES tasks(id),
     FOREIGN KEY (authorId) REFERENCES employees(employeeId)
 );
 

@@ -1525,11 +1525,11 @@ class ContentManager {
                 
                 ${request.status === 'pending' ? `
                     <div class="request-actions">
-                        <button onclick="this.approveAttendanceRequest('${request.id}')" class="btn btn-success">
+                        <button onclick="window.contentManager.approveAttendanceRequest('${request.id}')" class="btn btn-success">
                             <span class="material-icons-round">check</span>
                             Duyệt
                         </button>
-                        <button onclick="this.rejectAttendanceRequest('${request.id}')" class="btn btn-danger">
+                        <button onclick="window.contentManager.rejectAttendanceRequest('${request.id}')" class="btn btn-danger">
                             <span class="material-icons-round">close</span>
                             Từ chối
                         </button>

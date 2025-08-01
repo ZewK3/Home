@@ -2091,12 +2091,13 @@ async function handleCreateTaskAssignment(body, db, origin) {
     const taskInsert = await db
       .prepare(`
         INSERT INTO tasks (
-          taskId, title, description, priority, deadline, status,
+          id, taskId, title, description, priority, deadline, status,
           createdBy, createdAt, data, employeeId, employeeName, position, type, content
-        ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, 'task_assignment', ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, 'task_assignment', ?)
       `)
       .bind(
-        taskId,
+        taskId, // Use taskId as the primary key 'id'
+        taskId, // Also store in taskId field for backward compatibility
         title,
         description,
         priority,
