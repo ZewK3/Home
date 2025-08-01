@@ -27,6 +27,8 @@
 -- ✓ shift_requests - Shift change requests (Store management) - ADDED: Missing table
 -- ✓ tasks - Work tasks and assignments
 -- ✓ task_assignments - Task assignment relationships
+-- ✓ task_comments - Task comments and discussions - ADDED: Missing table
+-- ✓ comment_replies - Comment replies for task discussions - ADDED: Missing table
 -- ✓ notifications - System notifications
 -- ✓ hr_settings - System configuration
 -- 
@@ -364,6 +366,30 @@ CREATE TABLE task_assignments (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
+-- Table for task comments
+CREATE TABLE task_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    commentId TEXT UNIQUE NOT NULL,
+    taskId TEXT NOT NULL,
+    authorId TEXT NOT NULL,
+    content TEXT NOT NULL,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (taskId) REFERENCES tasks(taskId),
+    FOREIGN KEY (authorId) REFERENCES employees(employeeId)
+);
+
+-- Table for comment replies
+CREATE TABLE comment_replies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    replyId TEXT UNIQUE NOT NULL,
+    commentId TEXT NOT NULL,
+    authorId TEXT NOT NULL,
+    content TEXT NOT NULL,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (commentId) REFERENCES task_comments(commentId),
+    FOREIGN KEY (authorId) REFERENCES employees(employeeId)
+);
+
 -- =====================================================
 -- SYSTEM MANAGEMENT
 -- =====================================================
@@ -491,6 +517,12 @@ CREATE INDEX idx_requests_status ON requests(status);
 CREATE INDEX idx_task_assignments_task ON task_assignments(taskId);
 CREATE INDEX idx_task_assignments_employee ON task_assignments(employeeId);
 CREATE INDEX idx_task_assignments_role ON task_assignments(role);
+CREATE INDEX idx_task_comments_task ON task_comments(taskId);
+CREATE INDEX idx_task_comments_author ON task_comments(authorId);
+CREATE INDEX idx_task_comments_created ON task_comments(createdAt);
+CREATE INDEX idx_comment_replies_comment ON comment_replies(commentId);
+CREATE INDEX idx_comment_replies_author ON comment_replies(authorId);
+CREATE INDEX idx_comment_replies_created ON comment_replies(createdAt);
 
 -- System management indexes
 CREATE INDEX idx_notifications_employee ON notifications(employeeId);
