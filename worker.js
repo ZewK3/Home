@@ -1,73 +1,5 @@
 const ALLOWED_ORIGIN = "*";
 
-// Timezone Utility Class for +7 Hanoi Timezone
-class TimezoneUtils {
-  static HANOI_TIMEZONE = 'Asia/Ho_Chi_Minh';
-  static TIMEZONE_OFFSET = 7; // UTC +7
-
-  // ✅ Đã implement: Format dd/mm/yyyy
-  static formatDate(hanoiDate) {
-    const year = hanoiDate.getFullYear();
-    const month = String(hanoiDate.getMonth() + 1).padStart(2, '0');
-    const day = String(hanoiDate.getDate()).padStart(2, '0');
-    return `${day}/${month}/${year}`; // Trả về: dd/mm/yyyy
-  }
-
-  // Get current time in Hanoi timezone
-  static now() {
-    const now = new Date();
-    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-    return new Date(utc + (7 * 3600000)); // UTC + 7 hours
-  }
-
-  // Format date to Hanoi timezone string
-  static formatDateTime(date, options = {}) {
-    if (typeof date === 'string') {
-      date = new Date(date);
-    }
-
-    // Convert to Hanoi timezone
-    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-    const hanoiDate = new Date(utc + (7 * 3600000));
-
-    const year = hanoiDate.getFullYear();
-    const month = String(hanoiDate.getMonth() + 1).padStart(2, '0');
-    const day = String(hanoiDate.getDate()).padStart(2, '0');
-    const hour = String(hanoiDate.getHours()).padStart(2, '0');
-    const minute = String(hanoiDate.getMinutes()).padStart(2, '0');
-    const second = String(hanoiDate.getSeconds()).padStart(2, '0');
-
-    if (options.dateOnly) {
-      return `${day}/${month}/${year}`;
-    }
-    if (options.timeOnly) {
-      return `${hour}:${minute}:${second}`;
-    }
-
-    return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
-  }
-
-  // Get date in ISO format but adjusted for Hanoi timezone
-  static toHanoiISOString(date = null) {
-    const targetDate = date || this.now();
-    return targetDate.toISOString(); // ISO vẫn ở UTC, nếu cần chỉnh múi giờ, phải xử lý riêng
-  }
-
-  // Convert any date to Hanoi timezone
-  static toHanoiTime(date) {
-    if (typeof date === 'string') {
-      date = new Date(date);
-    }
-    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-    return new Date(utc + (7 * 3600000));
-  }
-
-  // Get timestamp in Hanoi timezone
-  static getHanoiTimestamp() {
-    return this.now().getTime();
-  }
-}
-
 
 // Get SendGrid API key from KV storage
 async function getSendGridApiKey(env) {
@@ -132,7 +64,7 @@ async function sendVerificationEmail(email, employeeId, fullName, env) {
                 <strong>Thông tin đăng ký:</strong><br>
                 Mã nhân viên: ${employeeId}<br>
                 Email: ${email}<br>
-                Thời gian đăng ký: ${TimezoneUtils.formatDateTime(TimezoneUtils.now())}
+                Thời gian đăng ký: ${new Date().toLocaleString()}
               </p>
             </div>
           </div>
@@ -174,7 +106,7 @@ function jsonResponse(body, status, origin = ALLOWED_ORIGIN) {
   
   return new Response(JSON.stringify({
     ...responseBody,
-    timestamp: TimezoneUtils.toHanoiISOString(),
+    timestamp: new Date().toISOString(),
     status: status
   }), {
     status,
@@ -227,8 +159,8 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
       return jsonResponse("Phiên làm việc không hợp lệ - vui lòng đăng nhập lại", 401, allowedOrigin);
     }
 
-    const now = TimezoneUtils.now();
-    const expiresAt = TimezoneUtils.toHanoiTime(new Date(session.expiresAt));
+    const now = new Date();
+    const expiresAt = new Date(session.expiresAt);
     
     // Thêm buffer time 5 phút để tránh lỗi timezone
     const bufferTime = 5 * 60 * 1000; // 5 phút tính bằng milliseconds
@@ -241,7 +173,7 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
     // Cập nhật thời gian truy cập cuối để theo dõi session
     await db
       .prepare("UPDATE sessions SET lastAccess = ? WHERE token = ?")
-      .bind(TimezoneUtils.toHanoiISOString(now), token)
+      .bind(now.toISOString(), token)
       .run();
 
     return { employeeId: session.employeeId, valid: true };
@@ -254,9 +186,9 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
 // Hàm tạo hoặc cập nhật phiên người dùng
 async function createSession(employeeId, db, allowedOrigin) {
   const token = crypto.randomUUID();
-  const expiresAt = TimezoneUtils.now();
+  const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 8); // Phiên hết hạn sau 8 giờ (tăng thời gian để tránh hết hạn sớm)
-  const now = TimezoneUtils.toHanoiISOString();
+  const now = new Date().toISOString();
 
   try {
     // Xóa session cũ của user này trước
@@ -265,14 +197,14 @@ async function createSession(employeeId, db, allowedOrigin) {
     // Tạo session mới
     await db
       .prepare("INSERT INTO sessions (employeeId, token, expiresAt, lastAccess) VALUES (?, ?, ?, ?)")
-      .bind(employeeId, token, TimezoneUtils.toHanoiISOString(expiresAt), now)
+      .bind(employeeId, token, expiresAt.toISOString(), now)
       .run();
 
     // Trả về dữ liệu session trực tiếp
     return {
       token,
       employeeId,
-      expiresAt: TimezoneUtils.toHanoiISOString(expiresAt),
+      expiresAt: expiresAt.toISOString(),
       lastAccess: now,
       success: true
     };
@@ -830,7 +762,7 @@ async function handleUpdateUserWithHistory(body, db, origin) {
     }
 
     // Log changes to history
-    const timestamp = TimezoneUtils.toHanoiISOString();
+    const timestamp = new Date().toISOString();
     
     if (changes && Array.isArray(changes)) {
       for (const change of changes) {
@@ -919,7 +851,7 @@ async function handleApproveRegistrationWithHistory(body, db, origin) {
     // Add your approval logic here...
 
     // Log approval action to history
-    const timestamp = TimezoneUtils.toHanoiISOString();
+    const timestamp = new Date().toISOString();
     
     await db
       .prepare(
@@ -1924,9 +1856,9 @@ async function handleProcessAttendance(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get today's attendance records using server Hanoi timezone
-    const serverTime = TimezoneUtils.now(); // Use server time instead of client timestamp
-    const today = TimezoneUtils.formatDate(serverTime).split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
+    // Get today's attendance records using server local time
+    const serverTime = new Date(); // Use server local time instead of timezone-specific time
+    const today = serverTime.toISOString().split('T')[0]; // Get YYYY-MM-DD format
     const existingRecordsQuery = await db
       .prepare(`
         SELECT * FROM attendance 
@@ -1943,14 +1875,14 @@ async function handleProcessAttendance(body, db, origin) {
     const isCheckIn = !lastRecord || lastRecord.checkOut;
 
     if (isCheckIn) {
-      // Process check-in using server Hanoi timezone
-      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(serverTime);
+      // Process check-in using server local time
+      const timestamp = serverTime.toISOString();
       await db
         .prepare(`
           INSERT INTO attendance (employeeId, checkIn, location, status)
           VALUES (?, ?, ?, 'active')
         `)
-        .bind(employeeId, hanoiTimestamp, JSON.stringify(location))
+        .bind(employeeId, timestamp, JSON.stringify(location))
         .run();
 
       return jsonResponse({
@@ -1963,22 +1895,22 @@ async function handleProcessAttendance(body, db, origin) {
       }, 200, origin);
 
     } else {
-      // Process check-out using server Hanoi timezone
-      const hanoiTimestamp = TimezoneUtils.toHanoiISOString(serverTime);
+      // Process check-out using server local time
+      const timestamp = serverTime.toISOString();
       await db
         .prepare(`
           UPDATE attendance 
           SET checkOut = ?, status = 'completed'
           WHERE employeeId = ? AND DATE(checkIn) = ? AND checkOut IS NULL
         `)
-        .bind(hanoiTimestamp, employeeId, today)
+        .bind(timestamp, employeeId, today)
         .run();
 
       return jsonResponse({
         success: true,
         message: "Chấm công tan ca thành công!",
         type: "check-out",
-        timestamp: hanoiTimestamp,
+        timestamp: timestamp,
         distance: Math.round(distance),
         store: employee.storeName
       }, 200, origin);
@@ -2312,7 +2244,7 @@ async function handleAddTaskComment(body, db, origin) {
         taskId,
         session.employeeId,
         content,
-        TimezoneUtils.toHanoiISOString()
+        new Date().toISOString()
       )
       .run();
 
@@ -2362,7 +2294,7 @@ async function handleReplyToComment(body, db, origin) {
         commentId,
         session.employeeId,
         content,
-        TimezoneUtils.toHanoiISOString()
+        new Date().toISOString()
       )
       .run();
 
@@ -2453,7 +2385,7 @@ async function handleSaveShiftAssignments(body, db, origin) {
           shift.date,
           shift.shiftType,
           session.employeeId,
-          TimezoneUtils.toHanoiISOString()
+          new Date().toISOString()
         )
         .run();
     }
@@ -2522,7 +2454,7 @@ async function handleApproveShiftRequest(body, db, origin) {
         SET status = 'approved', approvedBy = ?, approvedAt = ?, approvalNote = ?
         WHERE id = ?
       `)
-      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note || '', requestId)
+      .bind(session.employeeId, new Date().toISOString(), note || '', requestId)
       .run();
 
     return jsonResponse({
@@ -2563,7 +2495,7 @@ async function handleRejectShiftRequest(body, db, origin) {
         SET status = 'rejected', approvedBy = ?, approvedAt = ?, approvalNote = ?
         WHERE id = ?
       `)
-      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note, requestId)
+      .bind(session.employeeId, new Date().toISOString(), note, requestId)
       .run();
 
     return jsonResponse({
@@ -2630,7 +2562,7 @@ async function handleApproveAttendanceRequest(body, db, origin) {
         SET status = 'approved', approvedBy = ?, approvalDate = ?, approvalNote = ?
         WHERE id = ?
       `)
-      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note || '', requestId)
+      .bind(session.employeeId, new Date().toISOString(), note || '', requestId)
       .run();
 
     return jsonResponse({
@@ -2671,7 +2603,7 @@ async function handleRejectAttendanceRequest(body, db, origin) {
         SET status = 'rejected', approvedBy = ?, approvalDate = ?, approvalNote = ?
         WHERE id = ?
       `)
-      .bind(session.employeeId, TimezoneUtils.toHanoiISOString(), note, requestId)
+      .bind(session.employeeId, new Date().toISOString(), note, requestId)
       .run();
 
     return jsonResponse({

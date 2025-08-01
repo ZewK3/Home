@@ -197,7 +197,7 @@ const utils = {
     },
 
     formatDate(date) {
-        return new Date(date).toLocaleString('vi-VN', {
+        return new Date(date).toLocaleString({
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -208,7 +208,7 @@ const utils = {
 
     formatDateTime(date) {
         if (!date) return 'N/A';
-        return new Date(date).toLocaleString('vi-VN', {
+        return new Date(date).toLocaleString({
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
@@ -1473,7 +1473,7 @@ class ContentManager {
                     <div class="request-details">
                         <p><strong>Nhân viên:</strong> ${request.employeeName} (${request.employeeId})</p>
                         <p><strong>Cửa hàng:</strong> ${request.storeName}</p>
-                        <p><strong>Ngày yêu cầu:</strong> ${new Date(request.requestDate).toLocaleDateString('vi-VN')}</p>
+                        <p><strong>Ngày yêu cầu:</strong> ${new Date(request.requestDate).toLocaleDateString()}</p>
                         
                         ${request.requestType.includes('forgot') ? `
                             <p><strong>Thời gian:</strong> ${request.requestTime}</p>
@@ -1486,13 +1486,13 @@ class ContentManager {
                         ` : ''}
                         
                         ${request.requestType.includes('leave') ? `
-                            <p><strong>Từ ngày:</strong> ${new Date(request.startDate).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Đến ngày:</strong> ${new Date(request.endDate).toLocaleDateString('vi-VN')}</p>
+                            <p><strong>Từ ngày:</strong> ${new Date(request.startDate).toLocaleDateString()}</p>
+                            <p><strong>Đến ngày:</strong> ${new Date(request.endDate).toLocaleDateString()}</p>
                             <p><strong>Số ngày:</strong> ${request.dayCount} ngày</p>
                         ` : ''}
                         
                         <p><strong>Lý do:</strong> ${request.reason}</p>
-                        <p><strong>Ngày tạo:</strong> ${new Date(request.createdAt).toLocaleString('vi-VN')}</p>
+                        <p><strong>Ngày tạo:</strong> ${new Date(request.createdAt).toLocaleString()}</p>
                     </div>
                 </div>
                 
@@ -1513,7 +1513,7 @@ class ContentManager {
                     <div class="approval-note">
                         <strong>Ghi chú duyệt:</strong> ${request.approvalNote}
                         <br><strong>Người duyệt:</strong> ${request.approverName}
-                        <br><strong>Thời gian duyệt:</strong> ${new Date(request.approvalDate).toLocaleString('vi-VN')}
+                        <br><strong>Thời gian duyệt:</strong> ${new Date(request.approvalDate).toLocaleString()}
                     </div>
                 ` : ''}
             </div>
@@ -1691,11 +1691,11 @@ class ContentManager {
                     <div class="request-details">
                         <p><strong>Nhân viên:</strong> ${request.employeeName} (${request.employeeId})</p>
                         <p><strong>Cửa hàng:</strong> ${request.storeName}</p>
-                        <p><strong>Ngày:</strong> ${new Date(request.requestDate).toLocaleDateString('vi-VN')}</p>
+                        <p><strong>Ngày:</strong> ${new Date(request.requestDate).toLocaleDateString()}</p>
                         <p><strong>Ca hiện tại:</strong> ${this.getShiftDisplayName(request.currentShift)}</p>
                         <p><strong>Ca mong muốn:</strong> ${this.getShiftDisplayName(request.requestedShift)}</p>
                         <p><strong>Lý do:</strong> ${request.reason}</p>
-                        <p><strong>Ngày tạo:</strong> ${new Date(request.createdAt).toLocaleString('vi-VN')}</p>
+                        <p><strong>Ngày tạo:</strong> ${new Date(request.createdAt).toLocaleString()}</p>
                     </div>
                 </div>
                 
@@ -2588,7 +2588,7 @@ class ContentManager {
                 <div class="task-info">
                     <p><strong>Mô tả:</strong> ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}</p>
                     <p><strong>Người giao:</strong> ${task.assignerName}</p>
-                    <p><strong>Hạn:</strong> ${task.dueDate ? new Date(task.dueDate).toLocaleDateString('vi-VN') : 'Không giới hạn'}</p>
+                    <p><strong>Hạn:</strong> ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Không giới hạn'}</p>
                     <p><strong>Ưu tiên:</strong> <span class="priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
                 </div>
                 <div class="task-participants">
@@ -2683,8 +2683,8 @@ class ContentManager {
                     </div>
                     
                     <div class="task-timeline">
-                        <p><strong>Ngày tạo:</strong> ${new Date(taskResponse.createdAt).toLocaleString('vi-VN')}</p>
-                        ${taskResponse.dueDate ? `<p><strong>Hạn hoàn thành:</strong> ${new Date(taskResponse.dueDate).toLocaleString('vi-VN')}</p>` : ''}
+                        <p><strong>Ngày tạo:</strong> ${new Date(taskResponse.createdAt).toLocaleString()}</p>
+                        ${taskResponse.dueDate ? `<p><strong>Hạn hoàn thành:</strong> ${new Date(taskResponse.dueDate).toLocaleString()}</p>` : ''}
                     </div>
                     
                     <div class="task-comments">
@@ -2718,7 +2718,7 @@ class ContentManager {
             <div class="comment-item">
                 <div class="comment-header">
                     <strong>${comment.authorName}</strong>
-                    <span class="comment-time">${new Date(comment.createdAt).toLocaleString('vi-VN')}</span>
+                    <span class="comment-time">${new Date(comment.createdAt).toLocaleString()}</span>
                 </div>
                 <div class="comment-content">${comment.content}</div>
                 ${comment.replies ? this.renderReplies(comment.replies) : ''}
@@ -2736,7 +2736,7 @@ class ContentManager {
                     <div class="reply-item">
                         <div class="reply-header">
                             <strong>${reply.authorName}</strong>
-                            <span class="reply-time">${new Date(reply.createdAt).toLocaleString('vi-VN')}</span>
+                            <span class="reply-time">${new Date(reply.createdAt).toLocaleString()}</span>
                         </div>
                         <div class="reply-content">${reply.content}</div>
                     </div>
@@ -3150,7 +3150,7 @@ class ContentManager {
                         <tr>
                             <td>${reward.employeeName}</td>
                             <td><span class="reward-type ${reward.type}">${reward.type === 'reward' ? 'Thưởng' : 'Phạt'}</span></td>
-                            <td>${reward.amount.toLocaleString('vi-VN')} VNĐ</td>
+                            <td>${reward.amount.toLocaleString()} VNĐ</td>
                             <td>${reward.reason}</td>
                             <td>${utils.formatDate(reward.createdAt)}</td>
                         </tr>
@@ -4993,7 +4993,7 @@ class ContentManager {
             // Get attendance history for the selected date
             const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${date}`);
             
-            const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('vi-VN');
+            const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString();
             
             let historyHTML = '';
             let records = [];
@@ -5014,7 +5014,7 @@ class ContentManager {
             if (records.length > 0) {
                 historyHTML = records.map(record => {
                     // Use server timestamp directly without client-side timezone adjustment
-                    const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
+                    const time = new Date(record.timestamp).toLocaleTimeString( { 
                         hour: '2-digit', 
                         minute: '2-digit', 
                         second: '2-digit',
@@ -5297,7 +5297,7 @@ class ContentManager {
                     let historyHTML = '';
                     records.forEach(record => {
                         // Use server timestamp directly without client-side timezone adjustment
-                        const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
+                        const time = new Date(record.timestamp).toLocaleTimeString( { 
                             hour: '2-digit', 
                             minute: '2-digit', 
                             second: '2-digit',
@@ -6012,11 +6012,12 @@ class ContentManager {
                 title: formData.get('taskTitle'),
                 description: descriptionContent,
                 priority: formData.get('taskPriority'),
-                dueDate: formData.get('taskDueDate'),
+                deadline: formData.get('taskDueDate'), // Changed from dueDate to deadline
                 participants: participants,
                 supporters: supporters,
-                assignerId: finalAssignerId,
-                visibility: formData.get('taskVisibility') || 'involved-only'
+                assigners: [finalAssignerId], // Changed from assignerId to assigners array
+                createdBy: finalAssignerId, // Added createdBy field
+                timestamp: new Date().toISOString() // Added timestamp field
             };
 
             // Fixed validation - check if all people involved
