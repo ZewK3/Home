@@ -2041,7 +2041,7 @@ async function handleCreateAttendanceRequest(body, db, origin) {
 
     // Create attendance request record in attendance_requests table
     const requestId = `REQ_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const currentTime = TimezoneUtils.toHanoiISOString();
+    const currentTime = new Date().toISOString();
     
     await db
       .prepare(`

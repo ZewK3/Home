@@ -11,79 +11,6 @@ const CONFIG = {
     MAX_RETRY_ATTEMPTS: 3
 };
 
-// Timezone Utility Class for +7 Hanoi Timezone
-class TimezoneUtils {
-    static HANOI_TIMEZONE = 'Asia/Ho_Chi_Minh';
-    static TIMEZONE_OFFSET = 7; // UTC +7
-
-    // Get current time in Hanoi timezone
-    static now() {
-        return new Date(new Date().toLocaleString("en-US", {timeZone: this.HANOI_TIMEZONE}));
-    }
-
-    // Format date to Hanoi timezone string
-    static formatDateTime(date, options = {}) {
-        const defaultOptions = {
-            timeZone: this.HANOI_TIMEZONE,
-            year: 'numeric',
-            month: '2-digit', 
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-        };
-        
-        const finalOptions = { ...defaultOptions, ...options };
-        
-        if (typeof date === 'string') {
-            date = new Date(date);
-        }
-        
-        return date.toLocaleString('vi-VN', finalOptions);
-    }
-
-    // Format date only (no time)
-    static formatDate(date) {
-        return this.formatDateTime(date, {
-            hour: undefined,
-            minute: undefined, 
-            second: undefined
-        });
-    }
-
-    // Format time only (no date)
-    static formatTime(date) {
-        return this.formatDateTime(date, {
-            year: undefined,
-            month: undefined,
-            day: undefined
-        });
-    }
-
-    // Get date in ISO format but adjusted for Hanoi timezone
-    static toHanoiISOString(date = null) {
-        const targetDate = date || this.now();
-        const hanoiDate = new Date(targetDate.toLocaleString("en-US", {timeZone: this.HANOI_TIMEZONE}));
-        return hanoiDate.toISOString();
-    }
-
-    // Convert any date to Hanoi timezone
-    static toHanoiTime(date) {
-        if (typeof date === 'string') {
-            date = new Date(date);
-        }
-        return new Date(date.toLocaleString("en-US", {timeZone: this.HANOI_TIMEZONE}));
-    }
-
-    // Get timestamp in Hanoi timezone
-    static getHanoiTimestamp() {
-        return this.now().getTime();
-    }
-}
-
-
-
 // Global cache for API data with enhanced call tracking
 const API_CACHE = {
     userData: null,
@@ -5066,7 +4993,7 @@ class ContentManager {
             // Get attendance history for the selected date
             const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${date}`);
             
-            const formattedDate = TimezoneUtils.formatDate(new Date(date + 'T00:00:00'));
+            const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('vi-VN');
             
             let historyHTML = '';
             let records = [];
@@ -5347,7 +5274,7 @@ class ContentManager {
 
     async loadAttendanceHistoryToday(employeeId) {
         try {
-            const today = TimezoneUtils.formatDate(TimezoneUtils.now()).split('/').reverse().join('-'); // Convert DD/MM/YYYY to YYYY-MM-DD
+            const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
             const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${today}`);
             
             const historyContainer = document.getElementById('attendanceHistoryToday');
@@ -5662,8 +5589,10 @@ class ContentManager {
     async submitAttendanceRequest(type, formData) {
         try {
             const userResponse = await API_CACHE.getUserData();
+            // Convert hyphenated types to underscore format for database constraint
+            const dbType = type.replace(/-/g, '_');
             const requestData = {
-                type: type,
+                type: dbType,
                 employeeId: userResponse.employeeId,
                 timestamp: new Date().toISOString()
             };
@@ -5709,7 +5638,7 @@ class ContentManager {
                             <form id="taskAssignmentForm" class="task-form">
                                 <div class="form-group">
                                     <label for="taskTitle">Tiêu đề nhiệm vụ:</label>
-                                    <input type="text" id="taskTitle" class="form-control" required>
+                                    <input type="text" id="taskTitle" name="taskTitle" class="form-control" required>
                                 </div>
                                 
                                 <div class="form-group">
@@ -5756,7 +5685,7 @@ class ContentManager {
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="taskPriority">Mức độ ưu tiên:</label>
-                                        <select id="taskPriority" class="form-control" required>
+                                        <select id="taskPriority" name="taskPriority" class="form-control" required>
                                             <option value="">Chọn mức độ</option>
                                             <option value="low">Thấp</option>
                                             <option value="medium">Trung bình</option>
@@ -5766,7 +5695,7 @@ class ContentManager {
                                     </div>
                                     <div class="form-group">
                                         <label for="taskDeadline">Thời hạn:</label>
-                                        <input type="datetime-local" id="taskDeadline" class="form-control" required>
+                                        <input type="datetime-local" id="taskDeadline" name="taskDueDate" class="form-control" required>
                                     </div>
                                 </div>
                                 
