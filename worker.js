@@ -5,6 +5,14 @@ class TimezoneUtils {
   static HANOI_TIMEZONE = 'Asia/Ho_Chi_Minh';
   static TIMEZONE_OFFSET = 7; // UTC +7
 
+  // ✅ Đã implement: Format dd/mm/yyyy
+  static formatDate(hanoiDate) {
+    const year = hanoiDate.getFullYear();
+    const month = String(hanoiDate.getMonth() + 1).padStart(2, '0');
+    const day = String(hanoiDate.getDate()).padStart(2, '0');
+    return `${day}/${month}/${year}`; // Trả về: dd/mm/yyyy
+  }
+
   // Get current time in Hanoi timezone
   static now() {
     const now = new Date();
@@ -17,32 +25,32 @@ class TimezoneUtils {
     if (typeof date === 'string') {
       date = new Date(date);
     }
-    
+
     // Convert to Hanoi timezone
     const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
     const hanoiDate = new Date(utc + (7 * 3600000));
-    
+
     const year = hanoiDate.getFullYear();
     const month = String(hanoiDate.getMonth() + 1).padStart(2, '0');
     const day = String(hanoiDate.getDate()).padStart(2, '0');
     const hour = String(hanoiDate.getHours()).padStart(2, '0');
     const minute = String(hanoiDate.getMinutes()).padStart(2, '0');
     const second = String(hanoiDate.getSeconds()).padStart(2, '0');
-    
+
     if (options.dateOnly) {
       return `${day}/${month}/${year}`;
     }
     if (options.timeOnly) {
       return `${hour}:${minute}:${second}`;
     }
-    
+
     return `${day}/${month}/${year} ${hour}:${minute}:${second}`;
   }
 
   // Get date in ISO format but adjusted for Hanoi timezone
   static toHanoiISOString(date = null) {
     const targetDate = date || this.now();
-    return targetDate.toISOString();
+    return targetDate.toISOString(); // ISO vẫn ở UTC, nếu cần chỉnh múi giờ, phải xử lý riêng
   }
 
   // Convert any date to Hanoi timezone
@@ -59,6 +67,7 @@ class TimezoneUtils {
     return this.now().getTime();
   }
 }
+
 
 // Get SendGrid API key from KV storage
 async function getSendGridApiKey(env) {
@@ -1768,19 +1777,21 @@ async function handleGetTimesheet(url, db, origin) {
       }
 
       // Apply 60-minute tolerance rules
-      const shiftStart = new Date(`${attendance.date} ${shift.startTime}`);
-      const shiftEnd = new Date(`${attendance.date} ${shift.endTime}`);
+      const shiftStart = new Date(`${attendance.date}T${shift.startTime}`);
+      const shiftEnd = new Date(`${attendance.date}T${shift.endTime}`);
       const checkInTime = new Date(attendance.fullCheckIn);
       const checkOutTime = attendance.fullCheckOut ? new Date(attendance.fullCheckOut) : null;
-
-      // Check-in validation: not more than 60 minutes after shift start
-      const checkInDiff = (checkInTime - shiftStart) / (1000 * 60); // difference in minutes
-      const isValidCheckIn = checkInDiff <= 60;
-
-      // Check-out validation: not more than 60 minutes after shift end
+      
+      const checkInDiff = (checkInTime instanceof Date && shiftStart instanceof Date)
+        ? (checkInTime.getTime() - shiftStart.getTime()) / 60000
+        : 0;
+      
+      let isValidCheckIn = checkInDiff <= 60;
+      
       let isValidCheckOut = true;
-      if (checkOutTime) {
-        const checkOutDiff = (checkOutTime - shiftEnd) / (1000 * 60); // difference in minutes
+      let checkOutDiff = 0;
+      if (checkOutTime && shiftEnd instanceof Date) {
+        checkOutDiff = (checkOutTime.getTime() - shiftEnd.getTime()) / 60000;
         isValidCheckOut = checkOutDiff <= 60;
       }
 
