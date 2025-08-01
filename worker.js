@@ -2065,10 +2065,12 @@ async function handleCreateTaskAssignment(body, db, origin) {
       }, 400, origin);
     }
 
-    // Create task record
+    // Create task record first, then task assignments in a transaction
     const taskId = `TASK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const currentTimestamp = timestamp || TimezoneUtils.toHanoiISOString();
     
-    await db
+    // Start transaction by inserting task first
+    const taskInsert = await db
       .prepare(`
         INSERT INTO tasks (
           taskId, title, description, priority, deadline, status,
@@ -2082,7 +2084,7 @@ async function handleCreateTaskAssignment(body, db, origin) {
         priority,
         deadline,
         createdBy,
-        timestamp || TimezoneUtils.toHanoiISOString(),
+        currentTimestamp,
         JSON.stringify({
           participants,
           supporters,
@@ -2095,6 +2097,11 @@ async function handleCreateTaskAssignment(body, db, origin) {
       )
       .run();
 
+    // Verify task was created successfully before proceeding
+    if (!taskInsert.success) {
+      throw new Error('Failed to create task record');
+    }
+
     // Create task assignments for participants
     for (const participantId of participants) {
       await db
@@ -2103,7 +2110,7 @@ async function handleCreateTaskAssignment(body, db, origin) {
             taskId, employeeId, role, assignedAt
           ) VALUES (?, ?, 'participant', ?)
         `)
-        .bind(taskId, participantId, timestamp || TimezoneUtils.toHanoiISOString())
+        .bind(taskId, participantId, currentTimestamp)
         .run();
     }
 
@@ -2115,7 +2122,7 @@ async function handleCreateTaskAssignment(body, db, origin) {
             taskId, employeeId, role, assignedAt
           ) VALUES (?, ?, 'supporter', ?)
         `)
-        .bind(taskId, supporterId, timestamp || TimezoneUtils.toHanoiISOString())
+        .bind(taskId, supporterId, currentTimestamp)
         .run();
     }
 

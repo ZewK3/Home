@@ -1029,14 +1029,28 @@ class ContentManager {
             const employees = await utils.fetchAPI(`?action=getEmployeesByStore&storeId=${storeId}&token=${token}`);
             
             const employeeGrid = document.getElementById('employeeGrid');
-            if (!Array.isArray(employees) || employees.length === 0) {
+            
+            // Handle different response formats - array or object with numeric keys
+            let employeeList = [];
+            
+            if (Array.isArray(employees)) {
+                employeeList = employees;
+            } else if (employees && typeof employees === 'object') {
+                // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                employeeList = Object.keys(employees)
+                    .filter(key => !isNaN(key)) // Only numeric keys
+                    .map(key => employees[key])
+                    .filter(emp => emp && emp.employeeId); // Filter valid employee records
+            }
+            
+            if (employeeList.length === 0) {
                 employeeGrid.innerHTML = '<p class="text-center">Không có nhân viên nào trong cửa hàng này</p>';
                 return;
             }
 
             employeeGrid.innerHTML = `
                 <div class="employee-cards">
-                    ${employees.map(emp => `
+                    ${employeeList.map(emp => `
                         <div class="employee-card" data-employee-id="${emp.employeeId}">
                             <input type="checkbox" id="emp_${emp.employeeId}" class="employee-checkbox">
                             <label for="emp_${emp.employeeId}">
@@ -1415,7 +1429,20 @@ class ContentManager {
 
             // Load attendance requests (đơn từ)
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const attendanceRequests = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+            const attendanceRequestsResponse = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+            
+            // Handle different response formats - array or object with numeric keys
+            let attendanceRequests = [];
+            
+            if (Array.isArray(attendanceRequestsResponse)) {
+                attendanceRequests = attendanceRequestsResponse;
+            } else if (attendanceRequestsResponse && typeof attendanceRequestsResponse === 'object') {
+                // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                attendanceRequests = Object.keys(attendanceRequestsResponse)
+                    .filter(key => !isNaN(key)) // Only numeric keys
+                    .map(key => attendanceRequestsResponse[key])
+                    .filter(request => request && request.id); // Filter valid request records
+            }
             
             content.innerHTML = `
                 <div class="card">
@@ -1462,9 +1489,9 @@ class ContentManager {
         }
 
         return requests.map(request => `
-            <div class="request-item ${request.status}" data-status="${request.status}" data-type="${request.requestType}">
+            <div class="request-item ${request.status}" data-status="${request.status}" data-type="${request.type || request.requestType}">
                 <div class="request-header">
-                    <h4>${this.getRequestTypeDisplayName(request.requestType)}</h4>
+                    <h4>${this.getRequestTypeDisplayName(request.type || request.requestType)}</h4>
                     <span class="request-status ${request.status}">
                         ${this.getRequestStatusText(request.status)}
                     </span>
@@ -1475,18 +1502,18 @@ class ContentManager {
                         <p><strong>Cửa hàng:</strong> ${request.storeName}</p>
                         <p><strong>Ngày yêu cầu:</strong> ${new Date(request.requestDate).toLocaleDateString()}</p>
                         
-                        ${request.requestType.includes('forgot') ? `
-                            <p><strong>Thời gian:</strong> ${request.requestTime}</p>
-                            <p><strong>Vị trí:</strong> ${request.location || 'Không có'}</p>
+                        ${(request.type || request.requestType)?.includes('forgot') ? `
+                            <p><strong>Thời gian:</strong> ${request.targetTime || request.requestTime || 'Không có'}</p>
+                            <p><strong>Ngày:</strong> ${request.targetDate ? new Date(request.targetDate).toLocaleDateString() : 'Không có'}</p>
                         ` : ''}
                         
-                        ${request.requestType === 'shift_change' ? `
+                        ${(request.type || request.requestType) === 'shift_change' ? `
                             <p><strong>Ca hiện tại:</strong> ${this.getShiftDisplayName(request.currentShift)}</p>
                             <p><strong>Ca mong muốn:</strong> ${this.getShiftDisplayName(request.requestedShift)}</p>
                         ` : ''}
                         
-                        ${request.requestType.includes('leave') ? `
-                            <p><strong>Từ ngày:</strong> ${new Date(request.startDate).toLocaleDateString()}</p>
+                        ${(request.type || request.requestType)?.includes('leave') ? `
+                            <p><strong>Từ ngày:</strong> ${request.startDate ? new Date(request.startDate).toLocaleDateString() : 'Không có'}</p>
                             <p><strong>Đến ngày:</strong> ${new Date(request.endDate).toLocaleDateString()}</p>
                             <p><strong>Số ngày:</strong> ${request.dayCount} ngày</p>
                         ` : ''}
@@ -5009,12 +5036,13 @@ class ContentManager {
             
             if (records.length > 0) {
                 historyHTML = records.map(record => {
-                    // Use server timestamp directly without client-side timezone adjustment
-                    const time = new Date(record.timestamp).toLocaleTimeString( { 
+                    // Use server timestamp directly - server already handles +7 timezone
+                    const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
                         hour: '2-digit', 
                         minute: '2-digit', 
                         second: '2-digit',
-                        hour12: false 
+                        hour12: false,
+                        timeZone: 'Asia/Ho_Chi_Minh'
                     });
                     const type = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                     const icon = record.type === 'check_in' ? '🟢' : '🔴';
@@ -5270,8 +5298,14 @@ class ContentManager {
 
     async loadAttendanceHistoryToday(employeeId) {
         try {
-            const today = new Date().toISOString().split('T')[0]; // Get YYYY-MM-DD format
-            const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${today}`);
+            // Use local date consistently - avoid timezone issues with UTC
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const dateStr = `${year}-${month}-${day}`;
+            
+            const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${dateStr}`);
             
             const historyContainer = document.getElementById('attendanceHistoryToday');
             
@@ -5292,12 +5326,13 @@ class ContentManager {
                 if (records.length > 0) {
                     let historyHTML = '';
                     records.forEach(record => {
-                        // Use server timestamp directly without client-side timezone adjustment
-                        const time = new Date(record.timestamp).toLocaleTimeString( { 
+                        // Use server timestamp directly - server already handles +7 timezone
+                        const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
                             hour: '2-digit', 
                             minute: '2-digit', 
                             second: '2-digit',
-                            hour12: false 
+                            hour12: false,
+                            timeZone: 'Asia/Ho_Chi_Minh'
                         });
                         const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                         const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
