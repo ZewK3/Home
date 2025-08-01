@@ -5468,7 +5468,7 @@ class ContentManager {
                     </div>
                     <div class="form-group">
                         <label for="forgotType">Loại:</label>
-                        <select id="forgotType" class="form-control" required>
+                        <select id="forgotType" class="form-control" required onchange="contentManager.toggleForgotTimeFields(this.value)">
                             <option value="">Chọn loại</option>
                             <option value="check-in">Quên chấm vào</option>
                             <option value="check-out">Quên chấm ra</option>
@@ -5476,12 +5476,12 @@ class ContentManager {
                         </select>
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-row" id="timeFieldsRow">
+                    <div class="form-group" id="checkinTimeGroup" style="display: none;">
                         <label for="forgotCheckinTime">Giờ vào:</label>
                         <input type="time" id="forgotCheckinTime" class="form-control">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="checkoutTimeGroup" style="display: none;">
                         <label for="forgotCheckoutTime">Giờ ra:</label>
                         <input type="time" id="forgotCheckoutTime" class="form-control">
                     </div>
@@ -5652,6 +5652,37 @@ class ContentManager {
         } catch (error) {
             console.error('Error submitting attendance request:', error);
             utils.showNotification('Lỗi gửi đơn từ: ' + error.message, 'error');
+        }
+    }
+
+    toggleForgotTimeFields(selectedType) {
+        const checkinTimeGroup = document.getElementById('checkinTimeGroup');
+        const checkoutTimeGroup = document.getElementById('checkoutTimeGroup');
+        const checkinTimeInput = document.getElementById('forgotCheckinTime');
+        const checkoutTimeInput = document.getElementById('forgotCheckoutTime');
+        
+        // Hide all fields first and clear required attributes
+        checkinTimeGroup.style.display = 'none';
+        checkoutTimeGroup.style.display = 'none';
+        checkinTimeInput.removeAttribute('required');
+        checkoutTimeInput.removeAttribute('required');
+        
+        // Show relevant fields based on selection
+        switch(selectedType) {
+            case 'check-in':
+                checkinTimeGroup.style.display = 'block';
+                checkinTimeInput.setAttribute('required', 'required');
+                break;
+            case 'check-out':
+                checkoutTimeGroup.style.display = 'block';
+                checkoutTimeInput.setAttribute('required', 'required');
+                break;
+            case 'both':
+                checkinTimeGroup.style.display = 'block';
+                checkoutTimeGroup.style.display = 'block';
+                checkinTimeInput.setAttribute('required', 'required');
+                checkoutTimeInput.setAttribute('required', 'required');
+                break;
         }
     }
 

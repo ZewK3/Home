@@ -2010,6 +2010,24 @@ async function handleCreateAttendanceRequest(body, db, origin) {
     const requestId = `REQ_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const currentTime = new Date().toISOString();
     
+    // Handle forgotten check-in/out times properly
+    let targetTime = null;
+    let reason = requestData.forgotReason || requestData.reason || '';
+    
+    // Store time data based on request type and form data
+    if (requestData.forgotType) {
+      if (requestData.forgotType === 'check-in' && requestData.forgotCheckinTime) {
+        targetTime = `Giờ vào: ${requestData.forgotCheckinTime}`;
+      } else if (requestData.forgotType === 'check-out' && requestData.forgotCheckoutTime) {
+        targetTime = `Giờ ra: ${requestData.forgotCheckoutTime}`;
+      } else if (requestData.forgotType === 'both') {
+        const times = [];
+        if (requestData.forgotCheckinTime) times.push(`Giờ vào: ${requestData.forgotCheckinTime}`);
+        if (requestData.forgotCheckoutTime) times.push(`Giờ ra: ${requestData.forgotCheckoutTime}`);
+        targetTime = times.join(', ');
+      }
+    }
+    
     await db
       .prepare(`
         INSERT INTO attendance_requests (
@@ -2022,10 +2040,10 @@ async function handleCreateAttendanceRequest(body, db, origin) {
         employeeId,
         type,
         currentTime,
-        requestData.reason || '',
+        reason,
         currentTime,
-        requestData.targetDate || null,
-        requestData.targetTime || null, 
+        requestData.forgotDate || requestData.targetDate || null,
+        targetTime, 
         requestData.currentShift || null,
         requestData.requestedShift || null,
         requestData.leaveType || null,
