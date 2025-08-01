@@ -1,5 +1,29 @@
 const ALLOWED_ORIGIN = "*";
 
+// TimezoneUtils for server-side Hanoi timezone handling (+7 hours)
+class TimezoneUtils {
+  static now() {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    return new Date(utc + (7 * 3600000)); // UTC + 7 hours
+  }
+
+  static toHanoiISOString(date = null) {
+    const targetDate = date || this.now();
+    return targetDate.toISOString();
+  }
+
+  static formatTime(date) {
+    const hanoiDate = date ? new Date(date) : this.now();
+    return hanoiDate.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+  }
+}
+
 
 // Get SendGrid API key from KV storage
 async function getSendGridApiKey(env) {
@@ -188,7 +212,7 @@ async function createSession(employeeId, db, allowedOrigin) {
   const token = crypto.randomUUID();
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 8); // Phiên hết hạn sau 8 giờ (tăng thời gian để tránh hết hạn sớm)
-  const now = new Date().toISOString();
+  const now = TimezoneUtils.toHanoiISOString();
 
   try {
     // Xóa session cũ của user này trước
@@ -1856,8 +1880,8 @@ async function handleProcessAttendance(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get today's attendance records using server local time
-    const serverTime = new Date(); // Use server local time instead of timezone-specific time
+    // Get today's attendance records using Hanoi timezone (+7)  
+    const serverTime = TimezoneUtils.now(); // Use Hanoi timezone (+7 hours)
     const today = serverTime.toISOString().split('T')[0]; // Get YYYY-MM-DD format
     const existingRecordsQuery = await db
       .prepare(`
@@ -1875,8 +1899,8 @@ async function handleProcessAttendance(body, db, origin) {
     const isCheckIn = !lastRecord || lastRecord.checkOut;
 
     if (isCheckIn) {
-      // Process check-in using server local time
-      const timestamp = serverTime.toISOString();
+      // Process check-in using Hanoi timezone
+      const timestamp = TimezoneUtils.toHanoiISOString();
       await db
         .prepare(`
           INSERT INTO attendance (employeeId, checkIn, location, status)
@@ -1895,8 +1919,8 @@ async function handleProcessAttendance(body, db, origin) {
       }, 200, origin);
 
     } else {
-      // Process check-out using server local time
-      const timestamp = serverTime.toISOString();
+      // Process check-out using Hanoi timezone  
+      const timestamp = TimezoneUtils.toHanoiISOString();
       await db
         .prepare(`
           UPDATE attendance 
@@ -2048,8 +2072,8 @@ async function handleCreateTaskAssignment(body, db, origin) {
       .prepare(`
         INSERT INTO tasks (
           taskId, title, description, priority, deadline, status,
-          createdBy, createdAt, data
-        ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?)
+          createdBy, createdAt, data, employeeId, employeeName, position, type, content
+        ) VALUES (?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, 'task_assignment', ?)
       `)
       .bind(
         taskId,
@@ -2058,12 +2082,16 @@ async function handleCreateTaskAssignment(body, db, origin) {
         priority,
         deadline,
         createdBy,
-        timestamp || new Date().toISOString(),
+        timestamp || TimezoneUtils.toHanoiISOString(),
         JSON.stringify({
           participants,
           supporters,
           assigners
-        })
+        }),
+        createdBy, // Set employeeId to createdBy to satisfy NOT NULL constraint
+        'Task Creator', // Default employeeName  
+        'SYSTEM', // Default position for task creation
+        description // Use description as content
       )
       .run();
 
@@ -2075,7 +2103,7 @@ async function handleCreateTaskAssignment(body, db, origin) {
             taskId, employeeId, role, assignedAt
           ) VALUES (?, ?, 'participant', ?)
         `)
-        .bind(taskId, participantId, timestamp || new Date().toISOString())
+        .bind(taskId, participantId, timestamp || TimezoneUtils.toHanoiISOString())
         .run();
     }
 
@@ -2087,7 +2115,7 @@ async function handleCreateTaskAssignment(body, db, origin) {
             taskId, employeeId, role, assignedAt
           ) VALUES (?, ?, 'supporter', ?)
         `)
-        .bind(taskId, supporterId, timestamp || new Date().toISOString())
+        .bind(taskId, supporterId, timestamp || TimezoneUtils.toHanoiISOString())
         .run();
     }
 
@@ -2099,7 +2127,7 @@ async function handleCreateTaskAssignment(body, db, origin) {
             taskId, employeeId, role, assignedAt
           ) VALUES (?, ?, 'assigner', ?)
         `)
-        .bind(taskId, assignerId, timestamp || new Date().toISOString())
+        .bind(taskId, assignerId, timestamp || TimezoneUtils.toHanoiISOString())
         .run();
     }
 

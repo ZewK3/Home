@@ -4913,11 +4913,7 @@ class ContentManager {
                     <div class="day-number">${day}</div>
                     ${dayData ? `
                         <div class="day-hours">${dayData.hoursWorked || 0}h</div>
-                        <div class="day-times">
-                            ${dayData.checkIn ? `<div class="check-in">${dayData.checkIn}</div>` : ''}
-                            ${dayData.checkOut ? `<div class="check-out">${dayData.checkOut}</div>` : ''}
-                        </div>
-                    ` : '<div class="day-off">0</div>'}
+                    ` : '<div class="day-off">0h</div>'}
                 </div>
             `;
         }
