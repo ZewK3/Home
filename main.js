@@ -296,6 +296,8 @@ class ContentManager {
             this.showTaskAssignment());
         document.getElementById('openShiftAssignment')?.addEventListener('click', () => 
             this.showShiftAssignment());
+        document.getElementById('openAnalytics')?.addEventListener('click', () => 
+            this.showAnalytics());
 
         // Mobile handlers
         document.getElementById('mobileTimesheet')?.addEventListener('click', () => 
@@ -308,6 +310,8 @@ class ContentManager {
             this.showTaskAssignment());
         document.getElementById('mobileShiftAssignment')?.addEventListener('click', () => 
             this.showShiftAssignment());
+        document.getElementById('mobileAnalytics')?.addEventListener('click', () => 
+            this.showAnalytics());
 
         // Legacy handlers for existing functions
         document.getElementById('openWorkShifts')?.addEventListener('click', () => 
@@ -357,37 +361,199 @@ class ContentManager {
                 return;
             }
 
-            content.innerHTML = `
-                <div class="shift-assignment-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Phân Ca Làm Việc</h2>
-                            <p>Phân công ca làm việc cho nhân viên theo cửa hàng và thời gian</p>
+    async showShiftAssignment() {
+        const content = document.getElementById('content');
+        try {
+            // Get current user's role and stores to determine permissions using cache
+            const userResponse = await API_CACHE.getUserData();
+            
+            // Only AD, AM, QL can assign shifts
+            if (!['AD', 'AM', 'QL'].includes(userResponse.position)) {
+                content.innerHTML = `
+                    <div class="error-container">
+                        <div class="error-card">
+                            <span class="material-icons-round error-icon">lock</span>
+                            <h3>Không có quyền truy cập</h3>
+                            <p>Bạn không có quyền phân ca cho nhân viên.</p>
                         </div>
-                        <div class="card-body">
-                            <div class="shift-filters">
-                                <div class="filter-row">
-                                    <div class="filter-group">
-                                        <label for="shiftStore">Cửa hàng:</label>
-                                        <select id="shiftStore" class="form-control">
-                                            <option value="">Chọn cửa hàng</option>
-                                        </select>
-                                    </div>
-                                    <div class="filter-group">
-                                        <label for="shiftWeek">Tuần:</label>
-                                        <input type="week" id="shiftWeek" class="form-control" value="${this.getCurrentWeek()}">
-                                    </div>
-                                    <button id="loadShiftData" class="btn btn-primary">Tải dữ liệu</button>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = `
+                <div class="shift-assignment-container modern-container">
+                    <!-- Professional Header -->
+                    <div class="page-header professional-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <div class="title-icon-wrapper">
+                                    <span class="material-icons-round header-icon">schedule</span>
+                                </div>
+                                <div class="title-text">
+                                    <h1>Quản Lý Phân Ca Chuyên Nghiệp</h1>
+                                    <p class="header-subtitle">Hệ thống phân ca thông minh với giao diện hiện đại và phân tích thời gian thực</p>
                                 </div>
                             </div>
-                            
-                            <div class="employee-selection-section">
-                                <h3>Chọn Nhân Viên</h3>
-                                <div class="employee-grid" id="employeeGrid">
-                                    <p class="text-center">Chọn cửa hàng để xem danh sách nhân viên</p>
+                            <div class="header-stats mini-stats">
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-value" id="totalEmployees">0</span>
+                                    <span class="mini-stat-label">Nhân viên</span>
                                 </div>
-                                <div class="selected-employees">
-                                    <h4>Nhân viên đã chọn:</h4>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-value" id="activeShifts">0</span>
+                                    <span class="mini-stat-label">Ca đang hoạt động</span>
+                                </div>
+                                <div class="mini-stat-card">
+                                    <span class="mini-stat-value" id="totalHours">0h</span>
+                                    <span class="mini-stat-label">Tổng giờ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Control Panel -->
+                    <div class="card modern-card control-panel">
+                        <div class="card-body">
+                            <div class="shift-filters modern-filters">
+                                <div class="filter-section">
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="shiftStore" class="filter-label">
+                                            <span class="material-icons-round">store</span>
+                                            Chọn cửa hàng
+                                        </label>
+                                        <select id="shiftStore" class="form-control modern-select">
+                                            <option value="">Tất cả cửa hàng</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="shiftWeek" class="filter-label">
+                                            <span class="material-icons-round">date_range</span>
+                                            Chọn tuần
+                                        </label>
+                                        <input type="week" id="shiftWeek" class="form-control modern-input" value="${this.getCurrentWeek()}">
+                                    </div>
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="shiftTemplate" class="filter-label">
+                                            <span class="material-icons-round">content_copy</span>
+                                            Mẫu ca
+                                        </label>
+                                        <select id="shiftTemplate" class="form-control modern-select">
+                                            <option value="">Tùy chỉnh</option>
+                                            <option value="standard">Ca chuẩn (8h)</option>
+                                            <option value="flexible">Ca linh hoạt</option>
+                                            <option value="weekend">Ca cuối tuần</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="action-section">
+                                    <button id="loadShiftData" class="btn btn-primary modern-btn">
+                                        <span class="material-icons-round">refresh</span>
+                                        Tải dữ liệu
+                                    </button>
+                                    <button class="btn modern-btn secondary-btn" onclick="this.applyTemplate()">
+                                        <span class="material-icons-round">apply</span>
+                                        Áp dụng mẫu
+                                    </button>
+                                    <button class="btn modern-btn success-btn" onclick="this.bulkAssign()">
+                                        <span class="material-icons-round">group_add</span>
+                                        Phân ca hàng loạt
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Employee Grid -->
+                    <div class="card modern-card employee-section">
+                        <div class="card-header modern-header">
+                            <h3>
+                                <span class="material-icons-round">people</span>
+                                Danh sách nhân viên
+                            </h3>
+                            <div class="header-tools">
+                                <button class="tool-btn" onclick="this.toggleEmployeeView()" title="Chuyển đổi hiển thị">
+                                    <span class="material-icons-round">view_module</span>
+                                </button>
+                                <button class="tool-btn" onclick="this.filterEmployees()" title="Lọc nhân viên">
+                                    <span class="material-icons-round">filter_list</span>
+                                </button>
+                                <button class="tool-btn" onclick="this.refreshEmployees()" title="Làm mới">
+                                    <span class="material-icons-round">refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="employee-grid modern-employee-grid" id="employeeGrid">
+                                <div class="loading-state">
+                                    <div class="loading-spinner">
+                                        <div class="spinner"></div>
+                                    </div>
+                                    <p>Chọn cửa hàng để xem danh sách nhân viên</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Shift Schedule Grid -->
+                    <div class="card modern-card schedule-section">
+                        <div class="card-header modern-header">
+                            <h3>
+                                <span class="material-icons-round">calendar_view_week</span>
+                                Lịch phân ca trong tuần
+                            </h3>
+                            <div class="header-tools">
+                                <button class="tool-btn" onclick="this.exportSchedule()" title="Xuất lịch">
+                                    <span class="material-icons-round">download</span>
+                                </button>
+                                <button class="tool-btn" onclick="this.printSchedule()" title="In lịch">
+                                    <span class="material-icons-round">print</span>
+                                </button>
+                                <button class="tool-btn active" onclick="this.toggleFullscreen()" title="Toàn màn hình">
+                                    <span class="material-icons-round">fullscreen</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="shift-schedule-grid modern-schedule-grid" id="shiftScheduleGrid">
+                                <div class="schedule-placeholder">
+                                    <div class="placeholder-content">
+                                        <span class="material-icons-round placeholder-icon">schedule</span>
+                                        <h4>Chưa có dữ liệu phân ca</h4>
+                                        <p>Chọn cửa hàng và tuần để xem lịch phân ca</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Action Panel -->
+                    <div class="action-panel modern-action-panel">
+                        <div class="panel-content">
+                            <div class="panel-info">
+                                <div class="info-item">
+                                    <span class="material-icons-round">info</span>
+                                    <span>Nhấp vào ô để nhập giờ vào/ra. Để trống nếu nghỉ.</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="material-icons-round">tips_and_updates</span>
+                                    <span>Sử dụng Ctrl+Click để chọn nhiều ô cùng lúc.</span>
+                                </div>
+                            </div>
+                            <div class="panel-actions">
+                                <button class="btn modern-btn warning-btn" onclick="this.clearAllShifts()">
+                                    <span class="material-icons-round">clear_all</span>
+                                    Xóa tất cả
+                                </button>
+                                <button class="btn modern-btn success-btn" onclick="this.saveShiftAssignments()">
+                                    <span class="material-icons-round">save</span>
+                                    Lưu phân ca
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
                                     <div id="selectedEmployeesList" class="selected-list"></div>
                                 </div>
                             </div>
@@ -578,46 +744,224 @@ class ContentManager {
             const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
-                <div class="timesheet-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><span class="material-icons-round">calendar_view_month</span> Bảng Công</h2>
-                            <p>Theo dõi chi tiết thời gian làm việc theo tháng</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="timesheet-controls">
-                                <div class="filter-group">
-                                    <label for="timesheetMonth">Tháng/Năm:</label>
-                                    <input type="month" id="timesheetMonth" class="form-control" value="${this.getCurrentMonth()}">
+                <div class="timesheet-container modern-container">
+                    <!-- Enhanced Professional Header -->
+                    <div class="page-header professional-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <div class="title-icon-wrapper">
+                                    <span class="material-icons-round header-icon">calendar_view_month</span>
                                 </div>
-                                <button id="loadTimesheetData" class="btn btn-primary">
-                                    <span class="material-icons-round">refresh</span>
-                                    Tải dữ liệu
+                                <div class="title-text">
+                                    <h1>Bảng Công Chuyên Nghiệp</h1>
+                                    <p class="header-subtitle">Theo dõi và phân tích thời gian làm việc với giao diện hiện đại</p>
+                                </div>
+                            </div>
+                            <div class="header-actions">
+                                <button class="modern-btn action-btn export-btn" onclick="this.exportTimesheet()">
+                                    <span class="material-icons-round">download</span>
+                                    Xuất Excel
+                                </button>
+                                <button class="modern-btn action-btn print-btn" onclick="this.printTimesheet()">
+                                    <span class="material-icons-round">print</span>
+                                    In báo cáo
                                 </button>
                             </div>
-                            
-                            <div class="timesheet-content">
-                                <div class="timesheet-calendar" id="timesheetCalendar">
-                                    <div class="loading-text">Đang tải bảng công...</div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Control Panel -->
+                    <div class="card modern-card control-panel">
+                        <div class="card-body">
+                            <div class="timesheet-controls modern-controls">
+                                <div class="control-section">
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="timesheetMonth" class="filter-label">
+                                            <span class="material-icons-round">date_range</span>
+                                            Chọn tháng/năm
+                                        </label>
+                                        <input type="month" id="timesheetMonth" class="form-control modern-input" value="${this.getCurrentMonth()}">
+                                    </div>
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="timesheetView" class="filter-label">
+                                            <span class="material-icons-round">view_module</span>
+                                            Chế độ xem
+                                        </label>
+                                        <select id="timesheetView" class="form-control modern-select">
+                                            <option value="calendar">Lịch tháng</option>
+                                            <option value="list">Danh sách</option>
+                                            <option value="summary">Tóm tắt</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                
-                                <div class="timesheet-statistics" id="timesheetStats">
-                                    <div class="stats-header">
-                                        <h3><span class="material-icons-round">analytics</span> Thống kê T8, 2025</h3>
-                                        <button class="stats-toggle-btn" onclick="contentManager.toggleStatsDetails()">
-                                            <span class="material-icons-round">expand_less</span>
+                                <div class="action-section">
+                                    <button id="loadTimesheetData" class="btn btn-primary modern-btn">
+                                        <span class="material-icons-round">refresh</span>
+                                        Tải dữ liệu
+                                    </button>
+                                    <button class="btn modern-btn secondary-btn" onclick="this.resetTimesheetView()">
+                                        <span class="material-icons-round">restore</span>
+                                        Đặt lại
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Main Content Area -->
+                    <div class="timesheet-main-content">
+                        <div class="content-grid">
+                            <!-- Professional Calendar Section -->
+                            <div class="card modern-card calendar-section">
+                                <div class="card-header modern-header">
+                                    <h3>
+                                        <span class="material-icons-round">calendar_today</span>
+                                        Lịch công tháng
+                                    </h3>
+                                    <div class="header-tools">
+                                        <button class="tool-btn" onclick="this.toggleCalendarView()" title="Chuyển đổi hiển thị">
+                                            <span class="material-icons-round">view_agenda</span>
+                                        </button>
+                                        <button class="tool-btn" onclick="this.refreshCalendar()" title="Làm mới">
+                                            <span class="material-icons-round">refresh</span>
                                         </button>
                                     </div>
-                                    <div class="stats-content">
-                                        <div class="stats-row primary-stats">
-                                            <div class="stat-card highlight">
-                                                <div class="stat-icon"><span class="material-icons-round">work</span></div>
-                                                <div class="stat-info">
-                                                    <span class="stat-value" id="actualDays">0.9/1</span>
-                                                    <span class="stat-label">Công thực tế</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="timesheet-calendar modern-calendar" id="timesheetCalendar">
+                                        <div class="loading-spinner">
+                                            <div class="spinner"></div>
+                                            <p>Đang tải bảng công...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Professional Statistics Panel -->
+                            <div class="card modern-card stats-section">
+                                <div class="card-header modern-header">
+                                    <h3>
+                                        <span class="material-icons-round">analytics</span>
+                                        Thống kê & Phân tích
+                                    </h3>
+                                    <div class="header-tools">
+                                        <button class="tool-btn active" data-period="month" onclick="this.changeStatsPeriod('month')">Tháng</button>
+                                        <button class="tool-btn" data-period="week" onclick="this.changeStatsPeriod('week')">Tuần</button>
+                                        <button class="tool-btn" data-period="day" onclick="this.changeStatsPeriod('day')">Ngày</button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="timesheet-statistics modern-stats" id="timesheetStats">
+                                        <div class="stats-content enhanced-stats">
+                                            <!-- Primary KPI Cards -->
+                                            <div class="stats-row primary-kpis">
+                                                <div class="stat-card modern-stat-card attendance-card">
+                                                    <div class="stat-icon">
+                                                        <span class="material-icons-round">check_circle</span>
+                                                    </div>
+                                                    <div class="stat-content">
+                                                        <div class="stat-value" id="actualDays">0/0</div>
+                                                        <div class="stat-label">Ngày có mặt</div>
+                                                        <div class="stat-trend">
+                                                            <span class="trend-icon material-icons-round">trending_up</span>
+                                                            <span class="trend-value">+5%</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="stat-card modern-stat-card hours-card">
+                                                    <div class="stat-icon">
+                                                        <span class="material-icons-round">schedule</span>
+                                                    </div>
+                                                    <div class="stat-content">
+                                                        <div class="stat-value" id="totalHours">0h</div>
+                                                        <div class="stat-label">Tổng giờ làm</div>
+                                                        <div class="stat-trend">
+                                                            <span class="trend-icon material-icons-round">trending_up</span>
+                                                            <span class="trend-value">+12h</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="stat-card modern-stat-card overtime-card">
+                                                    <div class="stat-icon">
+                                                        <span class="material-icons-round">access_time</span>
+                                                    </div>
+                                                    <div class="stat-content">
+                                                        <div class="stat-value" id="overtimeHours">0h</div>
+                                                        <div class="stat-label">Giờ tăng ca</div>
+                                                        <div class="stat-trend">
+                                                            <span class="trend-icon material-icons-round">trending_down</span>
+                                                            <span class="trend-value">-2h</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="stat-card modern-stat-card efficiency-card">
+                                                    <div class="stat-icon">
+                                                        <span class="material-icons-round">speed</span>
+                                                    </div>
+                                                    <div class="stat-content">
+                                                        <div class="stat-value" id="efficiency">98%</div>
+                                                        <div class="stat-label">Hiệu suất</div>
+                                                        <div class="stat-trend">
+                                                            <span class="trend-icon material-icons-round">trending_up</span>
+                                                            <span class="trend-value">+3%</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="stat-card highlight">
+                                            
+                                            <!-- Detailed Analytics -->
+                                            <div class="stats-row detailed-analytics">
+                                                <div class="analytics-chart">
+                                                    <h4>Biểu đồ thời gian làm việc</h4>
+                                                    <div class="chart-placeholder" id="workTimeChart">
+                                                        <div class="chart-bars">
+                                                            <div class="chart-bar" style="height: 80%"><span>T2</span></div>
+                                                            <div class="chart-bar" style="height: 95%"><span>T3</span></div>
+                                                            <div class="chart-bar" style="height: 85%"><span>T4</span></div>
+                                                            <div class="chart-bar" style="height: 90%"><span>T5</span></div>
+                                                            <div class="chart-bar" style="height: 75%"><span>T6</span></div>
+                                                            <div class="chart-bar" style="height: 60%"><span>T7</span></div>
+                                                            <div class="chart-bar" style="height: 45%"><span>CN</span></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="performance-metrics">
+                                                    <h4>Chỉ số hiệu suất</h4>
+                                                    <div class="metric-item">
+                                                        <div class="metric-label">Đúng giờ</div>
+                                                        <div class="metric-bar">
+                                                            <div class="metric-fill" style="width: 92%"></div>
+                                                        </div>
+                                                        <div class="metric-value">92%</div>
+                                                    </div>
+                                                    <div class="metric-item">
+                                                        <div class="metric-label">Hoàn thành KPI</div>
+                                                        <div class="metric-bar">
+                                                            <div class="metric-fill" style="width: 88%"></div>
+                                                        </div>
+                                                        <div class="metric-value">88%</div>
+                                                    </div>
+                                                    <div class="metric-item">
+                                                        <div class="metric-label">Chất lượng công việc</div>
+                                                        <div class="metric-bar">
+                                                            <div class="metric-fill" style="width: 95%"></div>
+                                                        </div>
+                                                        <div class="metric-value">95%</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
                                                 <div class="stat-icon"><span class="material-icons-round">schedule</span></div>
                                                 <div class="stat-info">
                                                     <span class="stat-value" id="actualHours">8/8</span>
@@ -1970,14 +2314,12 @@ class ContentManager {
 
     async approveAttendanceRequest(requestId) {
         try {
-            const note = prompt('Ghi chú duyệt (tùy chọn):');
-            
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const response = await utils.fetchAPI('?action=approveAttendanceRequest', {
                 method: 'POST',
                 body: JSON.stringify({
                     requestId: requestId,
-                    note: note
+                    note: ''
                 })
             });
 
@@ -1996,18 +2338,12 @@ class ContentManager {
 
     async rejectAttendanceRequest(requestId) {
         try {
-            const note = prompt('Lý do từ chối:');
-            if (!note) {
-                utils.showNotification('Vui lòng nhập lý do từ chối', 'warning');
-                return;
-            }
-            
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const response = await utils.fetchAPI('?action=rejectAttendanceRequest', {
                 method: 'POST',
                 body: JSON.stringify({
                     requestId: requestId,
-                    note: note
+                    note: 'Từ chối tự động'
                 })
             });
 
@@ -2919,6 +3255,590 @@ class ContentManager {
         }
     }
 
+    async showAnalytics() {
+        const content = document.getElementById('content');
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            
+            content.innerHTML = `
+                <div class="analytics-container modern-container">
+                    <!-- Professional Analytics Header -->
+                    <div class="page-header professional-header analytics-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <div class="title-icon-wrapper">
+                                    <span class="material-icons-round header-icon">analytics</span>
+                                </div>
+                                <div class="title-text">
+                                    <h1>Phân Tích & Báo Cáo Chuyên Nghiệp</h1>
+                                    <p class="header-subtitle">Hệ thống phân tích thông minh với báo cáo theo thời gian thực và dự báo xu hướng</p>
+                                </div>
+                            </div>
+                            <div class="header-actions">
+                                <button class="modern-btn action-btn export-btn" onclick="this.exportAnalytics()">
+                                    <span class="material-icons-round">download</span>
+                                    Xuất báo cáo
+                                </button>
+                                <button class="modern-btn action-btn schedule-btn" onclick="this.scheduleReport()">
+                                    <span class="material-icons-round">schedule_send</span>
+                                    Lập lịch báo cáo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Time Period Control -->
+                    <div class="card modern-card period-control">
+                        <div class="card-body">
+                            <div class="period-controls enhanced-controls">
+                                <div class="control-section">
+                                    <div class="period-selector">
+                                        <label class="control-label">
+                                            <span class="material-icons-round">date_range</span>
+                                            Chọn khoảng thời gian phân tích
+                                        </label>
+                                        <div class="period-buttons">
+                                            <button class="period-btn active" data-period="day" onclick="this.changePeriod('day')">
+                                                <span class="material-icons-round">today</span>
+                                                Theo ngày
+                                            </button>
+                                            <button class="period-btn" data-period="week" onclick="this.changePeriod('week')">
+                                                <span class="material-icons-round">view_week</span>
+                                                Theo tuần
+                                            </button>
+                                            <button class="period-btn" data-period="month" onclick="this.changePeriod('month')">
+                                                <span class="material-icons-round">calendar_view_month</span>
+                                                Theo tháng
+                                            </button>
+                                            <button class="period-btn" data-period="quarter" onclick="this.changePeriod('quarter')">
+                                                <span class="material-icons-round">calendar_view_day</span>
+                                                Theo quý
+                                            </button>
+                                            <button class="period-btn" data-period="year" onclick="this.changePeriod('year')">
+                                                <span class="material-icons-round">calendar_today</span>
+                                                Theo năm
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="date-range-picker">
+                                        <div class="date-input-group">
+                                            <label>Từ ngày:</label>
+                                            <input type="date" id="analyticsStartDate" class="form-control modern-input" value="${this.getDefaultStartDate()}">
+                                        </div>
+                                        <div class="date-input-group">
+                                            <label>Đến ngày:</label>
+                                            <input type="date" id="analyticsEndDate" class="form-control modern-input" value="${this.getCurrentDate()}">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="action-section">
+                                    <button id="loadAnalyticsData" class="btn btn-primary modern-btn">
+                                        <span class="material-icons-round">analytics</span>
+                                        Phân tích dữ liệu
+                                    </button>
+                                    <button class="btn modern-btn secondary-btn" onclick="this.resetAnalytics()">
+                                        <span class="material-icons-round">refresh</span>
+                                        Làm mới
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced KPI Dashboard -->
+                    <div class="card modern-card kpi-dashboard">
+                        <div class="card-header modern-header">
+                            <h3>
+                                <span class="material-icons-round">dashboard</span>
+                                Bảng điều khiển KPI
+                            </h3>
+                            <div class="header-tools">
+                                <button class="tool-btn" onclick="this.refreshKPI()" title="Làm mới KPI">
+                                    <span class="material-icons-round">refresh</span>
+                                </button>
+                                <button class="tool-btn" onclick="this.customizeKPI()" title="Tùy chỉnh KPI">
+                                    <span class="material-icons-round">tune</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="kpi-grid">
+                                <div class="kpi-card performance-kpi">
+                                    <div class="kpi-icon">
+                                        <span class="material-icons-round">trending_up</span>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <div class="kpi-value" id="performanceKPI">94.5%</div>
+                                        <div class="kpi-label">Hiệu suất tổng thể</div>
+                                        <div class="kpi-trend positive">
+                                            <span class="material-icons-round">arrow_upward</span>
+                                            +5.2% so với kỳ trước
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="kpi-card attendance-kpi">
+                                    <div class="kpi-icon">
+                                        <span class="material-icons-round">person</span>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <div class="kpi-value" id="attendanceKPI">96.8%</div>
+                                        <div class="kpi-label">Tỷ lệ chấm công</div>
+                                        <div class="kpi-trend positive">
+                                            <span class="material-icons-round">arrow_upward</span>
+                                            +2.1% so với kỳ trước
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="kpi-card productivity-kpi">
+                                    <div class="kpi-icon">
+                                        <span class="material-icons-round">speed</span>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <div class="kpi-value" id="productivityKPI">87.3%</div>
+                                        <div class="kpi-label">Năng suất làm việc</div>
+                                        <div class="kpi-trend negative">
+                                            <span class="material-icons-round">arrow_downward</span>
+                                            -1.5% so với kỳ trước
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="kpi-card satisfaction-kpi">
+                                    <div class="kpi-icon">
+                                        <span class="material-icons-round">sentiment_satisfied</span>
+                                    </div>
+                                    <div class="kpi-content">
+                                        <div class="kpi-value" id="satisfactionKPI">92.1%</div>
+                                        <div class="kpi-label">Mức độ hài lòng</div>
+                                        <div class="kpi-trend positive">
+                                            <span class="material-icons-round">arrow_upward</span>
+                                            +3.7% so với kỳ trước
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Content Grid -->
+                    <div class="analytics-grid">
+                        <!-- Time-based Charts Section -->
+                        <div class="card modern-card charts-section">
+                            <div class="card-header modern-header">
+                                <h3>
+                                    <span class="material-icons-round">timeline</span>
+                                    Biểu đồ xu hướng
+                                </h3>
+                                <div class="header-tools">
+                                    <select class="chart-type-selector" onchange="this.changeChartType(this.value)">
+                                        <option value="line">Biểu đồ đường</option>
+                                        <option value="bar">Biểu đồ cột</option>
+                                        <option value="area">Biểu đồ vùng</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container" id="trendChart">
+                                    <div class="mock-chart">
+                                        <div class="chart-legend">
+                                            <div class="legend-item">
+                                                <div class="legend-color attendance-color"></div>
+                                                <span>Chấm công</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <div class="legend-color productivity-color"></div>
+                                                <span>Năng suất</span>
+                                            </div>
+                                            <div class="legend-item">
+                                                <div class="legend-color performance-color"></div>
+                                                <span>Hiệu suất</span>
+                                            </div>
+                                        </div>
+                                        <div class="chart-area">
+                                            <div class="chart-bars trend-bars">
+                                                <div class="trend-bar" style="height: 85%"><span>T2</span></div>
+                                                <div class="trend-bar" style="height: 92%"><span>T3</span></div>
+                                                <div class="trend-bar" style="height: 88%"><span>T4</span></div>
+                                                <div class="trend-bar" style="height: 95%"><span>T5</span></div>
+                                                <div class="trend-bar" style="height: 90%"><span>T6</span></div>
+                                                <div class="trend-bar" style="height: 78%"><span>T7</span></div>
+                                                <div class="trend-bar" style="height: 70%"><span>CN</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Weekly/Daily Analysis Section -->
+                        <div class="card modern-card analysis-section">
+                            <div class="card-header modern-header">
+                                <h3>
+                                    <span class="material-icons-round">insights</span>
+                                    Phân tích chi tiết
+                                </h3>
+                                <div class="header-tools">
+                                    <button class="tool-btn active" data-analysis="weekly" onclick="this.changeAnalysisType('weekly')">Tuần</button>
+                                    <button class="tool-btn" data-analysis="daily" onclick="this.changeAnalysisType('daily')">Ngày</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="analysis-content" id="analysisContent">
+                                    <!-- Weekly Analysis -->
+                                    <div class="analysis-panel weekly-analysis active">
+                                        <div class="analysis-summary">
+                                            <h4>Tóm tắt tuần này</h4>
+                                            <div class="summary-stats">
+                                                <div class="summary-item">
+                                                    <div class="summary-value">42.5h</div>
+                                                    <div class="summary-label">Tổng giờ làm</div>
+                                                </div>
+                                                <div class="summary-item">
+                                                    <div class="summary-value">96%</div>
+                                                    <div class="summary-label">Tỷ lệ có mặt</div>
+                                                </div>
+                                                <div class="summary-item">
+                                                    <div class="summary-value">15</div>
+                                                    <div class="summary-label">Công việc hoàn thành</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="weekly-breakdown">
+                                            <h4>Chi tiết theo ngày</h4>
+                                            <div class="breakdown-list">
+                                                <div class="breakdown-item">
+                                                    <div class="day-info">
+                                                        <span class="day-name">Thứ Hai</span>
+                                                        <span class="day-date">02/01/2025</span>
+                                                    </div>
+                                                    <div class="day-stats">
+                                                        <span class="hours-worked">8.5h</span>
+                                                        <span class="attendance-status present">Có mặt</span>
+                                                    </div>
+                                                </div>
+                                                <div class="breakdown-item">
+                                                    <div class="day-info">
+                                                        <span class="day-name">Thứ Ba</span>
+                                                        <span class="day-date">03/01/2025</span>
+                                                    </div>
+                                                    <div class="day-stats">
+                                                        <span class="hours-worked">8.0h</span>
+                                                        <span class="attendance-status present">Có mặt</span>
+                                                    </div>
+                                                </div>
+                                                <!-- More breakdown items would be dynamically generated -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Daily Analysis -->
+                                    <div class="analysis-panel daily-analysis">
+                                        <div class="analysis-summary">
+                                            <h4>Phân tích hôm nay</h4>
+                                            <div class="hourly-breakdown">
+                                                <div class="hour-block">
+                                                    <div class="hour-time">08:00</div>
+                                                    <div class="hour-activity">Bắt đầu làm việc</div>
+                                                    <div class="hour-efficiency">95%</div>
+                                                </div>
+                                                <div class="hour-block">
+                                                    <div class="hour-time">10:00</div>
+                                                    <div class="hour-activity">Họp nhóm</div>
+                                                    <div class="hour-efficiency">87%</div>
+                                                </div>
+                                                <div class="hour-block">
+                                                    <div class="hour-time">14:00</div>
+                                                    <div class="hour-activity">Xử lý công việc</div>
+                                                    <div class="hour-efficiency">92%</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Metrics Section -->
+                        <div class="card modern-card metrics-section">
+                            <div class="card-header modern-header">
+                                <h3>
+                                    <span class="material-icons-round">assessment</span>
+                                    Chỉ số hiệu suất
+                                </h3>
+                                <div class="header-tools">
+                                    <button class="tool-btn" onclick="this.exportMetrics()" title="Xuất chỉ số">
+                                        <span class="material-icons-round">download</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="metrics-grid">
+                                    <div class="metric-card">
+                                        <div class="metric-header">
+                                            <span class="metric-title">Punctuality</span>
+                                            <span class="metric-score">9.2/10</span>
+                                        </div>
+                                        <div class="metric-bar">
+                                            <div class="metric-fill" style="width: 92%"></div>
+                                        </div>
+                                        <div class="metric-description">Đúng giờ làm việc</div>
+                                    </div>
+                                    
+                                    <div class="metric-card">
+                                        <div class="metric-header">
+                                            <span class="metric-title">Quality</span>
+                                            <span class="metric-score">8.8/10</span>
+                                        </div>
+                                        <div class="metric-bar">
+                                            <div class="metric-fill" style="width: 88%"></div>
+                                        </div>
+                                        <div class="metric-description">Chất lượng công việc</div>
+                                    </div>
+                                    
+                                    <div class="metric-card">
+                                        <div class="metric-header">
+                                            <span class="metric-title">Collaboration</span>
+                                            <span class="metric-score">9.5/10</span>
+                                        </div>
+                                        <div class="metric-bar">
+                                            <div class="metric-fill" style="width: 95%"></div>
+                                        </div>
+                                        <div class="metric-description">Làm việc nhóm</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insights and Recommendations -->
+                    <div class="card modern-card insights-section">
+                        <div class="card-header modern-header">
+                            <h3>
+                                <span class="material-icons-round">lightbulb</span>
+                                Nhận định và khuyến nghị
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="insights-grid">
+                                <div class="insight-card positive">
+                                    <div class="insight-icon">
+                                        <span class="material-icons-round">thumb_up</span>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h4>Điểm mạnh</h4>
+                                        <p>Tỷ lệ chấm công đúng giờ tăng 5.2% so với tháng trước, thể hiện kỷ luật lao động tốt.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card warning">
+                                    <div class="insight-icon">
+                                        <span class="material-icons-round">warning</span>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h4>Cần cải thiện</h4>
+                                        <p>Năng suất làm việc giảm 1.5%, cần xem xét tối ưu hóa quy trình làm việc.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card recommendation">
+                                    <div class="insight-icon">
+                                        <span class="material-icons-round">psychology</span>
+                                    </div>
+                                    <div class="insight-content">
+                                        <h4>Khuyến nghị</h4>
+                                        <p>Nên tổ chức các buổi đào tạo kỹ năng mềm để nâng cao hiệu quả làm việc nhóm.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.setupAnalyticsHandlers();
+            this.loadAnalyticsData();
+
+        } catch (error) {
+            console.error('Analytics error:', error);
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
+                        <h3>Không thể tải phân tích</h3>
+                        <p>Đã xảy ra lỗi khi tải dữ liệu phân tích. Vui lòng thử lại sau.</p>
+                        <button onclick="window.contentManager.showAnalytics()" class="btn btn-primary">Thử lại</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Analytics Helper Functions
+    setupAnalyticsHandlers() {
+        // Period button handlers
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('.period-btn')) {
+                document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                this.changePeriod(e.target.dataset.period);
+            }
+        });
+
+        // Load data handler
+        document.getElementById('loadAnalyticsData')?.addEventListener('click', () => {
+            this.loadAnalyticsData();
+        });
+    }
+
+    changePeriod(period) {
+        const startDate = document.getElementById('analyticsStartDate');
+        const endDate = document.getElementById('analyticsEndDate');
+        const today = new Date();
+        
+        switch (period) {
+            case 'day':
+                startDate.value = this.formatDate(today);
+                endDate.value = this.formatDate(today);
+                break;
+            case 'week':
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                startDate.value = this.formatDate(weekStart);
+                endDate.value = this.formatDate(weekEnd);
+                break;
+            case 'month':
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                startDate.value = this.formatDate(monthStart);
+                endDate.value = this.formatDate(monthEnd);
+                break;
+            case 'quarter':
+                const quarter = Math.floor(today.getMonth() / 3);
+                const quarterStart = new Date(today.getFullYear(), quarter * 3, 1);
+                const quarterEnd = new Date(today.getFullYear(), quarter * 3 + 3, 0);
+                startDate.value = this.formatDate(quarterStart);
+                endDate.value = this.formatDate(quarterEnd);
+                break;
+            case 'year':
+                const yearStart = new Date(today.getFullYear(), 0, 1);
+                const yearEnd = new Date(today.getFullYear(), 11, 31);
+                startDate.value = this.formatDate(yearStart);
+                endDate.value = this.formatDate(yearEnd);
+                break;
+        }
+        
+        this.loadAnalyticsData();
+    }
+
+    changeAnalysisType(type) {
+        document.querySelectorAll('[data-analysis]').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[data-analysis="${type}"]`).classList.add('active');
+        
+        document.querySelectorAll('.analysis-panel').forEach(panel => panel.classList.remove('active'));
+        document.querySelector(`.${type}-analysis`).classList.add('active');
+    }
+
+    async loadAnalyticsData() {
+        try {
+            const startDate = document.getElementById('analyticsStartDate').value;
+            const endDate = document.getElementById('analyticsEndDate').value;
+            
+            // Simulate loading analytics data
+            console.log(`Loading analytics data from ${startDate} to ${endDate}`);
+            
+            // Update KPIs with simulated data
+            this.updateKPIValues();
+            
+            // Show loading state
+            const chartContainer = document.getElementById('trendChart');
+            if (chartContainer) {
+                chartContainer.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Đang tải dữ liệu...</p></div>';
+                
+                // Simulate data loading delay
+                setTimeout(() => {
+                    this.renderTrendChart();
+                }, 1500);
+            }
+            
+        } catch (error) {
+            console.error('Error loading analytics data:', error);
+            utils.showNotification('Lỗi khi tải dữ liệu phân tích', 'error');
+        }
+    }
+
+    updateKPIValues() {
+        // Simulate real-time KPI updates
+        const kpis = {
+            performance: Math.random() * 10 + 90, // 90-100%
+            attendance: Math.random() * 5 + 95,   // 95-100%
+            productivity: Math.random() * 20 + 80, // 80-100%
+            satisfaction: Math.random() * 10 + 90  // 90-100%
+        };
+
+        document.getElementById('performanceKPI').textContent = `${kpis.performance.toFixed(1)}%`;
+        document.getElementById('attendanceKPI').textContent = `${kpis.attendance.toFixed(1)}%`;
+        document.getElementById('productivityKPI').textContent = `${kpis.productivity.toFixed(1)}%`;
+        document.getElementById('satisfactionKPI').textContent = `${kpis.satisfaction.toFixed(1)}%`;
+    }
+
+    renderTrendChart() {
+        const chartContainer = document.getElementById('trendChart');
+        if (!chartContainer) return;
+
+        // Generate random data for demonstration
+        const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+        const data = days.map(() => Math.random() * 30 + 70); // 70-100%
+
+        chartContainer.innerHTML = `
+            <div class="mock-chart">
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color attendance-color"></div>
+                        <span>Chấm công</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color productivity-color"></div>
+                        <span>Năng suất</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color performance-color"></div>
+                        <span>Hiệu suất</span>
+                    </div>
+                </div>
+                <div class="chart-area">
+                    <div class="chart-bars trend-bars">
+                        ${data.map((value, index) => `
+                            <div class="trend-bar" style="height: ${value}%">
+                                <span>${days[index]}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getDefaultStartDate() {
+        const date = new Date();
+        date.setDate(date.getDate() - 30); // 30 days ago
+        return this.formatDate(date);
+    }
+
+    getCurrentDate() {
+        return this.formatDate(new Date());
+    }
+
+    formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+
     async showWorkTasks() {
         const content = document.getElementById('content');
         try {
@@ -3025,13 +3945,21 @@ class ContentManager {
     }
 
     renderEnhancedTasksList(tasks) {
+        console.log('DEBUG: renderEnhancedTasksList received:', tasks);
+        
         // Handle both array and object response formats
         let taskList = [];
         if (Array.isArray(tasks)) {
             taskList = tasks;
         } else if (tasks && typeof tasks === 'object') {
-            taskList = Object.keys(tasks).map(key => tasks[key]);
+            // Extract tasks from object, excluding metadata
+            taskList = Object.keys(tasks)
+                .filter(key => !['timestamp', 'status'].includes(key))
+                .map(key => tasks[key])
+                .filter(task => task && typeof task === 'object' && task.id);
         }
+        
+        console.log('DEBUG: Processed taskList:', taskList);
         
         if (taskList.length === 0) {
             return `
@@ -3072,7 +4000,7 @@ class ContentManager {
                         <div class="task-meta">
                             <div class="meta-item">
                                 <span class="material-icons-round meta-icon">person</span>
-                                <span class="meta-text">Người giao: ${task.assignerName || 'N/A'}</span>
+                                <span class="meta-text">Người giao: ${task.assignerNames || 'N/A'}</span>
                             </div>
                             <div class="meta-item">
                                 <span class="material-icons-round meta-icon">schedule</span>
@@ -3141,7 +4069,11 @@ class ContentManager {
         if (Array.isArray(tasks)) {
             taskList = tasks;
         } else if (tasks && typeof tasks === 'object') {
-            taskList = Object.keys(tasks).map(key => tasks[key]);
+            // Extract tasks from object, excluding metadata
+            taskList = Object.keys(tasks)
+                .filter(key => !['timestamp', 'status'].includes(key))
+                .map(key => tasks[key])
+                .filter(task => task && typeof task === 'object' && task.id);
         }
         
         const total = taskList.length;
@@ -6272,41 +7204,167 @@ class ContentManager {
                                 
                                 <div class="form-group">
                                     <label for="taskDescription">Mô tả chi tiết:</label>
-                                    <div class="text-editor-container">
-                                        <div class="editor-toolbar">
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('bold')" title="In đậm">
-                                                <span class="material-icons-round">format_bold</span>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('italic')" title="In nghiêng">
-                                                <span class="material-icons-round">format_italic</span>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('underline')" title="Gạch chân">
-                                                <span class="material-icons-round">format_underlined</span>
-                                            </button>
-                                            <div class="toolbar-separator"></div>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertUnorderedList')" title="Danh sách">
-                                                <span class="material-icons-round">format_list_bulleted</span>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertOrderedList')" title="Danh sách số">
-                                                <span class="material-icons-round">format_list_numbered</span>
-                                            </button>
-                                            <div class="toolbar-separator"></div>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyLeft')" title="Căn trái">
-                                                <span class="material-icons-round">format_align_left</span>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyCenter')" title="Căn giữa">
-                                                <span class="material-icons-round">format_align_center</span>
-                                            </button>
-                                            <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyRight')" title="Căn phải">
-                                                <span class="material-icons-round">format_align_right</span>
-                                            </button>
+                                    <div class="text-editor-container enhanced-editor">
+                                        <div class="editor-header">
+                                            <div class="editor-title">
+                                                <span class="material-icons-round">edit</span>
+                                                Trình soạn thảo nâng cao
+                                            </div>
+                                            <div class="editor-tools">
+                                                <button type="button" class="tool-btn" onclick="this.toggleEditorFullscreen()" title="Toàn màn hình">
+                                                    <span class="material-icons-round">fullscreen</span>
+                                                </button>
+                                                <button type="button" class="tool-btn" onclick="this.toggleEditorMode()" title="Chế độ markdown">
+                                                    <span class="material-icons-round">code</span>
+                                                </button>
+                                                <button type="button" class="tool-btn" onclick="this.showEditorHelp()" title="Trợ giúp">
+                                                    <span class="material-icons-round">help</span>
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div id="taskDescription" 
-                                             class="rich-text-editor" 
-                                             contenteditable="true" 
-                                             placeholder="Nhập mô tả chi tiết nhiệm vụ..."
-                                             style="min-height: 120px; border: 1px solid #ddd; padding: 12px; border-radius: 4px; background: white;">
+                                        
+                                        <div class="editor-toolbar enhanced-toolbar">
+                                            <!-- Text Formatting Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('bold')" title="In đậm (Ctrl+B)">
+                                                    <span class="material-icons-round">format_bold</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('italic')" title="In nghiêng (Ctrl+I)">
+                                                    <span class="material-icons-round">format_italic</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('underline')" title="Gạch chân (Ctrl+U)">
+                                                    <span class="material-icons-round">format_underlined</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('strikeThrough')" title="Gạch ngang">
+                                                    <span class="material-icons-round">strikethrough_s</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Font Formatting Group -->
+                                            <div class="toolbar-group">
+                                                <select class="toolbar-select font-size-select" onchange="contentManager.changeFontSize(this.value)" title="Kích thước chữ">
+                                                    <option value="1">Rất nhỏ</option>
+                                                    <option value="2">Nhỏ</option>
+                                                    <option value="3" selected>Bình thường</option>
+                                                    <option value="4">Lớn</option>
+                                                    <option value="5">Rất lớn</option>
+                                                </select>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('subscript')" title="Chỉ số dưới">
+                                                    <span class="material-icons-round">subscript</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('superscript')" title="Chỉ số trên">
+                                                    <span class="material-icons-round">superscript</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Color Group -->
+                                            <div class="toolbar-group">
+                                                <input type="color" class="toolbar-color-picker" onchange="contentManager.changeTextColor(this.value)" title="Màu chữ">
+                                                <input type="color" class="toolbar-color-picker" onchange="contentManager.changeBackgroundColor(this.value)" title="Màu nền" value="#ffffff">
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- List Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertUnorderedList')" title="Danh sách dấu chấm">
+                                                    <span class="material-icons-round">format_list_bulleted</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertOrderedList')" title="Danh sách số">
+                                                    <span class="material-icons-round">format_list_numbered</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('indent')" title="Thụt lề">
+                                                    <span class="material-icons-round">format_indent_increase</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('outdent')" title="Giảm thụt lề">
+                                                    <span class="material-icons-round">format_indent_decrease</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Alignment Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyLeft')" title="Căn trái">
+                                                    <span class="material-icons-round">format_align_left</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyCenter')" title="Căn giữa">
+                                                    <span class="material-icons-round">format_align_center</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyRight')" title="Căn phải">
+                                                    <span class="material-icons-round">format_align_right</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyFull')" title="Căn đều">
+                                                    <span class="material-icons-round">format_align_justify</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Insert Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertLink()" title="Chèn liên kết">
+                                                    <span class="material-icons-round">link</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertTable()" title="Chèn bảng">
+                                                    <span class="material-icons-round">table_chart</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertHorizontalRule()" title="Chèn đường kẻ">
+                                                    <span class="material-icons-round">horizontal_rule</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Action Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.undoEditor()" title="Hoàn tác (Ctrl+Z)">
+                                                    <span class="material-icons-round">undo</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.redoEditor()" title="Làm lại (Ctrl+Y)">
+                                                    <span class="material-icons-round">redo</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.clearFormatting()" title="Xóa định dạng">
+                                                    <span class="material-icons-round">format_clear</span>
+                                                </button>
+                                            </div>
                                         </div>
+                                        
+                                        <div class="editor-workspace">
+                                            <div id="taskDescription" 
+                                                 class="rich-text-editor enhanced-rich-editor resizable" 
+                                                 contenteditable="true" 
+                                                 placeholder="Nhập mô tả chi tiết nhiệm vụ... Sử dụng thanh công cụ để định dạng văn bản."
+                                                 style="min-height: 200px; max-height: 600px;">
+                                            </div>
+                                            
+                                            <!-- Resize Handle -->
+                                            <div class="resize-handle" onmousedown="this.startResize(event)">
+                                                <span class="material-icons-round">drag_handle</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="editor-footer">
+                                            <div class="editor-stats">
+                                                <span class="char-count">Ký tự: <span id="charCount">0</span></span>
+                                                <span class="word-count">Từ: <span id="wordCount">0</span></span>
+                                            </div>
+                                            <div class="editor-actions">
+                                                <button type="button" class="btn btn-sm secondary-btn" onclick="this.saveAsDraft()">
+                                                    <span class="material-icons-round">save</span>
+                                                    Lưu nháp
+                                                </button>
+                                                <button type="button" class="btn btn-sm secondary-btn" onclick="this.previewContent()">
+                                                    <span class="material-icons-round">preview</span>
+                                                    Xem trước
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
                                         <input type="hidden" name="taskDescription" id="taskDescriptionInput">
                                     </div>
                                 </div>
@@ -8706,13 +9764,77 @@ const professionalStyles = `
     background: white;
 }
 
-.editor-toolbar {
+.enhanced-editor {
+    border: 2px solid #e1e5e9;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.enhanced-editor:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 6px 25px rgba(103, 126, 234, 0.15);
+}
+
+.editor-header {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.editor-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.editor-tools {
+    display: flex;
+    gap: 8px;
+}
+
+.tool-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
     padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-1px);
+}
+
+.enhanced-toolbar {
+    display: flex;
+    padding: 12px;
     background: #f8f9fa;
     border-bottom: 1px solid #e0e0e0;
-    gap: 4px;
+    gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 4px;
+    border-radius: 6px;
+    background: white;
+    border: 1px solid #e9ecef;
 }
 
 .toolbar-btn {
@@ -8730,30 +9852,856 @@ const professionalStyles = `
 
 .toolbar-btn:hover {
     background: #e9ecef;
+    transform: translateY(-1px);
 }
 
 .toolbar-btn:active {
     background: #dee2e6;
+    transform: translateY(0);
 }
 
-.toolbar-separator {
-    width: 1px;
+.toolbar-select {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    background: white;
+}
+
+.toolbar-color-picker {
+    width: 24px;
     height: 24px;
-    background: #e0e0e0;
-    margin: 4px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
 }
 
-.rich-text-editor {
+.editor-workspace {
+    position: relative;
+}
+
+.enhanced-rich-editor {
+    padding: 16px;
+    border: none;
     outline: none;
-    min-height: 120px !important;
     font-family: inherit;
-    line-height: 1.5;
+    line-height: 1.6;
+    resize: vertical;
+    overflow-y: auto;
 }
 
-.rich-text-editor:empty:before {
+.enhanced-rich-editor:empty:before {
     content: attr(placeholder);
     color: #999;
     font-style: italic;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: se-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-top-left-radius: 4px;
+    color: #666;
+}
+
+.resize-handle:hover {
+    background: #e9ecef;
+}
+
+.editor-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    border-radius: 0 0 10px 10px;
+}
+
+.editor-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Modern Container Styles */
+.modern-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.professional-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.title-icon-wrapper {
+    background: rgba(255,255,255,0.15);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-icon {
+    font-size: 2rem;
+}
+
+.title-text h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.header-subtitle {
+    margin: 4px 0 0 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.modern-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.action-btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.action-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.secondary-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.secondary-btn:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.success-btn {
+    background: #28a745;
+    color: white;
+}
+
+.success-btn:hover {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.warning-btn {
+    background: #ffc107;
+    color: #212529;
+}
+
+.warning-btn:hover {
+    background: #e0a800;
+    transform: translateY(-1px);
+}
+
+/* Enhanced Cards */
+.modern-card {
+    background: var(--card-bg, white);
+    border: 1px solid var(--border-color, #e1e5e9);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.modern-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid var(--border-color, #e1e5e9);
+}
+
+.modern-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-primary, #2d3748);
+}
+
+.header-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-tools .tool-btn {
+    background: white;
+    color: var(--text-secondary, #64748b);
+    border: 1px solid var(--border-color, #e1e5e9);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.header-tools .tool-btn.active {
+    background: var(--primary, #667eea);
+    color: white;
+    border-color: var(--primary, #667eea);
+}
+
+/* Enhanced Controls */
+.modern-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.control-section {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.enhanced-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-primary, #2d3748);
+    font-size: 0.9rem;
+}
+
+.modern-input, .modern-select {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color, #e1e5e9);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.modern-input:focus, .modern-select:focus {
+    outline: none;
+    border-color: var(--primary, #667eea);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.action-section {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Analytics Styles */
+.analytics-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.period-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 24px;
+}
+
+.period-selector {
+    flex: 1;
+    min-width: 300px;
+}
+
+.control-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.period-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.period-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 2px solid var(--border-color);
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.period-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.period-btn:hover:not(.active) {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.date-range-picker {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.date-input-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+/* KPI Dashboard */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 24px;
+}
+
+.kpi-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.kpi-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+}
+
+.kpi-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kpi-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.kpi-label {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.kpi-trend.positive {
+    color: #28a745;
+}
+
+.kpi-trend.negative {
+    color: #dc3545;
+}
+
+/* Charts and Analytics */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.charts-section .card-body {
+    padding: 24px;
+}
+
+.chart-container {
+    height: 400px;
+    position: relative;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mock-chart {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.attendance-color { background: #28a745; }
+.productivity-color { background: #ffc107; }
+.performance-color { background: #667eea; }
+
+.chart-area {
+    flex: 1;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+}
+
+.trend-bars {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+    height: 200px;
+}
+
+.trend-bar {
+    width: 40px;
+    background: linear-gradient(to top, var(--primary), #764ba2);
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.trend-bar:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+.trend-bar span {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* Analysis Panels */
+.analysis-content {
+    position: relative;
+    min-height: 400px;
+}
+
+.analysis-panel {
+    display: none;
+    padding: 24px;
+}
+
+.analysis-panel.active {
+    display: block;
+}
+
+.analysis-summary h4 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.summary-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.summary-item {
+    text-align: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.summary-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary);
+    display: block;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Metrics Section */
+.metrics-grid {
+    display: grid;
+    gap: 16px;
+    padding: 24px;
+}
+
+.metric-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.metric-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.metric-score {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.metric-bar {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.metric-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary), #764ba2);
+    border-radius: 4px;
+    transition: width 0.8s ease;
+}
+
+.metric-description {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Insights Section */
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 24px;
+}
+
+.insight-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-left: 4px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.insight-card.positive {
+    border-left-color: #28a745;
+}
+
+.insight-card.positive .insight-icon {
+    color: #28a745;
+}
+
+.insight-card.warning {
+    border-left-color: #ffc107;
+}
+
+.insight-card.warning .insight-icon {
+    color: #ffc107;
+}
+
+.insight-card.recommendation {
+    border-left-color: #667eea;
+}
+
+.insight-card.recommendation .insight-icon {
+    color: #667eea;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.insight-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+}
+
+.insight-content h4 {
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.insight-content p {
+    margin: 0;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+/* Loading and Utility Styles */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 16px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Mini Stats */
+.mini-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.mini-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.mini-stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.mini-stat-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin-top: 4px;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .professional-header {
+        padding: 20px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .header-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .title-icon-wrapper {
+        align-self: center;
+    }
+    
+    .header-actions {
+        align-self: stretch;
+        justify-content: center;
+    }
+    
+    .modern-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .control-section {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .period-controls {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .period-selector {
+        min-width: auto;
+    }
+    
+    .period-buttons {
+        justify-content: center;
+    }
+    
+    .date-range-picker {
+        justify-content: center;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .mini-stats {
+        justify-content: center;
+    }
 }
 
 /* Enhanced Statistics Styles */
@@ -8915,66 +10863,140 @@ const professionalStyles = `
     overflow: hidden;
 }
 
-.timesheet-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 8px 8px 0 0;
+.timesheet-main-content {
+    margin-top: 24px;
 }
 
-.header-info h2 {
-    margin: 0;
-    font-size: 1.5rem;
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.calendar-section, .stats-section {
+    background: white;
+}
+
+.modern-calendar {
+    min-height: 400px;
+}
+
+.modern-stats {
+    min-height: 400px;
+}
+
+.primary-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.modern-stat-card {
+    background: white;
+    border: 1px solid #e1e5e9;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    border-left: 4px solid #dee2e6;
+}
+
+.attendance-card { border-left-color: #28a745; }
+.hours-card { border-left-color: #007bff; }
+.overtime-card { border-left-color: #ffc107; }
+.efficiency-card { border-left-color: #667eea; }
+
+.modern-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.stat-content {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 8px;
 }
 
-.subtitle {
-    margin: 4px 0 0 0;
-    opacity: 0.9;
-    font-size: 0.875rem;
-}
-
-.header-controls {
+.stat-trend {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.month-nav-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.month-nav-btn:hover {
-    background: rgba(255,255,255,0.3);
-}
-
-.current-month {
+    gap: 4px;
+    font-size: 0.8rem;
     font-weight: 600;
-    min-width: 120px;
-    text-align: center;
+    margin-top: 8px;
 }
 
-.timesheet-content {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
+.trend-icon {
+    font-size: 1rem;
+}
+
+.trend-value {
+    color: inherit;
+}
+
+.detailed-analytics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.analytics-chart, .performance-metrics {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.analytics-chart h4, .performance-metrics h4 {
+    margin: 0 0 16px 0;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.performance-metrics .metric-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.performance-metrics .metric-item:last-child {
+    margin-bottom: 0;
+}
+
+.performance-metrics .metric-label {
+    font-weight: 500;
+}
+
+.performance-metrics .metric-bar {
+    flex: 1;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    margin: 0 12px;
     overflow: hidden;
+}
+
+.performance-metrics .metric-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary), #764ba2);
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.performance-metrics .metric-value {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+@media (max-width: 1024px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detailed-analytics {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
@@ -8996,14 +11018,8 @@ const professionalStyles = `
         min-width: 70px;
     }
     
-    .timesheet-header {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
-    }
-    
-    .header-controls {
-        justify-content: center;
+    .primary-kpis {
+        grid-template-columns: 1fr;
     }
 }
 </style>
