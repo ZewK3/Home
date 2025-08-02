@@ -8740,6 +8740,170 @@ button:focus, .btn:focus, .menu-link:focus {
     justify-content: center;
 }
 
+/* Enhanced Shift Schedule Grid */
+.shift-schedule-grid {
+    width: 100%;
+    overflow-x: auto;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.shift-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 800px;
+}
+
+.shift-table th {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.shift-table th:first-child {
+    border-top-left-radius: 12px;
+    min-width: 150px;
+    text-align: left;
+}
+
+.shift-table th:last-child {
+    border-top-right-radius: 12px;
+}
+
+.shift-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    background: var(--bg-card);
+}
+
+.shift-table tbody tr:hover td {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.employee-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 150px;
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    z-index: 5;
+    border-right: 2px solid var(--border-color);
+}
+
+.shift-cell {
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+}
+
+/* Enhanced Time Input Fields */
+.time-inputs-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    width: 100%;
+}
+
+.time-input {
+    width: 80px;
+    padding: 4px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    text-align: center;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.time-input::placeholder {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.time-labels {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+
+.shift-status {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.shift-status.working {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.shift-status.off {
+    color: var(--text-muted);
+}
+
+/* Professional Shift Actions */
+.shift-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    justify-content: center;
+}
+
+.shift-actions .btn {
+    min-width: 140px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-save-shifts {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    color: white;
+    border: none;
+}
+
+.btn-save-shifts:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+}
+
+.btn-clear-shifts {
+    background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+    color: white;
+    border: none;
+}
+
+.btn-clear-shifts:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+}
+
 .current-shift-card, .weekly-shifts-card {
     background: var(--bg-card);
     border-radius: 16px;

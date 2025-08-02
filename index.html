@@ -83,8 +83,10 @@
                 </button>
 
                 <div class="form-footer">
-                    <p>Chưa có tài khoản? <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a></p>
-                    <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                    <div class="footer-row">
+                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
+                    </div>
                 </div>
             </form>
         </div>
@@ -178,6 +180,90 @@
 
                 <div class="form-footer">
                     <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Quên mật khẩu</h2>
+                </div>
+            </div>
+
+            <form id="forgotPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="forgotEmail" name="forgotEmail" placeholder=" " required autocomplete="email">
+                        <label for="forgotEmail">Email tài khoản</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">send</span>
+                    <span class="btn-text">Lấy mã đổi mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Nhớ lại mật khẩu? <a href="#" id="goToLoginFromForgot" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="resetPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đặt lại mật khẩu</h2>
+                </div>
+            </div>
+
+            <form id="resetPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">vpn_key</span>
+                        <input type="text" id="resetCode" name="resetCode" placeholder=" " required maxlength="6">
+                        <label for="resetCode">Mã xác thực (6 số)</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="newPassword" name="newPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">lock_reset</span>
+                    <span class="btn-text">Đặt lại mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Chưa nhận được mã? <a href="#" id="goToForgotFromReset" class="form-link">Gửi lại mã</a></p>
                 </div>
             </form>
         </div>

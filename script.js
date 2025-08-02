@@ -72,9 +72,13 @@ const elements = {
     loginForm: document.getElementById("loginForm"),
     registerForm: document.getElementById("registerForm"),
     verificationForm: document.getElementById("verificationForm"),
+    forgotPasswordForm: document.getElementById("forgotPasswordForm"),
+    resetPasswordForm: document.getElementById("resetPasswordForm"),
     loginContainer: document.getElementById("loginFormContainer"),
     registerContainer: document.getElementById("registerFormContainer"),
     verificationContainer: document.getElementById("verificationFormContainer"),
+    forgotPasswordContainer: document.getElementById("forgotPasswordFormContainer"),
+    resetPasswordContainer: document.getElementById("resetPasswordFormContainer"),
     notification: document.getElementById("notification"),
     themeSwitch: document.getElementById("themeSwitch"),
     strengthMeter: document.querySelector(".strength-meter div"),
@@ -92,6 +96,12 @@ function showRegisterForm() {
         if (elements.verificationContainer) {
             elements.verificationContainer.classList.remove('active');
         }
+        if (elements.forgotPasswordContainer) {
+            elements.forgotPasswordContainer.classList.remove('active');
+        }
+        if (elements.resetPasswordContainer) {
+            elements.resetPasswordContainer.classList.remove('active');
+        }
         if (elements.registerForm) {
             elements.registerForm.reset();
         }
@@ -105,8 +115,38 @@ function showLoginForm() {
         if (elements.verificationContainer) {
             elements.verificationContainer.classList.remove('active');
         }
+        if (elements.forgotPasswordContainer) {
+            elements.forgotPasswordContainer.classList.remove('active');
+        }
+        if (elements.resetPasswordContainer) {
+            elements.resetPasswordContainer.classList.remove('active');
+        }
         if (elements.loginForm) {
             elements.loginForm.reset();
+        }
+    }
+}
+
+function showForgotPasswordForm() {
+    if (elements.loginContainer && elements.forgotPasswordContainer) {
+        elements.loginContainer.classList.remove('active');
+        elements.registerContainer.classList.remove('active');
+        elements.forgotPasswordContainer.classList.add('active');
+        if (elements.resetPasswordContainer) {
+            elements.resetPasswordContainer.classList.remove('active');
+        }
+        if (elements.forgotPasswordForm) {
+            elements.forgotPasswordForm.reset();
+        }
+    }
+}
+
+function showResetPasswordForm() {
+    if (elements.forgotPasswordContainer && elements.resetPasswordContainer) {
+        elements.forgotPasswordContainer.classList.remove('active');
+        elements.resetPasswordContainer.classList.add('active');
+        if (elements.resetPasswordForm) {
+            elements.resetPasswordForm.reset();
         }
     }
 }
@@ -623,6 +663,129 @@ async function resendVerificationCode() {
     }
 }
 
+// Handle forgot password form submission
+async function handleForgotPassword(e) {
+    e.preventDefault();
+    
+    const button = elements.forgotPasswordForm.querySelector("button[type='submit']");
+    const buttonText = button?.querySelector(".btn-text");
+    const buttonLoader = button?.querySelector(".btn-loader");
+    
+    if (button) {
+        button.disabled = true;
+        button.classList.add("loading");
+    }
+    if (buttonText) {
+        buttonText.textContent = "Đang gửi...";
+    }
+    if (buttonLoader) {
+        buttonLoader.style.display = "block";
+    }
+
+    try {
+        const formData = new FormData(elements.forgotPasswordForm);
+        const email = formData.get("forgotEmail");
+
+        const response = await fetch(`${API_URL}?action=forgotPassword`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+
+        const result = await response.json();
+        
+        if (response.status === SUCCESS_STATUS) {
+            showNotification("Mã đặt lại mật khẩu đã được gửi đến email của bạn!", "success");
+            showResetPasswordForm();
+        } else {
+            throw new Error(result.message || "Không thể gửi mã đặt lại mật khẩu");
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.classList.remove("loading");
+        }
+        if (buttonText) {
+            buttonText.textContent = "Lấy mã đổi mật khẩu";
+        }
+        if (buttonLoader) {
+            buttonLoader.style.display = "none";
+        }
+    }
+}
+
+// Handle reset password form submission
+async function handleResetPassword(e) {
+    e.preventDefault();
+    
+    const button = elements.resetPasswordForm.querySelector("button[type='submit']");
+    const buttonText = button?.querySelector(".btn-text");
+    const buttonLoader = button?.querySelector(".btn-loader");
+    
+    if (button) {
+        button.disabled = true;
+        button.classList.add("loading");
+    }
+    if (buttonText) {
+        buttonText.textContent = "Đang xử lý...";
+    }
+    if (buttonLoader) {
+        buttonLoader.style.display = "block";
+    }
+
+    try {
+        const formData = new FormData(elements.resetPasswordForm);
+        const resetCode = formData.get("resetCode");
+        const newPassword = formData.get("newPassword");
+        const confirmNewPassword = formData.get("confirmNewPassword");
+
+        // Validate passwords match
+        if (newPassword !== confirmNewPassword) {
+            throw new Error("Mật khẩu xác nhận không khớp");
+        }
+
+        // Validate password strength
+        if (newPassword.length < 6) {
+            throw new Error("Mật khẩu phải có ít nhất 6 ký tự");
+        }
+
+        const response = await fetch(`${API_URL}?action=resetPassword`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                resetCode, 
+                newPassword 
+            })
+        });
+
+        const result = await response.json();
+        
+        if (response.status === SUCCESS_STATUS) {
+            showNotification("Mật khẩu đã được đặt lại thành công!", "success");
+            setTimeout(() => {
+                showLoginForm();
+            }, 2000);
+        } else {
+            throw new Error(result.message || "Không thể đặt lại mật khẩu");
+        }
+    } catch (error) {
+        showNotification(error.message, "error");
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.classList.remove("loading");
+        }
+        if (buttonText) {
+            buttonText.textContent = "Đặt lại mật khẩu";
+        }
+        if (buttonLoader) {
+            buttonLoader.style.display = "none";
+        }
+    }
+}
+
 // Event Listeners - Fixed with null checks
 document.addEventListener("DOMContentLoaded", () => {
     // Load stores for registration form
@@ -720,6 +883,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const backToLoginBtn = document.getElementById("backToLogin");
     const backToRegisterBtn = document.getElementById("backToRegister");
     const resendCodeBtn = document.getElementById("resendCodeBtn");
+    const forgotPasswordBtn = document.querySelector(".forgot-password");
+    const goToLoginFromForgotBtn = document.getElementById("goToLoginFromForgot");
+    const goToForgotFromResetBtn = document.getElementById("goToForgotFromReset");
     
     if (goToRegisterBtn) {
         goToRegisterBtn.addEventListener("click", (e) => {
@@ -746,6 +912,27 @@ document.addEventListener("DOMContentLoaded", () => {
         backToRegisterBtn.addEventListener("click", (e) => {
             e.preventDefault();
             showRegisterForm();
+        });
+    }
+
+    if (forgotPasswordBtn) {
+        forgotPasswordBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showForgotPasswordForm();
+        });
+    }
+
+    if (goToLoginFromForgotBtn) {
+        goToLoginFromForgotBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showLoginForm();
+        });
+    }
+
+    if (goToForgotFromResetBtn) {
+        goToForgotFromResetBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            showForgotPasswordForm();
         });
     }
 
@@ -776,6 +963,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (elements.verificationForm) {
         elements.verificationForm.addEventListener("submit", handleVerification);
+    }
+
+    if (elements.forgotPasswordForm) {
+        elements.forgotPasswordForm.addEventListener("submit", handleForgotPassword);
+    }
+
+    if (elements.resetPasswordForm) {
+        elements.resetPasswordForm.addEventListener("submit", handleResetPassword);
     }
 });
 

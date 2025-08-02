@@ -903,6 +903,28 @@ body {
     color: rgba(255, 255, 255, 0.9);
 }
 
+.footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.footer-row .forgot-password,
+.footer-row .form-link {
+    font-size: 0.9rem;
+    color: #60a5fa;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.footer-row .forgot-password:hover,
+.footer-row .form-link:hover {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
 .form-options {
     margin-bottom: 1.5rem;
     color: rgba(255, 255, 255, 0.9);

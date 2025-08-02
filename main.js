@@ -1158,13 +1158,22 @@ class ContentManager {
                                     <td class="employee-name">${emp.fullName}</td>
                                     ${weekDates.map(date => `
                                         <td class="shift-cell" data-date="${date.toISOString().split('T')[0]}">
-                                            <select class="shift-select" data-employee="${emp.employeeId}" data-date="${date.toISOString().split('T')[0]}">
-                                                <option value="">Nghỉ</option>
-                                                <option value="morning">Ca sáng (8:00-16:00)</option>
-                                                <option value="afternoon">Ca chiều (13:00-22:00)</option>
-                                                <option value="night">Ca đêm (22:00-6:00)</option>
-                                                <option value="full">Ca full (8:00-22:00)</option>
-                                            </select>
+                                            <div class="time-inputs-container">
+                                                <div class="time-labels">Giờ vào - Giờ ra</div>
+                                                <input type="time" 
+                                                    class="time-input start-time" 
+                                                    data-employee="${emp.employeeId}" 
+                                                    data-date="${date.toISOString().split('T')[0]}"
+                                                    data-type="start"
+                                                    placeholder="08:00">
+                                                <input type="time" 
+                                                    class="time-input end-time" 
+                                                    data-employee="${emp.employeeId}" 
+                                                    data-date="${date.toISOString().split('T')[0]}"
+                                                    data-type="end"
+                                                    placeholder="17:00">
+                                                <div class="shift-status off">Nghỉ</div>
+                                            </div>
                                         </td>
                                     `).join('')}
                                 </tr>
@@ -1177,6 +1186,9 @@ class ContentManager {
             // Show action buttons
             document.getElementById('saveShiftAssignments').style.display = 'inline-block';
             document.getElementById('clearShiftAssignments').style.display = 'inline-block';
+
+            // Set up time input event listeners
+            this.setupTimeInputHandlers();
 
             // Load existing shift assignments if any
             this.loadExistingShifts(existingShifts);
@@ -1213,13 +1225,60 @@ class ContentManager {
         return `${dayName}<br>${dateStr}`;
     }
 
+    setupTimeInputHandlers() {
+        // Add event listeners to all time inputs
+        const timeInputs = document.querySelectorAll('.time-input');
+        timeInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                this.updateShiftStatus(e.target);
+            });
+            
+            input.addEventListener('blur', (e) => {
+                this.updateShiftStatus(e.target);
+            });
+        });
+    }
+
+    updateShiftStatus(changedInput) {
+        const cell = changedInput.closest('.shift-cell');
+        if (!cell) return;
+
+        const startTimeInput = cell.querySelector('.start-time');
+        const endTimeInput = cell.querySelector('.end-time');
+        const statusDiv = cell.querySelector('.shift-status');
+
+        const startTime = startTimeInput.value;
+        const endTime = endTimeInput.value;
+
+        if (startTime && endTime) {
+            statusDiv.textContent = `${startTime} - ${endTime}`;
+            statusDiv.className = 'shift-status working';
+        } else if (startTime || endTime) {
+            statusDiv.textContent = 'Chưa hoàn thành';
+            statusDiv.className = 'shift-status';
+        } else {
+            statusDiv.textContent = 'Nghỉ';
+            statusDiv.className = 'shift-status off';
+        }
+    }
+
     loadExistingShifts(existingShifts) {
         if (!Array.isArray(existingShifts)) return;
         
         existingShifts.forEach(shift => {
-            const select = document.querySelector(`select[data-employee="${shift.employeeId}"][data-date="${shift.date}"]`);
-            if (select) {
-                select.value = shift.shiftType;
+            const startTimeInput = document.querySelector(`input.start-time[data-employee="${shift.employeeId}"][data-date="${shift.date}"]`);
+            const endTimeInput = document.querySelector(`input.end-time[data-employee="${shift.employeeId}"][data-date="${shift.date}"]`);
+            
+            if (startTimeInput && shift.startTime) {
+                startTimeInput.value = shift.startTime;
+            }
+            if (endTimeInput && shift.endTime) {
+                endTimeInput.value = shift.endTime;
+            }
+            
+            // Update status display
+            if (startTimeInput) {
+                this.updateShiftStatus(startTimeInput);
             }
         });
     }
@@ -1230,13 +1289,23 @@ class ContentManager {
             const week = document.getElementById('shiftWeek').value;
             const shiftData = [];
 
-            const selects = document.querySelectorAll('.shift-select');
-            selects.forEach(select => {
-                if (select.value) {
+            // Get all time input pairs
+            const startTimeInputs = document.querySelectorAll('.start-time');
+            startTimeInputs.forEach(startInput => {
+                const employeeId = startInput.dataset.employee;
+                const date = startInput.dataset.date;
+                const endInput = document.querySelector(`input.end-time[data-employee="${employeeId}"][data-date="${date}"]`);
+                
+                const startTime = startInput.value;
+                const endTime = endInput ? endInput.value : '';
+                
+                // Only save if both times are provided
+                if (startTime && endTime) {
                     shiftData.push({
-                        employeeId: select.dataset.employee,
-                        date: select.dataset.date,
-                        shiftType: select.value,
+                        employeeId: employeeId,
+                        date: date,
+                        startTime: startTime,
+                        endTime: endTime,
                         storeId: store
                     });
                 }
@@ -1265,8 +1334,11 @@ class ContentManager {
     }
 
     clearAllShiftAssignments() {
-        const selects = document.querySelectorAll('.shift-select');
-        selects.forEach(select => select.value = '');
+        const timeInputs = document.querySelectorAll('.time-input');
+        timeInputs.forEach(input => {
+            input.value = '';
+            this.updateShiftStatus(input);
+        });
         utils.showNotification('Đã xóa tất cả phân ca', 'info');
     }
 
@@ -3040,9 +3112,17 @@ class ContentManager {
     }
 
     updateTaskStats(tasks) {
-        const total = tasks.length;
-        const pending = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
-        const completed = tasks.filter(t => t.status === 'completed').length;
+        // Handle both array and object response formats
+        let taskList = [];
+        if (Array.isArray(tasks)) {
+            taskList = tasks;
+        } else if (tasks && typeof tasks === 'object') {
+            taskList = Object.keys(tasks).map(key => tasks[key]);
+        }
+        
+        const total = taskList.length;
+        const pending = taskList.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
+        const completed = taskList.filter(t => t.status === 'completed').length;
         
         document.getElementById('totalTasks').textContent = total;
         document.getElementById('pendingTasks').textContent = pending;
