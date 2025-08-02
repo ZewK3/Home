@@ -1418,10 +1418,14 @@ class ContentManager {
             const userResponse = await API_CACHE.getUserData();
             if (!userResponse || !['QL', 'AD'].includes(userResponse.position)) {
                 content.innerHTML = `
-                    <div class="access-denied">
-                        <span class="material-icons-round">block</span>
+                    <div class="access-denied-enhanced">
+                        <span class="material-icons-round access-denied-icon">security</span>
                         <h3>Không có quyền truy cập</h3>
-                        <p>Chỉ QL và AD mới có quyền xử lý yêu cầu nhân sự.</p>
+                        <p>Tính năng này chỉ dành cho Quản lý (QL) và Quản trị viên (AD).</p>
+                        <button onclick="window.contentManager.showDashboard()" class="btn btn-primary modern-btn">
+                            <span class="material-icons-round">dashboard</span>
+                            Về Dashboard
+                        </button>
                     </div>
                 `;
                 return;
@@ -1445,35 +1449,328 @@ class ContentManager {
             }
             
             content.innerHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Xử Lý Yêu Cầu Nhân Sự - Đơn Từ</h2>
-                        <p>Duyệt các đơn từ và yêu cầu của nhân viên</p>
-                    </div>
-                    <div class="card-body">
-                        <div class="request-filters">
-                            <select id="attendanceRequestTypeFilter" class="form-control">
-                                <option value="">Tất cả loại đơn</option>
-                                <option value="forgot_checkin">Quên chấm công vào</option>
-                                <option value="forgot_checkout">Quên chấm công ra</option>
-                                <option value="shift_change">Thay đổi ca làm</option>
-                                <option value="leave">Xin nghỉ phép</option>
-                                <option value="sick_leave">Nghỉ ốm</option>
-                                <option value="personal_leave">Nghỉ cá nhân</option>
-                            </select>
-                            <select id="attendanceRequestStatusFilter" class="form-control">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="pending">Chờ duyệt</option>
-                                <option value="approved">Đã duyệt</option>
-                                <option value="rejected">Đã từ chối</option>
-                            </select>
+                <div class="personnel-management-container">
+                    <!-- Enhanced Header -->
+                    <div class="page-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <span class="material-icons-round header-icon">people</span>
+                                <div>
+                                    <h1>Xử Lý Đơn Từ Nhân Sự</h1>
+                                    <p class="header-subtitle">Duyệt và quản lý các yêu cầu từ nhân viên</p>
+                                </div>
+                            </div>
+                            <div class="header-stats">
+                                <div class="stat-card">
+                                    <span class="stat-number" id="totalRequests">0</span>
+                                    <span class="stat-label">Tổng đơn</span>
+                                </div>
+                                <div class="stat-card pending">
+                                    <span class="stat-number" id="pendingRequests">0</span>
+                                    <span class="stat-label">Chờ duyệt</span>
+                                </div>
+                                <div class="stat-card approved">
+                                    <span class="stat-number" id="approvedRequests">0</span>
+                                    <span class="stat-label">Đã duyệt</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="requests-list" id="attendanceRequestsList">
-                            ${this.renderAttendanceRequests(attendanceRequests || [])}
+                    </div>
+
+                    <!-- Enhanced Filter Section -->
+                    <div class="card modern-card">
+                        <div class="card-body">
+                            <div class="request-filters-enhanced">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <span class="material-icons-round">category</span>
+                                        Loại đơn từ
+                                    </label>
+                                    <select id="attendanceRequestTypeFilter" class="form-control modern-select">
+                                        <option value="">Tất cả loại đơn</option>
+                                        <option value="forgot_checkin">Quên chấm công vào</option>
+                                        <option value="forgot_checkout">Quên chấm công ra</option>
+                                        <option value="shift_change">Thay đổi ca làm</option>
+                                        <option value="leave">Xin nghỉ phép</option>
+                                        <option value="sick_leave">Nghỉ ốm</option>
+                                        <option value="personal_leave">Nghỉ cá nhân</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <span class="material-icons-round">flag</span>
+                                        Trạng thái
+                                    </label>
+                                    <select id="attendanceRequestStatusFilter" class="form-control modern-select">
+                                        <option value="">Tất cả trạng thái</option>
+                                        <option value="pending">Chờ duyệt</option>
+                                        <option value="approved">Đã duyệt</option>
+                                        <option value="rejected">Đã từ chối</option>
+                                    </select>
+                                </div>
+                                <div class="filter-actions">
+                                    <button id="refreshRequests" class="btn btn-outline modern-btn">
+                                        <span class="material-icons-round">refresh</span>
+                                        Làm mới
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="attendanceRequestsList" class="requests-list-enhanced">
+                                ${this.renderEnhancedRequestsList(attendanceRequests)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Request Detail Modal -->
+                <div id="requestDetailModal" class="modal enhanced-modal">
+                    <div class="modal-content enhanced-modal-content">
+                        <div class="modal-header">
+                            <h3>Chi tiết đơn từ</h3>
+                            <button class="close-btn" onclick="this.closeRequestDetailModal()">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div id="requestDetailContent" class="modal-body"></div>
+                    </div>
+                </div>
+
+                <!-- Approval/Rejection Modal -->
+                <div id="approvalModal" class="modal enhanced-modal">
+                    <div class="modal-content enhanced-modal-content">
+                        <div class="modal-header">
+                            <h3 id="approvalModalTitle">Xử lý đơn từ</h3>
+                            <button class="close-btn" onclick="this.closeApprovalModal()">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="approvalModalContent"></div>
                         </div>
                     </div>
                 </div>
             `;
+
+            this.setupEnhancedPersonnelHandlers();
+            this.updateRequestStats(attendanceRequests);
+
+        } catch (error) {
+            console.error('Personnel management error:', error);
+            content.innerHTML = `
+                <div class="error-container enhanced-error">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error_outline</span>
+                        <h3>Không thể tải dữ liệu</h3>
+                        <p>Đã xảy ra lỗi khi tải danh sách đơn từ. Vui lòng kiểm tra kết nối và thử lại.</p>
+                        <button onclick="window.contentManager.showTaskPersonnel()" class="btn btn-primary modern-btn">
+                            <span class="material-icons-round">refresh</span>
+                            Thử lại
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    renderEnhancedRequestsList(requests) {
+        if (!Array.isArray(requests) || requests.length === 0) {
+            return `
+                <div class="no-requests-enhanced">
+                    <span class="material-icons-round no-requests-icon">inbox</span>
+                    <h3>Chưa có đơn từ nào</h3>
+                    <p>Hiện tại chưa có đơn từ nào cần xử lý. Các yêu cầu mới sẽ xuất hiện tại đây.</p>
+                </div>
+            `;
+        }
+
+        return requests.map(request => {
+            const createdDate = new Date(request.createdAt || request.requestDate);
+            const isUrgent = request.status === 'pending' && (Date.now() - createdDate.getTime()) > 24 * 60 * 60 * 1000;
+            
+            return `
+                <div class="request-card-enhanced ${isUrgent ? 'urgent' : ''}" data-status="${request.status}" data-type="${request.type}">
+                    <div class="request-card-header">
+                        <div class="request-title-section">
+                            <div class="request-type-badge">
+                                ${this.getRequestTypeIcon(request.type)}
+                                <span class="request-type-text">${this.getRequestTypeDisplayName(request.type)}</span>
+                            </div>
+                            <span class="request-status-badge ${request.status}">
+                                ${this.getRequestStatusIcon(request.status)}
+                                ${this.getRequestStatusText(request.status)}
+                            </span>
+                            ${isUrgent ? '<span class="urgent-badge"><span class="material-icons-round">priority_high</span>Khẩn cấp</span>' : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="request-card-body">
+                        <div class="request-employee-info">
+                            <span class="material-icons-round">person</span>
+                            <div>
+                                <strong>${request.employeeName || 'N/A'}</strong>
+                                <small>${request.storeName || 'N/A'}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="request-details">
+                            ${request.targetDate ? `
+                                <div class="detail-item">
+                                    <span class="material-icons-round">calendar_today</span>
+                                    <span>Ngày: ${new Date(request.targetDate).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                            ` : ''}
+                            ${request.targetTime ? `
+                                <div class="detail-item">
+                                    <span class="material-icons-round">schedule</span>
+                                    <span>${request.targetTime}</span>
+                                </div>
+                            ` : ''}
+                            ${request.reason ? `
+                                <div class="detail-item reason">
+                                    <span class="material-icons-round">comment</span>
+                                    <span>${request.reason.substring(0, 100)}${request.reason.length > 100 ? '...' : ''}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="request-timestamp">
+                            <span class="material-icons-round">access_time</span>
+                            <span>Gửi lúc: ${createdDate.toLocaleString('vi-VN')}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="request-card-footer">
+                        ${request.status === 'pending' ? `
+                            <div class="request-actions">
+                                <button class="btn btn-success modern-btn" onclick="event.stopPropagation(); window.contentManager.approveAttendanceRequest('${request.id}')">
+                                    <span class="material-icons-round">check</span>
+                                    Duyệt
+                                </button>
+                                <button class="btn btn-danger modern-btn" onclick="event.stopPropagation(); window.contentManager.showRejectModal('${request.id}')">
+                                    <span class="material-icons-round">close</span>
+                                    Từ chối
+                                </button>
+                            </div>
+                        ` : `
+                            <div class="request-processed-info">
+                                <span class="material-icons-round">person</span>
+                                <span>Xử lý bởi: ${request.approverName || 'N/A'}</span>
+                                ${request.approvedAt ? `<span class="process-time">lúc ${new Date(request.approvedAt).toLocaleString('vi-VN')}</span>` : ''}
+                            </div>
+                        `}
+                        <button class="btn btn-outline modern-btn" onclick="event.stopPropagation(); this.showRequestDetail('${request.id}')">
+                            <span class="material-icons-round">visibility</span>
+                            Chi tiết
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getRequestTypeIcon(type) {
+        const iconMap = {
+            'forgot_checkin': 'login',
+            'forgot_checkout': 'logout', 
+            'shift_change': 'swap_horiz',
+            'leave': 'beach_access',
+            'sick_leave': 'local_hospital',
+            'personal_leave': 'person_off'
+        };
+        return `<span class="material-icons-round type-icon">${iconMap[type] || 'description'}</span>`;
+    }
+
+    getRequestStatusIcon(status) {
+        const iconMap = {
+            'pending': 'schedule',
+            'approved': 'check_circle',
+            'rejected': 'cancel'
+        };
+        return `<span class="material-icons-round status-icon">${iconMap[status] || 'help'}</span>`;
+    }
+
+    updateRequestStats(requests) {
+        const total = requests.length;
+        const pending = requests.filter(r => r.status === 'pending').length;
+        const approved = requests.filter(r => r.status === 'approved').length;
+        
+        document.getElementById('totalRequests').textContent = total;
+        document.getElementById('pendingRequests').textContent = pending;
+        document.getElementById('approvedRequests').textContent = approved;
+    }
+
+    setupEnhancedPersonnelHandlers() {
+        const typeFilter = document.getElementById('attendanceRequestTypeFilter');
+        const statusFilter = document.getElementById('attendanceRequestStatusFilter');
+        const refreshBtn = document.getElementById('refreshRequests');
+        
+        if (typeFilter) {
+            typeFilter.addEventListener('change', () => this.filterRequests());
+        }
+        
+        if (statusFilter) {  
+            statusFilter.addEventListener('change', () => this.filterRequests());
+        }
+        
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.showTaskPersonnel());
+        }
+    }
+
+    filterRequests() {
+        const typeFilter = document.getElementById('attendanceRequestTypeFilter').value;
+        const statusFilter = document.getElementById('attendanceRequestStatusFilter').value;
+        const requestCards = document.querySelectorAll('.request-card-enhanced');
+        
+        requestCards.forEach(card => {
+            const cardType = card.dataset.type;
+            const cardStatus = card.dataset.status;
+            
+            const typeMatch = !typeFilter || cardType === typeFilter;
+            const statusMatch = !statusFilter || cardStatus === statusFilter;
+            
+            card.style.display = (typeMatch && statusMatch) ? 'block' : 'none';
+        });
+    }
+
+    showRejectModal(requestId) {
+        const modal = document.getElementById('approvalModal');
+        const title = document.getElementById('approvalModalTitle');
+        const content = document.getElementById('approvalModalContent');
+        
+        title.textContent = 'Từ chối đơn từ';
+        content.innerHTML = `
+            <div class="rejection-form">
+                <p>Bạn có chắc chắn muốn từ chối đơn từ này không?</p>
+                <div class="form-group">
+                    <label for="rejectionReason">Lý do từ chối:</label>
+                    <textarea id="rejectionReason" class="form-control" rows="3" placeholder="Nhập lý do từ chối..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-outline modern-btn" onclick="this.closeApprovalModal()">Hủy</button>
+                    <button class="btn btn-danger modern-btn" onclick="this.confirmRejectRequest('${requestId}')">
+                        <span class="material-icons-round">close</span>
+                        Từ chối
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'block';
+    }
+
+    closeApprovalModal() {
+        const modal = document.getElementById('approvalModal');
+        modal.style.display = 'none';
+    }
+
+    async confirmRejectRequest(requestId) {
+        const reason = document.getElementById('rejectionReason').value;
+        this.closeApprovalModal();
+        
+        await this.rejectAttendanceRequest(requestId, reason);
+    }
 
             this.setupAttendanceRequestHandlers();
 
