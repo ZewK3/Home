@@ -1597,9 +1597,9 @@ export default {
           case "rejectShiftRequest":
             return await handleRejectShiftRequest(body, db, ALLOWED_ORIGIN);
           case "approveAttendanceRequest":
-            return await handleApproveAttendanceRequest(body, db, ALLOWED_ORIGIN);
+            return await handleApproveAttendanceRequest(body, db, ALLOWED_ORIGIN, token);
           case "rejectAttendanceRequest":
-            return await handleRejectAttendanceRequest(body, db, ALLOWED_ORIGIN);
+            return await handleRejectAttendanceRequest(body, db, ALLOWED_ORIGIN, token);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -2594,7 +2594,7 @@ async function handleGetAttendanceRequests(url, db, origin) {
 }
 
 // Handle approving attendance request
-async function handleApproveAttendanceRequest(body, db, origin) {
+async function handleApproveAttendanceRequest(body, db, origin, token) {
   try {
     const { requestId, note } = body;
     
@@ -2605,8 +2605,7 @@ async function handleApproveAttendanceRequest(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get current user from session
-    const token = body.token || '';
+    // Use the token passed from the main handler
     const session = await checkSessionMiddleware(token, db, origin);
     if (session instanceof Response) return session;
 
@@ -2635,7 +2634,7 @@ async function handleApproveAttendanceRequest(body, db, origin) {
 }
 
 // Handle rejecting attendance request
-async function handleRejectAttendanceRequest(body, db, origin) {
+async function handleRejectAttendanceRequest(body, db, origin, token) {
   try {
     const { requestId, note } = body;
     
@@ -2646,8 +2645,7 @@ async function handleRejectAttendanceRequest(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get current user from session
-    const token = body.token || '';
+    // Use the token passed from the main handler
     const session = await checkSessionMiddleware(token, db, origin);
     if (session instanceof Response) return session;
 

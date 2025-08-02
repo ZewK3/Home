@@ -5016,7 +5016,7 @@ class ContentManager {
             // Get attendance history for the selected date
             const response = await utils.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&date=${date}`);
             
-            const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString();
+            const formattedDate = new Date(date).toLocaleDateString();
             
             let historyHTML = '';
             let records = [];
@@ -5036,13 +5036,12 @@ class ContentManager {
             
             if (records.length > 0) {
                 historyHTML = records.map(record => {
-                    // Use server timestamp directly - server already handles +7 timezone
-                    const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
+                    // Use server timestamp directly without timezone adjustment
+                    const time = new Date(record.timestamp).toLocaleTimeString([], { 
                         hour: '2-digit', 
                         minute: '2-digit', 
                         second: '2-digit',
-                        hour12: false,
-                        timeZone: 'Asia/Ho_Chi_Minh'
+                        hour12: false
                     });
                     const type = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                     const icon = record.type === 'check_in' ? '🟢' : '🔴';
@@ -5326,13 +5325,12 @@ class ContentManager {
                 if (records.length > 0) {
                     let historyHTML = '';
                     records.forEach(record => {
-                        // Use server timestamp directly - server already handles +7 timezone
-                        const time = new Date(record.timestamp).toLocaleTimeString('vi-VN', { 
+                        // Use server timestamp directly without timezone adjustment
+                        const time = new Date(record.timestamp).toLocaleTimeString([], { 
                             hour: '2-digit', 
                             minute: '2-digit', 
                             second: '2-digit',
-                            hour12: false,
-                            timeZone: 'Asia/Ho_Chi_Minh'
+                            hour12: false
                         });
                         const status = record.type === 'check_in' ? 'Vào ca' : 'Tan ca';
                         const statusClass = record.type === 'check_in' ? 'check-in' : 'check-out';
