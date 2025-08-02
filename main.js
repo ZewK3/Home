@@ -1646,7 +1646,15 @@ class ContentManager {
     }
 
     renderEnhancedRequestsList(requests) {
-        if (!Array.isArray(requests) || requests.length === 0) {
+        // Handle both array and object response formats
+        let requestList = [];
+        if (Array.isArray(requests)) {
+            requestList = requests;
+        } else if (requests && typeof requests === 'object') {
+            requestList = Object.keys(requests).map(key => requests[key]);
+        }
+        
+        if (requestList.length === 0) {
             return `
                 <div class="no-requests-enhanced">
                     <span class="material-icons-round no-requests-icon">inbox</span>
@@ -1656,7 +1664,7 @@ class ContentManager {
             `;
         }
 
-        return requests.map(request => {
+        return requestList.map(request => {
             const createdDate = new Date(request.createdAt || request.requestDate);
             const isUrgent = request.status === 'pending' && (Date.now() - createdDate.getTime()) > 24 * 60 * 60 * 1000;
             
@@ -1763,9 +1771,17 @@ class ContentManager {
     }
 
     updateRequestStats(requests) {
-        const total = requests.length;
-        const pending = requests.filter(r => r.status === 'pending').length;
-        const approved = requests.filter(r => r.status === 'approved').length;
+        // Handle both array and object response formats
+        let requestList = [];
+        if (Array.isArray(requests)) {
+            requestList = requests;
+        } else if (requests && typeof requests === 'object') {
+            requestList = Object.keys(requests).map(key => requests[key]);
+        }
+        
+        const total = requestList.length;
+        const pending = requestList.filter(r => r.status === 'pending').length;
+        const approved = requestList.filter(r => r.status === 'approved').length;
         
         document.getElementById('totalRequests').textContent = total;
         document.getElementById('pendingRequests').textContent = pending;
@@ -3009,7 +3025,15 @@ class ContentManager {
     }
 
     renderEnhancedTasksList(tasks) {
-        if (!Array.isArray(tasks) || tasks.length === 0) {
+        // Handle both array and object response formats
+        let taskList = [];
+        if (Array.isArray(tasks)) {
+            taskList = tasks;
+        } else if (tasks && typeof tasks === 'object') {
+            taskList = Object.keys(tasks).map(key => tasks[key]);
+        }
+        
+        if (taskList.length === 0) {
             return `
                 <div class="no-tasks-enhanced">
                     <span class="material-icons-round no-tasks-icon">assignment</span>
@@ -3019,7 +3043,7 @@ class ContentManager {
             `;
         }
 
-        return tasks.map(task => {
+        return taskList.map(task => {
             const dueDate = task.deadline ? new Date(task.deadline) : null;
             const isOverdue = dueDate && dueDate < new Date() && task.status !== 'completed';
             const dueDateText = dueDate ? dueDate.toLocaleDateString('vi-VN') : 'Không giới hạn';

@@ -2465,10 +2465,9 @@ async function handleGetShiftRequests(url, db, origin) {
   try {
     const shiftRequestsQuery = await db
       .prepare(`
-        SELECT sr.*, e.fullName as employeeName, s.storeName
+        SELECT sr.*, e.fullName as employeeName
         FROM shift_requests sr
         LEFT JOIN employees e ON sr.employeeId = e.employeeId
-        LEFT JOIN stores s ON sr.storeId = s.storeId
         ORDER BY sr.createdAt DESC
       `)
       .all();
