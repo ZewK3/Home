@@ -2557,72 +2557,248 @@ class ContentManager {
             
             content.innerHTML = `
                 <div class="work-tasks-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Công Việc Của Tôi</h2>
-                            <p>Danh sách các nhiệm vụ mà bạn tham gia</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="tasks-filter">
-                                <button class="filter-btn active" data-status="all">Tất cả</button>
-                                <button class="filter-btn" data-status="pending">Đang xử lý</button>
-                                <button class="filter-btn" data-status="completed">Hoàn thành</button>
+                    <!-- Enhanced Header with Stats -->
+                    <div class="page-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <span class="material-icons-round header-icon">work</span>
+                                <div>
+                                    <h1>Công Việc Của Tôi</h1>
+                                    <p class="header-subtitle">Quản lý và theo dõi tiến độ công việc được giao</p>
+                                </div>
                             </div>
-                            <div id="tasksList" class="tasks-list">
-                                ${this.renderTasksList(tasksResponse || [])}
+                            <div class="header-stats">
+                                <div class="stat-card">
+                                    <span class="stat-number" id="totalTasks">0</span>
+                                    <span class="stat-label">Tổng số</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number" id="pendingTasks">0</span>
+                                    <span class="stat-label">Đang xử lý</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-number" id="completedTasks">0</span>
+                                    <span class="stat-label">Hoàn thành</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Task Cards -->
+                    <div class="card modern-card">
+                        <div class="card-body">
+                            <div class="tasks-filter-enhanced">
+                                <button class="filter-btn modern-btn active" data-status="all">
+                                    <span class="material-icons-round">list</span>
+                                    Tất cả
+                                </button>
+                                <button class="filter-btn modern-btn" data-status="pending">
+                                    <span class="material-icons-round">schedule</span>
+                                    Đang xử lý
+                                </button>
+                                <button class="filter-btn modern-btn" data-status="completed">
+                                    <span class="material-icons-round">check_circle</span>
+                                    Hoàn thành
+                                </button>
+                                <button class="filter-btn modern-btn" data-status="overdue">
+                                    <span class="material-icons-round">warning</span>
+                                    Quá hạn
+                                </button>
+                            </div>
+                            <div id="tasksList" class="tasks-list-enhanced">
+                                ${this.renderEnhancedTasksList(tasksResponse || [])}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Task Detail Modal -->
-                <div id="taskDetailModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="this.closeTaskDetailModal()">&times;</span>
-                        <div id="taskDetailContent"></div>
+                <!-- Enhanced Task Detail Modal -->
+                <div id="taskDetailModal" class="modal enhanced-modal">
+                    <div class="modal-content enhanced-modal-content">
+                        <div class="modal-header">
+                            <h3>Chi tiết công việc</h3>
+                            <button class="close-btn" onclick="this.closeTaskDetailModal()">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div id="taskDetailContent" class="modal-body"></div>
                     </div>
                 </div>
             `;
 
-            this.setupWorkTasksHandlers();
+            this.setupEnhancedWorkTasksHandlers();
+            this.updateTaskStats(tasksResponse || []);
 
         } catch (error) {
             console.error('Work tasks error:', error);
             content.innerHTML = `
-                <div class="error-container">
+                <div class="error-container enhanced-error">
                     <div class="error-card">
-                        <span class="material-icons-round error-icon">error</span>
-                        <h3>Lỗi tải công việc</h3>
-                        <p>Không thể tải danh sách công việc. Vui lòng thử lại.</p>
-                        <button onclick="window.contentManager.showWorkTasks()" class="btn btn-primary">Thử lại</button>
+                        <span class="material-icons-round error-icon">error_outline</span>
+                        <h3>Không thể tải công việc</h3>
+                        <p>Đã xảy ra lỗi khi tải danh sách công việc. Vui lòng kiểm tra kết nối và thử lại.</p>
+                        <button onclick="window.contentManager.showWorkTasks()" class="btn btn-primary modern-btn">
+                            <span class="material-icons-round">refresh</span>
+                            Thử lại
+                        </button>
                     </div>
                 </div>
             `;
         }
     }
 
-    renderTasksList(tasks) {
+    renderEnhancedTasksList(tasks) {
         if (!Array.isArray(tasks) || tasks.length === 0) {
-            return '<div class="no-tasks"><p>Chưa có công việc nào được giao.</p></div>';
+            return `
+                <div class="no-tasks-enhanced">
+                    <span class="material-icons-round no-tasks-icon">assignment</span>
+                    <h3>Chưa có công việc nào</h3>
+                    <p>Hiện tại bạn chưa có công việc nào được giao. Các nhiệm vụ mới sẽ xuất hiện tại đây.</p>
+                </div>
+            `;
         }
 
-        return tasks.map(task => `
-            <div class="task-item" data-status="${task.status}" onclick="this.showTaskDetail('${task.id}')">
-                <div class="task-header">
-                    <h4>${task.title}</h4>
-                    <span class="task-status ${task.status}">${this.getStatusText(task.status)}</span>
+        return tasks.map(task => {
+            const dueDate = task.deadline ? new Date(task.deadline) : null;
+            const isOverdue = dueDate && dueDate < new Date() && task.status !== 'completed';
+            const dueDateText = dueDate ? dueDate.toLocaleDateString('vi-VN') : 'Không giới hạn';
+            
+            return `
+                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="this.showTaskDetail('${task.id}')">
+                    <div class="task-card-header">
+                        <div class="task-title-section">
+                            <h4 class="task-title">${task.title}</h4>
+                            <span class="task-status-badge ${task.status}">
+                                ${this.getStatusIcon(task.status)}
+                                ${this.getStatusText(task.status)}
+                            </span>
+                        </div>
+                        <div class="task-priority-section">
+                            <span class="priority-badge priority-${task.priority}">
+                                ${this.getPriorityIcon(task.priority)}
+                                ${this.getPriorityText(task.priority)}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card-body">
+                        <p class="task-description">${task.description ? task.description.substring(0, 120) : 'Không có mô tả'}${task.description && task.description.length > 120 ? '...' : ''}</p>
+                        
+                        <div class="task-meta">
+                            <div class="meta-item">
+                                <span class="material-icons-round meta-icon">person</span>
+                                <span class="meta-text">Người giao: ${task.assignerName || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="material-icons-round meta-icon">schedule</span>
+                                <span class="meta-text ${isOverdue ? 'overdue-text' : ''}">
+                                    Hạn: ${dueDateText}
+                                    ${isOverdue ? ' (Quá hạn)' : ''}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="task-participants-enhanced">
+                            <span class="material-icons-round">group</span>
+                            <span class="participants-text">Tham gia: ${task.participantNames || 'Không có'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card-footer">
+                        <div class="task-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${this.getTaskProgress(task.status)}%"></div>
+                            </div>
+                        </div>
+                        <button class="task-action-btn" onclick="event.stopPropagation(); this.showTaskDetail('${task.id}')">
+                            <span class="material-icons-round">visibility</span>
+                            Chi tiết
+                        </button>
+                    </div>
                 </div>
-                <div class="task-info">
-                    <p><strong>Mô tả:</strong> ${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}</p>
-                    <p><strong>Người giao:</strong> ${task.assignerName}</p>
-                    <p><strong>Hạn:</strong> ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'Không giới hạn'}</p>
-                    <p><strong>Ưu tiên:</strong> <span class="priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
-                </div>
-                <div class="task-participants">
-                    <small>Tham gia: ${task.participantNames}</small>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    getStatusIcon(status) {
+        const iconMap = {
+            'pending': 'schedule',
+            'in_progress': 'sync',
+            'completed': 'check_circle',
+            'rejected': 'cancel'
+        };
+        return `<span class="material-icons-round status-icon">${iconMap[status] || 'help'}</span>`;
+    }
+
+    getPriorityIcon(priority) {
+        const iconMap = {
+            'low': 'keyboard_double_arrow_down',
+            'medium': 'drag_handle',
+            'high': 'keyboard_double_arrow_up',
+            'urgent': 'priority_high'
+        };
+        return `<span class="material-icons-round priority-icon">${iconMap[priority] || 'help'}</span>`;
+    }
+
+    getTaskProgress(status) {
+        const progressMap = {
+            'pending': 10,
+            'in_progress': 50,
+            'completed': 100,
+            'rejected': 0
+        };
+        return progressMap[status] || 0;
+    }
+
+    updateTaskStats(tasks) {
+        const total = tasks.length;
+        const pending = tasks.filter(t => t.status === 'pending' || t.status === 'in_progress').length;
+        const completed = tasks.filter(t => t.status === 'completed').length;
+        
+        document.getElementById('totalTasks').textContent = total;
+        document.getElementById('pendingTasks').textContent = pending;
+        document.getElementById('completedTasks').textContent = completed;
+    }
+
+    setupEnhancedWorkTasksHandlers() {
+        // Enhanced filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                
+                const status = e.currentTarget.dataset.status;
+                this.filterTasksByStatus(status);
+            });
+        });
+    }
+
+    filterTasksByStatus(status) {
+        const taskCards = document.querySelectorAll('.task-card-enhanced');
+        taskCards.forEach(card => {
+            const taskStatus = card.dataset.status;
+            const isOverdue = card.classList.contains('overdue');
+            
+            let shouldShow = false;
+            
+            switch(status) {
+                case 'all':
+                    shouldShow = true;
+                    break;
+                case 'pending':
+                    shouldShow = taskStatus === 'pending' || taskStatus === 'in_progress';
+                    break;
+                case 'completed':
+                    shouldShow = taskStatus === 'completed';
+                    break;
+                case 'overdue':
+                    shouldShow = isOverdue;
+                    break;
+            }
+            
+            card.style.display = shouldShow ? 'block' : 'none';
+        });
     }
 
     getStatusText(status) {

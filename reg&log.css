@@ -3,7 +3,8 @@
 body {
     position: relative;
     min-height: 100vh;
-    overflow: hidden;
+    max-height: 100vh;
+    overflow: auto;
     background: #000428;
     background: -webkit-linear-gradient(to right, #004e92, #000428);
     background: linear-gradient(to right, #004e92, #000428);
@@ -11,8 +12,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
+    padding: 1rem;
     color: #ffffff;
+    box-sizing: border-box;
 }
 
 .flag-vn {
@@ -528,7 +530,12 @@ body {
 .auth-container {
     width: 100%;
     max-width: 28rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
     perspective: 1000px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Form Container - Cosmic Glass Morphism */
@@ -537,7 +544,7 @@ body {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 2.5rem;
+    padding: 2rem;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
                 0 0 0 1px rgba(255, 255, 255, 0.2);
@@ -545,6 +552,10 @@ body {
     transform: translateY(20px);
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.18);
+    width: 100%;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .form-container.active {
@@ -1031,17 +1042,21 @@ body {
         max-width: 100%;
         margin: 0;
         width: 100%;
+        max-height: 100vh;
         min-height: auto;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 0.5rem;
     }
     
     .form-container {
-        padding: 2rem 1.5rem;
+        padding: 1.5rem;
         margin: 0;
         border-radius: 12px;
         min-height: auto;
+        max-height: calc(100vh - 1rem);
+        overflow-y: auto;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         background: rgba(13, 17, 23, 0.9);
