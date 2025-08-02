@@ -1772,14 +1772,6 @@ class ContentManager {
         await this.rejectAttendanceRequest(requestId, reason);
     }
 
-            this.setupAttendanceRequestHandlers();
-
-        } catch (error) {
-            console.error('Personnel tasks error:', error);
-            utils.showNotification("Không thể tải yêu cầu nhân sự", "error");
-        }
-    }
-
     renderAttendanceRequests(requests) {
         if (!Array.isArray(requests) || requests.length === 0) {
             return '<div class="no-requests"><p>Không có đơn từ nào.</p></div>';

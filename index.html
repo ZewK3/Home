@@ -13,6 +13,11 @@
     <link rel="stylesheet" href="reg&log.css">
     <link rel="icon" type="image/png" href="favicon.png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
     <div class='flag-vn'></div>
@@ -35,10 +40,8 @@
         <div id="loginFormContainer" class="form-container active">
             <div class="form-header">
                 <div class="logo-container">
-                    <span class="material-icons-round logo-icon">business</span>
                     <h2>Đăng nhập</h2>
                 </div>
-                <p class="form-subtitle">Chào mừng bạn quay trở lại!</p>
             </div>
 
             <form id="loginForm" class="form">
@@ -71,7 +74,6 @@
                         </span>
                         <span>Ghi nhớ đăng nhập</span>
                     </label>
-                    <a href="#" class="forgot-password">Quên mật khẩu?</a>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -80,12 +82,9 @@
                     <span class="btn-loader"></span>
                 </button>
 
-                <div class="form-divider">
-                    <span>hoặc</span>
-                </div>
-
                 <div class="form-footer">
                     <p>Chưa có tài khoản? <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a></p>
+                    <a href="#" class="forgot-password">Quên mật khẩu?</a>
                 </div>
             </form>
         </div>
@@ -94,10 +93,8 @@
         <div id="registerFormContainer" class="form-container">
             <div class="form-header">
                 <div class="logo-container">
-                    <span class="material-icons-round logo-icon">person_add</span>
                     <h2>Đăng ký</h2>
                 </div>
-                <p class="form-subtitle">Tạo tài khoản mới cho hệ thống</p>
             </div>
 
             <form id="registerForm" class="form">
@@ -178,10 +175,6 @@
                     <span class="btn-text">Tạo tài khoản</span>
                     <span class="btn-loader"></span>
                 </button>
-
-                <div class="form-divider">
-                    <span>hoặc</span>
-                </div>
 
                 <div class="form-footer">
                     <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
