@@ -361,26 +361,6 @@ class ContentManager {
                 return;
             }
 
-    async showShiftAssignment() {
-        const content = document.getElementById('content');
-        try {
-            // Get current user's role and stores to determine permissions using cache
-            const userResponse = await API_CACHE.getUserData();
-            
-            // Only AD, AM, QL can assign shifts
-            if (!['AD', 'AM', 'QL'].includes(userResponse.position)) {
-                content.innerHTML = `
-                    <div class="error-container">
-                        <div class="error-card">
-                            <span class="material-icons-round error-icon">lock</span>
-                            <h3>Không có quyền truy cập</h3>
-                            <p>Bạn không có quyền phân ca cho nhân viên.</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
             content.innerHTML = `
                 <div class="shift-assignment-container modern-container">
                     <!-- Professional Header -->
@@ -548,28 +528,6 @@ class ContentManager {
                                 <button class="btn modern-btn success-btn" onclick="this.saveShiftAssignments()">
                                     <span class="material-icons-round">save</span>
                                     Lưu phân ca
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-                                    <div id="selectedEmployeesList" class="selected-list"></div>
-                                </div>
-                            </div>
-                            
-                            <div id="shiftAssignmentGrid" class="shift-grid">
-                                <p class="text-center">Chọn cửa hàng và nhân viên để bắt đầu phân ca</p>
-                            </div>
-                            
-                            <div class="shift-actions">
-                                <button id="saveShiftAssignments" class="btn btn-success" style="display: none;">
-                                    <span class="material-icons-round">save</span>
-                                    Lưu Phân Ca
-                                </button>
-                                <button id="clearShiftAssignments" class="btn btn-secondary" style="display: none;">
-                                    <span class="material-icons-round">clear</span>
-                                    Xóa Tất Cả
                                 </button>
                             </div>
                         </div>
@@ -953,82 +911,6 @@ class ContentManager {
                                                         <div class="metric-value">95%</div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-                                                <div class="stat-icon"><span class="material-icons-round">schedule</span></div>
-                                                <div class="stat-info">
-                                                    <span class="stat-value" id="actualHours">8/8</span>
-                                                    <span class="stat-label">Giờ làm thực tế</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <div class="stat-info">
-                                                    <span class="stat-value" id="workDays">0.9</span>
-                                                    <span class="stat-label">Công làm việc</span>
-                                                </div>
-                                            </div>
-                                            <div class="stat-card">
-                                                <div class="stat-info">
-                                                    <span class="stat-value" id="actualWorkHours">8</span>
-                                                    <span class="stat-label">Giờ thực tế</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="stats-row secondary-stats">
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="standardDays">1</span>
-                                                <span class="stat-label">Công chuẩn</span>
-                                            </div>
-                                            <div class="stat-mini warning">
-                                                <span class="stat-value" id="lateDays">0</span>
-                                                <span class="stat-label">Lần đi muộn</span>
-                                            </div>
-                                            <div class="stat-mini warning">
-                                                <span class="stat-value" id="earlyLeave">1</span>
-                                                <span class="stat-label">Lần về sớm</span>
-                                            </div>
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="lateMinutes">0</span>
-                                                <span class="stat-label">Phút muộn</span>
-                                            </div>
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="earlyMinutes">60</span>
-                                                <span class="stat-label">Phút sớm</span>
-                                            </div>
-                                            <div class="stat-mini danger">
-                                                <span class="stat-value" id="absentDays">0</span>
-                                                <span class="stat-label">Vắng ko lý do</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="stats-row details-stats collapsed">
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="forgotCheckin">0</span>
-                                                <span class="stat-label">Quên check</span>
-                                            </div>
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="nightHours">1.8167</span>
-                                                <span class="stat-label">Giờ đêm</span>
-                                            </div>
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="dayHours">6.1833</span>
-                                                <span class="stat-label">Giờ ngày</span>
-                                            </div>
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="overtimeDays">0</span>
-                                                <span class="stat-label">Công thêm</span>
-                                            </div>
-                                            <div class="stat-mini">
-                                                <span class="stat-value" id="overtimeHours">0</span>
-                                                <span class="stat-label">Giờ thêm</span>
                                             </div>
                                         </div>
                                     </div>

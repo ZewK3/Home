@@ -1108,3 +1108,114 @@ document.addEventListener('DOMContentLoaded', () => {
         enhanceNotificationSystem();
     }, 100);
 });
+
+// Terms of Use and Privacy Policy Modals
+function showTermsModal() {
+    const modal = document.createElement('div');
+    modal.className = 'terms-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop" onclick="closeTermsModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Điều Khoản Sử Dụng</h2>
+                <button class="modal-close" onclick="closeTermsModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h3>1. Chấp Nhận Điều Khoản</h3>
+                <p>Bằng việc truy cập và sử dụng hệ thống ZewK Management System, bạn đồng ý tuân thủ và bị ràng buộc bởi các điều khoản và điều kiện sử dụng này.</p>
+                
+                <h3>2. Quyền và Nghĩa Vụ Người Dùng</h3>
+                <p>• Bạn có trách nhiệm bảo mật thông tin đăng nhập của mình</p>
+                <p>• Không được chia sẻ tài khoản cho người khác sử dụng</p>
+                <p>• Tuân thủ các quy định nội bộ của công ty</p>
+                <p>• Sử dụng hệ thống đúng mục đích và phạm vi được phép</p>
+                
+                <h3>3. Bảo Mật Thông Tin</h3>
+                <p>• Tất cả thông tin cá nhân và dữ liệu công việc được bảo mật tuyệt đối</p>
+                <p>• Hệ thống sử dụng công nghệ mã hóa hiện đại để bảo vệ dữ liệu</p>
+                <p>• Chỉ nhân viên có thẩm quyền mới được truy cập thông tin tương ứng</p>
+                
+                <h3>4. Giới Hạn Trách Nhiệm</h3>
+                <p>ZewK Management System không chịu trách nhiệm về bất kỳ thiệt hại nào phát sinh từ việc sử dụng sai quy định hoặc vi phạm bảo mật từ phía người dùng.</p>
+                
+                <h3>5. Thay Đổi Điều Khoản</h3>
+                <p>Chúng tôi có quyền cập nhật các điều khoản này bất kỳ lúc nào. Người dùng sẽ được thông báo về những thay đổi quan trọng.</p>
+                
+                <p class="terms-date"><strong>Ngày có hiệu lực:</strong> ${new Date().toLocaleDateString('vi-VN')}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeTermsModal()">Đã hiểu</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+function showPrivacyModal() {
+    const modal = document.createElement('div');
+    modal.className = 'terms-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop" onclick="closeTermsModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chính Sách Bảo Mật</h2>
+                <button class="modal-close" onclick="closeTermsModal()">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h3>1. Thu Thập Thông Tin</h3>
+                <p>Chúng tôi thu thập các thông tin sau:</p>
+                <p>• Thông tin cá nhân: Họ tên, email, số điện thoại</p>
+                <p>• Thông tin công việc: Mã nhân viên, vị trí, cửa hàng</p>
+                <p>• Dữ liệu hoạt động: Chấm công, yêu cầu nghỉ phép, báo cáo</p>
+                
+                <h3>2. Sử Dụng Thông Tin</h3>
+                <p>Thông tin được thu thập để:</p>
+                <p>• Quản lý nhân sự và hoạt động của công ty</p>
+                <p>• Tạo báo cáo và phân tích hiệu suất</p>
+                <p>• Liên lạc về công việc và thông báo quan trọng</p>
+                <p>• Cải thiện trải nghiệm sử dụng hệ thống</p>
+                
+                <h3>3. Bảo Vệ Dữ Liệu</h3>
+                <p>• Mã hóa end-to-end cho tất cả dữ liệu nhạy cảm</p>
+                <p>• Hệ thống xác thực 2 lớp (2FA) cho tài khoản quan trọng</p>
+                <p>• Backup định kỳ và khôi phục dữ liệu an toàn</p>
+                <p>• Kiểm soát truy cập dựa trên vai trò và quyền hạn</p>
+                
+                <h3>4. Chia Sẻ Thông Tin</h3>
+                <p>Chúng tôi KHÔNG chia sẻ thông tin cá nhân cho bên thứ ba trừ khi:</p>
+                <p>• Có yêu cầu từ cơ quan pháp luật có thẩm quyền</p>
+                <p>• Được sự đồng ý rõ ràng từ người dùng</p>
+                <p>• Cần thiết để bảo vệ quyền lợi hợp pháp của công ty</p>
+                
+                <h3>5. Quyền Của Người Dùng</h3>
+                <p>Bạn có quyền:</p>
+                <p>• Truy cập và cập nhật thông tin cá nhân</p>
+                <p>• Yêu cầu xóa tài khoản và dữ liệu liên quan</p>
+                <p>• Từ chối nhận thông báo không bắt buộc</p>
+                <p>• Khiếu nại về việc xử lý dữ liệu cá nhân</p>
+                
+                <p class="terms-date"><strong>Cập nhật lần cuối:</strong> ${new Date().toLocaleDateString('vi-VN')}</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeTermsModal()">Đã hiểu</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+}
+
+function closeTermsModal() {
+    const modal = document.querySelector('.terms-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    }
+}

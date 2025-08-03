@@ -531,7 +531,6 @@ body {
     width: 100%;
     max-width: 28rem;
     max-height: calc(100vh - 2rem);
-    overflow-y: auto;
     perspective: 1000px;
     display: flex;
     align-items: center;
@@ -554,7 +553,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.18);
     width: 100%;
     max-height: calc(100vh - 2rem);
-    overflow-y: auto;
     box-sizing: border-box;
 }
 
@@ -1078,7 +1076,6 @@ body {
         border-radius: 12px;
         min-height: auto;
         max-height: calc(100vh - 1rem);
-        overflow-y: auto;
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         background: rgba(13, 17, 23, 0.9);
@@ -1578,5 +1575,199 @@ body {
     #verificationCode {
         font-size: 1.1rem;
         letter-spacing: 2px;
+    }
+}
+
+/* Terms of Use and Privacy Policy Modal Styles */
+.terms-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.terms-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.terms-modal.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px 16px 0 0;
+    color: white;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+.modal-body h3 {
+    color: #4a5568;
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.modal-body h3:first-child {
+    margin-top: 0;
+}
+
+.modal-body p {
+    margin: 0.5rem 0;
+    color: #4a5568;
+}
+
+.modal-body p:last-child {
+    margin-bottom: 0;
+}
+
+.terms-date {
+    margin-top: 2rem !important;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-style: italic;
+    color: #666 !important;
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: flex-end;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 0 0 16px 16px;
+}
+
+.modal-footer .btn {
+    margin: 0;
+    min-width: 120px;
+}
+
+/* Dark mode support for modals */
+[data-theme="dark"] .modal-content {
+    background: rgba(13, 17, 23, 0.95);
+    border: 1px solid rgba(48, 54, 61, 0.8);
+}
+
+[data-theme="dark"] .modal-header {
+    border-bottom: 1px solid rgba(48, 54, 61, 0.8);
+}
+
+[data-theme="dark"] .modal-body {
+    color: #f0f6fc;
+}
+
+[data-theme="dark"] .modal-body h3 {
+    color: #e6edf3;
+}
+
+[data-theme="dark"] .modal-body p {
+    color: #8b949e;
+}
+
+[data-theme="dark"] .terms-date {
+    border-top: 1px solid rgba(48, 54, 61, 0.8);
+    color: #8b949e !important;
+}
+
+[data-theme="dark"] .modal-footer {
+    border-top: 1px solid rgba(48, 54, 61, 0.8);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsiveness for modals */
+@media (max-width: 640px) {
+    .modal-content {
+        margin: 1rem;
+        max-height: calc(100vh - 2rem);
+    }
+    
+    .modal-header {
+        padding: 1rem;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.25rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .modal-footer {
+        padding: 1rem;
     }
 }
