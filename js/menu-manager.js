@@ -52,3 +52,5 @@ class MenuManager {
         });
     }
 }
+
+// MenuManager will be initialized by main-init.js

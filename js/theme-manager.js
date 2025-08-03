@@ -23,3 +23,5 @@ class ThemeManager {
         return newTheme;
     }
 }
+
+// ThemeManager will be initialized by main-init.js

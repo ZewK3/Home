@@ -9256,6 +9256,81 @@ button:focus, .btn:focus, .menu-link:focus {
     color: var(--text-secondary);
 }
 
+/* Enhanced button styling with better contrast */
+.panel-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+.panel-actions .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    justify-content: center;
+}
+
+.panel-actions .warning-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.panel-actions .warning-btn:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+}
+
+.panel-actions .success-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.panel-actions .success-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+}
+
+.panel-actions .secondary-btn {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(107, 114, 128, 0.3);
+}
+
+.panel-actions .secondary-btn:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(107, 114, 128, 0.4);
+}
+
+/* Enhanced dark mode button styling */
+[data-theme="dark"] .panel-actions .warning-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .panel-actions .success-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;  
+}
+
+[data-theme="dark"] .panel-actions .secondary-btn {
+    background: linear-gradient(135deg, #64748b, #475569);
+    color: #ffffff;
+}
+
 /* Mobile responsive for shift management */
 @media (max-width: 768px) {
     .shift-assignment-container,
@@ -9307,6 +9382,80 @@ button:focus, .btn:focus, .menu-link:focus {
         padding: 0.25rem;
         font-size: 0.8rem;
     }
+}
+
+/* Enhanced text contrast and visibility fixes */
+.shift-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.shift-status.working {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.shift-status.day-off {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.shift-status.incomplete {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+/* Dark mode status colors with better contrast */
+[data-theme="dark"] .shift-status.working {
+    background: #14532d;
+    color: #bbf7d0;
+    border-color: #166534;
+}
+
+[data-theme="dark"] .shift-status.day-off {
+    background: #7f1d1d;
+    color: #fecaca;
+    border-color: #991b1b;
+}
+
+[data-theme="dark"] .shift-status.incomplete {
+    background: #78350f;
+    color: #fde68a;
+    border-color: #92400e;
+}
+
+/* Improved form element contrast */
+.form-control, .form-select {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background: rgba(51, 65, 85, 0.5);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    border-color: var(--primary);
+    background: rgba(51, 65, 85, 0.8);
 }
     
     .shift-actions {

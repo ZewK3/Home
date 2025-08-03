@@ -147,3 +147,5 @@ class AuthManager {
         // window.location.href = "index.html"; // Commented for testing
     }
 }
+
+// Global authManager instance will be initialized by main-init.js

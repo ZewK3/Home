@@ -35,8 +35,7 @@ function setupModalCloseHandlers() {
     });
 }
 
-// Initialize Application
-document.addEventListener('DOMContentLoaded', async () => {
+// Initialize Application - will be handled by main-init.js
     
     // Show dashboard loader immediately
     showDashboardLoader();
@@ -1369,10 +1368,7 @@ async function refreshSystemData() {
     }
 }
 
-// Run refresh only on page load
-document.addEventListener('DOMContentLoaded', async () => {
-    await refreshSystemData();
-});
+// Run refresh only on page load - will be handled by main-init.js
 
 // Export function for manual refresh when user performs actions
 window.triggerSystemRefresh = refreshSystemData;
@@ -1765,8 +1761,7 @@ function buildRoleBasedDashboard(userRole) {
 
 
 
-// Inject professional CSS styles for enhanced interfaces
-document.addEventListener('DOMContentLoaded', () => {
+// Inject professional CSS styles for enhanced interfaces - will be handled by main-init.js
 const professionalStyles = `
 <style>
 /* Rich Text Editor Styles */
