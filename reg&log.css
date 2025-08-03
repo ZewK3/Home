@@ -1669,7 +1669,6 @@ body {
 .modal-body {
     padding: 1.5rem;
     flex: 1;
-    overflow-y: auto;
     color: #2d3748;
     line-height: 1.6;
 }
