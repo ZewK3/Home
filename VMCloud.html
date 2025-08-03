@@ -1,100 +1,162 @@
-<script>
-  let token = "";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VMOSCloud Multi-Device Controller</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-full mx-auto space-y-4">
+    <h1 class="text-2xl font-bold mb-4">VMOS Cloud Multi-Device Controller</h1>
 
-  async function login() {
-    const ak = document.getElementById("accessKeyId").value;
-    const sk = document.getElementById("secretAccessKey").value;
+    <div id="deviceAccounts" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
 
-    const res = await fetch("https://api.vmoscloud.com/api/v1/user/akskLogin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accessKey: ak, secretKey: sk })
-    });
+    <button onclick="addDeviceForm()" class="bg-green-500 text-white py-2 px-4 rounded">+ Add Device</button>
+  </div>
 
-    const json = await res.json();
-    if (json.code === 0 && json.data.token) {
-      token = json.data.token;
-      alert("Login successful");
-      fetchDevices();
-    } else {
-      alert("Login failed: " + json.message);
-    }
-  }
+  <script>
+    let devices = [];
 
-  async function fetchDevices() {
-    const res = await fetch("https://api.vmoscloud.com/api/v1/device/getDeviceList", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify({})
-    });
+    function addDeviceForm() {
+      const id = `device-${devices.length}`;
+      const container = document.createElement("div");
+      container.className = "p-4 border rounded bg-white space-y-4";
+      container.innerHTML = `
+        <div class="grid grid-cols-2 gap-4">
+          <input id="${id}-ak" class="p-2 border rounded w-full" placeholder="Access Key ID">
+          <input id="${id}-sk" class="p-2 border rounded w-full" placeholder="Secret Access Key">
+          <button onclick="loginDevice('${id}')" class="col-span-2 bg-blue-500 text-white py-2 px-4 rounded">Login Device</button>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <select id="${id}-deviceSelect" class="p-2 border rounded w-full"></select>
+          <input id="${id}-text" class="p-2 border rounded w-full" placeholder="Send text" onkeydown="sendTextKey(event, '${id}')">
+        </div>
+        <canvas id="${id}-canvas" class="w-full h-32 bg-white border"></canvas>
+        <div class="grid grid-cols-4 gap-2 mt-4">
+          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_UP')" class="bg-gray-200 py-2 rounded">⬆️</button>
+          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_LEFT')" class="bg-gray-200 py-2 rounded">⬅️</button>
+          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_RIGHT')" class="bg-gray-200 py-2 rounded">➡️</button>
+          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_DOWN')" class="bg-gray-200 py-2 rounded">⬇️</button>
+          <button onclick="sendKey('${id}', 'KEYCODE_ENTER')" class="bg-green-300 py-2 rounded">Enter</button>
+          <button onclick="sendKey('${id}', 'KEYCODE_BACK')" class="bg-red-300 py-2 rounded">Back</button>
+        </div>
+        <div id="${id}-joystick" class="w-40 h-40 mt-4 mx-auto"></div>
+      `;
+      document.getElementById("deviceAccounts").appendChild(container);
 
-    const json = await res.json();
-    const select = document.getElementById("deviceId");
-    select.innerHTML = "";
-    json.data.forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d.deviceId;
-      opt.textContent = d.deviceName || d.deviceId;
-      select.appendChild(opt);
-    });
-  }
+      devices.push({ id, token: "" });
 
-  function getDevice() {
-    return document.getElementById("deviceId").value;
-  }
+      const canvas = document.getElementById(`${id}-canvas`);
+      canvas.addEventListener("click", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left) * (1080 / canvas.clientWidth);
+        const y = (e.clientY - rect.top) * (1920 / canvas.clientHeight);
+        syncTouch(x, y);
+      });
 
-  function sendKey(code) {
-    if (!token) return alert("Not logged in");
-    fetch("https://api.vmoscloud.com/api/v1/device/sendKeyCode", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify({ device: getDevice(), keyCode: code })
-    });
-  }
+      const joystick = nipplejs.create({
+        zone: document.getElementById(`${id}-joystick`),
+        mode: 'static',
+        position: { left: '50%', top: '50%' },
+        color: 'blue'
+      });
 
-  function sendTextKey(event) {
-    if (event.key.length === 1 && token) {
-      fetch("https://api.vmoscloud.com/api/v1/device/sendText", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: token },
-        body: JSON.stringify({ device: getDevice(), text: event.key })
+      joystick.on('dir', (evt, data) => {
+        if (data.direction) {
+          const map = {
+            up: 'KEYCODE_DPAD_UP',
+            down: 'KEYCODE_DPAD_DOWN',
+            left: 'KEYCODE_DPAD_LEFT',
+            right: 'KEYCODE_DPAD_RIGHT'
+          };
+          syncKey(map[data.direction.angle]);
+        }
       });
     }
-  }
 
-  function sendTouch(x, y) {
-    if (!token) return;
-    fetch("https://api.vmoscloud.com/api/v1/device/sendTap", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: token },
-      body: JSON.stringify({ device: getDevice(), x: Math.round(x), y: Math.round(y) })
-    });
-  }
+    async function loginDevice(id) {
+      const ak = document.getElementById(`${id}-ak`).value;
+      const sk = document.getElementById(`${id}-sk`).value;
 
-  const canvas = document.getElementById("touchCanvas");
-  canvas.addEventListener("click", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (1080 / canvas.clientWidth);
-    const y = (e.clientY - rect.top) * (1920 / canvas.clientHeight);
-    sendTouch(x, y);
-  });
+      const res = await fetch("https://api.vmoscloud.com/api/v1/user/akskLogin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessKey: ak, secretKey: sk })
+      });
 
-  const joystick = nipplejs.create({
-    zone: document.getElementById('joystick'),
-    mode: 'static',
-    position: { left: '50%', top: '50%' },
-    color: 'blue'
-  });
-
-  joystick.on('dir', (evt, data) => {
-    if (data.direction) {
-      const map = {
-        up: 'KEYCODE_DPAD_UP',
-        down: 'KEYCODE_DPAD_DOWN',
-        left: 'KEYCODE_DPAD_LEFT',
-        right: 'KEYCODE_DPAD_RIGHT'
-      };
-      sendKey(map[data.direction.angle]);
+      const json = await res.json();
+      if (json.code === 0 && json.data.token) {
+        const device = devices.find(d => d.id === id);
+        device.token = json.data.token;
+        alert("Login successful for " + id);
+        fetchDevices(id);
+      } else {
+        alert("Login failed: " + json.message);
+      }
     }
-  });
-</script>
+
+    async function fetchDevices(id) {
+      const token = devices.find(d => d.id === id).token;
+      const res = await fetch("https://api.vmoscloud.com/api/v1/device/getDeviceList", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: token },
+        body: JSON.stringify({})
+      });
+
+      const json = await res.json();
+      const select = document.getElementById(`${id}-deviceSelect`);
+      select.innerHTML = "";
+      json.data.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d.deviceId;
+        opt.textContent = d.deviceName || d.deviceId;
+        select.appendChild(opt);
+      });
+    }
+
+    function getDevice(id) {
+      return document.getElementById(`${id}-deviceSelect`).value;
+    }
+
+    function syncKey(code) {
+      devices.forEach(device => {
+        if (device.token && getDevice(device.id)) {
+          fetch("https://api.vmoscloud.com/api/v1/device/sendKeyCode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: device.token },
+            body: JSON.stringify({ device: getDevice(device.id), keyCode: code })
+          });
+        }
+      });
+    }
+
+    function syncTouch(x, y) {
+      devices.forEach(device => {
+        if (device.token && getDevice(device.id)) {
+          fetch("https://api.vmoscloud.com/api/v1/device/sendTap", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: device.token },
+            body: JSON.stringify({ device: getDevice(device.id), x: Math.round(x), y: Math.round(y) })
+          });
+        }
+      });
+    }
+
+    function sendTextKey(event, id) {
+      if (event.key.length === 1) {
+        devices.forEach(device => {
+          if (device.token && getDevice(device.id)) {
+            fetch("https://api.vmoscloud.com/api/v1/device/sendText", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: device.token },
+              body: JSON.stringify({ device: getDevice(device.id), text: event.key })
+            });
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
