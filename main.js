@@ -435,7 +435,7 @@ class ContentManager {
                                         <span class="material-icons-round">apply</span>
                                         Áp dụng mẫu
                                     </button>
-                                    <button class="btn modern-btn success-btn" onclick="this.bulkAssign()">
+                                    <button class="btn modern-btn success-btn" onclick="contentManager.bulkAssign()">
                                         <span class="material-icons-round">group_add</span>
                                         Phân ca hàng loạt
                                     </button>
@@ -1366,7 +1366,7 @@ class ContentManager {
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const existingShifts = await utils.fetchAPI(`?action=getShiftAssignments&store=${store}&week=${week}&token=${token}`);
             
-            const shiftGrid = document.getElementById('shiftAssignmentGrid');
+            const shiftGrid = document.getElementById('shiftScheduleGrid');
             const weekDates = this.getWeekDates(week);
             
             shiftGrid.innerHTML = `
@@ -1965,7 +1965,7 @@ class ContentManager {
                                 ${request.approvedAt ? `<span class="process-time">lúc ${new Date(request.approvedAt).toLocaleString('vi-VN')}</span>` : ''}
                             </div>
                         `}
-                        <button class="btn btn-outline modern-btn" onclick="event.stopPropagation(); this.showRequestDetail('${request.id}')">
+                        <button class="btn btn-outline modern-btn" onclick="event.stopPropagation(); contentManager.showRequestDetail('${request.id}')">
                             <span class="material-icons-round">visibility</span>
                             Chi tiết
                         </button>
@@ -3859,7 +3859,7 @@ class ContentManager {
             const dueDateText = dueDate ? dueDate.toLocaleDateString('vi-VN') : 'Không giới hạn';
             
             return `
-                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="this.showTaskDetail('${task.id}')">
+                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="contentManager.showTaskDetail('${task.id}')">
                     <div class="task-card-header">
                         <div class="task-title-section">
                             <h4 class="task-title">${task.title}</h4>
@@ -3905,7 +3905,7 @@ class ContentManager {
                                 <div class="progress-fill" style="width: ${this.getTaskProgress(task.status)}%"></div>
                             </div>
                         </div>
-                        <button class="task-action-btn" onclick="event.stopPropagation(); this.showTaskDetail('${task.id}')">
+                        <button class="task-action-btn" onclick="event.stopPropagation(); contentManager.showTaskDetail('${task.id}')">
                             <span class="material-icons-round">visibility</span>
                             Chi tiết
                         </button>
@@ -7673,6 +7673,237 @@ class ContentManager {
                 toggleBtn.textContent = 'expand_more';
             }
         }
+    }
+
+    // Show detailed request information
+    async showRequestDetail(requestId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+            
+            if (!response) {
+                throw new Error('Cannot load request details');
+            }
+
+            // Find the specific request from the list
+            let request = null;
+            if (Array.isArray(response)) {
+                request = response.find(r => r.id == requestId || r.requestId == requestId);
+            } else if (typeof response === 'object') {
+                // Handle object format response like {"0": {...}, "1": {...}}
+                const requestsList = Object.keys(response)
+                    .filter(key => !['timestamp', 'status'].includes(key))
+                    .map(key => response[key])
+                    .filter(item => item && typeof item === 'object');
+                request = requestsList.find(r => r.id == requestId || r.requestId == requestId);
+            }
+
+            if (!request) {
+                throw new Error('Request not found');
+            }
+
+            // Create and show modal
+            let modal = document.getElementById('requestDetailModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'requestDetailModal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Chi tiết đơn từ</h3>
+                            <button class="close-btn" onclick="this.closest('.modal-overlay').style.display='none'">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div id="requestDetailContent" class="modal-body"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            const content = document.getElementById('requestDetailContent');
+            const requestType = this.getRequestTypeText(request.type);
+            const statusClass = request.status === 'approved' ? 'success' : 
+                               request.status === 'rejected' ? 'danger' : 'warning';
+
+            content.innerHTML = `
+                <div class="request-detail-card">
+                    <div class="request-header">
+                        <div class="request-title">
+                            <h4>${requestType}</h4>
+                            <span class="status-badge ${statusClass}">${this.getStatusText(request.status)}</span>
+                        </div>
+                        <div class="request-meta">
+                            <p><strong>Mã đơn:</strong> ${request.requestId || request.id}</p>
+                            <p><strong>Ngày tạo:</strong> ${new Date(request.requestDate || request.createdAt).toLocaleDateString('vi-VN')}</p>
+                            ${request.targetDate ? `<p><strong>Ngày áp dụng:</strong> ${new Date(request.targetDate).toLocaleDateString('vi-VN')}</p>` : ''}
+                            ${request.targetTime ? `<p><strong>Thời gian:</strong> ${request.targetTime}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="request-content">
+                        <div class="request-reason">
+                            <h5>Lý do:</h5>
+                            <p>${request.reason}</p>
+                        </div>
+                        
+                        ${request.currentShift ? `
+                            <div class="shift-info">
+                                <h5>Thông tin ca làm:</h5>
+                                <p><strong>Ca hiện tại:</strong> ${request.currentShift}</p>
+                                ${request.requestedShift ? `<p><strong>Ca muốn đổi:</strong> ${request.requestedShift}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        ${request.leaveType ? `
+                            <div class="leave-info">
+                                <h5>Loại nghỉ phép:</h5>
+                                <p>${request.leaveType}</p>
+                                ${request.startDate ? `<p><strong>Từ ngày:</strong> ${new Date(request.startDate).toLocaleDateString('vi-VN')}</p>` : ''}
+                                ${request.endDate ? `<p><strong>Đến ngày:</strong> ${new Date(request.endDate).toLocaleDateString('vi-VN')}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        
+                        ${request.approvedBy ? `
+                            <div class="approval-info">
+                                <h5>Thông tin duyệt:</h5>
+                                <p><strong>Người duyệt:</strong> ${request.approverName || request.approvedBy}</p>
+                                <p><strong>Thời gian duyệt:</strong> ${new Date(request.approvedAt).toLocaleString('vi-VN')}</p>
+                                ${request.note ? `<p><strong>Ghi chú:</strong> ${request.note}</p>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+
+        } catch (error) {
+            console.error('Error showing request detail:', error);
+            utils.showNotification('Lỗi khi tải chi tiết đơn từ', 'error');
+        }
+    }
+
+    // Bulk assignment for shift scheduling
+    async bulkAssign() {
+        try {
+            const selectedEmployees = Array.from(document.querySelectorAll('.employee-card input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (selectedEmployees.length === 0) {
+                utils.showNotification('Vui lòng chọn ít nhất một nhân viên', 'warning');
+                return;
+            }
+
+            // Get template time from first selected employee or use default
+            const templateStartTime = document.querySelector('.time-input.start-time')?.value || '08:00';
+            const templateEndTime = document.querySelector('.time-input.end-time')?.value || '17:00';
+
+            // Create bulk assignment modal
+            let modal = document.getElementById('bulkAssignModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'bulkAssignModal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Phân ca hàng loạt</h3>
+                            <button class="close-btn" onclick="this.closest('.modal-overlay').style.display='none'">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="bulk-assign-form">
+                                <div class="form-group">
+                                    <label>Thời gian ca làm:</label>
+                                    <div class="time-range-inputs">
+                                        <input type="time" id="bulkStartTime" class="time-input" value="${templateStartTime}">
+                                        <span>đến</span>
+                                        <input type="time" id="bulkEndTime" class="time-input" value="${templateEndTime}">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Áp dụng cho ${selectedEmployees.length} nhân viên đã chọn</label>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').style.display='none'">
+                                        Hủy
+                                    </button>
+                                    <button class="btn btn-primary" onclick="contentManager.executeBulkAssign()">
+                                        Áp dụng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            modal.style.display = 'flex';
+
+        } catch (error) {
+            console.error('Error in bulk assign:', error);
+            utils.showNotification('Lỗi khi thực hiện phân ca hàng loạt', 'error');
+        }
+    }
+
+    // Execute bulk assignment
+    async executeBulkAssign() {
+        try {
+            const startTime = document.getElementById('bulkStartTime').value;
+            const endTime = document.getElementById('bulkEndTime').value;
+            
+            if (!startTime || !endTime) {
+                utils.showNotification('Vui lòng nhập đầy đủ thời gian', 'warning');
+                return;
+            }
+
+            const selectedEmployees = Array.from(document.querySelectorAll('.employee-card input[type="checkbox"]:checked'))
+                .map(checkbox => checkbox.value);
+
+            // Apply time to all selected employees
+            selectedEmployees.forEach(employeeId => {
+                const employeeRow = document.querySelector(`[data-employee-id="${employeeId}"]`);
+                if (employeeRow) {
+                    const startInput = employeeRow.querySelector('.time-input.start-time');
+                    const endInput = employeeRow.querySelector('.time-input.end-time');
+                    const statusDisplay = employeeRow.querySelector('.shift-status');
+                    
+                    if (startInput && endInput && statusDisplay) {
+                        startInput.value = startTime;
+                        endInput.value = endTime;
+                        statusDisplay.textContent = `${startTime} - ${endTime}`;
+                        statusDisplay.className = 'shift-status working';
+                    }
+                }
+            });
+
+            // Close modal
+            document.getElementById('bulkAssignModal').style.display = 'none';
+            
+            utils.showNotification(`Đã phân ca cho ${selectedEmployees.length} nhân viên`, 'success');
+
+        } catch (error) {
+            console.error('Error executing bulk assign:', error);
+            utils.showNotification('Lỗi khi thực hiện phân ca', 'error');
+        }
+    }
+
+    // Helper function to get request type text
+    getRequestTypeText(type) {
+        const types = {
+            'forgot_checkin': 'Quên chấm công vào',
+            'forgot_checkout': 'Quên chấm công ra', 
+            'shift_change': 'Đổi ca làm việc',
+            'absence': 'Xin nghỉ',
+            'leave': 'Nghỉ phép'
+        };
+        return types[type] || type;
     }
 }
 

@@ -2187,9 +2187,9 @@ async function handleGetWorkTasks(url, db, origin) {
     const tasksQuery = await db
       .prepare(`
         SELECT t.*, ta.role, 
-               GROUP_CONCAT(CASE WHEN ta2.role = 'assigner' THEN e2.fullName END) as assignerNames,
-               GROUP_CONCAT(CASE WHEN ta2.role = 'participant' THEN e2.fullName END) as participantNames,
-               GROUP_CONCAT(CASE WHEN ta2.role = 'supporter' THEN e2.fullName END) as supporterNames
+               GROUP_CONCAT(DISTINCT CASE WHEN ta2.role = 'assigner' THEN e2.fullName END) as assignerNames,
+               GROUP_CONCAT(DISTINCT CASE WHEN ta2.role = 'participant' THEN e2.fullName END) as participantNames,
+               GROUP_CONCAT(DISTINCT CASE WHEN ta2.role = 'supporter' THEN e2.fullName END) as supporterNames
         FROM tasks t
         JOIN task_assignments ta ON t.taskId = ta.taskId
         LEFT JOIN task_assignments ta2 ON t.taskId = ta2.taskId
@@ -2226,9 +2226,9 @@ async function handleGetTaskDetail(url, db, origin) {
     const taskQuery = await db
       .prepare(`
         SELECT t.*, 
-               GROUP_CONCAT(CASE WHEN ta.role = 'assigner' THEN e.fullName END) as assignerNames,
-               GROUP_CONCAT(CASE WHEN ta.role = 'participant' THEN e.fullName END) as participantNames,
-               GROUP_CONCAT(CASE WHEN ta.role = 'supporter' THEN e.fullName END) as supporterNames
+               GROUP_CONCAT(DISTINCT CASE WHEN ta.role = 'assigner' THEN e.fullName END) as assignerNames,
+               GROUP_CONCAT(DISTINCT CASE WHEN ta.role = 'participant' THEN e.fullName END) as participantNames,
+               GROUP_CONCAT(DISTINCT CASE WHEN ta.role = 'supporter' THEN e.fullName END) as supporterNames
         FROM tasks t
         LEFT JOIN task_assignments ta ON t.taskId = ta.taskId
         LEFT JOIN employees e ON ta.employeeId = e.employeeId
@@ -2611,7 +2611,7 @@ async function handleApproveAttendanceRequest(body, db, origin, token) {
     await db
       .prepare(`
         UPDATE attendance_requests 
-        SET status = 'approved', approvedBy = ?, approvalDate = ?, approvalNote = ?
+        SET status = 'approved', approvedBy = ?, approvedAt = ?, note = ?
         WHERE id = ?
       `)
       .bind(session.employeeId, new Date().toISOString(), note || '', requestId)
@@ -2651,7 +2651,7 @@ async function handleRejectAttendanceRequest(body, db, origin, token) {
     await db
       .prepare(`
         UPDATE attendance_requests 
-        SET status = 'rejected', approvedBy = ?, approvalDate = ?, approvalNote = ?
+        SET status = 'rejected', approvedBy = ?, approvedAt = ?, note = ?
         WHERE id = ?
       `)
       .bind(session.employeeId, new Date().toISOString(), note, requestId)
