@@ -1416,9 +1416,11 @@ class ContentManager {
                 </div>
             `;
 
-            // Show action buttons
-            document.getElementById('saveShiftAssignments').style.display = 'inline-block';
-            document.getElementById('clearShiftAssignments').style.display = 'inline-block';
+            // Show action buttons with null checks
+            const saveBtn = document.getElementById('saveShiftAssignments');
+            const clearBtn = document.getElementById('clearShiftAssignments');
+            if (saveBtn) saveBtn.style.display = 'inline-block';
+            if (clearBtn) clearBtn.style.display = 'inline-block';
 
             // Set up time input event listeners
             this.setupTimeInputHandlers();
@@ -2612,10 +2614,10 @@ class ContentManager {
                             <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
                             <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
                         </div>
-                        <div class="no-data-state" style="text-align: center; padding: 3rem;">
-                            <span style="font-size: 4rem; color: var(--text-muted);">👥</span>
-                            <h3 style="color: var(--text-muted); margin: 1rem 0;">Không có dữ liệu người dùng</h3>
-                            <p style="color: var(--text-muted);">Vui lòng thêm người dùng vào hệ thống trước.</p>
+                        <div class="no-data-state">
+                            <span class="no-data-icon">👥</span>
+                            <h3>Không có dữ liệu người dùng</h3>
+                            <p>Vui lòng thêm người dùng vào hệ thống trước.</p>
                         </div>
                     </div>
                 `;
@@ -2850,10 +2852,10 @@ class ContentManager {
                         <h2><span class="material-icons-round">error</span>Lỗi Hệ Thống</h2>
                         <p class="header-subtitle">Không thể tải thông tin phân quyền</p>
                     </div>
-                    <div class="error-state" style="text-align: center; padding: 3rem;">
-                        <span style="font-size: 4rem; color: var(--error);">⚠️</span>
-                        <h3 style="color: var(--error); margin: 1rem 0;">Lỗi: ${error.message}</h3>
-                        <p style="color: var(--text-muted);">Vui lòng thử lại sau hoặc liên hệ quản trị viên.</p>
+                    <div class="error-state">
+                        <span class="error-icon">⚠️</span>
+                        <h3>Lỗi: ${error.message}</h3>
+                        <p>Vui lòng thử lại sau hoặc liên hệ quản trị viên.</p>
                         <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 1rem;">
                             <span class="material-icons-round">refresh</span>
                             Thử lại
@@ -8159,14 +8161,14 @@ class ContentManager {
     }
 
     closeRequestDetailModal() {
-        const modal = document.querySelector('.request-detail-modal');
+        const modal = document.getElementById('requestDetailModal');
         if (modal) {
             modal.style.display = 'none';
         }
     }
 
     closeApprovalModal() {
-        const modal = document.querySelector('.approval-modal');
+        const modal = document.getElementById('approvalModal');
         if (modal) {
             modal.style.display = 'none';
         }
@@ -8645,6 +8647,43 @@ class AuthManager {
     }
 }
 
+// Setup modal close handlers for all modals
+function setupModalCloseHandlers() {
+    // Add event listeners for all modal close buttons
+    document.addEventListener('click', (e) => {
+        // Handle close-btn clicks
+        if (e.target.classList.contains('close-btn') || e.target.closest('.close-btn')) {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Handle modal-close clicks
+        if (e.target.classList.contains('modal-close')) {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Close modal when clicking outside
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    });
+    
+    // Add escape key handler for modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const visibleModals = document.querySelectorAll('.modal[style*="display: block"], .modal[style*="display:block"]');
+            visibleModals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+    });
+}
+
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
     
@@ -8673,6 +8712,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Setup modal close functionality
+    setupModalCloseHandlers();
 
     // Initialize managers
     // Re-enable AuthManager with enhanced caching capabilities

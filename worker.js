@@ -1666,7 +1666,7 @@ export default {
 
 // New API Handlers for HR Management System
 
-// Handle timesheet data retrieval
+// Handle timesheet data retrieval with enhanced attendance_requests integration
 async function handleGetTimesheet(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
@@ -1697,7 +1697,7 @@ async function handleGetTimesheet(url, db, origin) {
 
     const shiftAssignments = shiftQuery.results || [];
 
-    // Get attendance data for the month, but only for days with shift assignments
+    // Get attendance data for the month
     const attendanceQuery = await db
       .prepare(`
         SELECT 
@@ -1720,10 +1720,99 @@ async function handleGetTimesheet(url, db, origin) {
 
     const attendanceData = attendanceQuery.results || [];
 
+    // Get approved attendance requests for forgotten check-ins
+    const requestsQuery = await db
+      .prepare(`
+        SELECT 
+          DATE(targetTime) as date,
+          targetTime,
+          requestType,
+          status
+        FROM attendance_requests 
+        WHERE employeeId = ? AND status = 'approved' 
+        AND DATE(targetTime) >= ? AND DATE(targetTime) < ?
+        ORDER BY DATE(targetTime)
+      `)
+      .bind(employeeId, startDate, endDate)
+      .all();
+
+    const approvedRequests = requestsQuery.results || [];
+
+    // Function to parse Vietnamese time format
+    function parseVietnameseTime(targetTime) {
+      const timeData = { checkIn: null, checkOut: null };
+      
+      if (!targetTime) return timeData;
+      
+      // Parse formats like "Giờ vào: 02:03" or "Giờ vào: 01:43, Giờ ra: 09:43"
+      const checkInMatch = targetTime.match(/Giờ vào:\s*(\d{2}:\d{2})/);
+      const checkOutMatch = targetTime.match(/Giờ ra:\s*(\d{2}:\d{2})/);
+      
+      if (checkInMatch) {
+        timeData.checkIn = checkInMatch[1];
+      }
+      
+      if (checkOutMatch) {
+        timeData.checkOut = checkOutMatch[1];
+      }
+      
+      return timeData;
+    }
+
+    // Merge attendance data with approved requests
+    const mergedAttendanceData = [];
+    const processedDates = new Set();
+
+    // Process regular attendance data first
+    for (const attendance of attendanceData) {
+      mergedAttendanceData.push({
+        ...attendance,
+        source: 'attendance'
+      });
+      processedDates.add(attendance.date);
+    }
+
+    // Process approved attendance requests for missing dates
+    for (const request of approvedRequests) {
+      if (!processedDates.has(request.date)) {
+        const timeData = parseVietnameseTime(request.targetTime);
+        
+        if (timeData.checkIn) {
+          // Calculate hours worked if both times are available
+          let hoursWorked = 0;
+          if (timeData.checkIn && timeData.checkOut) {
+            const [checkInHour, checkInMin] = timeData.checkIn.split(':').map(Number);
+            const [checkOutHour, checkOutMin] = timeData.checkOut.split(':').map(Number);
+            
+            const checkInMinutes = checkInHour * 60 + checkInMin;
+            const checkOutMinutes = checkOutHour * 60 + checkOutMin;
+            
+            hoursWorked = (checkOutMinutes - checkInMinutes) / 60;
+            if (hoursWorked < 0) hoursWorked += 24; // Handle overnight shifts
+          }
+          
+          mergedAttendanceData.push({
+            date: request.date,
+            checkIn: timeData.checkIn,
+            checkOut: timeData.checkOut || null,
+            fullCheckIn: `${request.date}T${timeData.checkIn}:00`,
+            fullCheckOut: timeData.checkOut ? `${request.date}T${timeData.checkOut}:00` : null,
+            hoursWorked: hoursWorked,
+            source: 'approved_request'
+          });
+          
+          processedDates.add(request.date);
+        }
+      }
+    }
+
+    // Sort merged data by date
+    mergedAttendanceData.sort((a, b) => a.date.localeCompare(b.date));
+
     // Process attendance data with shift assignment validation
     const validAttendanceData = [];
     
-    for (const attendance of attendanceData) {
+    for (const attendance of mergedAttendanceData) {
       // Find shift assignment for this date
       const shift = shiftAssignments.find(s => s.date === attendance.date);
       
@@ -1732,27 +1821,37 @@ async function handleGetTimesheet(url, db, origin) {
         continue;
       }
 
-      // Apply 60-minute tolerance rules
-      const shiftStart = new Date(`${attendance.date}T${shift.startTime}`);
-      const shiftEnd = new Date(`${attendance.date}T${shift.endTime}`);
-      const checkInTime = new Date(attendance.fullCheckIn);
-      const checkOutTime = attendance.fullCheckOut ? new Date(attendance.fullCheckOut) : null;
-      
-      const checkInDiff = (checkInTime instanceof Date && shiftStart instanceof Date)
-        ? (checkInTime.getTime() - shiftStart.getTime()) / 60000
-        : 0;
-      
-      let isValidCheckIn = checkInDiff <= 60;
-      
-      let isValidCheckOut = true;
-      let checkOutDiff = 0;
-      if (checkOutTime && shiftEnd instanceof Date) {
-        checkOutDiff = (checkOutTime.getTime() - shiftEnd.getTime()) / 60000;
-        isValidCheckOut = checkOutDiff <= 60;
-      }
+      // Apply 60-minute tolerance rules for regular attendance only
+      if (attendance.source === 'attendance') {
+        const shiftStart = new Date(`${attendance.date}T${shift.startTime}`);
+        const shiftEnd = new Date(`${attendance.date}T${shift.endTime}`);
+        const checkInTime = new Date(attendance.fullCheckIn);
+        const checkOutTime = attendance.fullCheckOut ? new Date(attendance.fullCheckOut) : null;
+        
+        const checkInDiff = (checkInTime instanceof Date && shiftStart instanceof Date)
+          ? (checkInTime.getTime() - shiftStart.getTime()) / 60000
+          : 0;
+        
+        let isValidCheckIn = checkInDiff <= 60;
+        
+        let isValidCheckOut = true;
+        let checkOutDiff = 0;
+        if (checkOutTime && shiftEnd instanceof Date) {
+          checkOutDiff = (checkOutTime.getTime() - shiftEnd.getTime()) / 60000;
+          isValidCheckOut = checkOutDiff <= 60;
+        }
 
-      // Only include attendance if both check-in and check-out (if present) are valid
-      if (isValidCheckIn && isValidCheckOut) {
+        // Only include attendance if both check-in and check-out (if present) are valid
+        if (isValidCheckIn && isValidCheckOut) {
+          validAttendanceData.push({
+            ...attendance,
+            shiftName: shift.shiftName,
+            shiftStart: shift.startTime,
+            shiftEnd: shift.endTime
+          });
+        }
+      } else {
+        // For approved requests, include without validation
         validAttendanceData.push({
           ...attendance,
           shiftName: shift.shiftName,
