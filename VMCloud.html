@@ -2,160 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VMOSCloud Multi-Device Controller</title>
+  <title>VMOSCloud Real-time Multi Viewer</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+  <style>
+    video {
+      width: 100%;
+      height: auto;
+      background: black;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 p-6">
-  <div class="max-w-full mx-auto space-y-4">
-    <h1 class="text-2xl font-bold mb-4">VMOS Cloud Multi-Device Controller</h1>
-
-    <div id="deviceAccounts" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"></div>
-
-    <button onclick="addDeviceForm()" class="bg-green-500 text-white py-2 px-4 rounded">+ Add Device</button>
-  </div>
+  <h1 class="text-2xl font-bold mb-4">VMOS Cloud Real-time Device Viewer</h1>
+  <div id="deviceContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"></div>
+  <button onclick="addDevice()" class="mt-6 bg-green-600 text-white px-4 py-2 rounded">+ Add Device</button>
 
   <script>
     let devices = [];
 
-    function addDeviceForm() {
-      const id = `device-${devices.length}`;
-      const container = document.createElement("div");
-      container.className = "p-4 border rounded bg-white space-y-4";
-      container.innerHTML = `
-        <div class="grid grid-cols-2 gap-4">
-          <input id="${id}-ak" class="p-2 border rounded w-full" placeholder="Access Key ID">
-          <input id="${id}-sk" class="p-2 border rounded w-full" placeholder="Secret Access Key">
-          <button onclick="loginDevice('${id}')" class="col-span-2 bg-blue-500 text-white py-2 px-4 rounded">Login Device</button>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <select id="${id}-deviceSelect" class="p-2 border rounded w-full"></select>
-          <input id="${id}-text" class="p-2 border rounded w-full" placeholder="Send text" onkeydown="sendTextKey(event, '${id}')">
-        </div>
-        <canvas id="${id}-canvas" class="w-full h-32 bg-white border"></canvas>
-        <div class="grid grid-cols-4 gap-2 mt-4">
-          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_UP')" class="bg-gray-200 py-2 rounded">⬆️</button>
-          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_LEFT')" class="bg-gray-200 py-2 rounded">⬅️</button>
-          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_RIGHT')" class="bg-gray-200 py-2 rounded">➡️</button>
-          <button onclick="sendKey('${id}', 'KEYCODE_DPAD_DOWN')" class="bg-gray-200 py-2 rounded">⬇️</button>
-          <button onclick="sendKey('${id}', 'KEYCODE_ENTER')" class="bg-green-300 py-2 rounded">Enter</button>
-          <button onclick="sendKey('${id}', 'KEYCODE_BACK')" class="bg-red-300 py-2 rounded">Back</button>
-        </div>
-        <div id="${id}-joystick" class="w-40 h-40 mt-4 mx-auto"></div>
-      `;
-      document.getElementById("deviceAccounts").appendChild(container);
-
-      devices.push({ id, token: "" });
-
-      const canvas = document.getElementById(`${id}-canvas`);
-      canvas.addEventListener("click", (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left) * (1080 / canvas.clientWidth);
-        const y = (e.clientY - rect.top) * (1920 / canvas.clientHeight);
-        syncTouch(x, y);
-      });
-
-      const joystick = nipplejs.create({
-        zone: document.getElementById(`${id}-joystick`),
-        mode: 'static',
-        position: { left: '50%', top: '50%' },
-        color: 'blue'
-      });
-
-      joystick.on('dir', (evt, data) => {
-        if (data.direction) {
-          const map = {
-            up: 'KEYCODE_DPAD_UP',
-            down: 'KEYCODE_DPAD_DOWN',
-            left: 'KEYCODE_DPAD_LEFT',
-            right: 'KEYCODE_DPAD_RIGHT'
-          };
-          syncKey(map[data.direction.angle]);
-        }
-      });
-    }
-
-    async function loginDevice(id) {
-      const ak = document.getElementById(`${id}-ak`).value;
-      const sk = document.getElementById(`${id}-sk`).value;
-
-      const res = await fetch("https://api.vmoscloud.com/api/v1/user/akskLogin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+    async function loginAKSK(ak, sk) {
+      const res = await fetch('https://api.vmoscloud.com/api/v1/user/akskLogin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessKey: ak, secretKey: sk })
       });
-
-      const json = await res.json();
-      if (json.code === 0 && json.data.token) {
-        const device = devices.find(d => d.id === id);
-        device.token = json.data.token;
-        alert("Login successful for " + id);
-        fetchDevices(id);
-      } else {
-        alert("Login failed: " + json.message);
-      }
+      return res.json();
     }
 
-    async function fetchDevices(id) {
-      const token = devices.find(d => d.id === id).token;
-      const res = await fetch("https://api.vmoscloud.com/api/v1/device/getDeviceList", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: token },
+    async function getDeviceList(token) {
+      const res = await fetch('https://api.vmoscloud.com/api/v1/device/getDeviceList', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token },
         body: JSON.stringify({})
       });
+      return res.json();
+    }
 
-      const json = await res.json();
+    async function getStreamURL(token, deviceId) {
+      const res = await fetch('https://api.vmoscloud.com/api/v1/device/getDevicePullStreamAddress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token },
+        body: JSON.stringify({ device: deviceId, type: "WEBRTC" })
+      });
+      return res.json();
+    }
+
+    function createVideoElement(id) {
+      const container = document.createElement('div');
+      container.className = "bg-white rounded p-4 shadow";
+
+      container.innerHTML = `
+        <input id="${id}-ak" class="border p-2 w-full mb-2" placeholder="Access Key ID" />
+        <input id="${id}-sk" class="border p-2 w-full mb-2" placeholder="Secret Access Key" />
+        <button onclick="connectDevice('${id}')" class="bg-blue-500 text-white px-3 py-2 rounded w-full">Connect</button>
+        <select id="${id}-deviceSelect" class="border p-2 w-full my-2"></select>
+        <video id="${id}-video" autoplay playsinline controls muted></video>
+      `;
+
+      document.getElementById('deviceContainer').appendChild(container);
+    }
+
+    function addDevice() {
+      const id = `device-${devices.length}`;
+      createVideoElement(id);
+      devices.push({ id, token: '', pc: null });
+    }
+
+    async function connectDevice(id) {
+      const ak = document.getElementById(`${id}-ak`).value;
+      const sk = document.getElementById(`${id}-sk`).value;
+      const loginRes = await loginAKSK(ak, sk);
+
+      if (loginRes.code !== 0) return alert("Login failed");
+
+      const token = loginRes.data.token;
+      const deviceList = await getDeviceList(token);
+      if (deviceList.code !== 0) return alert("Failed to get devices");
+
       const select = document.getElementById(`${id}-deviceSelect`);
       select.innerHTML = "";
-      json.data.forEach(d => {
+      deviceList.data.forEach(device => {
         const opt = document.createElement("option");
-        opt.value = d.deviceId;
-        opt.textContent = d.deviceName || d.deviceId;
+        opt.value = device.deviceId;
+        opt.text = device.deviceName || device.deviceId;
         select.appendChild(opt);
       });
-    }
 
-    function getDevice(id) {
-      return document.getElementById(`${id}-deviceSelect`).value;
-    }
+      select.onchange = async () => {
+        const deviceId = select.value;
+        const streamRes = await getStreamURL(token, deviceId);
+        if (streamRes.code !== 0) return alert("Failed to get stream URL");
 
-    function syncKey(code) {
-      devices.forEach(device => {
-        if (device.token && getDevice(device.id)) {
-          fetch("https://api.vmoscloud.com/api/v1/device/sendKeyCode", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: device.token },
-            body: JSON.stringify({ device: getDevice(device.id), keyCode: code })
-          });
-        }
-      });
-    }
+        const { offer, iceServers } = streamRes.data;
+        const pc = new RTCPeerConnection({ iceServers });
+        devices.find(d => d.id === id).pc = pc;
 
-    function syncTouch(x, y) {
-      devices.forEach(device => {
-        if (device.token && getDevice(device.id)) {
-          fetch("https://api.vmoscloud.com/api/v1/device/sendTap", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: device.token },
-            body: JSON.stringify({ device: getDevice(device.id), x: Math.round(x), y: Math.round(y) })
-          });
-        }
-      });
-    }
+        pc.ontrack = (event) => {
+          document.getElementById(`${id}-video`).srcObject = event.streams[0];
+        };
 
-    function sendTextKey(event, id) {
-      if (event.key.length === 1) {
-        devices.forEach(device => {
-          if (device.token && getDevice(device.id)) {
-            fetch("https://api.vmoscloud.com/api/v1/device/sendText", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: device.token },
-              body: JSON.stringify({ device: getDevice(device.id), text: event.key })
+        await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        // Send answer to server
+        await fetch('https://api.vmoscloud.com/api/v1/device/sendDeviceStreamAnswer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: token },
+          body: JSON.stringify({ device: deviceId, answer: answer.sdp })
+        });
+
+        // Handle ICE candidates
+        pc.onicecandidate = async (e) => {
+          if (e.candidate) {
+            await fetch('https://api.vmoscloud.com/api/v1/device/sendDeviceIceCandidate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: token },
+              body: JSON.stringify({ device: deviceId, candidate: e.candidate })
             });
           }
-        });
-      }
+        };
+
+        // Pull remote ICE candidates
+        setInterval(async () => {
+          const res = await fetch('https://api.vmoscloud.com/api/v1/device/getDeviceIceCandidateList', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: token },
+            body: JSON.stringify({ device: deviceId })
+          });
+          const json = await res.json();
+          if (json.code === 0) {
+            json.data.forEach(c => {
+              pc.addIceCandidate(new RTCIceCandidate(c));
+            });
+          }
+        }, 3000);
+      };
+
+      // Auto-select first device
+      select.dispatchEvent(new Event('change'));
     }
   </script>
 </body>
