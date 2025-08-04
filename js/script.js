@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', function(){
 function createStars(count) {
     const stars = document.querySelector('.stars');
     
+    // Add null check to prevent errors
+    if (!stars) {
+        console.warn('Stars container not found');
+        return;
+    }
+    
     for (let i = 0; i < count; i++) {
         const star = document.createElement('div');
         star.className = 'star';
@@ -48,6 +54,12 @@ function createStars(count) {
 // Create professional light effects
 function createLightStreaks(count) {
     const container = document.querySelector('.light-streaks');
+    
+    // Add null check to prevent errors
+    if (!container) {
+        console.warn('Light streaks container not found');
+        return;
+    }
     
     for (let i = 0; i < count; i++) {
         const streak = document.createElement('div');

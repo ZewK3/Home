@@ -17,9 +17,8 @@ async function initializeApplication() {
         authManager = new AuthManager();
         window.authManager = authManager;
         
-        // Initialize content manager
-        contentManager = new ContentManager();
-        window.contentManager = contentManager;
+        // Content manager will be initialized by dashboard handler
+        // after authentication is confirmed
         
         // Setup menu interactions
         MenuManager.setupMenuInteractions();
@@ -31,29 +30,8 @@ async function initializeApplication() {
             console.log('User authenticated:', user.fullName);
         }
         
-        // Setup modal close handlers
-        setupModalCloseHandlers();
-        
-        // Show dashboard loader immediately
-        showDashboardLoader();
-        
-        // Set initial CSS classes for dashboard elements
-        const dashboardContent = document.getElementById('dashboardContent');
-        if (dashboardContent) {
-            dashboardContent.classList.add('dashboard-hidden');
-        }
-        
-        // Initialize other dashboard components
-        initializeTimeDisplay();
-        setupMobileMenu();
-        
-        // Setup security features
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-                e.preventDefault();
-            }
-        });
-        document.addEventListener("contextmenu", (e) => e.preventDefault());
+        // Initialize dashboard components
+        await initializeDashboard();
         
         // Run system data refresh
         await refreshSystemData();

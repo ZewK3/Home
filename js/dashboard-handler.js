@@ -35,8 +35,8 @@ function setupModalCloseHandlers() {
     });
 }
 
-// Initialize Application - will be handled by main-init.js
-    
+// Initialize Dashboard - will be called by main-init.js
+async function initializeDashboard() {
     // Show dashboard loader immediately
     showDashboardLoader();
     
@@ -139,7 +139,7 @@ function setupModalCloseHandlers() {
         // Hide dashboard loader if authentication fails
         await hideDashboardLoader();
     }
-});
+}
 
 // Standalone mobile menu initialization - independent of authentication
 window.addEventListener('load', () => {
@@ -3293,5 +3293,4 @@ const professionalStyles = `
 
 // Apply professional styles
 document.head.insertAdjacentHTML('beforeend', professionalStyles);
-});
 
