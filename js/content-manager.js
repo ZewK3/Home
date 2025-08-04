@@ -77,6 +77,40 @@ class ContentManager {
         // Registration Approval
         document.getElementById('openRegistrationApproval')?.addEventListener('click', () =>
             this.showRegistrationApproval());
+            
+        // Quick Action handlers for welcome section
+        this.setupQuickActionHandlers();
+    }
+    
+    // Setup quick action button handlers for welcome section
+    setupQuickActionHandlers() {
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.quick-action-btn')) {
+                const actionBtn = e.target.closest('.quick-action-btn');
+                const action = actionBtn.getAttribute('data-action');
+                this.handleQuickAction(action);
+            }
+        });
+    }
+    
+    // Handle quick action button clicks
+    handleQuickAction(action) {
+        switch (action) {
+            case 'addEmployee':
+                utils.showNotification('Chức năng thêm nhân viên đang được phát triển', 'info');
+                break;
+            case 'assignShift':
+                this.showShiftAssignment();
+                break;
+            case 'manageRewards':
+                utils.showNotification('Chức năng quản lý thưởng đang được phát triển', 'info');
+                break;
+            case 'viewReports':
+                this.showAnalytics();
+                break;
+            default:
+                console.log('Unknown action:', action);
+        }
     }
 
     // Shift Management Functions

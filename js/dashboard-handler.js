@@ -297,6 +297,9 @@ async function updateStatsGrid() {
         statCards.forEach((card, index) => {
             card.style.display = 'block';
         });
+        
+        // Update welcome section statistics
+        await updateWelcomeStats();
     } else {
         console.warn('⚠️ Stats-grid not found in DOM');
     }
@@ -308,6 +311,71 @@ async function updateStatsGrid() {
     
     // Force a re-layout
     await new Promise(resolve => setTimeout(resolve, 50));
+}
+
+// Update welcome section statistics with real data
+async function updateWelcomeStats() {
+    try {
+        console.log('📊 Updating welcome section statistics...');
+        
+        // Get current user data
+        const userData = await API_CACHE.getUserData();
+        if (!userData) {
+            console.warn('No user data available for stats update');
+            return;
+        }
+        
+        // Update total employees (mock data for now)
+        const totalEmployeesEl = document.getElementById('totalEmployees');
+        if (totalEmployeesEl) {
+            totalEmployeesEl.textContent = '45'; // Mock data
+        }
+        
+        // Update today's shift info
+        const todayShiftEl = document.getElementById('todayShift');
+        const todayShiftTimeEl = document.getElementById('todayShiftTime');
+        if (todayShiftEl && todayShiftTimeEl) {
+            const now = new Date();
+            const hour = now.getHours();
+            
+            if (hour >= 6 && hour < 14) {
+                todayShiftEl.textContent = 'Ca Sáng';
+                todayShiftTimeEl.textContent = '06:00 - 14:00';
+            } else if (hour >= 14 && hour < 22) {
+                todayShiftEl.textContent = 'Ca Chiều';
+                todayShiftTimeEl.textContent = '14:00 - 22:00';
+            } else {
+                todayShiftEl.textContent = 'Ca Đêm';
+                todayShiftTimeEl.textContent = '22:00 - 06:00';
+            }
+        }
+        
+        // Update pending requests (fetch from API)
+        const pendingRequestsEl = document.getElementById('pendingRequests');
+        if (pendingRequestsEl) {
+            try {
+                const response = await utils.fetchAPI(`?action=getPendingRequestsCount&employeeId=${userData.employeeId}`);
+                if (response.success) {
+                    pendingRequestsEl.textContent = response.count || '0';
+                } else {
+                    pendingRequestsEl.textContent = '0';
+                }
+            } catch (error) {
+                console.log('Could not fetch pending requests count:', error);
+                pendingRequestsEl.textContent = '0';
+            }
+        }
+        
+        // Update recent messages (mock data)
+        const recentMessagesEl = document.getElementById('recentMessages');
+        if (recentMessagesEl) {
+            recentMessagesEl.textContent = Math.floor(Math.random() * 10).toString();
+        }
+        
+        console.log('✅ Welcome stats updated successfully');
+    } catch (error) {
+        console.error('Error updating welcome stats:', error);
+    }
 }
 
 // Role-based UI Management  

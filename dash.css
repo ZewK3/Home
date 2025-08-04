@@ -769,6 +769,64 @@ body {
     background: linear-gradient(135deg, var(--text-accent) 0%, #3b82f6 100%);
 }
 
+/* Enhanced color consistency fixes */
+[data-theme="light"] .menu-link {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .submenu-link {
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .submenu-link:hover {
+    color: var(--primary);
+}
+
+[data-theme="dark"] .submenu-link {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .submenu-link:hover {
+    color: var(--text-accent);
+}
+
+/* Better button consistency */
+.quick-action-btn {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(255, 255, 255, 0.8) 100%);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-color: var(--primary);
+    color: var(--text-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .quick-action-btn {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .quick-action-btn:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--text-accent) 100%);
+    border-color: var(--text-accent);
+    color: var(--text-light);
+}
+
+/* Status badge improvements */
+[data-theme="light"] .status {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .status {
+    color: var(--text-primary);
+}
+
 /* Enhanced Professional Submenu - Redesigned */
 .submenu {
     list-style: none;
@@ -11320,7 +11378,7 @@ button:focus, .btn:focus, .menu-link:focus {
     display: none;
 }
 
-.mobile-menu-item.submenu-open .mobile-submenu {
+.mobile-menu-item.active .mobile-submenu {
     display: block;
     animation: submenuSlideDown 0.3s ease-out;
 }
