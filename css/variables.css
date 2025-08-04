@@ -31,9 +31,21 @@
     
     /* Enhanced Shadow System */
     --shadow-glow: 0 0 30px rgba(37, 99, 235, 0.15);
-    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    
+    /* Auth/Registration Theme Variables */
+    --background: #ffffff;
+    --foreground: #1f2937;
+    --gradient-background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+    --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --gray-100: #f8fafc;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
     
     /* Enhanced Professional Spacing */
     --spacing-xs: 0.25rem;
@@ -44,15 +56,19 @@
     
     /* Enhanced Professional Border Radius */
     --border-radius: 12px;
-    --border-radius-sm: 6px;
+    --border-radius-sm: 8px;
     --border-radius-lg: 16px;
     
     /* Enhanced Professional Transitions */
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --glass-blur: blur(20px);
+    
+    /* Enhanced Professional Layout */
+    --sidebar-width: 280px;
     
     /* Enhanced Professional Typography */
-    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --font-size-sm: 0.875rem;
     --font-size-base: 1rem;
     --font-size-lg: 1.125rem;
@@ -78,6 +94,7 @@
 
 /* Dark Mode Theme Variables */
 [data-theme="dark"] {
+    /* Enhanced Dark Theme Colors */
     --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     --bg-card: rgba(30, 41, 59, 0.9);
     --bg-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
@@ -98,4 +115,26 @@
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
     --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    
+    /* Auth/Registration Dark Theme Variables */
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --gradient-background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    --gray-100: #1e293b;
+    --gray-200: #334155;
+    --gray-300: #475569;
+    --gray-400: #64748b;
+    --gray-500: #94a3b8;
+}
+
+/* Light Theme Enhanced Variables */
+[data-theme="light"] {
+    --background: #ffffff;
+    --foreground: #1f2937;
+    --gradient-background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+    --gray-100: #f8fafc;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
 }
