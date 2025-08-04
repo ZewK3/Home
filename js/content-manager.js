@@ -2424,9 +2424,9 @@ class ContentManager {
                         <div class="permission-stat-card assistant">
                             <div class="stat-icon">🎯</div>
                             <div class="stat-details">
-                                <h3>Trợ lý</h3>
+                                <h3>Quản Lý Khu Vực</h3>
                                 <p class="stat-value" id="assistantCount">0</p>
-                                <span class="stat-label">Trợ lý quản lý</span>
+                                <span class="stat-label">Quản lý khu vực</span>
                             </div>
                         </div>
                         <div class="permission-stat-card employee">
@@ -4421,7 +4421,7 @@ class ContentManager {
         const roleNames = {
             'AD': 'Administrator',
             'QL': 'Manager',
-            'AM': 'Assistant Manager',
+            'AM': 'Quản Lý Khu Vực',
             'NV': 'Employee'
         };
         return roleNames[role] || 'Employee';

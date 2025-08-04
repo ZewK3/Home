@@ -50,16 +50,18 @@ class MenuManager {
                     });
                     
                     // Toggle current submenu
-                    const isActive = item.classList.contains('active');
+                    const wasActive = item.classList.contains('active');
                     item.classList.toggle('active');
+                    const isNowActive = item.classList.contains('active');
                     
-                    console.log('Submenu toggled, now active:', !isActive);
+                    console.log('Submenu toggled - was active:', wasActive, 'now active:', isNowActive);
                     
-                    // Force a reflow to ensure CSS transitions work
-                    if (!isActive) {
-                        submenu.style.display = 'block';
+                    // Ensure proper CSS transition by removing any inline display styles
+                    submenu.style.display = '';
+                    
+                    // Force a reflow to ensure CSS transitions work properly
+                    if (isNowActive) {
                         submenu.offsetHeight; // Force reflow
-                        submenu.style.display = '';
                     }
                 };
                 
