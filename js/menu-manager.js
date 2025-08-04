@@ -9,13 +9,33 @@ class MenuManager {
     }
 
     static updateSubmenusByRole(userRole) {
-        ['#openSchedule', '#openTaskProcessing'].forEach(selector => {
+        ['#openSchedule', '#openTaskProcessing', '#openSubmitRequest', '#openWorkManagement'].forEach(selector => {
             const menuItem = document.querySelector(selector)?.closest('.menu-item');
             if (menuItem) {
                 menuItem.querySelectorAll('.submenu-item').forEach(item => {
                     const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-                    item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
+                    const shouldShow = allowedRoles.includes(userRole);
+                    
+                    // Enhanced visibility control for submenu items
+                    if (shouldShow) {
+                        item.style.display = 'block';
+                        item.style.visibility = 'visible';
+                        item.classList.add('role-visible');
+                    } else {
+                        item.style.display = 'none';
+                        item.style.visibility = 'hidden';
+                        item.classList.remove('role-visible');
+                    }
                 });
+                
+                // Check if any submenu items are visible, if not hide the parent menu
+                const visibleSubItems = menuItem.querySelectorAll('.submenu-item[style*="display: block"], .submenu-item:not([style*="display: none"])');
+                if (visibleSubItems.length === 0) {
+                    menuItem.style.display = 'none';
+                } else {
+                    const parentAllowedRoles = menuItem.getAttribute("data-role")?.split(",") || [];
+                    menuItem.style.display = parentAllowedRoles.includes(userRole) ? "block" : "none";
+                }
             }
         });
     }
@@ -45,6 +65,12 @@ class MenuManager {
                     document.querySelectorAll('.menu-item').forEach(otherItem => {
                         if (otherItem !== item) {
                             otherItem.classList.remove('active');
+                            // Also ensure visibility for submenu items in closed menus
+                            const otherSubmenu = otherItem.querySelector('.submenu');
+                            if (otherSubmenu) {
+                                otherSubmenu.style.display = '';
+                                otherSubmenu.style.visibility = '';
+                            }
                             console.log('Closed submenu for:', otherItem.querySelector('.menu-link')?.textContent?.trim());
                         }
                     });
@@ -56,12 +82,23 @@ class MenuManager {
                     
                     console.log('Submenu toggled - was active:', wasActive, 'now active:', isNowActive);
                     
-                    // Ensure proper CSS transition by removing any inline display styles
+                    // Enhanced submenu visibility handling
                     submenu.style.display = '';
+                    submenu.style.visibility = '';
                     
-                    // Force a reflow to ensure CSS transitions work properly
+                    // Ensure submenu items are properly visible when menu is active
                     if (isNowActive) {
                         submenu.offsetHeight; // Force reflow
+                        submenu.querySelectorAll('.submenu-item').forEach(subItem => {
+                            subItem.style.display = '';
+                            subItem.style.visibility = 'visible';
+                        });
+                    } else {
+                        // Reset submenu items when closing
+                        submenu.querySelectorAll('.submenu-item').forEach(subItem => {
+                            subItem.style.display = '';
+                            subItem.style.visibility = '';
+                        });
                     }
                 };
                 

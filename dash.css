@@ -132,37 +132,57 @@
 }
 
 /* Enhanced Dark Theme */
+/* Enhanced Professional Dark Mode Theme */
 [data-theme="dark"] {
+    /* Dark mode background gradients - more professional and consistent */
     --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    --bg-card: rgba(30, 41, 59, 0.9);
+    --bg-card: rgba(30, 41, 59, 0.95);
     --bg-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
     --bg-header: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    --bg-glass: rgba(30, 41, 59, 0.85);
+    --bg-glass: rgba(30, 41, 59, 0.9);
     
+    /* Enhanced text colors for better contrast and readability */
     --text-primary: #ffffff;
-    --text-secondary: #f1f5f9;
-    --text-muted: #cbd5e1;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
     --text-accent: #60a5fa;
     --text-light: #ffffff;
     
+    /* Professional border and surface colors */
     --border-color: #334155;
     --border-hover: #475569;
     
-    --shadow-glow: 0 0 30px rgba(96, 165, 250, 0.2);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    /* Enhanced shadows for depth */
+    --shadow-glow: 0 0 20px rgba(96, 165, 250, 0.15);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
 }
 
-/* Enhanced dark mode text visibility */
-[data-theme="dark"] h3 {
+/* Enhanced dark mode text visibility and consistency */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2, 
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
     color: var(--text-primary) !important;
     font-weight: 600;
 }
 
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .text-muted {
+    color: var(--text-muted) !important;
+}
+
 /* Dark mode specific component styles */
 [data-theme="dark"] .modal {
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
 }
 
@@ -174,7 +194,7 @@
 
 [data-theme="dark"] .close-btn {
     color: var(--text-secondary);
-    background: transparent;
+    background: rgba(51, 65, 85, 0.3);
     border: 1px solid var(--border-color);
 }
 
@@ -185,16 +205,20 @@
 }
 
 [data-theme="dark"] .btn {
+    background: rgba(51, 65, 85, 0.4);
     border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
 
 [data-theme="dark"] .btn:hover {
+    background: rgba(71, 85, 105, 0.6);
     border-color: var(--border-hover);
+    color: var(--text-light);
     box-shadow: var(--shadow-glow);
 }
 
 [data-theme="dark"] .form-control {
-    background: rgba(51, 65, 85, 0.4);
+    background: rgba(51, 65, 85, 0.5);
     border-color: var(--border-color);
     color: var(--text-primary);
 }
@@ -202,7 +226,7 @@
 [data-theme="dark"] .form-control:focus {
     border-color: var(--text-accent);
     box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-    background: rgba(51, 65, 85, 0.6);
+    background: rgba(51, 65, 85, 0.7);
 }
 
 [data-theme="dark"] .table {
@@ -233,53 +257,52 @@
     border: 1px solid #dc2626;
 }
 
-/* Dark mode optimizations */
+/* Enhanced dark mode card components */
 [data-theme="dark"] .stat-card {
-    background: rgba(30, 41, 59, 0.9);
-    border: 1px solid #334155;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(96, 165, 250, 0.1);
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(96, 165, 250, 0.08);
 }
 
 [data-theme="dark"] .stat-card:hover {
-    background: rgba(51, 65, 85, 0.9);
-    border-color: #60a5fa;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 30px rgba(96, 165, 250, 0.2);
+    background: rgba(51, 65, 85, 0.95);
+    border-color: var(--text-accent);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(96, 165, 250, 0.15);
+    transform: translateY(-2px);
 }
 
-[data-theme="dark"] .chart-card {
-    background: rgba(30, 41, 59, 0.9);
-    border: 1px solid #334155;
-    backdrop-filter: blur(10px);
-}
-
-[data-theme="dark"] .finance-card {
-    background: rgba(30, 41, 59, 0.9);
-    border: 1px solid #334155;
-    backdrop-filter: blur(10px);
-}
-
-[data-theme="dark"] .personal-card {
-    background: rgba(30, 41, 59, 0.9);
-    border: 1px solid #334155;
-    backdrop-filter: blur(10px);
-}
-
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .finance-card,
+[data-theme="dark"] .personal-card,
 [data-theme="dark"] .store-card {
-    background: rgba(30, 41, 59, 0.9);
-    border: 1px solid #334155;
-    backdrop-filter: blur(10px);
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Dark theme mobile components */
+[data-theme="dark"] .chart-card:hover,
+[data-theme="dark"] .finance-card:hover,
+[data-theme="dark"] .personal-card:hover,
+[data-theme="dark"] .store-card:hover {
+    background: rgba(51, 65, 85, 0.95);
+    border-color: var(--border-hover);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+/* Enhanced dark theme mobile components */
 [data-theme="dark"] .mobile-submenu {
-    background: rgba(30, 41, 59, 0.95);
-    border-color: #334155;
+    background: rgba(30, 41, 59, 0.98);
+    border-color: var(--border-color);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .mobile-nav-footer {
-    background: rgba(15, 23, 42, 0.95);
-    border-top-color: #334155;
+    background: rgba(15, 23, 42, 0.98);
+    border-top-color: var(--border-color);
 }
 
 [data-theme="dark"] .mobile-submenu-link {
@@ -290,6 +313,7 @@
 [data-theme="dark"] .mobile-submenu-link:focus {
     background: var(--primary);
     color: var(--text-light);
+    border-left-color: var(--text-accent);
 }
 
 /* Reset & Base Styles */
@@ -851,8 +875,23 @@ body {
 }
 
 [data-theme="dark"] .submenu {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
-    border: 1px solid rgba(71, 85, 105, 0.2);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+    border: 1px solid rgba(71, 85, 105, 0.4);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced submenu link styling for dark mode */
+[data-theme="dark"] .submenu-link {
+    color: var(--text-secondary);
+    background: transparent;
+}
+
+[data-theme="dark"] .submenu-link:hover {
+    background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+    color: var(--text-light);
+    border-color: var(--text-accent);
+    box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
 }
 
 .menu-item.active .submenu {
@@ -3352,12 +3391,12 @@ body {
     gap: 12px;
 }
 
-/* Enhanced Dark mode optimized card header */
+/* Professional Dark mode optimized card header */
 [data-theme="dark"] .card-header {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.7) 100%);
-    border-bottom: 2px solid rgba(71, 85, 105, 0.3);
-    backdrop-filter: blur(8px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+    border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .card-header h2 {
@@ -5671,8 +5710,10 @@ body {
     display: none;
 }
 
+/* Enhanced role-based visibility system */
 .role-visible {
     display: block !important;
+    visibility: visible !important;
 }
 
 /* Specific display types for role-visible elements */
@@ -5693,10 +5734,24 @@ body {
     display: block !important;
     max-width: 100%;
     overflow: hidden;
+    visibility: visible !important;
 }
 
 .role-visible.quick-action-btn {
     display: inline-flex !important;
+}
+
+/* Enhanced submenu item visibility when parent is active */
+.menu-item.active .submenu .submenu-item.role-visible {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1;
+}
+
+/* Ensure submenu items are properly visible in active state */
+.menu-item.active .submenu-item {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Enhanced responsive design */
