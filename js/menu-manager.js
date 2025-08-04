@@ -30,7 +30,12 @@ class MenuManager {
 
             if (submenu && link) {
                 console.log('Setting up submenu for:', link.textContent.trim());
-                link.addEventListener("click", (e) => {
+                
+                // Remove any existing event listeners to prevent duplicates
+                link.removeEventListener("click", this.handleMenuClick);
+                
+                // Add new event listener
+                const handleClick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     
@@ -40,6 +45,7 @@ class MenuManager {
                     document.querySelectorAll('.menu-item').forEach(otherItem => {
                         if (otherItem !== item) {
                             otherItem.classList.remove('active');
+                            console.log('Closed submenu for:', otherItem.querySelector('.menu-link')?.textContent?.trim());
                         }
                     });
                     
@@ -48,7 +54,19 @@ class MenuManager {
                     item.classList.toggle('active');
                     
                     console.log('Submenu toggled, now active:', !isActive);
-                });
+                    
+                    // Force a reflow to ensure CSS transitions work
+                    if (!isActive) {
+                        submenu.style.display = 'block';
+                        submenu.offsetHeight; // Force reflow
+                        submenu.style.display = '';
+                    }
+                };
+                
+                link.addEventListener("click", handleClick);
+                
+                // Store the handler for potential cleanup
+                link._menuClickHandler = handleClick;
             }
         });
 

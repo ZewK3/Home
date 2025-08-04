@@ -1,0 +1,101 @@
+/* CSS Variables for Professional HR Theme */
+:root {
+    /* Enhanced Professional HR Colors */
+    --primary: #2563eb;
+    --primary-light: #3b82f6;
+    --primary-dark: #1d4ed8;
+    --secondary: #059669;
+    --accent: #f59e0b;
+    --error: #dc2626;
+    --success: #16a34a;
+    --warning: #ea580c;
+    
+    /* Enhanced Professional Background Colors */
+    --bg-main: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    --bg-card: rgba(255, 255, 255, 0.98);
+    --bg-sidebar: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    --bg-header: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+    --bg-glass: rgba(255, 255, 255, 0.95);
+    
+    /* Enhanced Professional Text Colors - Improved Contrast */
+    --text-primary: #0f172a;
+    --text-secondary: #475569; /* Darker for better contrast */
+    --text-muted: #64748b;
+    --text-accent: #2563eb;
+    --text-light: #ffffff;
+    
+    /* Enhanced Border Colors */
+    --border-color: #e2e8f0;
+    --border-hover: #cbd5e1;
+    --border-focus: #2563eb;
+    
+    /* Enhanced Shadow System */
+    --shadow-glow: 0 0 30px rgba(37, 99, 235, 0.15);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    /* Enhanced Professional Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    
+    /* Enhanced Professional Border Radius */
+    --border-radius: 12px;
+    --border-radius-sm: 6px;
+    --border-radius-lg: 16px;
+    
+    /* Enhanced Professional Transitions */
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Enhanced Professional Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    
+    /* Enhanced Professional Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-snug: 1.375;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.625;
+    
+    /* Enhanced Professional Z-Index */
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1020;
+    --z-index-fixed: 1030;
+    --z-index-modal-backdrop: 1040;
+    --z-index-modal: 1050;
+    --z-index-popover: 1060;
+    --z-index-tooltip: 1070;
+}
+
+/* Dark Mode Theme Variables */
+[data-theme="dark"] {
+    --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --bg-card: rgba(30, 41, 59, 0.9);
+    --bg-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    --bg-header: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    --bg-glass: rgba(30, 41, 59, 0.85);
+    
+    /* Enhanced Dark Mode Text Colors - Better Contrast */
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1; /* Lighter for better contrast in dark mode */
+    --text-muted: #94a3b8;
+    --text-accent: #60a5fa;
+    --text-light: #ffffff;
+    
+    --border-color: #334155;
+    --border-hover: #475569;
+    
+    --shadow-glow: 0 0 30px rgba(96, 165, 250, 0.2);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+}

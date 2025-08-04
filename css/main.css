@@ -1,0 +1,214 @@
+/* Main CSS File - Imports all modular CSS files */
+
+/* Core Styles */
+@import url('./variables.css');
+@import url('./base.css');
+@import url('./layout.css');
+
+/* Component Styles */
+@import url('./components.css');
+@import url('./navigation.css');
+@import url('./dashboard.css');
+
+/* Additional Utilities and Responsive Styles */
+
+/* Print Styles */
+@media print {
+    .no-print,
+    .menu-toggle,
+    .sidebar,
+    .mobile-nav-dialog,
+    .sidebar-overlay {
+        display: none !important;
+    }
+    
+    .main,
+    .dashboard-main-fade-in {
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .stat-card,
+    .quick-action-btn,
+    .analytics-card,
+    .store-card,
+    .finance-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    :root {
+        --text-secondary: #000000;
+        --border-color: #000000;
+    }
+    
+    [data-theme="dark"] {
+        --text-secondary: #ffffff;
+        --border-color: #ffffff;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+    
+    .form-control {
+        border-width: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .dashboard-main-fade-in {
+        animation: none;
+    }
+    
+    .submenu {
+        transition: none;
+    }
+}
+
+/* Dark Mode Improvements */
+[data-theme="dark"] {
+    /* Enhanced contrast for better readability */
+    --text-primary: #f8fafc;
+    --text-secondary: #e2e8f0; /* Improved contrast */
+    
+    /* Better component backgrounds */
+    --bg-card: rgba(30, 41, 59, 0.95);
+    --bg-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+}
+
+[data-theme="dark"] .stat-info h3,
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .dashboard-title,
+[data-theme="dark"] .analytics-header h3,
+[data-theme="dark"] .store-info h3,
+[data-theme="dark"] .finance-header h3,
+[data-theme="dark"] .personal-header h3 {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .submenu-link {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .menu-link {
+    color: var(--text-primary) !important;
+}
+
+/* Enhanced Focus Styles for Accessibility */
+.btn:focus-visible,
+.form-control:focus-visible,
+.menu-link:focus-visible,
+.submenu-link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+}
+
+/* Screen Reader Improvements */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Loading Animation Improvements */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+/* Enhanced Button Hover States */
+.btn:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.btn:not(:disabled):active {
+    transform: translateY(0);
+}
+
+/* Improved Card Hover Effects */
+.card:hover,
+.stat-card:hover,
+.store-card:hover,
+.finance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Enhanced Submenu Animations */
+.menu-item.active .submenu {
+    animation: submenuExpand 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes submenuExpand {
+    0% {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        max-height: 400px;
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+    /* Larger touch targets */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .menu-link,
+    .submenu-link {
+        min-height: 44px;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+    
+    /* Better spacing */
+    .welcome-stats {
+        margin-bottom: var(--spacing-lg);
+    }
+    
+    .section-title {
+        font-size: var(--font-size-xl);
+    }
+}
+
+/* Tablet-specific improvements */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .dashboard-title {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .section-title {
+        font-size: var(--font-size-xl);
+    }
+}
