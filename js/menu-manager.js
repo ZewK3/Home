@@ -1,9 +1,14 @@
 // Menu Manager
 class MenuManager {
     static updateMenuByRole(userRole) {
+        console.log('Updating menu visibility for role:', userRole);
         document.querySelectorAll("#menuList .menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-            item.style.display = allowedRoles.includes(userRole) ? "block" : "none";
+            const shouldShow = allowedRoles.includes(userRole);
+            item.style.display = shouldShow ? "block" : "none";
+            if (shouldShow) {
+                console.log('Menu item visible:', item.querySelector('.menu-link')?.textContent?.trim());
+            }
         });
         this.updateSubmenusByRole(userRole);
     }
@@ -21,6 +26,7 @@ class MenuManager {
                         item.style.display = 'block';
                         item.style.visibility = 'visible';
                         item.classList.add('role-visible');
+                        console.log('Submenu item made visible:', item.querySelector('.submenu-link')?.textContent?.trim());
                     } else {
                         item.style.display = 'none';
                         item.style.visibility = 'hidden';
@@ -29,7 +35,7 @@ class MenuManager {
                 });
                 
                 // Check if any submenu items are visible, if not hide the parent menu
-                const visibleSubItems = menuItem.querySelectorAll('.submenu-item[style*="display: block"], .submenu-item:not([style*="display: none"])');
+                const visibleSubItems = menuItem.querySelectorAll('.submenu-item.role-visible');
                 if (visibleSubItems.length === 0) {
                     menuItem.style.display = 'none';
                 } else {
@@ -38,10 +44,20 @@ class MenuManager {
                 }
             }
         });
+        
+        console.log('Role-based submenu visibility updated for role:', userRole);
     }
 
     static setupMenuInteractions() {
         console.log('Setting up menu interactions...');
+        
+        // Clear existing event listeners first
+        document.querySelectorAll(".menu-link").forEach(link => {
+            if (link._menuClickHandler) {
+                link.removeEventListener("click", link._menuClickHandler);
+                delete link._menuClickHandler;
+            }
+        });
         
         // Setup click handlers for menu items
         document.querySelectorAll(".menu-item").forEach(item => {
@@ -50,9 +66,6 @@ class MenuManager {
 
             if (submenu && link) {
                 console.log('Setting up submenu for:', link.textContent.trim());
-                
-                // Remove any existing event listeners to prevent duplicates
-                link.removeEventListener("click", this.handleMenuClick);
                 
                 // Add new event listener
                 const handleClick = (e) => {
@@ -65,12 +78,6 @@ class MenuManager {
                     document.querySelectorAll('.menu-item').forEach(otherItem => {
                         if (otherItem !== item) {
                             otherItem.classList.remove('active');
-                            // Also ensure visibility for submenu items in closed menus
-                            const otherSubmenu = otherItem.querySelector('.submenu');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = '';
-                                otherSubmenu.style.visibility = '';
-                            }
                             console.log('Closed submenu for:', otherItem.querySelector('.menu-link')?.textContent?.trim());
                         }
                     });
@@ -80,31 +87,24 @@ class MenuManager {
                     item.classList.toggle('active');
                     const isNowActive = item.classList.contains('active');
                     
-                    console.log('Submenu toggled - was active:', wasActive, 'now active:', isNowActive);
+                    console.log('Submenu toggled, now active:', isNowActive);
                     
-                    // Enhanced submenu visibility handling
-                    submenu.style.display = '';
-                    submenu.style.visibility = '';
-                    
-                    // Ensure submenu items are properly visible when menu is active
+                    // Force reflow and ensure proper visibility
                     if (isNowActive) {
                         submenu.offsetHeight; // Force reflow
-                        submenu.querySelectorAll('.submenu-item').forEach(subItem => {
-                            subItem.style.display = '';
+                        // Make sure all visible submenu items are properly displayed
+                        submenu.querySelectorAll('.submenu-item.role-visible').forEach(subItem => {
+                            subItem.style.display = 'block';
                             subItem.style.visibility = 'visible';
+                            subItem.style.opacity = '1';
                         });
-                    } else {
-                        // Reset submenu items when closing
-                        submenu.querySelectorAll('.submenu-item').forEach(subItem => {
-                            subItem.style.display = '';
-                            subItem.style.visibility = '';
-                        });
+                        console.log('Submenu activated and items made visible');
                     }
                 };
                 
                 link.addEventListener("click", handleClick);
                 
-                // Store the handler for potential cleanup
+                // Store the handler for cleanup
                 link._menuClickHandler = handleClick;
             }
         });

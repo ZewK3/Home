@@ -20,9 +20,6 @@ async function initializeApplication() {
         // Content manager will be initialized by dashboard handler
         // after authentication is confirmed
         
-        // Setup menu interactions
-        MenuManager.setupMenuInteractions();
-        
         // Check authentication and setup
         const user = await authManager.checkAuthentication();
         if (user) {

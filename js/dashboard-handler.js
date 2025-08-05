@@ -88,13 +88,18 @@ async function initializeDashboard() {
         window.authManager = authManager;
         
         // Additional authentication setup
-        MenuManager.setupMenuInteractions();
         ThemeManager.initialize();
 
         // Initialize features with proper user data
         window.contentManager = new ContentManager(userData);
 
-        // Populate user info in header early using userData
+        // Apply role-based section visibility FIRST
+        await applyRoleBasedSectionVisibility();
+        
+        // Then setup menu interactions after role visibility is applied
+        MenuManager.setupMenuInteractions();
+
+        // Populate user info in header after role setup
         const userInfoElement = document.getElementById("userInfo");
         if (userInfoElement && userData) {
             userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
@@ -106,9 +111,6 @@ async function initializeDashboard() {
         
         // Ensure stats-grid is visible and updated
         await updateStatsGrid();
-
-        // Apply role-based section visibility
-        await applyRoleBasedSectionVisibility();
 
         // Initialize enhanced dashboard
         await initializeEnhancedDashboard();
