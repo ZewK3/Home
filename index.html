@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="vi" data-theme="dark">
+<html lang="vi" data-theme="dark" id="loginHtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -21,6 +21,14 @@
 </head>
 <body>
     <div class='flag-vn'></div>
+    
+    <!-- Theme Toggle for Login Page -->
+    <div class="login-theme-toggle">
+        <button id="loginThemeToggle" class="login-theme-btn" title="Chuyển đổi chủ đề">
+            <span class="theme-icon material-icons-round">brightness_6</span>
+        </button>
+    </div>
+    
     <div class="glass-bg">
         <div class="glass-circle circle-1"></div>
         <div class="glass-circle circle-2"></div>
@@ -269,6 +277,38 @@
         </div>
     </div>
 
+    <script src="js/config.js"></script>
+    <script src="js/theme-manager.js"></script>
     <script src="js/script.js"></script>
+    
+    <script>
+        // Initialize theme for login page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme manager
+            ThemeManager.initialize();
+            
+            // Add login page specific theme toggle
+            const loginThemeToggle = document.getElementById('loginThemeToggle');
+            if (loginThemeToggle) {
+                loginThemeToggle.addEventListener('click', function() {
+                    ThemeManager.toggleTheme();
+                    updateLoginThemeIcon();
+                });
+                
+                // Update icon initially and on theme change
+                updateLoginThemeIcon();
+                window.addEventListener('themeChanged', updateLoginThemeIcon);
+            }
+            
+            function updateLoginThemeIcon() {
+                const icon = document.querySelector('#loginThemeToggle .theme-icon');
+                if (icon) {
+                    const currentTheme = document.documentElement.getAttribute('data-theme');
+                    icon.textContent = currentTheme === 'light' ? 'dark_mode' : 'light_mode';
+                    loginThemeToggle.title = currentTheme === 'light' ? 'Chuyển sang chế độ tối' : 'Chuyển sang chế độ sáng';
+                }
+            }
+        });
+    </script>
 </body>
 </html>

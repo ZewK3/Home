@@ -5,6 +5,7 @@ const CONFIG = {
         AUTH_TOKEN: "authToken",
         USER_DATA: "loggedInUser",
         THEME: "theme",
+        MANUAL_THEME: "manualTheme",
         REMEMBER_ME: "rememberedEmployeeId"
     },
     POLLING_INTERVAL: 3000,

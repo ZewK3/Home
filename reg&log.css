@@ -1,20 +1,62 @@
 
+/* CSS Variables for Login/Register Theme Support */
+:root {
+    /* Light Theme Colors */
+    --login-bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --login-bg-secondary: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+    --login-text-primary: #ffffff;
+    --login-text-secondary: rgba(255, 255, 255, 0.9);
+    --login-text-muted: rgba(255, 255, 255, 0.7);
+    --login-glass-bg: rgba(255, 255, 255, 0.1);
+    --login-glass-border: rgba(255, 255, 255, 0.2);
+    --login-accent-primary: #4f46e5;
+    --login-accent-secondary: #06b6d4;
+    
+    /* Animation speeds */
+    --login-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Theme Variables */
+[data-theme="dark"] {
+    --login-bg-primary: linear-gradient(to right, #004e92, #000428);
+    --login-bg-secondary: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    --login-text-primary: #ffffff;
+    --login-text-secondary: rgba(255, 255, 255, 0.9);
+    --login-text-muted: rgba(255, 255, 255, 0.7);
+    --login-glass-bg: rgba(255, 255, 255, 0.08);
+    --login-glass-border: rgba(255, 255, 255, 0.15);
+    --login-accent-primary: #6366f1;
+    --login-accent-secondary: #06b6d4;
+}
+
+/* Light Theme Variables */
+[data-theme="light"] {
+    --login-bg-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --login-bg-secondary: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+    --login-text-primary: #1f2937;
+    --login-text-secondary: #374151;
+    --login-text-muted: #6b7280;
+    --login-glass-bg: rgba(255, 255, 255, 0.9);
+    --login-glass-border: rgba(255, 255, 255, 0.3);
+    --login-accent-primary: #4f46e5;
+    --login-accent-secondary: #06b6d4;
+}
+
 /* Animated Background - Cosmic Theme */
 body {
     position: relative;
     min-height: 100vh;
     max-height: 100vh;
     overflow: auto;
-    background: #000428;
-    background: -webkit-linear-gradient(to right, #004e92, #000428);
-    background: linear-gradient(to right, #004e92, #000428);
+    background: var(--login-bg-primary);
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    color: #ffffff;
+    color: var(--login-text-primary);
     box-sizing: border-box;
+    transition: var(--login-transition);
 }
 
 .flag-vn {
@@ -26,6 +68,113 @@ body {
     z-index: 1001;
     pointer-events: none;
 }
+
+/* Login Theme Toggle */
+.login-theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+}
+
+.login-theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background: var(--login-glass-bg);
+    border: 1px solid var(--login-glass-border);
+    color: var(--login-text-primary);
+    cursor: pointer;
+    transition: var(--login-transition);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.login-theme-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.login-theme-btn:active {
+    transform: scale(0.95);
+}
+
+.login-theme-btn .material-icons-round {
+    font-size: 24px !important;
+    transition: var(--login-transition);
+}
+
+/* Light theme adjustments for login page */
+[data-theme="light"] .login-theme-btn {
+    color: var(--login-text-primary);
+    background: var(--login-glass-bg);
+    border: 1px solid var(--login-glass-border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .login-theme-btn:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--login-accent-primary);
+}
+
+[data-theme="light"] body {
+    background: var(--login-bg-primary);
+    color: var(--login-text-primary);
+}
+
+/* Enhanced glass effects for light theme */
+[data-theme="light"] .glass-circle {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+[data-theme="light"] .auth-container {
+    background: var(--login-glass-bg);
+    border: 1px solid var(--login-glass-border);
+    color: var(--login-text-primary);
+}
+
+[data-theme="light"] .form-container {
+    color: var(--login-text-primary);
+}
+
+[data-theme="light"] .form-container h2 {
+    color: var(--login-text-primary);
+}
+
+[data-theme="light"] .input-group input {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--login-text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] .input-group input:focus {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: var(--login-accent-primary);
+}
+
+[data-theme="light"] .input-group label {
+    color: var(--login-text-secondary);
+}
+
+[data-theme="light"] .btn-primary {
+    background: linear-gradient(135deg, var(--login-accent-primary) 0%, var(--login-accent-secondary) 100%);
+}
+
+[data-theme="light"] .form-link {
+    color: var(--login-accent-primary);
+}
+
+[data-theme="light"] .form-link:hover {
+    color: var(--login-accent-secondary);
+}
+
 .flag-vn .flag-element {
     /* Animation và style gốc từ bài viết, chỉ chỉnh lại size cho phù hợp */
     -webkit-animation: oscill 1s ease-in-out infinite alternate;
@@ -69,11 +218,12 @@ body {
 .glass-circle {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--login-glass-bg);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     animation: floatAnimation 25s infinite ease-in-out;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--login-glass-border);
+    transition: var(--login-transition);
 }
 
 .circle-1 {
