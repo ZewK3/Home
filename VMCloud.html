@@ -2,147 +2,175 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>VMOSCloud Real-time Multi Viewer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VMOS Device Manager</title>
   <style>
-    video {
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background-color: #f7f9fc;
+    }
+    header {
+      background: #2d3748;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      padding: 1rem;
+      max-width: 1000px;
+      margin: auto;
+    }
+    .add-device {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .add-device input {
+      flex: 1;
+      padding: 0.5rem;
+    }
+    .device-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .device {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      border-radius: 8px;
+      position: relative;
+    }
+    iframe {
       width: 100%;
-      height: auto;
-      background: black;
+      height: 500px;
+      border: none;
+      border-radius: 6px;
+    }
+    .device input {
+      width: 100%;
+      padding: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .actions {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+    }
+    .broadcast {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .broadcast input {
+      flex: 1;
+      padding: 0.4rem;
     }
   </style>
 </head>
-<body class="bg-gray-100 p-6">
-  <h1 class="text-2xl font-bold mb-4">VMOS Cloud Real-time Device Viewer</h1>
-  <div id="deviceContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4"></div>
-  <button onclick="addDevice()" class="mt-6 bg-green-600 text-white px-4 py-2 rounded">+ Add Device</button>
+<body>
+  <header>
+    <h1>VMOS Device Manager</h1>
+  </header>
+  <div class="container">
+    <div class="add-device">
+      <input type="text" id="deviceName" placeholder="Tên thiết bị" />
+      <input type="text" id="deviceUrl" placeholder="Link iframe chia sẻ" />
+      <button onclick="addDevice()">Thêm thiết bị</button>
+    </div>
+
+    <div class="broadcast">
+      <input type="text" id="commandInput" placeholder="Lệnh JavaScript gửi đến tất cả thiết bị (VD: alert('hi'))" />
+      <button onclick="sendCommandToAll()">Gửi lệnh</button>
+    </div>
+
+    <div class="device-list" id="deviceList"></div>
+  </div>
 
   <script>
-    let devices = [];
+    const localKey = "vmosDevices";
 
-    async function loginAKSK(ak, sk) {
-      const res = await fetch('https://api.vmoscloud.com/api/v1/user/akskLogin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessKey: ak, secretKey: sk })
+    function loadDevices() {
+      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
+      const container = document.getElementById("deviceList");
+      container.innerHTML = "";
+      list.forEach((device, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "device";
+        wrapper.innerHTML = `
+          <h3 contenteditable="true" onblur="renameDevice(${index}, this.textContent)">${device.name}</h3>
+          <iframe allow="camera; microphone; fullscreen" src="${device.url}" id="frame-${index}"></iframe>
+          <div class="actions">
+            <button onclick="removeDevice(${index})">Xoá</button>
+            <button onclick="runAutoTask(${index})">Tự động</button>
+          </div>
+        `;
+        container.appendChild(wrapper);
       });
-      return res.json();
-    }
-
-    async function getDeviceList(token) {
-      const res = await fetch('https://api.vmoscloud.com/api/v1/device/getDeviceList', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: token },
-        body: JSON.stringify({})
-      });
-      return res.json();
-    }
-
-    async function getStreamURL(token, deviceId) {
-      const res = await fetch('https://api.vmoscloud.com/api/v1/device/getDevicePullStreamAddress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: token },
-        body: JSON.stringify({ device: deviceId, type: "WEBRTC" })
-      });
-      return res.json();
-    }
-
-    function createVideoElement(id) {
-      const container = document.createElement('div');
-      container.className = "bg-white rounded p-4 shadow";
-
-      container.innerHTML = `
-        <input id="${id}-ak" class="border p-2 w-full mb-2" placeholder="Access Key ID" />
-        <input id="${id}-sk" class="border p-2 w-full mb-2" placeholder="Secret Access Key" />
-        <button onclick="connectDevice('${id}')" class="bg-blue-500 text-white px-3 py-2 rounded w-full">Connect</button>
-        <select id="${id}-deviceSelect" class="border p-2 w-full my-2"></select>
-        <video id="${id}-video" autoplay playsinline controls muted></video>
-      `;
-
-      document.getElementById('deviceContainer').appendChild(container);
     }
 
     function addDevice() {
-      const id = `device-${devices.length}`;
-      createVideoElement(id);
-      devices.push({ id, token: '', pc: null });
+      const name = document.getElementById("deviceName").value.trim();
+      const url = document.getElementById("deviceUrl").value.trim();
+      if (!name || !url) return alert("Vui lòng nhập đầy đủ thông tin");
+      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
+      list.push({ name, url });
+      localStorage.setItem(localKey, JSON.stringify(list));
+      loadDevices();
+      document.getElementById("deviceName").value = "";
+      document.getElementById("deviceUrl").value = "";
     }
 
-    async function connectDevice(id) {
-      const ak = document.getElementById(`${id}-ak`).value;
-      const sk = document.getElementById(`${id}-sk`).value;
-      const loginRes = await loginAKSK(ak, sk);
+    function removeDevice(index) {
+      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
+      if (!confirm(`Xoá thiết bị '${list[index].name}'?`)) return;
+      list.splice(index, 1);
+      localStorage.setItem(localKey, JSON.stringify(list));
+      loadDevices();
+    }
 
-      if (loginRes.code !== 0) return alert("Login failed");
+    function renameDevice(index, newName) {
+      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
+      list[index].name = newName.trim();
+      localStorage.setItem(localKey, JSON.stringify(list));
+    }
 
-      const token = loginRes.data.token;
-      const deviceList = await getDeviceList(token);
-      if (deviceList.code !== 0) return alert("Failed to get devices");
-
-      const select = document.getElementById(`${id}-deviceSelect`);
-      select.innerHTML = "";
-      deviceList.data.forEach(device => {
-        const opt = document.createElement("option");
-        opt.value = device.deviceId;
-        opt.text = device.deviceName || device.deviceId;
-        select.appendChild(opt);
+    function sendCommandToAll() {
+      const cmd = document.getElementById("commandInput").value;
+      const iframes = document.querySelectorAll("iframe");
+      iframes.forEach(iframe => {
+        try {
+          iframe.contentWindow.postMessage({ type: "customCommand", code: cmd }, "*");
+        } catch (e) {
+          console.warn("Không gửi được lệnh đến một số iframe:", e);
+        }
       });
-
-      select.onchange = async () => {
-        const deviceId = select.value;
-        const streamRes = await getStreamURL(token, deviceId);
-        if (streamRes.code !== 0) return alert("Failed to get stream URL");
-
-        const { offer, iceServers } = streamRes.data;
-        const pc = new RTCPeerConnection({ iceServers });
-        devices.find(d => d.id === id).pc = pc;
-
-        pc.ontrack = (event) => {
-          document.getElementById(`${id}-video`).srcObject = event.streams[0];
-        };
-
-        await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: offer }));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        // Send answer to server
-        await fetch('https://api.vmoscloud.com/api/v1/device/sendDeviceStreamAnswer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: token },
-          body: JSON.stringify({ device: deviceId, answer: answer.sdp })
-        });
-
-        // Handle ICE candidates
-        pc.onicecandidate = async (e) => {
-          if (e.candidate) {
-            await fetch('https://api.vmoscloud.com/api/v1/device/sendDeviceIceCandidate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', Authorization: token },
-              body: JSON.stringify({ device: deviceId, candidate: e.candidate })
-            });
-          }
-        };
-
-        // Pull remote ICE candidates
-        setInterval(async () => {
-          const res = await fetch('https://api.vmoscloud.com/api/v1/device/getDeviceIceCandidateList', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: token },
-            body: JSON.stringify({ device: deviceId })
-          });
-          const json = await res.json();
-          if (json.code === 0) {
-            json.data.forEach(c => {
-              pc.addIceCandidate(new RTCIceCandidate(c));
-            });
-          }
-        }, 3000);
-      };
-
-      // Auto-select first device
-      select.dispatchEvent(new Event('change'));
     }
+
+    function runAutoTask(index) {
+      const iframe = document.getElementById(`frame-${index}`);
+      if (!iframe) return;
+      // Có thể thay bằng mã JS tùy chỉnh bên dưới:
+      iframe.contentWindow.postMessage({
+        type: "customCommand",
+        code: `console.log('Đang chạy tự động cho thiết bị ${index + 1}')`
+      }, "*");
+    }
+
+    window.addEventListener("message", (event) => {
+      // Lắng nghe kết quả từ iframe nếu cần
+      if (event.data.type === "customResponse") {
+        console.log("Phản hồi từ iframe:", event.data);
+      }
+    });
+
+    loadDevices();
   </script>
 </body>
 </html>
