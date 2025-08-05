@@ -14,34 +14,39 @@ class MenuManager {
     }
 
     static updateSubmenusByRole(userRole) {
-        ['#openSchedule', '#openTaskProcessing', '#openSubmitRequest', '#openWorkManagement'].forEach(selector => {
-            const menuItem = document.querySelector(selector)?.closest('.menu-item');
-            if (menuItem) {
-                menuItem.querySelectorAll('.submenu-item').forEach(item => {
-                    const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-                    const shouldShow = allowedRoles.includes(userRole);
-                    
-                    // Enhanced visibility control for submenu items
-                    if (shouldShow) {
-                        item.style.display = 'block';
-                        item.style.visibility = 'visible';
-                        item.classList.add('role-visible');
-                        console.log('Submenu item made visible:', item.querySelector('.submenu-link')?.textContent?.trim());
-                    } else {
-                        item.style.display = 'none';
-                        item.style.visibility = 'hidden';
-                        item.classList.remove('role-visible');
-                    }
-                });
+        const menuSelectors = ['#openSchedule', '#openTaskProcessing', '#openSubmitRequest', '#openWorkManagement'];
+        // Cache menu items for all selectors
+        const menuItems = menuSelectors
+            .map(selector => document.querySelector(selector)?.closest('.menu-item'))
+            .filter(menuItem => menuItem);
+        menuItems.forEach(menuItem => {
+            // Cache submenu items for this menu item
+            const submenuItems = Array.from(menuItem.querySelectorAll('.submenu-item'));
+            submenuItems.forEach(item => {
+                const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+                const shouldShow = allowedRoles.includes(userRole);
                 
-                // Check if any submenu items are visible, if not hide the parent menu
-                const visibleSubItems = menuItem.querySelectorAll('.submenu-item.role-visible');
-                if (visibleSubItems.length === 0) {
-                    menuItem.style.display = 'none';
+                // Enhanced visibility control for submenu items
+                if (shouldShow) {
+                    item.style.display = 'block';
+                    item.style.visibility = 'visible';
+                    item.classList.add('role-visible');
+                    const submenuLink = item.querySelector('.submenu-link');
+                    console.log('Submenu item made visible:', submenuLink?.textContent?.trim());
                 } else {
-                    const parentAllowedRoles = menuItem.getAttribute("data-role")?.split(",") || [];
-                    menuItem.style.display = parentAllowedRoles.includes(userRole) ? "block" : "none";
+                    item.style.display = 'none';
+                    item.style.visibility = 'hidden';
+                    item.classList.remove('role-visible');
                 }
+            });
+            
+            // Check if any submenu items are visible, if not hide the parent menu
+            const visibleSubItems = submenuItems.filter(item => item.classList.contains('role-visible'));
+            if (visibleSubItems.length === 0) {
+                menuItem.style.display = 'none';
+            } else {
+                const parentAllowedRoles = menuItem.getAttribute("data-role")?.split(",") || [];
+                menuItem.style.display = parentAllowedRoles.includes(userRole) ? "block" : "none";
             }
         });
         
