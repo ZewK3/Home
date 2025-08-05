@@ -1,0 +1,23 @@
+name = "hr-management-system"
+main = "worker.js"
+compatibility_date = "2023-12-01"
+
+[env.production]
+name = "hr-management-system"
+workers_dev = false
+route = "*zewk.tocotoco.workers.dev/*"
+
+# KV Bindings for storing data
+[[kv_namespaces]]
+binding = "KV_STORE"
+id = "YOUR_KV_NAMESPACE_ID"
+preview_id = "YOUR_PREVIEW_KV_NAMESPACE_ID"
+
+# D1 Database binding for HR data
+[[d1_databases]]
+binding = "db"
+database_name = "hr-database"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[vars]
+ENVIRONMENT = "production"
