@@ -8,169 +8,120 @@
     body {
       font-family: sans-serif;
       margin: 0;
-      background-color: #f7f9fc;
-    }
-    header {
-      background: #2d3748;
-      color: white;
       padding: 1rem;
+      background: #f5f5f5;
+    }
+    h1 {
       text-align: center;
     }
-    .container {
-      padding: 1rem;
-      max-width: 1000px;
-      margin: auto;
-    }
-    .add-device {
+    #deviceList {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    .add-device input {
-      flex: 1;
-      padding: 0.5rem;
-    }
-    .device-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      flex-wrap: wrap;
       gap: 1rem;
+      justify-content: center;
     }
     .device {
       background: white;
-      border: 1px solid #ccc;
-      padding: 0.5rem;
       border-radius: 8px;
-      position: relative;
+      padding: 0.5rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      width: 360px;
     }
     iframe {
       width: 100%;
-      height: 500px;
+      height: 720px;
       border: none;
-      border-radius: 6px;
     }
-    .device input {
+    input, button {
+      margin: 0.25rem 0;
+      padding: 0.5rem;
       width: 100%;
-      padding: 0.4rem;
-      margin-top: 0.5rem;
-    }
-    .actions {
-      margin-top: 0.5rem;
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    button {
-      padding: 0.4rem 0.6rem;
-      cursor: pointer;
-    }
-    .broadcast {
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-    .broadcast input {
-      flex: 1;
-      padding: 0.4rem;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>VMOS Device Manager</h1>
-  </header>
-  <div class="container">
-    <div class="add-device">
-      <input type="text" id="deviceName" placeholder="Tên thiết bị" />
-      <input type="text" id="deviceUrl" placeholder="Link iframe chia sẻ" />
-      <button onclick="addDevice()">Thêm thiết bị</button>
-    </div>
-
-    <div class="broadcast">
-      <input type="text" id="commandInput" placeholder="Lệnh JavaScript gửi đến tất cả thiết bị (VD: alert('hi'))" />
-      <button onclick="sendCommandToAll()">Gửi lệnh</button>
-    </div>
-
-    <div class="device-list" id="deviceList"></div>
+  <h1>VMOS Device Manager</h1>
+  <div>
+    <input type="text" id="deviceName" placeholder="Tên thiết bị" />
+    <input type="text" id="deviceUrl" placeholder="URL iframe VMOS" />
+    <button onclick="addDevice()">Thêm thiết bị</button>
   </div>
+  <div id="deviceList"></div>
 
   <script>
-    const localKey = "vmosDevices";
+    const API_BASE = "https://vmcloud.tocotoco.workers.dev";
+    let devices = [];
 
-    function loadDevices() {
-      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
+    async function fetchDevices() {
+      try {
+        const res = await fetch(`${API_BASE}/api/devices`);
+        devices = await res.json();
+        renderDevices();
+      } catch (err) {
+        console.error("Failed to load devices:", err);
+      }
+    }
+
+    async function saveDeviceToCloud(device) {
+      await fetch(`${API_BASE}/api/devices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(device)
+      });
+    }
+
+    async function deleteDeviceFromCloud(name) {
+      await fetch(`${API_BASE}/api/devices?name=${encodeURIComponent(name)}`, {
+        method: "DELETE"
+      });
+    }
+
+    function renderDevices() {
       const container = document.getElementById("deviceList");
       container.innerHTML = "";
-      list.forEach((device, index) => {
+      devices.forEach((device) => {
         const wrapper = document.createElement("div");
         wrapper.className = "device";
         wrapper.innerHTML = `
-          <h3 contenteditable="true" onblur="renameDevice(${index}, this.textContent)">${device.name}</h3>
-          <iframe allow="camera; microphone; fullscreen" src="${device.url}" id="frame-${index}"></iframe>
-          <div class="actions">
-            <button onclick="removeDevice(${index})">Xoá</button>
-            <button onclick="runAutoTask(${index})">Tự động</button>
-          </div>
+          <strong>${device.name}</strong>
+          <iframe src="${device.url}" allow="camera; microphone; fullscreen"></iframe>
+          <button onclick="renameDevice('${device.name}')">Đổi tên</button>
+          <button onclick="deleteDevice('${device.name}')">Xóa</button>
         `;
         container.appendChild(wrapper);
       });
     }
 
-    function addDevice() {
+    async function addDevice() {
       const name = document.getElementById("deviceName").value.trim();
       const url = document.getElementById("deviceUrl").value.trim();
-      if (!name || !url) return alert("Vui lòng nhập đầy đủ thông tin");
-      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
-      list.push({ name, url });
-      localStorage.setItem(localKey, JSON.stringify(list));
-      loadDevices();
+      if (!name || !url) return;
+      const newDevice = { name, url };
+      devices.push(newDevice);
+      renderDevices();
+      await saveDeviceToCloud(newDevice);
       document.getElementById("deviceName").value = "";
       document.getElementById("deviceUrl").value = "";
     }
 
-    function removeDevice(index) {
-      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
-      if (!confirm(`Xoá thiết bị '${list[index].name}'?`)) return;
-      list.splice(index, 1);
-      localStorage.setItem(localKey, JSON.stringify(list));
-      loadDevices();
+    async function deleteDevice(name) {
+      devices = devices.filter((d) => d.name !== name);
+      renderDevices();
+      await deleteDeviceFromCloud(name);
     }
 
-    function renameDevice(index, newName) {
-      const list = JSON.parse(localStorage.getItem(localKey) || "[]");
-      list[index].name = newName.trim();
-      localStorage.setItem(localKey, JSON.stringify(list));
+    async function renameDevice(oldName) {
+      const newName = prompt("Nhập tên mới:", oldName);
+      if (!newName || newName === oldName) return;
+      const device = devices.find((d) => d.name === oldName);
+      if (!device) return;
+      device.name = newName;
+      await deleteDeviceFromCloud(oldName);
+      await saveDeviceToCloud(device);
+      renderDevices();
     }
 
-    function sendCommandToAll() {
-      const cmd = document.getElementById("commandInput").value;
-      const iframes = document.querySelectorAll("iframe");
-      iframes.forEach(iframe => {
-        try {
-          iframe.contentWindow.postMessage({ type: "customCommand", code: cmd }, "*");
-        } catch (e) {
-          console.warn("Không gửi được lệnh đến một số iframe:", e);
-        }
-      });
-    }
-
-    function runAutoTask(index) {
-      const iframe = document.getElementById(`frame-${index}`);
-      if (!iframe) return;
-      // Có thể thay bằng mã JS tùy chỉnh bên dưới:
-      iframe.contentWindow.postMessage({
-        type: "customCommand",
-        code: `console.log('Đang chạy tự động cho thiết bị ${index + 1}')`
-      }, "*");
-    }
-
-    window.addEventListener("message", (event) => {
-      // Lắng nghe kết quả từ iframe nếu cần
-      if (event.data.type === "customResponse") {
-        console.log("Phản hồi từ iframe:", event.data);
-      }
-    });
-
-    loadDevices();
+    fetchDevices();
   </script>
 </body>
 </html>
