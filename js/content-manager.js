@@ -3,6 +3,26 @@ class ContentManager {
         this.user = user;
         this.setupMenuHandlers();
         this.initializeTextEditor(); // Initialize text editor functionality
+        
+        // Make commonly used functions globally accessible for onclick handlers
+        this.makeGloballyAccessible();
+    }
+
+    // Make commonly used functions globally accessible for onclick handlers
+    makeGloballyAccessible() {
+        // Create global functions for commonly used methods that are called via onclick
+        window.showDayDetails = (date) => this.showDayDetails(date);
+        window.showRequestDetail = (requestId) => this.showRequestDetail(requestId);
+        window.toggleEmployeeView = () => this.toggleEmployeeView();
+        window.filterEmployees = () => this.filterEmployees();
+        window.saveShiftAssignments = () => this.saveShiftAssignments();
+        
+        // Additional text editor functions
+        window.toggleEditorFullscreen = () => this.toggleEditorFullscreen();
+        window.refreshEmployees = () => this.refreshEmployees();
+        window.clearAllShifts = () => this.clearAllShifts();
+        
+        console.log('✅ ContentManager functions made globally accessible');
     }
 
     // Helper method to safely get user employeeId
@@ -7299,51 +7319,83 @@ class ContentManager {
 
         let selectedUsers = [];
 
-        // Render user list
+        // Initially hide the user list - show only on search
+        listContainer.style.display = 'none';
+
+        // Render user list as autocomplete suggestions
         const renderUserList = (filteredUsers = users) => {
             listContainer.innerHTML = '';
-            filteredUsers.forEach(user => {
+            
+            // Limit suggestions to 5 for better UX
+            const limitedUsers = filteredUsers.slice(0, 5);
+            
+            if (limitedUsers.length === 0 && searchInput.value.trim()) {
+                listContainer.innerHTML = '<div class="no-results">Không tìm thấy nhân viên phù hợp</div>';
+                listContainer.style.display = 'block';
+                return;
+            }
+            
+            limitedUsers.forEach(user => {
                 if (!selectedUsers.find(u => u.employeeId === user.employeeId)) {
                     const userCard = document.createElement('div');
-                    userCard.className = 'user-card';
+                    userCard.className = 'user-card autocomplete-suggestion';
                     userCard.innerHTML = `
+                        <div class="user-avatar">${user.fullName.charAt(0).toUpperCase()}</div>
                         <div class="user-info">
                             <div class="user-name">${user.fullName}</div>
                             <div class="user-details">${user.employeeId} • ${user.position}</div>
                         </div>
-                        <button class="add-user-btn" data-user-id="${user.employeeId}">
-                            <span class="material-icons-round">add</span>
-                        </button>
                     `;
                     
-                    userCard.querySelector('.add-user-btn').addEventListener('click', () => {
+                    userCard.addEventListener('click', () => {
                         selectedUsers.push(user);
-                        renderUserList();
+                        searchInput.value = ''; // Clear search after selection
+                        listContainer.style.display = 'none'; // Hide suggestions
                         renderSelectedUsers();
                     });
                     
                     listContainer.appendChild(userCard);
                 }
             });
+            
+            // Show/hide suggestions based on content
+            if (limitedUsers.length > 0 || (searchInput.value.trim() && filteredUsers.length === 0)) {
+                listContainer.style.display = 'block';
+                listContainer.classList.add('show-suggestions');
+            } else {
+                listContainer.style.display = 'none';
+                listContainer.classList.remove('show-suggestions');
+            }
         };
 
-        // Render selected users
+        // Render selected users as chips/tags
         const renderSelectedUsers = () => {
             selectedContainer.innerHTML = '';
             selectedUsers.forEach(user => {
                 const selectedCard = document.createElement('div');
-                selectedCard.className = 'selected-user-card';
+                selectedCard.className = 'selected-user-card user-chip';
                 selectedCard.innerHTML = `
+                    <div class="user-avatar small">${user.fullName.charAt(0).toUpperCase()}</div>
                     <span class="user-name">${user.fullName}</span>
                     <button class="remove-user-btn" data-user-id="${user.employeeId}">
                         <span class="material-icons-round">close</span>
                     </button>
                 `;
                 
-                selectedCard.querySelector('.remove-user-btn').addEventListener('click', () => {
+                selectedCard.querySelector('.remove-user-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
                     selectedUsers = selectedUsers.filter(u => u.employeeId !== user.employeeId);
-                    renderUserList();
                     renderSelectedUsers();
+                    // Re-render search results if search is active
+                    if (searchInput.value.trim()) {
+                        const searchTerm = searchInput.value.toLowerCase();
+                        const filtered = users.filter(user => 
+                            user.fullName.toLowerCase().includes(searchTerm) ||
+                            user.employeeId.toLowerCase().includes(searchTerm) ||
+                            user.position.toLowerCase().includes(searchTerm)
+                        );
+                        renderUserList(filtered);
+                    }
                 });
                 
                 selectedContainer.appendChild(selectedCard);
@@ -7353,9 +7405,22 @@ class ContentManager {
             selectedContainer.dataset.selectedUsers = JSON.stringify(selectedUsers.map(u => u.employeeId));
         };
 
-        // Search functionality
+        // Enhanced search functionality with autocomplete behavior
         searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
+            const searchTerm = e.target.value.toLowerCase().trim();
+            
+            if (searchTerm.length === 0) {
+                // Hide suggestions when search is empty
+                listContainer.style.display = 'none';
+                listContainer.classList.remove('show-suggestions');
+                return;
+            }
+            
+            if (searchTerm.length < 2) {
+                // Show minimal suggestions for very short searches
+                return;
+            }
+            
             const filtered = users.filter(user => 
                 user.fullName.toLowerCase().includes(searchTerm) ||
                 user.employeeId.toLowerCase().includes(searchTerm) ||
@@ -7364,8 +7429,29 @@ class ContentManager {
             renderUserList(filtered);
         });
 
-        // Initial render
-        renderUserList();
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest(`#${searchId}`) && !e.target.closest(`#${listId}`)) {
+                listContainer.style.display = 'none';
+                listContainer.classList.remove('show-suggestions');
+            }
+        });
+
+        // Show suggestions when focusing on search input (if has value)
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.trim().length >= 2) {
+                const searchTerm = searchInput.value.toLowerCase();
+                const filtered = users.filter(user => 
+                    user.fullName.toLowerCase().includes(searchTerm) ||
+                    user.employeeId.toLowerCase().includes(searchTerm) ||
+                    user.position.toLowerCase().includes(searchTerm)
+                );
+                renderUserList(filtered);
+            }
+        });
+
+        // Initial render (only selected users, no suggestions)
+        renderSelectedUsers();
     }
 
     async handleTaskAssignmentSubmission(e) {

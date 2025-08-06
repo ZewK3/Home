@@ -134,29 +134,29 @@
 /* Enhanced Dark Theme */
 /* Enhanced Professional Dark Mode Theme */
 [data-theme="dark"] {
-    /* Dark mode background gradients - more balanced, not too dark */
-    --bg-main: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-    --bg-card: rgba(45, 55, 72, 0.95);
-    --bg-sidebar: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
-    --bg-header: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-    --bg-glass: rgba(45, 55, 72, 0.9);
+    /* Dark mode background gradients - improved contrast and differentiation */
+    --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --bg-card: rgba(30, 41, 59, 0.98);
+    --bg-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    --bg-header: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    --bg-glass: rgba(30, 41, 59, 0.95);
     
     /* Enhanced text colors for better contrast and readability */
-    --text-primary: #f7fafc;
+    --text-primary: #f8fafc;
     --text-secondary: #e2e8f0;
-    --text-muted: #a0aec0;
-    --text-accent: #63b3ed;
+    --text-muted: #94a3b8;
+    --text-accent: #60a5fa;
     --text-light: #ffffff;
     
-    /* Professional border and surface colors */
-    --border-color: #4a5568;
-    --border-hover: #718096;
+    /* Professional border and surface colors with better contrast */
+    --border-color: #475569;
+    --border-hover: #64748b;
     
     /* Enhanced shadows for depth */
-    --shadow-glow: 0 0 20px rgba(99, 179, 237, 0.15);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px rgba(96, 165, 250, 0.2);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
 /* Enhanced dark mode text visibility and consistency */
@@ -182,67 +182,69 @@
 
 /* Dark mode specific component styles */
 [data-theme="dark"] .modal {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(2, 6, 23, 0.98);
     backdrop-filter: blur(20px);
 }
 
 [data-theme="dark"] .modal-content {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background: #1e293b;
+    border: 2px solid var(--border-color);
     box-shadow: var(--shadow-lg);
+    color: var(--text-primary);
 }
 
 [data-theme="dark"] .close-btn {
-    color: var(--text-secondary);
-    background: rgba(51, 65, 85, 0.3);
+    color: var(--text-light);
+    background: rgba(71, 85, 105, 0.8);
     border: 1px solid var(--border-color);
 }
 
 [data-theme="dark"] .close-btn:hover {
     color: var(--text-light);
-    background: var(--border-color);
-    border-color: var(--border-hover);
+    background: var(--border-hover);
+    border-color: var(--text-accent);
 }
 
 [data-theme="dark"] .btn {
-    background: rgba(51, 65, 85, 0.4);
+    background: rgba(71, 85, 105, 0.8);
     border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    color: var(--text-light);
 }
 
 [data-theme="dark"] .btn:hover {
-    background: rgba(71, 85, 105, 0.6);
-    border-color: var(--border-hover);
+    background: rgba(100, 116, 139, 0.9);
+    border-color: var(--text-accent);
     color: var(--text-light);
     box-shadow: var(--shadow-glow);
 }
 
 [data-theme="dark"] .form-control {
-    background: rgba(51, 65, 85, 0.5);
-    border-color: var(--border-color);
-    color: var(--text-primary);
+    background: #334155;
+    border: 2px solid var(--border-color);
+    color: var(--text-light);
 }
 
 [data-theme="dark"] .form-control:focus {
     border-color: var(--text-accent);
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-    background: rgba(51, 65, 85, 0.7);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    background: #334155;
+    color: var(--text-light);
 }
 
 [data-theme="dark"] .table {
-    background: var(--bg-card);
-    color: var(--text-primary);
+    background: #1e293b;
+    color: var(--text-light);
 }
 
 [data-theme="dark"] .table th {
-    background: rgba(51, 65, 85, 0.5);
-    color: var(--text-secondary);
+    background: #334155;
+    color: var(--text-light);
     border-color: var(--border-color);
 }
 
 [data-theme="dark"] .table td {
     border-color: var(--border-color);
-    color: var(--text-primary);
+    color: var(--text-secondary);
 }
 
 [data-theme="dark"] .status.present {
@@ -10906,6 +10908,95 @@ button:focus, .btn:focus, .menu-link:focus {
     box-shadow: 0 2px 8px rgba(88, 166, 255, 0.2);
 }
 
+/* Dark mode styles for user-selection-section */
+[data-theme="dark"] .user-selection-section {
+    background: #1e293b;
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .user-selection-panel {
+    background: #334155;
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .user-selection-panel:focus-within {
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+[data-theme="dark"] .user-search input {
+    background: #475569;
+    border-color: var(--border-color);
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .user-search input:focus {
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    background: #475569;
+}
+
+[data-theme="dark"] .user-search input::placeholder {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .user-list {
+    background: #334155;
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .user-card {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .user-card:hover {
+    background: var(--text-accent);
+    color: white;
+}
+
+[data-theme="dark"] .user-card.selected {
+    background: rgba(96, 165, 250, 0.2);
+    border-color: var(--text-accent);
+    color: var(--text-light);
+}
+
+[data-theme="dark"] .user-name {
+    color: inherit;
+}
+
+[data-theme="dark"] .user-role {
+    color: var(--text-muted);
+}
+
+/* Dark mode styles for autocomplete and user chips */
+[data-theme="dark"] .no-results {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .selected-users {
+    border-color: var(--border-color);
+    background: rgba(96, 165, 250, 0.1);
+}
+
+[data-theme="dark"] .selected-users:empty::after {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .user-chip {
+    background: var(--text-accent);
+    color: white;
+}
+
+[data-theme="dark"] .user-chip:hover {
+    background: #3b82f6;
+}
+
+[data-theme="dark"] .autocomplete-suggestion:hover {
+    background: var(--text-accent);
+    color: white;
+}
+
 .mobile-submenu {
     list-style: none;
     margin: 0;
@@ -11852,8 +11943,11 @@ button:focus, .btn:focus, .menu-link:focus {
 
 .user-selection-section {
     margin-top: 30px;
-    padding-top: 20px;
+    padding: 25px;
     border-top: 2px solid var(--border-color);
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
 }
 
 .user-selection-section h3 {
@@ -11862,6 +11956,7 @@ button:focus, .btn:focus, .menu-link:focus {
     gap: 10px;
     margin-bottom: 25px;
     color: var(--text-primary);
+    font-weight: 600;
 }
 
 .user-selector {
@@ -11876,10 +11971,17 @@ button:focus, .btn:focus, .menu-link:focus {
 }
 
 .user-selection-panel {
-    background: var(--bg-secondary);
+    position: relative;
+    background: var(--bg-card);
     border-radius: var(--border-radius);
     padding: 20px;
-    border: 1px solid var(--border-color);
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.user-selection-panel:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .user-search {
@@ -11889,6 +11991,15 @@ button:focus, .btn:focus, .menu-link:focus {
 
 .user-search input {
     padding-right: 40px;
+    font-size: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    transition: all 0.3s ease;
+}
+
+.user-search input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .user-search .material-icons-round {
@@ -11897,51 +12008,173 @@ button:focus, .btn:focus, .menu-link:focus {
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
+    font-size: 20px;
 }
 
+/* Hide user list by default, show autocomplete suggestions instead */
 .user-list {
-    max-height: 200px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    box-shadow: var(--shadow-md);
+}
+
+/* Show user list when search input is focused and has value */
+.user-search input:focus + .material-icons-round + .user-list,
+.user-search input:not(:placeholder-shown) + .material-icons-round + .user-list,
+.user-list.show-suggestions {
+    max-height: 250px;
+    opacity: 1;
     overflow-y: auto;
-    margin-bottom: 15px;
+}
+
+/* Autocomplete suggestions styling */
+.autocomplete-suggestion {
+    transition: all 0.2s ease;
+}
+
+.autocomplete-suggestion:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateX(4px);
+}
+
+/* No results message */
+.no-results {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* User chips for selected users */
+.selected-users {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    min-height: 40px;
+    padding: 8px;
+    border: 2px dashed var(--border-color);
     border-radius: var(--border-radius-sm);
+    background: rgba(var(--primary-rgb, 59, 130, 246), 0.05);
+    transition: all 0.3s ease;
+}
+
+.selected-users:empty::after {
+    content: "Chưa chọn nhân viên nào...";
+    color: var(--text-muted);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+}
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--primary);
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.user-chip:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.user-chip .user-avatar.small {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+}
+
+.user-chip .remove-user-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 4px;
+}
+
+.user-chip .remove-user-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.user-chip .remove-user-btn .material-icons-round {
+    font-size: 16px;
 }
 
 .user-card {
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
     cursor: pointer;
+    width: 100%;
+}
+
+.user-card:last-child {
+    border-bottom: none;
 }
 
 .user-card:hover {
-    background: var(--bg-hover);
-    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
 }
 
 .user-card.selected {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(59, 130, 246, 0.15);
     border-color: var(--primary);
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
 }
 
 .user-info {
     flex: 1;
+    text-align: left;
 }
 
 .user-name {
