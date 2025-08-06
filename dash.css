@@ -136,10 +136,10 @@
 [data-theme="dark"] {
     /* Dark mode background gradients - more professional and consistent */
     --bg-main: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    --bg-card: rgba(30, 41, 59, 0.95);
+    --bg-card: rgba(30, 41, 59, 0.98);
     --bg-sidebar: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
     --bg-header: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    --bg-glass: rgba(30, 41, 59, 0.9);
+    --bg-glass: rgba(30, 41, 59, 0.95);
     
     /* Enhanced text colors for better contrast and readability */
     --text-primary: #ffffff;
@@ -149,8 +149,8 @@
     --text-light: #ffffff;
     
     /* Professional border and surface colors */
-    --border-color: #334155;
-    --border-hover: #475569;
+    --border-color: #475569;
+    --border-hover: #64748b;
     
     /* Enhanced shadows for depth */
     --shadow-glow: 0 0 20px rgba(96, 165, 250, 0.15);
@@ -205,20 +205,20 @@
 }
 
 [data-theme="dark"] .btn {
-    background: rgba(51, 65, 85, 0.4);
+    background: rgba(71, 85, 105, 0.6);
     border: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
 [data-theme="dark"] .btn:hover {
-    background: rgba(71, 85, 105, 0.6);
+    background: rgba(100, 116, 139, 0.8);
     border-color: var(--border-hover);
     color: var(--text-light);
     box-shadow: var(--shadow-glow);
 }
 
 [data-theme="dark"] .form-control {
-    background: rgba(51, 65, 85, 0.5);
+    background: rgba(15, 23, 42, 0.9);
     border-color: var(--border-color);
     color: var(--text-primary);
 }
@@ -226,7 +226,7 @@
 [data-theme="dark"] .form-control:focus {
     border-color: var(--text-accent);
     box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-    background: rgba(51, 65, 85, 0.7);
+    background: rgba(15, 23, 42, 0.95);
 }
 
 [data-theme="dark"] .table {
@@ -259,14 +259,14 @@
 
 /* Enhanced dark mode card components */
 [data-theme="dark"] .stat-card {
-    background: rgba(30, 41, 59, 0.95);
+    background: rgba(30, 41, 59, 0.98);
     border: 1px solid var(--border-color);
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 20px rgba(96, 165, 250, 0.08);
 }
 
 [data-theme="dark"] .stat-card:hover {
-    background: rgba(51, 65, 85, 0.95);
+    background: rgba(71, 85, 105, 0.98);
     border-color: var(--text-accent);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 30px rgba(96, 165, 250, 0.15);
     transform: translateY(-2px);
@@ -276,7 +276,7 @@
 [data-theme="dark"] .finance-card,
 [data-theme="dark"] .personal-card,
 [data-theme="dark"] .store-card {
-    background: rgba(30, 41, 59, 0.95);
+    background: rgba(30, 41, 59, 0.98);
     border: 1px solid var(--border-color);
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -286,7 +286,7 @@
 [data-theme="dark"] .finance-card:hover,
 [data-theme="dark"] .personal-card:hover,
 [data-theme="dark"] .store-card:hover {
-    background: rgba(51, 65, 85, 0.95);
+    background: rgba(71, 85, 105, 0.98);
     border-color: var(--border-hover);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
     transform: translateY(-1px);

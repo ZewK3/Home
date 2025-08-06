@@ -113,7 +113,8 @@ class AuthManager {
 
     async checkAuthentication() {
         if (!this.token || !this.userData) {
-            // window.location.href = "index.html"; // Commented for testing
+            // window.location.href = "index.html"; // Commented for testing per user request
+            console.log("Authentication check disabled for testing");
             return null;
         }
 
