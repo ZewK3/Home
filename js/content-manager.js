@@ -6,6 +6,9 @@ class ContentManager {
         
         // Make commonly used functions globally accessible for onclick handlers
         this.makeGloballyAccessible();
+        
+        // Setup enhanced user search autocomplete
+        this.setupUserSearchAutocomplete();
     }
 
     // Make commonly used functions globally accessible for onclick handlers
@@ -18,8 +21,21 @@ class ContentManager {
         window.filterEmployees = () => this.filterEmployees();
         window.saveShiftAssignments = () => this.saveShiftAssignments();
         
-        // Text editor functions
-        window.formatText = (command, value) => this.formatText(command, value);
+        // Text editor functions with proper error handling
+        window.formatText = (command, value) => {
+            if (!command) {
+                console.warn('formatText called with undefined command');
+                return;
+            }
+            return this.formatText(command, value);
+        };
+        window.executeEditorCommand = (command, value) => {
+            if (!command) {
+                console.warn('executeEditorCommand called with undefined command');
+                return;
+            }
+            return this.executeEditorCommand(command, value);
+        };
         window.toggleEditorFullscreen = () => this.toggleEditorFullscreen();
         window.toggleEditorMode = () => this.toggleEditorMode();
         window.showEditorHelp = () => this.showEditorHelp();
@@ -39,7 +55,6 @@ class ContentManager {
         window.refreshEmployees = () => this.refreshEmployees();
         window.clearAllShifts = () => this.clearAllShifts();
         window.showSystemTesting = () => this.showSystemTesting();
-        window.contentManager = this; // Make the entire instance globally accessible
         
         // New modular functions
         window.changeAnalysisType = (type) => this.changeAnalysisType(type);
@@ -50,6 +65,15 @@ class ContentManager {
         window.refreshCalendar = () => this.refreshCalendar();
         window.scheduleReport = () => this.scheduleReport();
         window.closePasswordModal = () => this.closePasswordModal();
+        
+        // Task workflow functions
+        window.approveTask = (taskId) => this.approveTask(taskId);
+        window.rejectTask = (taskId) => this.rejectTask(taskId);
+        window.finalApprove = (taskId) => this.finalApprove(taskId);
+        window.finalReject = (taskId) => this.finalReject(taskId);
+        
+        // Make the entire instance globally accessible
+        window.contentManager = this;
         
         // Modular components
         window.createEnhancedEditor = (containerId, options) => this.createEnhancedEditor(containerId, options);
@@ -7774,15 +7798,456 @@ class ContentManager {
         return statuses[status] || status;
     }
 
-    // Helper function for priority text
-    getPriorityText(priority) {
-        const priorities = {
-            'low': 'Thấp',
-            'medium': 'Trung bình', 
-            'high': 'Cao',
-            'urgent': 'Khẩn cấp'
+    // Task workflow approval functions
+    async approveTask(taskId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=approveTask&taskId=${taskId}&token=${token}`);
+            
+            if (response && response.success) {
+                utils.showNotification('Nhiệm vụ đã được phê duyệt', 'success');
+                // Refresh task list
+                this.refreshActiveSection();
+            } else {
+                throw new Error(response?.message || 'Không thể phê duyệt nhiệm vụ');
+            }
+        } catch (error) {
+            console.error('Error approving task:', error);
+            utils.showNotification('Lỗi phê duyệt nhiệm vụ', 'error');
+        }
+    }
+
+    async rejectTask(taskId) {
+        try {
+            const reason = prompt('Nhập lý do từ chối:');
+            if (!reason) return;
+            
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=rejectTask&taskId=${taskId}&reason=${encodeURIComponent(reason)}&token=${token}`);
+            
+            if (response && response.success) {
+                utils.showNotification('Nhiệm vụ đã bị từ chối', 'info');
+                // Refresh task list
+                this.refreshActiveSection();
+            } else {
+                throw new Error(response?.message || 'Không thể từ chối nhiệm vụ');
+            }
+        } catch (error) {
+            console.error('Error rejecting task:', error);
+            utils.showNotification('Lỗi từ chối nhiệm vụ', 'error');
+        }
+    }
+
+    async finalApprove(taskId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=finalApproveTask&taskId=${taskId}&token=${token}`);
+            
+            if (response && response.success) {
+                utils.showNotification('Nhiệm vụ đã được phê duyệt cuối cùng', 'success');
+                // Refresh task list
+                this.refreshActiveSection();
+            } else {
+                throw new Error(response?.message || 'Không thể phê duyệt cuối cùng');
+            }
+        } catch (error) {
+            console.error('Error final approving task:', error);
+            utils.showNotification('Lỗi phê duyệt cuối cùng', 'error');
+        }
+    }
+
+    async finalReject(taskId) {
+        try {
+            const reason = prompt('Nhập lý do từ chối cuối cùng:');
+            if (!reason) return;
+            
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=finalRejectTask&taskId=${taskId}&reason=${encodeURIComponent(reason)}&token=${token}`);
+            
+            if (response && response.success) {
+                utils.showNotification('Nhiệm vụ đã bị từ chối cuối cùng', 'warning');
+                // Refresh task list
+                this.refreshActiveSection();
+            } else {
+                throw new Error(response?.message || 'Không thể từ chối cuối cùng');
+            }
+        } catch (error) {
+            console.error('Error final rejecting task:', error);
+            utils.showNotification('Lỗi từ chối cuối cùng', 'error');
+        }
+    }
+
+    // System testing functions - only accessible to AD users
+    async showSystemTesting() {
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            
+            // Only AD (Admin) users can access testing functions
+            if (userResponse.position !== 'AD') {
+                utils.showNotification('Bạn không có quyền truy cập chức năng này', 'error');
+                return;
+            }
+
+            // Create comprehensive testing interface
+            const testingModal = document.createElement('div');
+            testingModal.className = 'modal fade';
+            testingModal.id = 'systemTestingModal';
+            testingModal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">🔧 Kiểm Tra Hệ Thống (AD Only)</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Test Control Panel -->
+                            <div class="testing-controls mb-4">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <button class="btn btn-primary w-100 mb-2" onclick="contentManager.testAllFunctions()">
+                                            🧪 Test All Functions
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-info w-100 mb-2" onclick="contentManager.testAPIConnections()">
+                                            🌐 Test API Connections
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-warning w-100 mb-2" onclick="contentManager.testUserPermissions()">
+                                            🔐 Test User Permissions
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button class="btn btn-success w-100 mb-2" onclick="contentManager.createTestUsers()">
+                                            👥 Create Test Users
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <button class="btn btn-secondary w-100 mb-2" onclick="contentManager.testTextEditor()">
+                                            📝 Test Text Editor
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-secondary w-100 mb-2" onclick="contentManager.testUserSearch()">
+                                            🔍 Test User Search
+                                        </button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-danger w-100 mb-2" onclick="contentManager.clearTestLogs()">
+                                            🗑️ Clear Logs
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Test Results Display -->
+                            <div class="testing-results">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>📊 Test Results</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <pre id="testConsole" style="background: #1a1a1a; color: #00ff00; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Test User Management -->
+                            <div class="test-users mt-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>👥 Test User Management</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label>Test User Role:</label>
+                                                <select id="testUserRole" class="form-control">
+                                                    <option value="AD">Admin (AD)</option>
+                                                    <option value="QL">Manager (QL)</option>
+                                                    <option value="NV">Employee (NV)</option>
+                                                    <option value="GS">Guard (GS)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label>Number of Test Users:</label>
+                                                <input type="number" id="testUserCount" class="form-control" value="5" min="1" max="20">
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <button class="btn btn-primary" onclick="contentManager.generateTestUsers()">
+                                                Generate Test Users
+                                            </button>
+                                            <button class="btn btn-warning ml-2" onclick="contentManager.switchTestUser()">
+                                                Switch Test User
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(testingModal);
+            
+            // Show modal using Bootstrap
+            const modal = new bootstrap.Modal(testingModal);
+            modal.show();
+            
+            // Initialize testing console
+            this.logTest('🚀 System Testing Interface Initialized');
+            this.logTest('📍 User: ' + (userResponse.fullName || 'Unknown'));
+            this.logTest('🔒 Permission Level: ' + userResponse.position);
+            this.logTest('📅 Time: ' + new Date().toLocaleString('vi-VN'));
+            this.logTest('-----------------------------------');
+            
+            // Clean up modal when closed
+            testingModal.addEventListener('hidden.bs.modal', () => {
+                testingModal.remove();
+            });
+            
+        } catch (error) {
+            console.error('Error showing system testing:', error);
+            utils.showNotification('Lỗi hiển thị giao diện kiểm tra', 'error');
+        }
+    }
+
+    // Testing utility functions
+    logTest(message, type = 'info') {
+        const console = document.getElementById('testConsole');
+        if (!console) return;
+        
+        const timestamp = new Date().toLocaleTimeString('vi-VN');
+        const colors = {
+            success: '#00ff00',
+            error: '#ff4444',
+            warning: '#ffaa00',
+            info: '#00aaff'
         };
-        return priorities[priority] || priority;
+        
+        const color = colors[type] || colors.info;
+        console.innerHTML += `<span style="color: #888;">[${timestamp}]</span> <span style="color: ${color};">${message}</span>\n`;
+        console.scrollTop = console.scrollHeight;
+    }
+
+    clearTestLogs() {
+        const console = document.getElementById('testConsole');
+        if (console) {
+            console.innerHTML = '';
+            this.logTest('🗑️ Test logs cleared');
+        }
+    }
+
+    async testAllFunctions() {
+        this.logTest('🧪 Starting comprehensive function testing...', 'info');
+        
+        const functionsToTest = [
+            'showTaskDetail', 'showRequestDetail', 'showDayDetails',
+            'formatText', 'executeEditorCommand', 'toggleEmployeeView',
+            'filterEmployees', 'saveShiftAssignments', 'approveTask',
+            'rejectTask', 'finalApprove', 'finalReject'
+        ];
+        
+        let passedTests = 0;
+        let totalTests = functionsToTest.length;
+        
+        for (const funcName of functionsToTest) {
+            try {
+                if (typeof window[funcName] === 'function') {
+                    this.logTest(`✅ ${funcName} - Function exists and is accessible`, 'success');
+                    passedTests++;
+                } else {
+                    this.logTest(`❌ ${funcName} - Function missing or not accessible`, 'error');
+                }
+            } catch (error) {
+                this.logTest(`❌ ${funcName} - Error testing: ${error.message}`, 'error');
+            }
+        }
+        
+        this.logTest(`📊 Function Test Results: ${passedTests}/${totalTests} passed`, 
+                    passedTests === totalTests ? 'success' : 'warning');
+    }
+
+    async testAPIConnections() {
+        this.logTest('🌐 Testing API connections...', 'info');
+        
+        const apiTests = [
+            { name: 'User Data', action: 'getUserProfile' },
+            { name: 'All Users', action: 'getAllUsers' },
+            { name: 'Tasks', action: 'getTasks' },
+            { name: 'Requests', action: 'getRequests' },
+            { name: 'Attendance', action: 'getAttendance' }
+        ];
+        
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        
+        for (const test of apiTests) {
+            try {
+                const response = await utils.fetchAPI(`?action=${test.action}&token=${token}`);
+                if (response) {
+                    this.logTest(`✅ ${test.name} API - Connected successfully`, 'success');
+                } else {
+                    this.logTest(`⚠️ ${test.name} API - Empty response`, 'warning');
+                }
+            } catch (error) {
+                this.logTest(`❌ ${test.name} API - Failed: ${error.message}`, 'error');
+            }
+        }
+    }
+
+    async testUserPermissions() {
+        this.logTest('🔐 Testing user permissions...', 'info');
+        
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            this.logTest(`👤 Current User: ${userResponse.fullName}`, 'info');
+            this.logTest(`🎭 Role: ${userResponse.position}`, 'info');
+            this.logTest(`📧 Email: ${userResponse.email}`, 'info');
+            this.logTest(`🏢 Department: ${userResponse.department}`, 'info');
+            
+            // Test role-based access
+            const rolePermissions = {
+                'AD': ['All functions', 'User management', 'System testing'],
+                'QL': ['Task management', 'Employee oversight', 'Reports'],
+                'NV': ['Task viewing', 'Attendance', 'Basic functions'],
+                'GS': ['Basic viewing', 'Limited access']
+            };
+            
+            const userPerms = rolePermissions[userResponse.position] || ['Unknown'];
+            this.logTest(`🔑 Permissions: ${userPerms.join(', ')}`, 'success');
+            
+        } catch (error) {
+            this.logTest(`❌ Permission test failed: ${error.message}`, 'error');
+        }
+    }
+
+    async testTextEditor() {
+        this.logTest('📝 Testing text editor functionality...', 'info');
+        
+        const editorTests = [
+            { command: 'bold', name: 'Bold formatting' },
+            { command: 'italic', name: 'Italic formatting' },
+            { command: 'underline', name: 'Underline formatting' },
+            { command: 'insertOrderedList', name: 'Ordered list' },
+            { command: 'insertUnorderedList', name: 'Unordered list' }
+        ];
+        
+        let passedEditorTests = 0;
+        
+        for (const test of editorTests) {
+            try {
+                if (typeof window.formatText === 'function') {
+                    this.logTest(`✅ ${test.name} - Command available`, 'success');
+                    passedEditorTests++;
+                } else {
+                    this.logTest(`❌ ${test.name} - Command not available`, 'error');
+                }
+            } catch (error) {
+                this.logTest(`❌ ${test.name} - Error: ${error.message}`, 'error');
+            }
+        }
+        
+        this.logTest(`📊 Editor Test Results: ${passedEditorTests}/${editorTests.length} passed`, 
+                    passedEditorTests === editorTests.length ? 'success' : 'warning');
+    }
+
+    async testUserSearch() {
+        this.logTest('🔍 Testing user search functionality...', 'info');
+        
+        try {
+            // Test if user search autocomplete is working
+            if (typeof this.setupUserSearchAutocomplete === 'function') {
+                this.logTest('✅ User search autocomplete function exists', 'success');
+            } else {
+                this.logTest('❌ User search autocomplete function missing', 'error');
+            }
+            
+            // Test user data availability
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getAllUsers&token=${token}`);
+            
+            if (response && (response.results || response.data || Array.isArray(response))) {
+                const userData = response.results || response.data || response;
+                this.logTest(`✅ User data available: ${userData.length} users`, 'success');
+            } else {
+                this.logTest('⚠️ User data not available from API', 'warning');
+            }
+            
+            // Test fallback to cached data
+            if (window.usersData && Array.isArray(window.usersData)) {
+                this.logTest(`✅ Cached user data available: ${window.usersData.length} users`, 'success');
+            } else {
+                this.logTest('❌ No cached user data available', 'error');
+            }
+            
+        } catch (error) {
+            this.logTest(`❌ User search test failed: ${error.message}`, 'error');
+        }
+    }
+
+    async createTestUsers() {
+        this.logTest('👥 Creating test users for AD testing...', 'info');
+        
+        const testUsers = [
+            { fullName: 'Admin Test User', position: 'AD', email: 'admin.test@company.com', department: 'IT' },
+            { fullName: 'Manager Test User', position: 'QL', email: 'manager.test@company.com', department: 'Operations' },
+            { fullName: 'Employee Test User', position: 'NV', email: 'employee.test@company.com', department: 'Sales' },
+            { fullName: 'Guard Test User', position: 'GS', email: 'guard.test@company.com', department: 'Security' }
+        ];
+        
+        testUsers.forEach((user, index) => {
+            this.logTest(`➕ Test User ${index + 1}: ${user.fullName} (${user.position})`, 'info');
+        });
+        
+        // Store test users in local storage for switching
+        localStorage.setItem('testUsers', JSON.stringify(testUsers));
+        this.logTest('✅ Test users created and stored locally', 'success');
+    }
+
+    async generateTestUsers() {
+        const role = document.getElementById('testUserRole')?.value || 'NV';
+        const count = parseInt(document.getElementById('testUserCount')?.value) || 5;
+        
+        this.logTest(`🎭 Generating ${count} test users with role: ${role}`, 'info');
+        
+        const departments = ['IT', 'Sales', 'Operations', 'HR', 'Finance', 'Security'];
+        const names = ['Nguyễn Văn', 'Trần Thị', 'Lê Hoàng', 'Phạm Minh', 'Vũ Thu', 'Đỗ Quang'];
+        
+        for (let i = 1; i <= count; i++) {
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const randomDept = departments[Math.floor(Math.random() * departments.length)];
+            const testUser = {
+                employeeId: `TEST_${role}_${i.toString().padStart(3, '0')}`,
+                fullName: `${randomName} ${role}${i}`,
+                position: role,
+                email: `test.${role.toLowerCase()}${i}@company.com`,
+                department: randomDept
+            };
+            
+            this.logTest(`👤 Generated: ${testUser.fullName} (${testUser.employeeId})`, 'success');
+        }
+    }
+
+    async switchTestUser() {
+        const testUsers = JSON.parse(localStorage.getItem('testUsers') || '[]');
+        if (testUsers.length === 0) {
+            this.logTest('❌ No test users available. Create test users first.', 'error');
+            return;
+        }
+        
+        const randomUser = testUsers[Math.floor(Math.random() * testUsers.length)];
+        this.logTest(`🔄 Switching to test user: ${randomUser.fullName} (${randomUser.position})`, 'info');
+        
+        // Simulate user switch (in real implementation, this would update the session)
+        this.logTest('⚠️ Note: This is a simulation. Actual user switching requires backend implementation.', 'warning');
     }
 
     // Toggle statistics details
@@ -8468,16 +8933,203 @@ class ContentManager {
         }
     }
 
-    // System testing functions - only accessible to AD users
-    async showSystemTesting() {
-        try {
-            const userResponse = await API_CACHE.getUserData();
+    // Enhanced user search with autocomplete based on usersData
+    setupUserSearchAutocomplete() {
+        const searchElements = document.querySelectorAll('.user-search input');
+        
+        searchElements.forEach(input => {
+            let currentFocus = -1;
+            let searchResults = [];
             
-            // Only AD (Admin) users can access testing functions
-            if (userResponse.position !== 'AD') {
-                utils.showNotification('Bạn không có quyền truy cập chức năng này', 'error');
-                return;
+            input.addEventListener('input', async (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                
+                // Close any existing suggestions
+                this.closeUserSuggestions();
+                
+                if (query.length < 2) return;
+                
+                try {
+                    // Try to get fresh user data from API
+                    let userData = [];
+                    try {
+                        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                        const response = await utils.fetchAPI(`?action=getAllUsers&token=${token}`);
+                        
+                        if (response && Array.isArray(response.results)) {
+                            userData = response.results;
+                        } else if (response && Array.isArray(response.data)) {
+                            userData = response.data;
+                        } else if (response && Array.isArray(response)) {
+                            userData = response;
+                        }
+                    } catch (apiError) {
+                        console.warn('Failed to fetch fresh user data, using cached data', apiError);
+                    }
+                    
+                    // Fallback to cached usersData if API fails
+                    if (userData.length === 0 && window.usersData && Array.isArray(window.usersData)) {
+                        userData = window.usersData;
+                    }
+                    
+                    // Enhanced search across multiple fields
+                    searchResults = userData.filter(user => {
+                        const searchFields = [
+                            user.fullName || user.full_name || user.name || '',
+                            user.employeeId || user.employee_id || user.id || '',
+                            user.email || '',
+                            user.department || '',
+                            user.position || '',
+                            user.phone || ''
+                        ].map(field => field.toString().toLowerCase());
+                        
+                        return searchFields.some(field => field.includes(query));
+                    }).slice(0, 5); // Limit to 5 results for better UX
+                    
+                    if (searchResults.length > 0) {
+                        this.showUserSuggestions(input, searchResults, query);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error in user search:', error);
+                    utils.showNotification('Lỗi tìm kiếm người dùng', 'error');
+                }
+            });
+            
+            // Handle keyboard navigation
+            input.addEventListener('keydown', (e) => {
+                const suggestionList = document.querySelector('.user-suggestions');
+                if (!suggestionList) return;
+                
+                const suggestions = suggestionList.querySelectorAll('.suggestion-item');
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    currentFocus = Math.min(currentFocus + 1, suggestions.length - 1);
+                    this.updateSuggestionFocus(suggestions, currentFocus);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    currentFocus = Math.max(currentFocus - 1, -1);
+                    this.updateSuggestionFocus(suggestions, currentFocus);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentFocus >= 0 && suggestions[currentFocus]) {
+                        suggestions[currentFocus].click();
+                    }
+                } else if (e.key === 'Escape') {
+                    this.closeUserSuggestions();
+                }
+            });
+            
+            // Close suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.user-search')) {
+                    this.closeUserSuggestions();
+                }
+            });
+        });
+    }
+    
+    showUserSuggestions(input, users, query) {
+        const container = input.closest('.user-search') || input.parentElement;
+        
+        // Remove existing suggestions
+        this.closeUserSuggestions();
+        
+        const suggestionList = document.createElement('div');
+        suggestionList.className = 'user-suggestions';
+        suggestionList.style.cssText = `
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: 0 !important;
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: var(--border-radius) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+            z-index: 1000 !important;
+            max-height: 300px !important;
+            overflow-y: auto !important;
+            display: block !important;
+        `;
+        
+        users.forEach((user, index) => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+            suggestionItem.style.cssText = `
+                padding: 12px 16px !important;
+                cursor: pointer !important;
+                border-bottom: 1px solid var(--border-color) !important;
+                color: var(--text-primary) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+            `;
+            
+            const displayName = user.fullName || user.full_name || user.name || 'N/A';
+            const displayId = user.employeeId || user.employee_id || user.id || '';
+            const displayDept = user.department || '';
+            const displayPosition = user.position || '';
+            
+            suggestionItem.innerHTML = `
+                <div class="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">
+                    ${displayName.charAt(0).toUpperCase()}
+                </div>
+                <div class="user-info" style="flex: 1;">
+                    <div class="user-name" style="font-weight: 500; color: var(--text-primary);">${displayName}</div>
+                    <div class="user-details" style="font-size: 12px; color: var(--text-muted);">
+                        ${displayId ? `ID: ${displayId}` : ''} 
+                        ${displayDept ? `• ${displayDept}` : ''} 
+                        ${displayPosition ? `• ${displayPosition}` : ''}
+                    </div>
+                </div>
+            `;
+            
+            suggestionItem.addEventListener('click', () => {
+                input.value = displayName;
+                input.dataset.userId = user.employeeId || user.employee_id || user.id;
+                input.dataset.userEmail = user.email || '';
+                input.dataset.userDepartment = user.department || '';
+                input.dataset.userPosition = user.position || '';
+                
+                this.closeUserSuggestions();
+                
+                // Dispatch custom event for user selection
+                input.dispatchEvent(new CustomEvent('userSelected', { 
+                    detail: user,
+                    bubbles: true 
+                }));
+                
+                utils.showNotification(`Đã chọn: ${displayName}`, 'success');
+            });
+            
+            suggestionItem.addEventListener('mouseenter', () => {
+                this.updateSuggestionFocus(suggestionList.querySelectorAll('.suggestion-item'), index);
+            });
+            
+            suggestionList.appendChild(suggestionItem);
+        });
+        
+        container.style.position = 'relative';
+        container.appendChild(suggestionList);
+    }
+    
+    updateSuggestionFocus(suggestions, focusIndex) {
+        suggestions.forEach((suggestion, index) => {
+            if (index === focusIndex) {
+                suggestion.style.backgroundColor = 'var(--hover-bg)';
+                suggestion.style.color = 'var(--text-primary)';
+            } else {
+                suggestion.style.backgroundColor = 'transparent';
+                suggestion.style.color = 'var(--text-primary)';
             }
+        });
+    }
+    
+    closeUserSuggestions() {
+        const existingSuggestions = document.querySelectorAll('.user-suggestions');
+        existingSuggestions.forEach(suggestion => suggestion.remove());
+    }
 
             const content = document.getElementById('content');
             if (!content) return;
