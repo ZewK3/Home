@@ -98,13 +98,13 @@ class ContentManager {
         // Make the entire instance globally accessible
         window.contentManager = this;
         
-        // Modular components
-        window.createEnhancedEditor = (containerId, options) => this.createEnhancedEditor(containerId, options);
-        window.createUserListComponent = (containerId, options) => this.createUserListComponent(containerId, options);
+        // Modular components (temporarily disabled until classes are implemented)
+        // window.createEnhancedEditor = (containerId, options) => this.createEnhancedEditor(containerId, options);
+        // window.createUserListComponent = (containerId, options) => this.createUserListComponent(containerId, options);
         
-        // Make modular classes globally available
-        window.EnhancedEditor = EnhancedEditor;
-        window.UserListComponent = UserListComponent;
+        // Make modular classes globally available (temporarily disabled until classes are implemented)
+        // window.EnhancedEditor = EnhancedEditor;
+        // window.UserListComponent = UserListComponent;
         
         // Store management functions
         window.manageStore = (storeId) => this.manageStore(storeId);
