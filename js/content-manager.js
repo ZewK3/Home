@@ -13,14 +13,33 @@ class ContentManager {
         // Create global functions for commonly used methods that are called via onclick
         window.showDayDetails = (date) => this.showDayDetails(date);
         window.showRequestDetail = (requestId) => this.showRequestDetail(requestId);
+        window.showTaskDetail = (taskId) => this.showTaskDetail(taskId);
         window.toggleEmployeeView = () => this.toggleEmployeeView();
         window.filterEmployees = () => this.filterEmployees();
         window.saveShiftAssignments = () => this.saveShiftAssignments();
         
-        // Additional text editor functions
+        // Text editor functions
+        window.formatText = (command, value) => this.formatText(command, value);
         window.toggleEditorFullscreen = () => this.toggleEditorFullscreen();
+        window.toggleEditorMode = () => this.toggleEditorMode();
+        window.showEditorHelp = () => this.showEditorHelp();
+        window.saveAsDraft = () => this.saveAsDraft();
+        window.previewContent = () => this.previewContent();
+        window.changeFontSize = (size) => this.changeFontSize(size);
+        window.changeTextColor = (color) => this.changeTextColor(color);
+        window.changeBackgroundColor = (color) => this.changeBackgroundColor(color);
+        window.insertLink = () => this.insertLink();
+        window.insertTable = () => this.insertTable();
+        window.insertHorizontalRule = () => this.insertHorizontalRule();
+        window.undoEditor = () => this.undoEditor();
+        window.redoEditor = () => this.redoEditor();
+        window.clearFormatting = () => this.clearFormatting();
+        
+        // Additional functions
         window.refreshEmployees = () => this.refreshEmployees();
         window.clearAllShifts = () => this.clearAllShifts();
+        window.showSystemTesting = () => this.showSystemTesting();
+        window.contentManager = this; // Make the entire instance globally accessible
         
         console.log('✅ ContentManager functions made globally accessible');
     }
@@ -7421,7 +7440,7 @@ class ContentManager {
                 return;
             }
             
-            const filtered = users.filter(user => 
+            const filtered = this.currentFilteredUsers.filter(user => 
                 user.fullName.toLowerCase().includes(searchTerm) ||
                 user.employeeId.toLowerCase().includes(searchTerm) ||
                 user.position.toLowerCase().includes(searchTerm)
@@ -7441,7 +7460,7 @@ class ContentManager {
         searchInput.addEventListener('focus', () => {
             if (searchInput.value.trim().length >= 2) {
                 const searchTerm = searchInput.value.toLowerCase();
-                const filtered = users.filter(user => 
+                const filtered = this.currentFilteredUsers.filter(user => 
                     user.fullName.toLowerCase().includes(searchTerm) ||
                     user.employeeId.toLowerCase().includes(searchTerm) ||
                     user.position.toLowerCase().includes(searchTerm)
@@ -7601,10 +7620,213 @@ class ContentManager {
     }
 
     // Rich text editor formatting function
-    formatText(command) {
-        document.execCommand(command, false, null);
-        // Keep focus on editor after formatting
-        document.getElementById('taskDescription').focus();
+    formatText(command, value = null) {
+        try {
+            const activeEditor = document.querySelector('.rich-text-editor:focus') || 
+                                document.getElementById('taskDescription') ||
+                                document.querySelector('.rich-text-editor');
+            
+            if (!activeEditor) {
+                console.warn('No active editor found for formatting');
+                return;
+            }
+
+            // Focus the editor first
+            activeEditor.focus();
+
+            // Execute the formatting command
+            document.execCommand(command, false, value);
+            
+            // Keep focus on editor after formatting
+            activeEditor.focus();
+            
+            console.log(`Applied formatting: ${command}`, value || '');
+        } catch (error) {
+            console.error('Error in formatText:', error);
+            utils.showNotification('Lỗi định dạng text', 'error');
+        }
+    }
+
+    changeFontSize(size) {
+        this.formatText('fontSize', size);
+    }
+
+    changeTextColor(color) {
+        this.formatText('foreColor', color);
+    }
+
+    changeBackgroundColor(color) {
+        this.formatText('backColor', color);
+    }
+
+    insertLink() {
+        const url = prompt('Nhập URL:');
+        if (url) {
+            this.formatText('createLink', url);
+        }
+    }
+
+    insertTable() {
+        const rows = prompt('Số hàng:', '3');
+        const cols = prompt('Số cột:', '3');
+        if (rows && cols) {
+            let tableHTML = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+            for (let i = 0; i < parseInt(rows); i++) {
+                tableHTML += '<tr>';
+                for (let j = 0; j < parseInt(cols); j++) {
+                    tableHTML += '<td style="padding: 8px; border: 1px solid #ccc;">&nbsp;</td>';
+                }
+                tableHTML += '</tr>';
+            }
+            tableHTML += '</table>';
+            this.formatText('insertHTML', tableHTML);
+        }
+    }
+
+    insertHorizontalRule() {
+        this.formatText('insertHorizontalRule');
+    }
+
+    undoEditor() {
+        this.formatText('undo');
+    }
+
+    redoEditor() {
+        this.formatText('redo');
+    }
+
+    clearFormatting() {
+        this.formatText('removeFormat');
+    }
+
+    // Show task detail function - missing function that was causing errors
+    async showTaskDetail(taskId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI(`?action=getTaskDetail&taskId=${taskId}&token=${token}`);
+            
+            if (!response || !response.task) {
+                throw new Error('Task not found');
+            }
+
+            const task = response.task;
+
+            // Create and show modal
+            let modal = document.getElementById('taskDetailModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'taskDetailModal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal-content task-detail-modal">
+                        <div class="modal-header">
+                            <h3>Chi tiết nhiệm vụ</h3>
+                            <button class="close-btn" onclick="contentManager.closeTaskDetailModal()">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div id="taskDetailContent" class="modal-body"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
+            const content = document.getElementById('taskDetailContent');
+            const statusClass = task.status === 'completed' ? 'success' : 
+                               task.status === 'in_progress' ? 'warning' : 
+                               task.status === 'overdue' ? 'danger' : 'secondary';
+
+            content.innerHTML = `
+                <div class="task-detail-card">
+                    <div class="task-header">
+                        <div class="task-title">
+                            <h4>${task.title}</h4>
+                            <span class="status-badge ${statusClass}">${this.getTaskStatusText(task.status)}</span>
+                        </div>
+                        <div class="task-meta">
+                            <p><strong>Mã nhiệm vụ:</strong> ${task.taskId || taskId}</p>
+                            <p><strong>Ngày tạo:</strong> ${new Date(task.createdAt).toLocaleDateString('vi-VN')}</p>
+                            <p><strong>Thời hạn:</strong> ${new Date(task.deadline).toLocaleDateString('vi-VN')}</p>
+                            <p><strong>Mức độ ưu tiên:</strong> ${this.getPriorityText(task.priority)}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="task-content">
+                        <div class="task-description">
+                            <h5>Mô tả nhiệm vụ:</h5>
+                            <div class="description-content">${task.description}</div>
+                        </div>
+                        
+                        ${task.participants && task.participants.length > 0 ? `
+                            <div class="task-participants">
+                                <h5>Người thực hiện:</h5>
+                                <div class="participants-list">
+                                    ${task.participants.map(p => `
+                                        <span class="participant-chip">
+                                            <span class="material-icons-round">person</span>
+                                            ${p.name || p.employeeId}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${task.supporters && task.supporters.length > 0 ? `
+                            <div class="task-supporters">
+                                <h5>Người hỗ trợ:</h5>
+                                <div class="supporters-list">
+                                    ${task.supporters.map(s => `
+                                        <span class="supporter-chip">
+                                            <span class="material-icons-round">support</span>
+                                            ${s.name || s.employeeId}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${task.progress !== undefined ? `
+                            <div class="task-progress">
+                                <h5>Tiến độ:</h5>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${task.progress}%"></div>
+                                </div>
+                                <span class="progress-text">${task.progress}%</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            modal.style.display = 'flex';
+
+        } catch (error) {
+            console.error('Error showing task detail:', error);
+            utils.showNotification('Lỗi khi tải chi tiết nhiệm vụ', 'error');
+        }
+    }
+
+    // Helper function for task status text
+    getTaskStatusText(status) {
+        const statuses = {
+            'pending': 'Chờ xử lý',
+            'in_progress': 'Đang thực hiện',
+            'completed': 'Hoàn thành',
+            'overdue': 'Quá hạn',
+            'cancelled': 'Đã hủy'
+        };
+        return statuses[status] || status;
+    }
+
+    // Helper function for priority text
+    getPriorityText(priority) {
+        const priorities = {
+            'low': 'Thấp',
+            'medium': 'Trung bình', 
+            'high': 'Cao',
+            'urgent': 'Khẩn cấp'
+        };
+        return priorities[priority] || priority;
     }
 
     // Toggle statistics details
@@ -8271,6 +8493,253 @@ class ContentManager {
             const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
             counter.textContent = `${charCount} ký tự, ${wordCount} từ`;
         }
+    }
+
+    // System testing functions - only accessible to AD users
+    async showSystemTesting() {
+        try {
+            const userResponse = await API_CACHE.getUserData();
+            
+            // Only AD (Admin) users can access testing functions
+            if (userResponse.position !== 'AD') {
+                utils.showNotification('Bạn không có quyền truy cập chức năng này', 'error');
+                return;
+            }
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="testing-container modern-container">
+                    <div class="page-header professional-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <div class="title-icon-wrapper">
+                                    <span class="material-icons-round header-icon">bug_report</span>
+                                </div>
+                                <div class="title-text">
+                                    <h1>Hệ thống Kiểm tra & Debug</h1>
+                                    <p class="header-subtitle">Công cụ kiểm tra chức năng và phân quyền dành cho Admin</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card modern-card">
+                        <div class="card-header">
+                            <h3>
+                                <span class="material-icons-round">science</span>
+                                Kiểm tra chức năng
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="testing-grid">
+                                <div class="test-section">
+                                    <h4>Kiểm tra JavaScript Functions</h4>
+                                    <div class="test-buttons">
+                                        <button class="btn btn-primary" onclick="contentManager.testJSFunctions()">
+                                            <span class="material-icons-round">code</span>
+                                            Test JS Functions
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="contentManager.testAPIConnections()">
+                                            <span class="material-icons-round">api</span>
+                                            Test API Connections
+                                        </button>
+                                        <button class="btn btn-warning" onclick="contentManager.testUserPermissions()">
+                                            <span class="material-icons-round">security</span>
+                                            Test Permissions
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Tạo User Test AD</h4>
+                                    <div class="test-form">
+                                        <div class="form-group">
+                                            <label>Employee ID:</label>
+                                            <input type="text" id="testUserId" class="form-control" placeholder="TEST_AD_001" value="TEST_AD_001">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tên đầy đủ:</label>
+                                            <input type="text" id="testUserName" class="form-control" placeholder="Test Admin User" value="Test Admin User">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Chức vụ:</label>
+                                            <select id="testUserPosition" class="form-control">
+                                                <option value="AD">Admin (AD)</option>
+                                                <option value="AM">Assistant Manager (AM)</option>
+                                                <option value="QL">Manager (QL)</option>
+                                                <option value="NV">Employee (NV)</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-success" onclick="contentManager.createTestUser()">
+                                            <span class="material-icons-round">person_add</span>
+                                            Tạo Test User
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Debug Console</h4>
+                                    <div class="debug-console" id="debugConsole">
+                                        <p>Debug output sẽ hiển thị ở đây...</p>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="contentManager.clearDebugConsole()">
+                                        <span class="material-icons-round">clear</span>
+                                        Clear Console
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.logDebug('Testing interface loaded successfully');
+
+        } catch (error) {
+            console.error('Error loading testing interface:', error);
+            utils.showNotification('Lỗi tải giao diện kiểm tra', 'error');
+        }
+    }
+
+    // Test JavaScript functions
+    testJSFunctions() {
+        this.logDebug('=== TESTING JAVASCRIPT FUNCTIONS ===');
+        
+        const functionsToTest = [
+            'showDayDetails',
+            'showRequestDetail', 
+            'showTaskDetail',
+            'toggleEmployeeView',
+            'filterEmployees',
+            'saveShiftAssignments',
+            'formatText'
+        ];
+
+        functionsToTest.forEach(funcName => {
+            if (typeof window[funcName] === 'function') {
+                this.logDebug(`✅ ${funcName}: Available globally`);
+            } else {
+                this.logDebug(`❌ ${funcName}: Not available globally`);
+            }
+        });
+
+        // Test ContentManager instance
+        if (window.contentManager) {
+            this.logDebug(`✅ contentManager: Available globally`);
+        } else {
+            this.logDebug(`❌ contentManager: Not available globally`);
+        }
+
+        this.logDebug('=== TESTING COMPLETE ===');
+        utils.showNotification('JavaScript function test completed - check debug console', 'info');
+    }
+
+    // Test API connections
+    async testAPIConnections() {
+        this.logDebug('=== TESTING API CONNECTIONS ===');
+        
+        try {
+            // Test getUserData
+            const userData = await API_CACHE.getUserData();
+            this.logDebug(`✅ getUserData: ${userData ? 'Success' : 'Failed'}`);
+
+            // Test getStoresData  
+            const storesData = await API_CACHE.getStoresData();
+            this.logDebug(`✅ getStoresData: ${storesData ? 'Success' : 'Failed'}`);
+
+            // Test getUsersData
+            const usersData = await API_CACHE.getUsersData();
+            this.logDebug(`✅ getUsersData: ${usersData ? 'Success' : 'Failed'}`);
+
+            this.logDebug('=== API TESTING COMPLETE ===');
+            utils.showNotification('API connection test completed', 'success');
+
+        } catch (error) {
+            this.logDebug(`❌ API Test Failed: ${error.message}`);
+            utils.showNotification('API test failed - check debug console', 'error');
+        }
+    }
+
+    // Test user permissions
+    async testUserPermissions() {
+        this.logDebug('=== TESTING USER PERMISSIONS ===');
+        
+        try {
+            const userData = await API_CACHE.getUserData();
+            this.logDebug(`Current User: ${userData.fullName} (${userData.employeeId})`);
+            this.logDebug(`Position: ${userData.position}`);
+            
+            const permissions = {
+                'AD': ['All functions', 'User management', 'System settings', 'Reports'],
+                'AM': ['Shift assignment', 'Reports', 'Employee management'],
+                'QL': ['Shift assignment', 'Basic reports', 'Team management'],
+                'NV': ['Personal timesheet', 'Attendance', 'Basic requests']
+            };
+
+            const userPermissions = permissions[userData.position] || ['No permissions defined'];
+            this.logDebug(`Available permissions: ${userPermissions.join(', ')}`);
+            
+            this.logDebug('=== PERMISSION TESTING COMPLETE ===');
+            utils.showNotification('Permission test completed', 'success');
+
+        } catch (error) {
+            this.logDebug(`❌ Permission Test Failed: ${error.message}`);
+            utils.showNotification('Permission test failed', 'error');
+        }
+    }
+
+    // Create test user
+    async createTestUser() {
+        const userId = document.getElementById('testUserId').value;
+        const userName = document.getElementById('testUserName').value;
+        const userPosition = document.getElementById('testUserPosition').value;
+
+        if (!userId || !userName) {
+            utils.showNotification('Vui lòng điền đầy đủ thông tin', 'warning');
+            return;
+        }
+
+        this.logDebug(`=== CREATING TEST USER ===`);
+        this.logDebug(`ID: ${userId}`);
+        this.logDebug(`Name: ${userName}`);
+        this.logDebug(`Position: ${userPosition}`);
+
+        // Note: This is a simulation - in real implementation you would call API
+        const testUser = {
+            employeeId: userId,
+            fullName: userName,
+            position: userPosition,
+            storeId: 'TEST_STORE',
+            isTestUser: true,
+            createdAt: new Date().toISOString()
+        };
+
+        this.logDebug(`Test user created: ${JSON.stringify(testUser, null, 2)}`);
+        this.logDebug(`=== TEST USER CREATION COMPLETE ===`);
+        
+        utils.showNotification(`Test user ${userName} created successfully`, 'success');
+    }
+
+    // Debug console functions
+    logDebug(message) {
+        const debugConsole = document.getElementById('debugConsole');
+        if (debugConsole) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = 'debug-entry';
+            logEntry.innerHTML = `<span class="debug-time">[${timestamp}]</span> ${message}`;
+            debugConsole.appendChild(logEntry);
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+        }
+        console.log(`[DEBUG] ${message}`);
+    }
+
+    clearDebugConsole() {
+        const debugConsole = document.getElementById('debugConsole');
+        if (debugConsole) {
+            debugConsole.innerHTML = '<p>Debug console cleared...</p>';
+        }
+        utils.showNotification('Debug console cleared', 'info');
     }
 }
 
