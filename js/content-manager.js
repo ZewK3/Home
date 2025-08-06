@@ -41,6 +41,15 @@ class ContentManager {
         window.showSystemTesting = () => this.showSystemTesting();
         window.contentManager = this; // Make the entire instance globally accessible
         
+        // Store management functions
+        window.manageStore = (storeId) => this.manageStore(storeId);
+        window.viewStoreShifts = (storeId) => this.viewStoreShifts(storeId);
+        window.loadMoreActivities = () => this.loadMoreActivities();
+        
+        // Modal functions
+        window.closeTaskDetailModal = () => this.closeTaskDetailModal();
+        window.closeRequestDetailModal = () => this.closeRequestDetailModal();
+        
         console.log('✅ ContentManager functions made globally accessible');
     }
 
@@ -7882,7 +7891,7 @@ class ContentManager {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h3>Chi tiết đơn từ</h3>
-                            <button class="close-btn" onclick="contentManager.closest('.modal-overlay').style.display='none'">
+                            <button class="close-btn" onclick="contentManager.closeRequestDetailModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
@@ -8351,7 +8360,13 @@ class ContentManager {
                 const btn = e.target.closest('.toolbar-btn');
                 const command = btn.dataset.command;
                 const value = btn.dataset.value;
-                this.executeEditorCommand(command, value);
+                
+                // Only execute if command is defined
+                if (command) {
+                    this.executeEditorCommand(command, value);
+                } else {
+                    console.warn('Button clicked without data-command attribute:', btn);
+                }
             }
             
             // Handle color picker changes
@@ -8407,6 +8422,12 @@ class ContentManager {
 
     executeEditorCommand(command, value = null) {
         try {
+            // Check if command is defined
+            if (!command) {
+                console.warn('executeEditorCommand called with undefined command');
+                return;
+            }
+            
             const workspace = document.querySelector('.editor-workspace:focus') || document.querySelector('.editor-workspace');
             if (!workspace) return;
 
@@ -8740,6 +8761,91 @@ class ContentManager {
             debugConsole.innerHTML = '<p>Debug console cleared...</p>';
         }
         utils.showNotification('Debug console cleared', 'info');
+    }
+
+    // Store management functions
+    manageStore(storeId) {
+        console.log(`Managing store: ${storeId}`);
+        utils.showNotification(`Đang quản lý cửa hàng ${storeId}`, 'info');
+        // Implement store management functionality here
+        this.showStoreManagement(storeId);
+    }
+
+    viewStoreShifts(storeId) {
+        console.log(`Viewing shifts for store: ${storeId}`);
+        utils.showNotification(`Xem ca làm việc cửa hàng ${storeId}`, 'info');
+        // Implement view store shifts functionality here
+        this.showStoreShiftView(storeId);
+    }
+
+    loadMoreActivities() {
+        console.log('Loading more activities...');
+        utils.showNotification('Đang tải thêm hoạt động...', 'info');
+        // Implement load more activities functionality here
+    }
+
+    // Modal closing functions
+    closeTaskDetailModal() {
+        const modal = document.getElementById('taskDetailModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    closeRequestDetailModal() {
+        const modal = document.getElementById('requestDetailModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Store management view
+    async showStoreManagement(storeId) {
+        try {
+            const content = `
+                <div class="store-management-container">
+                    <h3>Quản lý cửa hàng ${storeId}</h3>
+                    <div class="management-options">
+                        <button class="btn modern-btn primary-btn" onclick="contentManager.manageEmployees('${storeId}')">
+                            <span class="material-icons-round">people</span>
+                            Quản lý nhân viên
+                        </button>
+                        <button class="btn modern-btn primary-btn" onclick="contentManager.showShiftAssignment()">
+                            <span class="material-icons-round">schedule</span>
+                            Phân ca làm việc
+                        </button>
+                        <button class="btn modern-btn primary-btn" onclick="contentManager.showStoreAnalytics('${storeId}')">
+                            <span class="material-icons-round">analytics</span>
+                            Báo cáo thống kê
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mainContent').innerHTML = content;
+        } catch (error) {
+            console.error('Error showing store management:', error);
+            utils.showNotification('Lỗi hiển thị quản lý cửa hàng', 'error');
+        }
+    }
+
+    // Store shift view
+    async showStoreShiftView(storeId) {
+        try {
+            const content = `
+                <div class="store-shift-view">
+                    <h3>Ca làm việc - Cửa hàng ${storeId}</h3>
+                    <div class="shift-calendar">
+                        <p>Đang tải lịch ca làm việc...</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('mainContent').innerHTML = content;
+        } catch (error) {
+            console.error('Error showing store shifts:', error);
+            utils.showNotification('Lỗi hiển thị ca làm việc', 'error');
+        }
     }
 }
 
