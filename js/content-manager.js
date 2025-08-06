@@ -115,9 +115,7 @@ class ContentManager {
         
         // Additional functions for onclick handlers
         window.applyTemplate = () => this.applyTemplate();
-        window.refreshEmployees = () => this.refreshEmployees();
         window.exportSchedule = () => this.exportSchedule();
-        window.clearAllShifts = () => this.clearAllShifts();
         
         // Modal functions
         window.closeTaskDetailModal = () => this.closeTaskDetailModal();
