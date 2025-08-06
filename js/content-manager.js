@@ -97,6 +97,8 @@ class ContentManager {
         
         // Make the entire instance globally accessible
         window.contentManager = this;
+        // Also make it available without window prefix for onclick handlers
+        globalThis.contentManager = this;
         
         // Modular components (temporarily disabled until classes are implemented)
         // window.createEnhancedEditor = (containerId, options) => this.createEnhancedEditor(containerId, options);
@@ -110,6 +112,12 @@ class ContentManager {
         window.manageStore = (storeId) => this.manageStore(storeId);
         window.viewStoreShifts = (storeId) => this.viewStoreShifts(storeId);
         window.loadMoreActivities = () => this.loadMoreActivities();
+        
+        // Additional functions for onclick handlers
+        window.applyTemplate = () => this.applyTemplate();
+        window.refreshEmployees = () => this.refreshEmployees();
+        window.exportSchedule = () => this.exportSchedule();
+        window.clearAllShifts = () => this.clearAllShifts();
         
         // Modal functions
         window.closeTaskDetailModal = () => this.closeTaskDetailModal();
@@ -317,11 +325,11 @@ class ContentManager {
                                         <span class="material-icons-round">refresh</span>
                                         Tải dữ liệu
                                     </button>
-                                    <button class="btn modern-btn secondary-btn" onclick="contentManager.applyTemplate()">
+                                    <button class="btn modern-btn secondary-btn" onclick="applyTemplate()">
                                         <span class="material-icons-round">apply</span>
                                         Áp dụng mẫu
                                     </button>
-                                    <button class="btn modern-btn success-btn" onclick="contentManager.bulkAssign()">
+                                    <button class="btn modern-btn success-btn" onclick="bulkAssign()">
                                         <span class="material-icons-round">group_add</span>
                                         Phân ca hàng loạt
                                     </button>
@@ -338,13 +346,13 @@ class ContentManager {
                                 Danh sách nhân viên
                             </h3>
                             <div class="header-tools">
-                                <button class="tool-btn" onclick="contentManager.toggleEmployeeView()" title="Chuyển đổi hiển thị">
+                                <button class="tool-btn" onclick="toggleEmployeeView()" title="Chuyển đổi hiển thị">
                                     <span class="material-icons-round">view_module</span>
                                 </button>
-                                <button class="tool-btn" onclick="contentManager.filterEmployees()" title="Lọc nhân viên">
+                                <button class="tool-btn" onclick="filterEmployees()" title="Lọc nhân viên">
                                     <span class="material-icons-round">filter_list</span>
                                 </button>
-                                <button class="tool-btn" onclick="contentManager.refreshEmployees()" title="Làm mới">
+                                <button class="tool-btn" onclick="refreshEmployees()" title="Làm mới">
                                     <span class="material-icons-round">refresh</span>
                                 </button>
                             </div>
@@ -369,13 +377,13 @@ class ContentManager {
                                 Lịch phân ca trong tuần
                             </h3>
                             <div class="header-tools">
-                                <button class="tool-btn" onclick="contentManager.exportSchedule()" title="Xuất lịch">
+                                <button class="tool-btn" onclick="exportSchedule()" title="Xuất lịch">
                                     <span class="material-icons-round">download</span>
                                 </button>
-                                <button class="tool-btn" onclick="contentManager.printSchedule()" title="In lịch">
+                                <button class="tool-btn" onclick="printSchedule()" title="In lịch">
                                     <span class="material-icons-round">print</span>
                                 </button>
-                                <button class="tool-btn active" onclick="contentManager.toggleFullscreen()" title="Toàn màn hình">
+                                <button class="tool-btn active" onclick="toggleFullscreen()" title="Toàn màn hình">
                                     <span class="material-icons-round">fullscreen</span>
                                 </button>
                             </div>
@@ -407,11 +415,11 @@ class ContentManager {
                                 </div>
                             </div>
                             <div class="panel-actions">
-                                <button class="btn modern-btn warning-btn" onclick="contentManager.clearAllShifts()">
+                                <button class="btn modern-btn warning-btn" onclick="clearAllShifts()">
                                     <span class="material-icons-round">clear_all</span>
                                     Xóa tất cả
                                 </button>
-                                <button class="btn modern-btn success-btn" onclick="contentManager.saveShiftAssignments()">
+                                <button class="btn modern-btn success-btn" onclick="saveShiftAssignments()">
                                     <span class="material-icons-round">save</span>
                                     Lưu phân ca
                                 </button>
@@ -602,11 +610,11 @@ class ContentManager {
                                 </div>
                             </div>
                             <div class="header-actions">
-                                <button class="modern-btn action-btn export-btn" onclick="contentManager.exportTimesheet()">
+                                <button class="modern-btn action-btn export-btn" onclick="exportTimesheet()">
                                     <span class="material-icons-round">download</span>
                                     Xuất Excel
                                 </button>
-                                <button class="modern-btn action-btn print-btn" onclick="contentManager.printTimesheet()">
+                                <button class="modern-btn action-btn print-btn" onclick="printTimesheet()">
                                     <span class="material-icons-round">print</span>
                                     In báo cáo
                                 </button>
@@ -3753,7 +3761,7 @@ class ContentManager {
             const dueDateText = dueDate ? dueDate.toLocaleDateString('vi-VN') : 'Không giới hạn';
             
             return `
-                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="contentManager.showTaskDetail('${task.id}')">
+                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="showTaskDetail('${task.id}')">
                     <div class="task-card-header">
                         <div class="task-title-section">
                             <h4 class="task-title">${task.title}</h4>
@@ -3799,7 +3807,7 @@ class ContentManager {
                                 <div class="progress-fill" style="width: ${this.getTaskProgress(task.status)}%"></div>
                             </div>
                         </div>
-                        <button class="task-action-btn" onclick="event.stopPropagation(); contentManager.showTaskDetail('${task.id}')">
+                        <button class="task-action-btn" onclick="event.stopPropagation(); showTaskDetail('${task.id}')">
                             <span class="material-icons-round">visibility</span>
                             Chi tiết
                         </button>
@@ -6293,7 +6301,7 @@ class ContentManager {
             calendarHTML += `
                 <div class="calendar-day ${isToday ? 'today' : ''} ${dayData ? 'has-data' : ''}" 
                      data-date="${dateStr}" 
-                     onclick="contentManager.showDayDetails('${dateStr}')"
+                     onclick="showDayDetails('${dateStr}')"
                      style="cursor: pointer;">
                     <div class="day-number">${day}</div>
                     ${dayData ? `
@@ -7083,16 +7091,16 @@ class ContentManager {
                                         <div class="editor-toolbar enhanced-toolbar">
                                             <!-- Text Formatting Group -->
                                             <div class="toolbar-group">
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('bold')" title="In đậm (Ctrl+B)">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="In đậm (Ctrl+B)">
                                                     <span class="material-icons-round">format_bold</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('italic')" title="In nghiêng (Ctrl+I)">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="In nghiêng (Ctrl+I)">
                                                     <span class="material-icons-round">format_italic</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('underline')" title="Gạch chân (Ctrl+U)">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Gạch chân (Ctrl+U)">
                                                     <span class="material-icons-round">format_underlined</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('strikeThrough')" title="Gạch ngang">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('strikeThrough')" title="Gạch ngang">
                                                     <span class="material-icons-round">strikethrough_s</span>
                                                 </button>
                                             </div>
@@ -7108,10 +7116,10 @@ class ContentManager {
                                                     <option value="4">Lớn</option>
                                                     <option value="5">Rất lớn</option>
                                                 </select>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('subscript')" title="Chỉ số dưới">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('subscript')" title="Chỉ số dưới">
                                                     <span class="material-icons-round">subscript</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('superscript')" title="Chỉ số trên">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('superscript')" title="Chỉ số trên">
                                                     <span class="material-icons-round">superscript</span>
                                                 </button>
                                             </div>
@@ -7128,16 +7136,16 @@ class ContentManager {
                                             
                                             <!-- List Group -->
                                             <div class="toolbar-group">
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertUnorderedList')" title="Danh sách dấu chấm">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Danh sách dấu chấm">
                                                     <span class="material-icons-round">format_list_bulleted</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('insertOrderedList')" title="Danh sách số">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Danh sách số">
                                                     <span class="material-icons-round">format_list_numbered</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('indent')" title="Thụt lề">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('indent')" title="Thụt lề">
                                                     <span class="material-icons-round">format_indent_increase</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('outdent')" title="Giảm thụt lề">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('outdent')" title="Giảm thụt lề">
                                                     <span class="material-icons-round">format_indent_decrease</span>
                                                 </button>
                                             </div>
@@ -7146,16 +7154,16 @@ class ContentManager {
                                             
                                             <!-- Alignment Group -->
                                             <div class="toolbar-group">
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyLeft')" title="Căn trái">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="Căn trái">
                                                     <span class="material-icons-round">format_align_left</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyCenter')" title="Căn giữa">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="Căn giữa">
                                                     <span class="material-icons-round">format_align_center</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyRight')" title="Căn phải">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyRight')" title="Căn phải">
                                                     <span class="material-icons-round">format_align_right</span>
                                                 </button>
-                                                <button type="button" class="toolbar-btn" onclick="contentManager.formatText('justifyFull')" title="Căn đều">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyFull')" title="Căn đều">
                                                     <span class="material-icons-round">format_align_justify</span>
                                                 </button>
                                             </div>
