@@ -8853,6 +8853,172 @@ class ContentManager {
         this.logDebug('=== USER SEARCH AUTOCOMPLETE TEST COMPLETE ===');
         utils.showNotification('User search autocomplete test completed', 'success');
     }
+
+                    <div class="card modern-card">
+                        <div class="card-header">
+                            <h3>
+                                <span class="material-icons-round">science</span>
+                                Kiểm tra chức năng
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="testing-grid">
+                                <div class="test-section">
+                                    <h4>Kiểm tra JavaScript Functions</h4>
+                                    <div class="test-buttons">
+                                        <button class="btn btn-primary" onclick="contentManager.testJSFunctions()">
+                                            <span class="material-icons-round">code</span>
+                                            Test JS Functions
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="contentManager.testAPIConnections()">
+                                            <span class="material-icons-round">api</span>
+                                            Test API Connections
+                                        </button>
+                                        <button class="btn btn-warning" onclick="contentManager.testUserPermissions()">
+                                            <span class="material-icons-round">security</span>
+                                            Test Permissions
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Tạo User Test AD</h4>
+                                    <div class="test-form">
+                                        <div class="form-group">
+                                            <label>Employee ID:</label>
+                                            <input type="text" id="testUserId" class="form-control" placeholder="TEST_AD_001" value="TEST_AD_001">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tên đầy đủ:</label>
+                                            <input type="text" id="testUserName" class="form-control" placeholder="Test Admin User" value="Test Admin User">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Chức vụ:</label>
+                                            <select id="testUserPosition" class="form-control">
+                                                <option value="AD">Admin (AD)</option>
+                                                <option value="AM">Assistant Manager (AM)</option>
+                                                <option value="QL">Manager (QL)</option>
+                                                <option value="NV">Employee (NV)</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-success" onclick="contentManager.createTestUser()">
+                                            <span class="material-icons-round">person_add</span>
+                                            Tạo Test User
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Debug Console</h4>
+                                    <div class="debug-console" id="debugConsole">
+                                        <p>Debug output sẽ hiển thị ở đây...</p>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="contentManager.clearDebugConsole()">
+                                        <span class="material-icons-round">clear</span>
+                                        Clear Console
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.logDebug('Testing interface loaded successfully');
+
+        } catch (error) {
+            console.error('Error loading testing interface:', error);
+            utils.showNotification('Lỗi tải giao diện kiểm tra', 'error');
+        }
+    }
+
+    // Test JavaScript functions
+    testJSFunctions() {
+        this.logDebug('=== TESTING JAVASCRIPT FUNCTIONS ===');
+        
+        const functionsToTest = [
+            'showDayDetails',
+            'showRequestDetail', 
+            'showTaskDetail',
+            'toggleEmployeeView',
+            'filterEmployees',
+            'saveShiftAssignments',
+            'formatText'
+        ];
+
+        functionsToTest.forEach(funcName => {
+            if (typeof window[funcName] === 'function') {
+                this.logDebug(`✅ ${funcName}: Available globally`);
+            } else {
+                this.logDebug(`❌ ${funcName}: Not available globally`);
+            }
+        });
+
+        // Test ContentManager instance
+        if (window.contentManager) {
+            this.logDebug(`✅ contentManager: Available globally`);
+        } else {
+            this.logDebug(`❌ contentManager: Not available globally`);
+        }
+
+        this.logDebug('=== TESTING COMPLETE ===');
+        utils.showNotification('JavaScript function test completed - check debug console', 'info');
+    }
+
+    // Test API connections
+    async testAPIConnections() {
+        this.logDebug('=== TESTING API CONNECTIONS ===');
+        
+        try {
+            // Test getUserData
+            const userData = await API_CACHE.getUserData();
+            this.logDebug(`✅ getUserData: ${userData ? 'Success' : 'Failed'}`);
+
+            // Test getStoresData  
+            const storesData = await API_CACHE.getStoresData();
+            this.logDebug(`✅ getStoresData: ${storesData ? 'Success' : 'Failed'}`);
+
+            // Test getUsersData
+            const usersData = await API_CACHE.getUsersData();
+            this.logDebug(`✅ getUsersData: ${usersData ? 'Success' : 'Failed'}`);
+
+            this.logDebug('=== API TESTING COMPLETE ===');
+            utils.showNotification('API connection test completed', 'success');
+
+        } catch (error) {
+            this.logDebug(`❌ API Test Failed: ${error.message}`);
+            utils.showNotification('API test failed - check debug console', 'error');
+        }
+    }
+
+    // Test user permissions
+    async testUserPermissions() {
+        this.logDebug('=== TESTING USER PERMISSIONS ===');
+        
+        try {
+            const userData = await API_CACHE.getUserData();
+            this.logDebug(`Current User: ${userData.fullName} (${userData.employeeId})`);
+            this.logDebug(`Position: ${userData.position}`);
+            
+            const permissions = {
+                'AD': ['All functions', 'User management', 'System settings', 'Reports'],
+                'AM': ['Shift assignment', 'Reports', 'Employee management'],
+                'QL': ['Shift assignment', 'Basic reports', 'Team management'],
+                'NV': ['Personal timesheet', 'Attendance', 'Basic requests']
+            };
+
+            const userPermissions = permissions[userData.position] || ['No permissions defined'];
+            this.logDebug(`Available permissions: ${userPermissions.join(', ')}`);
+            
+            this.logDebug('=== PERMISSION TESTING COMPLETE ===');
+            utils.showNotification('Permission test completed', 'success');
+
+        } catch (error) {
+            this.logDebug(`❌ Permission Test Failed: ${error.message}`);
+            utils.showNotification('Permission test failed', 'error');
+        }
+    }
+
     // Create test user
     async createTestUser() {
         const userId = document.getElementById('testUserId').value;

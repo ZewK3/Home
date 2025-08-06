@@ -91,6 +91,10 @@ async function initializeDashboard() {
         ThemeManager.initialize();
 
         // Initialize features with proper user data
+        if (typeof ContentManager === 'undefined') {
+            console.error('ContentManager class is not defined. Check if content-manager.js is loaded properly.');
+            throw new Error('ContentManager class is not defined');
+        }
         window.contentManager = new ContentManager(userData);
 
         // Apply role-based section visibility FIRST
@@ -1191,6 +1195,7 @@ function showDashboardLoader() {
     if (dashboardLoader) {
         dashboardLoader.classList.remove('hidden');
         dashboardLoader.style.display = 'flex';
+        dashboardLoader.style.pointerEvents = 'auto'; // Allow pointer events when showing
         
         console.log('✅ Dashboard loader shown');
     }
@@ -1210,6 +1215,8 @@ async function hideDashboardLoader() {
         setTimeout(() => {
             dashboardLoader.style.display = 'none';
             dashboardLoader.classList.remove('fade-out');
+            dashboardLoader.classList.add('hidden'); // Ensure hidden class is added
+            dashboardLoader.style.pointerEvents = 'none'; // Ensure no pointer events
         }, 400);
         
         console.log('✅ Dashboard loader hidden (optimized for LCP)');
