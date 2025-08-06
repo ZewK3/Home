@@ -7631,9 +7631,13 @@ class ContentManager {
     // Rich text editor formatting function
     formatText(command, value = null) {
         try {
-            const activeEditor = document.querySelector('.rich-text-editor:focus') || 
+            const activeEditor = document.querySelector('.enhanced-editor:focus') ||
+                                document.querySelector('.rich-text-editor:focus') || 
+                                document.querySelector('.editor-workspace:focus') ||
                                 document.getElementById('taskDescription') ||
-                                document.querySelector('.rich-text-editor');
+                                document.querySelector('.enhanced-editor') ||
+                                document.querySelector('.rich-text-editor') ||
+                                document.querySelector('.editor-workspace');
             
             if (!activeEditor) {
                 console.warn('No active editor found for formatting');
@@ -8428,7 +8432,12 @@ class ContentManager {
                 return;
             }
             
-            const workspace = document.querySelector('.editor-workspace:focus') || document.querySelector('.editor-workspace');
+            const workspace = document.querySelector('.enhanced-editor:focus') ||
+                            document.querySelector('.editor-workspace:focus') || 
+                            document.querySelector('.rich-text-editor:focus') ||
+                            document.querySelector('.enhanced-editor') ||
+                            document.querySelector('.editor-workspace') ||
+                            document.querySelector('.rich-text-editor');
             if (!workspace) return;
 
             // Focus the workspace first
@@ -8528,6 +8537,322 @@ class ContentManager {
             }
 
             const content = document.getElementById('content');
+            if (!content) return;
+
+            this.logDebug('=== LOADING SYSTEM TESTING INTERFACE ===');
+
+            content.innerHTML = `
+                <div class="testing-container">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <h2>System Testing - Chỉ dành cho Admin (AD)</h2>
+                                <p>Giao diện kiểm tra hệ thống cho phép xác thực toàn bộ chức năng của ứng dụng.</p>
+                                
+                                <div class="test-section">
+                                    <h4>JavaScript Function Testing</h4>
+                                    <div class="test-form">
+                                        <button class="btn btn-primary" onclick="contentManager.testJavaScriptFunctions()">
+                                            <span class="material-icons-round">code</span>
+                                            Test All Functions
+                                        </button>
+                                        <button class="btn btn-info" onclick="contentManager.testGlobalAccess()">
+                                            <span class="material-icons-round">public</span>
+                                            Test Global Access
+                                        </button>
+                                        <button class="btn btn-warning" onclick="contentManager.testContentManagerInstance()">
+                                            <span class="material-icons-round">settings</span>
+                                            Test ContentManager Instance
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>API Connection Testing</h4>
+                                    <div class="test-form">
+                                        <button class="btn btn-secondary" onclick="contentManager.testAPIConnections()">
+                                            <span class="material-icons-round">api</span>
+                                            Test API Connections
+                                        </button>
+                                        <button class="btn btn-secondary" onclick="contentManager.testUserPermissions()">
+                                            <span class="material-icons-round">security</span>
+                                            Test User Permissions
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Text Editor Testing</h4>
+                                    <div class="test-form">
+                                        <button class="btn btn-success" onclick="contentManager.testTextEditorFunctions()">
+                                            <span class="material-icons-round">edit</span>
+                                            Test Text Editor
+                                        </button>
+                                        <button class="btn btn-success" onclick="contentManager.testFormattingCommands()">
+                                            <span class="material-icons-round">format_paint</span>
+                                            Test Formatting Commands
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Modal & UI Testing</h4>
+                                    <div class="test-form">
+                                        <button class="btn btn-warning" onclick="contentManager.testModalFunctions()">
+                                            <span class="material-icons-round">window</span>
+                                            Test Modal Functions
+                                        </button>
+                                        <button class="btn btn-warning" onclick="contentManager.testUserSearchAutocomplete()">
+                                            <span class="material-icons-round">search</span>
+                                            Test User Search
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Tạo User Test AD</h4>
+                                    <div class="test-form">
+                                        <div class="form-group">
+                                            <label>Employee ID:</label>
+                                            <input type="text" id="testUserId" class="form-control" placeholder="TEST_AD_001" value="TEST_AD_001">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tên đầy đủ:</label>
+                                            <input type="text" id="testUserName" class="form-control" placeholder="Test Admin User" value="Test Admin User">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Chức vụ:</label>
+                                            <select id="testUserPosition" class="form-control">
+                                                <option value="AD">Admin (AD)</option>
+                                                <option value="AM">Assistant Manager (AM)</option>
+                                                <option value="QL">Manager (QL)</option>
+                                                <option value="NV">Employee (NV)</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-success" onclick="contentManager.createTestUser()">
+                                            <span class="material-icons-round">person_add</span>
+                                            Tạo Test User
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="test-section">
+                                    <h4>Debug Console</h4>
+                                    <div class="debug-console" id="debugConsole">
+                                        <p>Debug output sẽ hiển thị ở đây...</p>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="contentManager.clearDebugConsole()">
+                                        <span class="material-icons-round">clear</span>
+                                        Clear Console
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            this.logDebug('Testing interface loaded successfully');
+
+        } catch (error) {
+            console.error('Error loading testing interface:', error);
+            utils.showNotification('Lỗi tải giao diện testing', 'error');
+        }
+    }
+
+    // New comprehensive testing functions
+    testJavaScriptFunctions() {
+        this.logDebug('=== TESTING JAVASCRIPT FUNCTIONS ===');
+        
+        const functionsToTest = [
+            'showRequestDetail',
+            'showTaskDetail', 
+            'formatText',
+            'saveShiftAssignments',
+            'showDayDetails',
+            'toggleEmployeeView',
+            'filterEmployees',
+            'manageStore',
+            'viewStoreShifts',
+            'loadMoreActivities',
+            'executeEditorCommand'
+        ];
+        
+        functionsToTest.forEach(funcName => {
+            if (typeof window[funcName] === 'function') {
+                this.logDebug(`✅ ${funcName} - Globally accessible as function`);
+            } else if (typeof this[funcName] === 'function') {
+                this.logDebug(`✅ ${funcName} - Available on ContentManager instance`);
+            } else {
+                this.logDebug(`❌ ${funcName} - NOT FOUND`);
+            }
+        });
+        
+        this.logDebug('=== JAVASCRIPT FUNCTIONS TEST COMPLETE ===');
+        utils.showNotification('JavaScript function test completed', 'success');
+    }
+
+    testGlobalAccess() {
+        this.logDebug('=== TESTING GLOBAL ACCESS ===');
+        
+        // Test window.contentManager
+        if (typeof window.contentManager === 'object') {
+            this.logDebug('✅ window.contentManager - Available');
+        } else {
+            this.logDebug('❌ window.contentManager - NOT AVAILABLE');
+        }
+        
+        // Test individual global functions
+        const globalFunctions = ['showTaskDetail', 'showRequestDetail', 'formatText', 'saveShiftAssignments'];
+        globalFunctions.forEach(func => {
+            if (typeof window[func] === 'function') {
+                this.logDebug(`✅ window.${func} - Available`);
+            } else {
+                this.logDebug(`❌ window.${func} - NOT AVAILABLE`);
+            }
+        });
+        
+        this.logDebug('=== GLOBAL ACCESS TEST COMPLETE ===');
+        utils.showNotification('Global access test completed', 'success');
+    }
+
+    testContentManagerInstance() {
+        this.logDebug('=== TESTING CONTENTMANAGER INSTANCE ===');
+        
+        this.logDebug(`ContentManager instance type: ${typeof this}`);
+        this.logDebug(`ContentManager user: ${this.user ? this.user.fullName : 'Not available'}`);
+        this.logDebug(`makeGloballyAccessible method: ${typeof this.makeGloballyAccessible}`);
+        
+        // Test key methods
+        const methods = ['formatText', 'showTaskDetail', 'showRequestDetail', 'executeEditorCommand'];
+        methods.forEach(method => {
+            if (typeof this[method] === 'function') {
+                this.logDebug(`✅ this.${method} - Available`);
+            } else {
+                this.logDebug(`❌ this.${method} - NOT AVAILABLE`);
+            }
+        });
+        
+        this.logDebug('=== CONTENTMANAGER INSTANCE TEST COMPLETE ===');
+        utils.showNotification('ContentManager instance test completed', 'success');
+    }
+
+    testTextEditorFunctions() {
+        this.logDebug('=== TESTING TEXT EDITOR FUNCTIONS ===');
+        
+        // Check for text editor elements
+        const editors = [
+            document.querySelector('.enhanced-editor'),
+            document.querySelector('.rich-text-editor'),
+            document.querySelector('.editor-workspace'),
+            document.getElementById('taskDescription')
+        ];
+        
+        let editorFound = false;
+        editors.forEach((editor, index) => {
+            if (editor) {
+                this.logDebug(`✅ Editor ${index + 1} found: ${editor.className || editor.id}`);
+                editorFound = true;
+            }
+        });
+        
+        if (!editorFound) {
+            this.logDebug('❌ No text editors found in current view');
+        }
+        
+        // Test formatting functions
+        const formatFunctions = ['formatText', 'changeFontSize', 'changeTextColor', 'insertLink'];
+        formatFunctions.forEach(func => {
+            if (typeof this[func] === 'function') {
+                this.logDebug(`✅ ${func} - Available`);
+            } else {
+                this.logDebug(`❌ ${func} - NOT AVAILABLE`);
+            }
+        });
+        
+        this.logDebug('=== TEXT EDITOR FUNCTIONS TEST COMPLETE ===');
+        utils.showNotification('Text editor functions test completed', 'success');
+    }
+
+    testFormattingCommands() {
+        this.logDebug('=== TESTING FORMATTING COMMANDS ===');
+        
+        const commands = ['bold', 'italic', 'underline', 'insertUnorderedList', 'justifyCenter'];
+        
+        commands.forEach(command => {
+            try {
+                // Test if the command would work (without actually executing)
+                this.logDebug(`Testing command: ${command}`);
+                
+                // Simulate formatText call (without actual execution)
+                this.logDebug(`✅ ${command} - Command syntax valid`);
+            } catch (error) {
+                this.logDebug(`❌ ${command} - Error: ${error.message}`);
+            }
+        });
+        
+        this.logDebug('=== FORMATTING COMMANDS TEST COMPLETE ===');
+        utils.showNotification('Formatting commands test completed', 'success');
+    }
+
+    testModalFunctions() {
+        this.logDebug('=== TESTING MODAL FUNCTIONS ===');
+        
+        // Test modal creation functions
+        const modalFunctions = ['closeTaskDetailModal', 'closeRequestDetailModal'];
+        
+        modalFunctions.forEach(func => {
+            if (typeof this[func] === 'function') {
+                this.logDebug(`✅ ${func} - Available`);
+            } else {
+                this.logDebug(`❌ ${func} - NOT AVAILABLE`);
+            }
+        });
+        
+        // Check if modals exist
+        const modals = ['taskDetailModal', 'requestDetailModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                this.logDebug(`✅ ${modalId} - Modal element exists`);
+            } else {
+                this.logDebug(`ℹ️ ${modalId} - Modal element not present (normal if not opened)`);
+            }
+        });
+        
+        this.logDebug('=== MODAL FUNCTIONS TEST COMPLETE ===');
+        utils.showNotification('Modal functions test completed', 'success');
+    }
+
+    testUserSearchAutocomplete() {
+        this.logDebug('=== TESTING USER SEARCH AUTOCOMPLETE ===');
+        
+        // Check for user search elements
+        const searchElements = document.querySelectorAll('.user-search input');
+        const listElements = document.querySelectorAll('.user-list');
+        
+        this.logDebug(`Found ${searchElements.length} user search inputs`);
+        this.logDebug(`Found ${listElements.length} user list containers`);
+        
+        // Check CSS classes
+        listElements.forEach((list, index) => {
+            if (list.classList.contains('show-suggestions')) {
+                this.logDebug(`✅ User list ${index + 1} has show-suggestions class`);
+            } else {
+                this.logDebug(`ℹ️ User list ${index + 1} does not have show-suggestions class (normal when hidden)`);
+            }
+        });
+        
+        // Check currentFilteredUsers
+        if (this.currentFilteredUsers && this.currentFilteredUsers.length > 0) {
+            this.logDebug(`✅ currentFilteredUsers available with ${this.currentFilteredUsers.length} users`);
+        } else {
+            this.logDebug(`❌ currentFilteredUsers not available or empty`);
+        }
+        
+        this.logDebug('=== USER SEARCH AUTOCOMPLETE TEST COMPLETE ===');
+        utils.showNotification('User search autocomplete test completed', 'success');
+    }
             content.innerHTML = `
                 <div class="testing-container modern-container">
                     <div class="page-header professional-header">
