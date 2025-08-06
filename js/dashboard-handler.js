@@ -3363,4 +3363,3 @@ const professionalStyles = `
 
 // Apply professional styles
 document.head.insertAdjacentHTML('beforeend', professionalStyles);
-
