@@ -97,6 +97,14 @@ async function initializeDashboard() {
         }
         window.contentManager = new ContentManager(userData);
 
+        // Initialize enhanced navigation manager
+        if (typeof NavigationManager !== 'undefined') {
+            window.navigationManager = new NavigationManager(window.contentManager);
+            console.log('✅ NavigationManager initialized');
+        } else {
+            console.warn('NavigationManager not available, using fallback navigation');
+        }
+
         // Apply role-based section visibility FIRST
         await applyRoleBasedSectionVisibility();
         
