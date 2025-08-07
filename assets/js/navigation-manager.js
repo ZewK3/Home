@@ -16,26 +16,124 @@ class NavigationManager {
         // Main navigation items
         const navigationMap = {
             // Work Management
-            'openTimesheet': () => this.contentManager.showTimesheet(),
-            'openAttendance': () => this.contentManager.showAttendanceGPS(),
-            'mobileTimesheet': () => this.contentManager.showTimesheet(),
-            'mobileAttendance': () => this.contentManager.showAttendanceGPS(),
+            'openTimesheet': () => {
+                console.log('Attempting to show timesheet...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for timesheet');
+                    return;
+                }
+                return this.contentManager.showTimesheet();
+            },
+            'openAttendance': () => {
+                console.log('Attempting to show attendance GPS...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for attendance');
+                    return;
+                }
+                return this.contentManager.showAttendanceGPS();
+            },
+            'mobileTimesheet': () => {
+                console.log('Mobile: Attempting to show timesheet...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile timesheet');
+                    return;
+                }
+                return this.contentManager.showTimesheet();
+            },
+            'mobileAttendance': () => {
+                console.log('Mobile: Attempting to show attendance GPS...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile attendance');
+                    return;
+                }
+                return this.contentManager.showAttendanceGPS();
+            },
             
             // Work Tasks
-            'openWorkTasks': () => this.contentManager.showWorkTasks(),
-            'mobileWorkTasks': () => this.contentManager.showWorkTasks(),
+            'openWorkTasks': () => {
+                console.log('Attempting to show work tasks...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for work tasks');
+                    return;
+                }
+                return this.contentManager.showWorkTasks();
+            },
+            'mobileWorkTasks': () => {
+                console.log('Mobile: Attempting to show work tasks...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile work tasks');
+                    return;
+                }
+                return this.contentManager.showWorkTasks();
+            },
             
             // Request Management
-            'openAttendanceRequest': () => this.contentManager.showAttendanceRequest(),
-            'openTaskAssignment': () => this.contentManager.showTaskAssignment(),
-            'openShiftAssignment': () => this.contentManager.showShiftAssignment(),
-            'mobileAttendanceRequest': () => this.contentManager.showAttendanceRequest(),
-            'mobileTaskAssignment': () => this.contentManager.showTaskAssignment(),
-            'mobileShiftAssignment': () => this.contentManager.showShiftAssignment(),
+            'openAttendanceRequest': () => {
+                console.log('Attempting to show attendance request...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for attendance request');
+                    return;
+                }
+                return this.contentManager.showAttendanceRequest();
+            },
+            'openTaskAssignment': () => {
+                console.log('Attempting to show task assignment...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for task assignment');
+                    return;
+                }
+                return this.contentManager.showTaskAssignment();
+            },
+            'openShiftAssignment': () => {
+                console.log('Attempting to show shift assignment...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for shift assignment');
+                    return;
+                }
+                return this.contentManager.showShiftAssignment();
+            },
+            'mobileAttendanceRequest': () => {
+                console.log('Mobile: Attempting to show attendance request...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile attendance request');
+                    return;
+                }
+                return this.contentManager.showAttendanceRequest();
+            },
+            'mobileTaskAssignment': () => {
+                console.log('Mobile: Attempting to show task assignment...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile task assignment');
+                    return;
+                }
+                return this.contentManager.showTaskAssignment();
+            },
+            'mobileShiftAssignment': () => {
+                console.log('Mobile: Attempting to show shift assignment...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile shift assignment');
+                    return;
+                }
+                return this.contentManager.showShiftAssignment();
+            },
             
             // Analytics & Reports
-            'openAnalytics': () => this.contentManager.showAnalytics(),
-            'mobileAnalytics': () => this.contentManager.showAnalytics(),
+            'openAnalytics': () => {
+                console.log('Attempting to show analytics...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for analytics');
+                    return;
+                }
+                return this.contentManager.showAnalytics();
+            },
+            'mobileAnalytics': () => {
+                console.log('Mobile: Attempting to show analytics...');
+                if (!this.contentManager) {
+                    console.error('ContentManager not available for mobile analytics');
+                    return;
+                }
+                return this.contentManager.showAnalytics();
+            },
         };
 
         // Setup event listeners for all navigation items
@@ -59,16 +157,25 @@ class NavigationManager {
                             mobileDialog.close();
                         }
                         
-                        // Execute navigation
-                        handler();
+                        // Execute navigation with error handling
+                        const result = handler();
+                        if (result && typeof result.catch === 'function') {
+                            result.catch(error => {
+                                console.error(`Async navigation error for ${id}:`, error);
+                                utils.showNotification(`Lỗi điều hướng: ${error.message}`, 'error');
+                            });
+                        }
                         
                         // Update active states
                         this.updateActiveStates(id);
                         
-                        console.log(`Navigation completed: ${id}`);
+                        console.log(`Navigation completed successfully: ${id}`);
                     } catch (error) {
                         console.error(`Navigation error for ${id}:`, error);
                         utils.showNotification(`Lỗi điều hướng: ${error.message}`, 'error');
+                        
+                        // Try fallback if available
+                        this.tryFallbackNavigation(id, error);
                     }
                 };
                 
@@ -127,6 +234,35 @@ class NavigationManager {
         const activeElement = document.getElementById(activeId);
         if (activeElement) {
             activeElement.classList.add('active');
+        }
+    }
+
+    tryFallbackNavigation(id, originalError) {
+        console.warn(`Attempting fallback navigation for ${id} due to error:`, originalError);
+        
+        // Map of fallback functions using global window references
+        const fallbackMap = {
+            'openWorkTasks': () => window.contentManager?.showWorkTasks(),
+            'openAttendanceRequest': () => window.contentManager?.showAttendanceRequest(),
+            'openShiftAssignment': () => window.contentManager?.showShiftAssignment(),
+            'openTimesheet': () => window.contentManager?.showTimesheet(),
+            'openAttendance': () => window.contentManager?.showAttendanceGPS(),
+            'openTaskAssignment': () => window.contentManager?.showTaskAssignment(),
+            'openAnalytics': () => window.contentManager?.showAnalytics(),
+        };
+        
+        const fallbackHandler = fallbackMap[id];
+        if (fallbackHandler) {
+            try {
+                console.log(`Executing fallback for ${id}...`);
+                fallbackHandler();
+                console.log(`Fallback navigation successful for ${id}`);
+            } catch (fallbackError) {
+                console.error(`Fallback navigation also failed for ${id}:`, fallbackError);
+                utils.showNotification(`Không thể điều hướng đến ${id}`, 'error');
+            }
+        } else {
+            console.warn(`No fallback available for ${id}`);
         }
     }
 
