@@ -10707,12 +10707,24 @@ button:focus, .btn:focus, .menu-link:focus {
     margin-right: 12px;
     flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 99999 !important;
 }
 
-/* Show menu toggle on mobile */
+/* Ensure mobile menu toggle is always visible on mobile */
 @media (max-width: 768px) {
     .menu-toggle {
         display: flex !important;
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        z-index: 99999 !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        color: white !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4) !important;
     }
     
     .AppHeader-context {
@@ -10731,6 +10743,39 @@ button:focus, .btn:focus, .menu-link:focus {
 
 .menu-toggle:active {
     transform: scale(0.95);
+}
+
+/* Menu icon styling */
+.menu-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 16px;
+    position: relative;
+}
+
+.menu-line {
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    margin: 2px 0;
+    border-radius: 1px;
+    transition: all 0.3s ease;
+}
+
+/* Animation for menu lines when active */
+.menu-toggle.active .menu-line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.active .menu-line:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.active .menu-line:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
 }
 
 .menu-icon {
