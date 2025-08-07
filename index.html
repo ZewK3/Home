@@ -132,12 +132,10 @@
     </div>
     
     <script>
-        // Auto redirect to auth page after 3 seconds if no action
-        setTimeout(() => {
-            if (confirm('Chuyển hướng đến trang đăng nhập?')) {
-                window.location.href = 'pages/auth/index.html';
-            }
-        }, 3000);
+        // Navigation functionality without auto-redirect
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('HR Management System loaded successfully');
+        });
     </script>
 </body>
 </html>
