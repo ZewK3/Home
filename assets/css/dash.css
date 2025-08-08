@@ -11283,15 +11283,527 @@ button:focus, .btn:focus, .menu-link:focus {
     max-height: none;
 }
 
-/* User List Component Styles */
-.user-list-component {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
+/* Navigation Test Panel Enhanced Styling */
+.nav-test-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    justify-content: center;
 }
 
-.user-list-component .user-search {
+.nav-test-btn.primary {
+    background: var(--primary);
+    color: white;
+}
+
+.nav-test-btn.primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.nav-test-btn.outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.nav-test-btn.outline:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.user-test-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+}
+
+.user-test-btn.admin {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+}
+
+.user-test-btn.manager {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+}
+
+.user-test-btn.store {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.user-test-btn.employee {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.user-test-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Enhanced Task Detail Modal */
+.task-detail-enhanced {
+    padding: 0;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.task-header-section {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 1.5rem;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.task-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.task-main-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.task-meta-badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.task-status-badge, .task-priority-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+
+.task-id-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+.task-content-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.task-description-card,
+.task-timeline-card,
+.task-actions-card,
+.task-comments-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.25rem;
+}
+
+.task-people-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.people-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.section-header,
+.people-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.section-header h4,
+.people-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.section-header .material-icons-round,
+.people-header .material-icons-round {
+    font-size: 1.2rem;
+    color: var(--primary);
+}
+
+.description-content {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    border-left: 3px solid var(--primary);
+}
+
+.timeline-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.timeline-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.timeline-item:last-child {
+    border-bottom: none;
+}
+
+.timeline-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.timeline-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.timeline-value.overdue {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+.comments-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.comment-item {
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.comment-author {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.author-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.author-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.comment-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.comment-content {
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.no-comments {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.no-comments .material-icons-round {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+}
+
+.add-comment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.comment-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 80px;
+}
+
+.comment-btn {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Modular User List Component */
+.modular-user-list-component {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-list-title {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.user-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.user-search-input {
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    width: 200px;
+}
+
+.user-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 0.75rem;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+.user-list-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.modular-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-card);
+}
+
+.modular-user-card:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modular-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.modular-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.modular-user-name {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modular-user-id,
+.modular-user-email,
+.modular-user-department {
+    margin: 0.125rem 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.modular-user-role {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.modular-user-role.role-ad {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+}
+
+.modular-user-role.role-am {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+}
+
+.modular-user-role.role-ql {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.modular-user-role.role-nv {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.modular-user-select {
+    flex-shrink: 0;
+}
+
+.modular-user-select input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+
+.no-users-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.no-users-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+    display: block;
+}
+
+.no-users-message {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Dark mode styles for modular user list */
+[data-theme="dark"] .modular-user-list-component {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .user-search-input {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modular-user-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modular-user-card:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+.user-list-component {
     position: relative;
     padding: 15px;
     border-bottom: 1px solid var(--border-color);

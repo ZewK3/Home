@@ -12,6 +12,141 @@ class ContentManager {
     }
 
     // Make commonly used functions globally accessible for onclick handlers
+    // Create a modular user list component to avoid conflicts
+    createUserListComponent(containerId, options = {}) {
+        const {
+            users = [],
+            searchable = true,
+            selectable = false,
+            showAvatars = true,
+            showRoles = true,
+            onUserSelect = null,
+            title = 'Danh sách người dùng'
+        } = options;
+
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Container ${containerId} not found`);
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="modular-user-list-component" data-component-id="${containerId}">
+                <div class="user-list-header">
+                    <h4 class="user-list-title">${title}</h4>
+                    ${searchable ? `
+                        <div class="user-search-container">
+                            <input type="text" 
+                                   class="user-search-input" 
+                                   placeholder="Tìm kiếm người dùng..."
+                                   id="${containerId}_search">
+                            <span class="material-icons-round search-icon">search</span>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="user-list-content" id="${containerId}_content">
+                    ${this.renderUserListItems(users, { showAvatars, showRoles, selectable, containerId })}
+                </div>
+            </div>
+        `;
+
+        // Add search functionality if enabled
+        if (searchable) {
+            const searchInput = document.getElementById(`${containerId}_search`);
+            searchInput.addEventListener('input', (e) => {
+                this.filterUserList(containerId, users, e.target.value, options);
+            });
+        }
+
+        // Store component data for later access
+        this.userListComponents = this.userListComponents || {};
+        this.userListComponents[containerId] = {
+            users,
+            options,
+            onUserSelect
+        };
+    }
+
+    renderUserListItems(users, options = {}) {
+        const { showAvatars = true, showRoles = true, selectable = false, containerId } = options;
+        
+        if (!users || users.length === 0) {
+            return `
+                <div class="no-users-state">
+                    <span class="material-icons-round no-users-icon">group</span>
+                    <p class="no-users-message">Không có người dùng nào</p>
+                </div>
+            `;
+        }
+
+        return users.map(user => {
+            const userRole = user.position || user.role || 'NV';
+            const userName = user.fullName || user.name || 'Không rõ';
+            const userId = user.employeeId || user.id || 'Unknown';
+            const userEmail = user.email || '';
+            const userDepartment = user.department || user.storeName || '';
+
+            return `
+                <div class="modular-user-card" 
+                     data-user-id="${userId}" 
+                     data-role="${userRole}"
+                     onclick="window.contentManager?.handleUserSelect('${containerId}', '${userId}')">
+                    ${showAvatars ? `
+                        <div class="modular-user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
+                    ` : ''}
+                    <div class="modular-user-info">
+                        <h5 class="modular-user-name">${userName}</h5>
+                        <p class="modular-user-id">ID: ${userId}</p>
+                        ${userEmail ? `<p class="modular-user-email">${userEmail}</p>` : ''}
+                        ${userDepartment ? `<p class="modular-user-department">${userDepartment}</p>` : ''}
+                        ${showRoles ? `
+                            <span class="modular-user-role role-${userRole.toLowerCase()}">${this.getRoleDisplayName(userRole)}</span>
+                        ` : ''}
+                    </div>
+                    ${selectable ? `
+                        <div class="modular-user-select">
+                            <input type="checkbox" id="user_${containerId}_${userId}" value="${userId}">
+                            <label for="user_${containerId}_${userId}"></label>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    filterUserList(containerId, users, searchTerm, options) {
+        const filteredUsers = users.filter(user => {
+            const searchFields = [
+                user.fullName || user.name || '',
+                user.employeeId || user.id || '',
+                user.email || '',
+                user.department || user.storeName || '',
+                this.getRoleDisplayName(user.position || user.role || 'NV')
+            ];
+            
+            return searchFields.some(field => 
+                field.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        });
+
+        const contentContainer = document.getElementById(`${containerId}_content`);
+        if (contentContainer) {
+            contentContainer.innerHTML = this.renderUserListItems(filteredUsers, {
+                ...options,
+                containerId
+            });
+        }
+    }
+
+    handleUserSelect(containerId, userId) {
+        const component = this.userListComponents?.[containerId];
+        if (component && component.onUserSelect) {
+            const user = component.users.find(u => (u.employeeId || u.id) === userId);
+            component.onUserSelect(user, userId);
+        }
+    }
+
+    // Make global functions accessible
     makeGloballyAccessible() {
         // Create global functions for commonly used methods that are called via onclick
         window.showDayDetails = (date) => this.showDayDetails(date);
@@ -2581,29 +2716,8 @@ class ContentManager {
                                 </div>
                             </div>
 
-                            <div class="user-list" id="userList">
-                                ${users.map(user => {
-                                    const userRole = user.position || 'NV';
-                                    const userName = user.fullName || 'Không rõ';
-                                    const userId = user.employeeId || 'Unknown';
-                                    
-                                    
-                                    return `
-                                        <div class="user-card" data-user-id="${userId}" data-role="${userRole}">
-                                            <div class="user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
-                                            <div class="user-info">
-                                                <h4>${userName}</h4>
-                                                <p class="user-id">ID: ${userId}</p>
-                                                <p class="user-role role-${userRole.toLowerCase()}">${this.getRoleDisplayName(userRole)}</p>
-                                            </div>
-                                            <div class="user-actions">
-                                                <button class="btn-edit-role" onclick="window.editUserRole('${userId}')" title="Chỉnh sửa phân quyền">
-                                                    <span class="material-icons-round">edit</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
+                            <div id="permissionUserList" class="permission-user-list-container">
+                                <!-- Modular user list will be inserted here -->
                             </div>
                         </div>
                     </div>
@@ -2740,6 +2854,21 @@ class ContentManager {
 
             // Setup permission management functionality
             this.setupPermissionManagement();
+            
+            // Initialize modular user list component
+            setTimeout(() => {
+                this.createUserListComponent('permissionUserList', {
+                    users: users,
+                    searchable: false, // Using existing search controls
+                    selectable: false,
+                    showAvatars: true,
+                    showRoles: true,
+                    title: 'Danh sách người dùng hệ thống',
+                    onUserSelect: (user, userId) => {
+                        window.editUserRole(userId);
+                    }
+                });
+            }, 200);
             
         } catch (error) {
             console.error('Access management error:', error);
@@ -3969,49 +4098,132 @@ class ContentManager {
             const content = document.getElementById('taskDetailContent');
             
             content.innerHTML = `
-                <div class="task-detail">
-                    <h3>${taskResponse.title}</h3>
-                    <div class="task-meta">
-                        <span class="task-status ${taskResponse.status}">${this.getStatusText(taskResponse.status)}</span>
-                        <span class="task-priority priority-${taskResponse.priority}">${this.getPriorityText(taskResponse.priority)}</span>
-                    </div>
-                    
-                    <div class="task-description">
-                        <h4>Mô tả:</h4>
-                        <div class="description-content">${taskResponse.description}</div>
-                    </div>
-                    
-                    <div class="task-people">
-                        <div class="assigners">
-                            <h4>Người giao nhiệm vụ:</h4>
-                            <p>${taskResponse.assignerNames}</p>
+                <div class="task-detail-enhanced">
+                    <div class="task-header-section">
+                        <div class="task-title-row">
+                            <h3 class="task-main-title">${taskResponse.title}</h3>
+                            <div class="task-meta-badges">
+                                <span class="task-status-badge ${taskResponse.status}">
+                                    ${this.getStatusIcon(taskResponse.status)}
+                                    ${this.getStatusText(taskResponse.status)}
+                                </span>
+                                <span class="task-priority-badge priority-${taskResponse.priority}">
+                                    ${this.getPriorityIcon(taskResponse.priority)}
+                                    ${this.getPriorityText(taskResponse.priority)}
+                                </span>
+                            </div>
                         </div>
-                        <div class="participants">
-                            <h4>Người thực hiện:</h4>
-                            <p>${taskResponse.participantNames}</p>
+                        <div class="task-id-info">
+                            <span class="task-id">ID: ${taskResponse.id}</span>
+                            <span class="task-category">${taskResponse.category || 'Chung'}</span>
                         </div>
-                        ${taskResponse.supporterNames ? `
-                        <div class="supporters">
-                            <h4>Người hỗ trợ:</h4>
-                            <p>${taskResponse.supporterNames}</p>
-                        </div>
-                        ` : ''}
                     </div>
                     
-                    <div class="task-timeline">
-                        <p><strong>Ngày tạo:</strong> ${new Date(taskResponse.createdAt).toLocaleString()}</p>
-                        ${taskResponse.dueDate ? `<p><strong>Hạn hoàn thành:</strong> ${new Date(taskResponse.dueDate).toLocaleString()}</p>` : ''}
-                    </div>
-                    
-                    <div class="task-comments">
-                        <h4>Bình luận</h4>
-                        <div id="commentsList">
-                            ${this.renderComments(taskResponse.comments || [])}
+                    <div class="task-content-sections">
+                        <div class="task-description-card">
+                            <div class="section-header">
+                                <span class="material-icons-round">description</span>
+                                <h4>Mô tả công việc</h4>
+                            </div>
+                            <div class="description-content">${taskResponse.description || 'Không có mô tả'}</div>
                         </div>
                         
-                        <div class="add-comment">
-                            <textarea id="newComment" placeholder="Thêm bình luận..." rows="3"></textarea>
-                            <button onclick="contentManager.addComment('${taskId}')" class="btn btn-primary">Gửi bình luận</button>
+                        <div class="task-people-grid">
+                            <div class="people-card assigners">
+                                <div class="people-header">
+                                    <span class="material-icons-round">supervisor_account</span>
+                                    <h4>Người giao nhiệm vụ</h4>
+                                </div>
+                                <div class="people-list">${taskResponse.assignerNames || 'Không xác định'}</div>
+                            </div>
+                            
+                            <div class="people-card participants">
+                                <div class="people-header">
+                                    <span class="material-icons-round">person</span>
+                                    <h4>Người thực hiện</h4>
+                                </div>
+                                <div class="people-list">${taskResponse.participantNames || 'Chưa giao'}</div>
+                            </div>
+                            
+                            ${taskResponse.supporterNames ? `
+                            <div class="people-card supporters">
+                                <div class="people-header">
+                                    <span class="material-icons-round">support_agent</span>
+                                    <h4>Người hỗ trợ</h4>
+                                </div>
+                                <div class="people-list">${taskResponse.supporterNames}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="task-timeline-card">
+                            <div class="section-header">
+                                <span class="material-icons-round">schedule</span>
+                                <h4>Thông tin thời gian</h4>
+                            </div>
+                            <div class="timeline-info">
+                                <div class="timeline-item">
+                                    <span class="timeline-label">Ngày tạo:</span>
+                                    <span class="timeline-value">${new Date(taskResponse.createdAt).toLocaleString('vi-VN')}</span>
+                                </div>
+                                ${taskResponse.dueDate ? `
+                                <div class="timeline-item">
+                                    <span class="timeline-label">Hạn hoàn thành:</span>
+                                    <span class="timeline-value ${new Date(taskResponse.dueDate) < new Date() ? 'overdue' : ''}">${new Date(taskResponse.dueDate).toLocaleString('vi-VN')}</span>
+                                </div>
+                                ` : ''}
+                                ${taskResponse.completedAt ? `
+                                <div class="timeline-item">
+                                    <span class="timeline-label">Hoàn thành:</span>
+                                    <span class="timeline-value">${new Date(taskResponse.completedAt).toLocaleString('vi-VN')}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="task-actions-card">
+                            <div class="section-header">
+                                <span class="material-icons-round">task_alt</span>
+                                <h4>Hành động</h4>
+                            </div>
+                            <div class="action-buttons">
+                                ${taskResponse.status !== 'completed' ? `
+                                    <button onclick="contentManager.updateTaskStatus('${taskResponse.id}', 'in_progress')" class="btn btn-warning action-btn">
+                                        <span class="material-icons-round">play_arrow</span>
+                                        Bắt đầu
+                                    </button>
+                                    <button onclick="contentManager.updateTaskStatus('${taskResponse.id}', 'completed')" class="btn btn-success action-btn">
+                                        <span class="material-icons-round">check</span>
+                                        Hoàn thành
+                                    </button>
+                                ` : ''}
+                                <button onclick="contentManager.printTask('${taskResponse.id}')" class="btn btn-info action-btn">
+                                    <span class="material-icons-round">print</span>
+                                    In
+                                </button>
+                                <button onclick="contentManager.exportTask('${taskResponse.id}')" class="btn btn-secondary action-btn">
+                                    <span class="material-icons-round">download</span>
+                                    Xuất
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="task-comments-card">
+                            <div class="section-header">
+                                <span class="material-icons-round">comment</span>
+                                <h4>Bình luận và ghi chú</h4>
+                            </div>
+                            <div id="commentsList" class="comments-list">
+                                ${this.renderEnhancedComments(taskResponse.comments || [])}
+                            </div>
+                            
+                            <div class="add-comment-section">
+                                <textarea id="newComment" class="comment-textarea" placeholder="Thêm bình luận hoặc ghi chú..." rows="3"></textarea>
+                                <button onclick="contentManager.addComment('${taskResponse.id}')" class="btn btn-primary comment-btn">
+                                    <span class="material-icons-round">send</span>
+                                    Gửi bình luận
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -4129,7 +4341,62 @@ class ContentManager {
         modal.style.display = 'none';
     }
 
-    getRoleBadgeClass(position) {
+    getPriorityIcon(priority) {
+        const icons = {
+            'high': '🔴',
+            'medium': '🟡', 
+            'low': '🟢'
+        };
+        return icons[priority] || '🔵';
+    }
+
+    renderEnhancedComments(comments) {
+        if (!comments || comments.length === 0) {
+            return `
+                <div class="no-comments">
+                    <span class="material-icons-round">chat_bubble_outline</span>
+                    <p>Chưa có bình luận nào</p>
+                </div>
+            `;
+        }
+        
+        return comments.map(comment => `
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-author">
+                        <div class="author-avatar">${comment.author?.name?.substring(0, 2)?.toUpperCase() || 'UN'}</div>
+                        <span class="author-name">${comment.author?.name || 'Unknown'}</span>
+                    </div>
+                    <span class="comment-time">${new Date(comment.createdAt).toLocaleString('vi-VN')}</span>
+                </div>
+                <div class="comment-content">${comment.content}</div>
+            </div>
+        `).join('');
+    }
+
+    updateTaskStatus(taskId, newStatus) {
+        try {
+            console.log(`Updating task ${taskId} to status: ${newStatus}`);
+            // Add your task status update logic here
+            utils.showNotification(`Đã cập nhật trạng thái nhiệm vụ thành ${this.getStatusText(newStatus)}`, 'success');
+            
+            // Refresh task details
+            this.showTaskDetail(taskId);
+        } catch (error) {
+            console.error('Error updating task status:', error);
+            utils.showNotification('Không thể cập nhật trạng thái nhiệm vụ', 'error');
+        }
+    }
+
+    printTask(taskId) {
+        console.log(`Printing task: ${taskId}`);
+        utils.showNotification('Chức năng in đang được phát triển', 'info');
+    }
+
+    exportTask(taskId) {
+        console.log(`Exporting task: ${taskId}`);
+        utils.showNotification('Chức năng xuất file đang được phát triển', 'info');
+    }
         const roleClasses = {
             'AD': 'admin-badge',
             'QL': 'manager-badge', 

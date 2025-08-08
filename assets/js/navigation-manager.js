@@ -321,58 +321,58 @@ class NavigationManager {
         `;
         
         panel.innerHTML = `
-            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 20px;">
-                <h3 style="margin: 0; color: #333;">🔧 Navigation Testing Panel</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                <h3 style="margin: 0; color: var(--text-primary); font-size: 18px;">🔧 Navigation Testing Panel</h3>
                 <button onclick="document.getElementById('navigationTestPanel').remove()" 
-                        style="background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer;">×</button>
+                        style="background: var(--danger); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px;">×</button>
             </div>
             
             <div style="margin-bottom: 20px;">
-                <h4>📊 Test All Navigation Functions:</h4>
-                <button onclick="window.testNavigation()" class="btn btn-primary" style="margin: 5px;">Run Full Test</button>
+                <h4 style="color: var(--text-primary); margin-bottom: 10px;">📊 Test All Navigation Functions:</h4>
+                <button onclick="window.testNavigation()" class="nav-test-btn primary" style="padding: 8px 16px;">🚀 Run Full Test</button>
             </div>
             
             <div style="margin-bottom: 20px;">
-                <h4>🧪 Individual Function Tests:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <button onclick="window.contentManager?.showTimesheet()" class="btn btn-outline">Test Timesheet</button>
-                    <button onclick="window.contentManager?.showAttendanceGPS()" class="btn btn-outline">Test Attendance</button>
-                    <button onclick="window.contentManager?.showWorkTasks()" class="btn btn-outline">Test Work Tasks</button>
-                    <button onclick="window.contentManager?.showAttendanceRequest()" class="btn btn-outline">Test Requests</button>
-                    <button onclick="window.contentManager?.showTaskAssignment()" class="btn btn-outline">Test Task Assignment</button>
-                    <button onclick="window.contentManager?.showShiftAssignment()" class="btn btn-outline">Test Shift Assignment</button>
-                    <button onclick="window.contentManager?.showAnalytics()" class="btn btn-outline">Test Analytics</button>
+                <h4 style="color: var(--text-primary); margin-bottom: 10px;">🧪 Individual Function Tests:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+                    <button onclick="window.contentManager?.showTimesheet()" class="nav-test-btn outline">⏰ Timesheet</button>
+                    <button onclick="window.contentManager?.showAttendanceGPS()" class="nav-test-btn outline">📍 Attendance</button>
+                    <button onclick="window.contentManager?.showWorkTasks()" class="nav-test-btn outline">📋 Work Tasks</button>
+                    <button onclick="window.contentManager?.showAttendanceRequest()" class="nav-test-btn outline">📝 Requests</button>
+                    <button onclick="window.contentManager?.showTaskAssignment()" class="nav-test-btn outline">📊 Task Assignment</button>
+                    <button onclick="window.contentManager?.showShiftAssignment()" class="nav-test-btn outline">⏰ Shift Assignment</button>
+                    <button onclick="window.contentManager?.showAnalytics()" class="nav-test-btn outline">📈 Analytics</button>
                 </div>
             </div>
             
             <div style="margin-bottom: 20px;">
-                <h4>👥 Test User Functions:</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-                    <button onclick="window.switchTestUser('ADMIN001')" class="btn btn-success">Login as Admin</button>
-                    <button onclick="window.switchTestUser('AM001')" class="btn btn-info">Login as AM</button>
-                    <button onclick="window.switchTestUser('QL001')" class="btn btn-warning">Login as Manager</button>
-                    <button onclick="window.switchTestUser('NV001')" class="btn btn-secondary">Login as Employee</button>
+                <h4 style="color: var(--text-primary); margin-bottom: 10px;">👥 Test User Functions:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;">
+                    <button onclick="window.switchTestUser('ADMIN001')" class="user-test-btn admin">👑 Admin</button>
+                    <button onclick="window.switchTestUser('AM001')" class="user-test-btn manager">⚡ Area Manager</button>
+                    <button onclick="window.switchTestUser('QL001')" class="user-test-btn store">🎯 Store Manager</button>
+                    <button onclick="window.switchTestUser('NV001')" class="user-test-btn employee">👤 Employee</button>
                 </div>
             </div>
             
             <div style="margin-bottom: 20px;">
-                <h4>📱 Mobile Console Logs:</h4>
-                <div id="mobileConsolePanel" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto; background: #f8f9fa;">
+                <h4 style="color: var(--text-primary); margin-bottom: 10px;">📱 Mobile Console Logs:</h4>
+                <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto; background: var(--bg-secondary);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-size: 12px; color: #666;">Real-time console logs (Mobile debugging)</span>
-                        <button onclick="window.clearMobileLogs()" style="background: #6c757d; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;">Clear</button>
+                        <span style="font-size: 12px; color: var(--text-secondary);">Real-time console logs (Mobile debugging)</span>
+                        <button onclick="window.clearMobileLogs()" style="background: var(--text-secondary); color: var(--bg-card); border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;">Clear</button>
                     </div>
-                    <div id="mobileLogsContainer" style="font-family: monospace; font-size: 11px; min-height: 100px;">
-                        <div style="color: #28a745; margin-bottom: 4px;">
-                            <span style="color: #666;">[${new Date().toLocaleTimeString()}]</span> Mobile console interceptor ready
+                    <div id="mobileLogsContainer" style="font-family: monospace; font-size: 11px; min-height: 100px; color: var(--text-primary);">
+                        <div style="color: var(--success); margin-bottom: 4px;">
+                            <span style="color: var(--text-secondary);">[${new Date().toLocaleTimeString()}]</span> Mobile console interceptor ready
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                <h4>📋 Quick Diagnostics:</h4>
-                <div id="diagnosticResults" style="font-family: monospace; font-size: 12px; color: #666;">
+            <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <h4 style="color: var(--text-primary); margin-bottom: 10px;">📋 Quick Diagnostics:</h4>
+                <div id="diagnosticResults" style="font-family: monospace; font-size: 12px; color: var(--text-secondary);">
                     Click "Run Full Test" to see results...
                 </div>
             </div>
@@ -483,22 +483,38 @@ class NavigationManager {
         // Override console methods to capture logs
         console.log = (...args) => {
             this.originalConsole.log.apply(console, args);
-            this.addMobileLog(args.join(' '), 'debug');
+            try {
+                this.addMobileLog(args.join(' '), 'debug');
+            } catch (e) {
+                // Prevent recursion issues
+            }
         };
 
         console.error = (...args) => {
             this.originalConsole.error.apply(console, args);
-            this.addMobileLog(args.join(' '), 'error');
+            try {
+                this.addMobileLog(args.join(' '), 'error');
+            } catch (e) {
+                // Prevent recursion issues
+            }
         };
 
         console.warn = (...args) => {
             this.originalConsole.warn.apply(console, args);
-            this.addMobileLog(args.join(' '), 'warn');
+            try {
+                this.addMobileLog(args.join(' '), 'warn');
+            } catch (e) {
+                // Prevent recursion issues
+            }
         };
 
         console.info = (...args) => {
             this.originalConsole.info.apply(console, args);
-            this.addMobileLog(args.join(' '), 'info');
+            try {
+                this.addMobileLog(args.join(' '), 'info');
+            } catch (e) {
+                // Prevent recursion issues
+            }
         };
 
         // Capture uncaught errors
