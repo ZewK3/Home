@@ -8509,38 +8509,6 @@ class ContentManager {
         }
     }
 
-    // Navigation functions
-    showAnalytics() {
-        this.showSection('analytics');
-    }
-
-    showAttendance() {
-        this.showSection('attendance');
-    }
-
-    showAttendanceGPS() {
-        this.showSection('attendance-gps');
-    }
-
-    showShiftAssignment() {
-        this.showSection('shift-assignment');
-    }
-
-    showTaskAssignment() {
-        this.showSection('task-assignment');
-    }
-
-    showWorkTasks() {
-        this.showSection('work-tasks');
-    }
-
-    showWorkShifts() {
-        this.showSection('work-shifts');
-    }
-
-    showTimesheet() {
-        this.showSection('timesheet');
-    }
 
     // Utility functions
     refreshKPI() {
@@ -9997,38 +9965,6 @@ class ContentManager {
         }
     }
 
-    // Navigation functions
-    showAnalytics() {
-        this.showSection('analytics');
-    }
-
-    showAttendance() {
-        this.showSection('attendance');
-    }
-
-    showAttendanceGPS() {
-        this.showSection('attendance-gps');
-    }
-
-    showShiftAssignment() {
-        this.showSection('shift-assignment');
-    }
-
-    showTaskAssignment() {
-        this.showSection('task-assignment');
-    }
-
-    showWorkTasks() {
-        this.showSection('work-tasks');
-    }
-
-    showWorkShifts() {
-        this.showSection('work-shifts');
-    }
-
-    showTimesheet() {
-        this.showSection('timesheet');
-    }
 
     // Utility functions
     refreshKPI() {
