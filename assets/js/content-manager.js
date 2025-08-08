@@ -1576,6 +1576,7 @@ class ContentManager {
             const response = await utils.fetchAPI('?action=saveShiftAssignments', {
                 method: 'POST',
                 body: JSON.stringify({
+                    token: token,
                     storeId: store,
                     week: week,
                     shifts: shiftData
@@ -4255,6 +4256,61 @@ class ContentManager {
         `).join('');
     }
 
+    renderEnhancedComments(comments) {
+        if (!Array.isArray(comments) || comments.length === 0) {
+            return '<div class="no-comments"><span class="material-icons-round">chat_bubble_outline</span><p>Chưa có bình luận nào</p></div>';
+        }
+
+        return comments.map(comment => `
+            <div class="comment-item-enhanced">
+                <div class="comment-avatar">
+                    <div class="avatar-circle">
+                        <span class="material-icons-round">person</span>
+                    </div>
+                </div>
+                <div class="comment-content-wrapper">
+                    <div class="comment-header-enhanced">
+                        <span class="comment-author">${comment.authorName || 'Người dùng'}</span>
+                        <span class="comment-time">${new Date(comment.createdAt || Date.now()).toLocaleString('vi-VN')}</span>
+                    </div>
+                    <div class="comment-text">${comment.content || comment.text || ''}</div>
+                    <div class="comment-actions">
+                        <button onclick="contentManager.replyToComment('${comment.id}')" class="comment-action-btn">
+                            <span class="material-icons-round">reply</span>
+                            Trả lời
+                        </button>
+                    </div>
+                    ${comment.replies ? this.renderCommentReplies(comment.replies) : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderCommentReplies(replies) {
+        if (!Array.isArray(replies) || replies.length === 0) return '';
+        
+        return `
+            <div class="comment-replies-enhanced">
+                ${replies.map(reply => `
+                    <div class="reply-item-enhanced">
+                        <div class="reply-avatar">
+                            <div class="avatar-circle">
+                                <span class="material-icons-round">person</span>
+                            </div>
+                        </div>
+                        <div class="reply-content">
+                            <div class="reply-header">
+                                <span class="reply-author">${reply.authorName || 'Người dùng'}</span>
+                                <span class="reply-time">${new Date(reply.createdAt || Date.now()).toLocaleString('vi-VN')}</span>
+                            </div>
+                            <div class="reply-text">${reply.content || reply.text || ''}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
     renderReplies(replies) {
         if (!Array.isArray(replies) || replies.length === 0) return '';
         
@@ -4416,6 +4472,16 @@ class ContentManager {
             'NV': '👤 Nhân viên'
         };
         return roleNames[position] || '👤 Nhân viên';
+    }
+
+    getRoleBadgeClass(position) {
+        const badgeClasses = {
+            'AD': 'badge-admin',
+            'QL': 'badge-manager', 
+            'AM': 'badge-assistant',
+            'NV': 'badge-employee'
+        };
+        return badgeClasses[position] || 'badge-employee';
     }
 
     setupPersonalInfoHandlers() {
