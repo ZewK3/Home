@@ -355,6 +355,21 @@ class NavigationManager {
                 </div>
             </div>
             
+            <div style="margin-bottom: 20px;">
+                <h4>📱 Mobile Console Logs:</h4>
+                <div id="mobileConsolePanel" style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; max-height: 200px; overflow-y: auto; background: #f8f9fa;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 12px; color: #666;">Real-time console logs (Mobile debugging)</span>
+                        <button onclick="window.clearMobileLogs()" style="background: #6c757d; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer;">Clear</button>
+                    </div>
+                    <div id="mobileLogsContainer" style="font-family: monospace; font-size: 11px; min-height: 100px;">
+                        <div style="color: #28a745; margin-bottom: 4px;">
+                            <span style="color: #666;">[${new Date().toLocaleTimeString()}]</span> Mobile console interceptor ready
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
                 <h4>📋 Quick Diagnostics:</h4>
                 <div id="diagnosticResults" style="font-family: monospace; font-size: 12px; color: #666;">
@@ -364,6 +379,9 @@ class NavigationManager {
         `;
         
         document.body.appendChild(panel);
+        
+        // Initialize mobile console logging within the panel
+        this.initializeMobileConsoleLogging();
         
         // Create the test user switching function
         window.switchTestUser = (employeeId) => this.switchTestUser(employeeId);
@@ -448,6 +466,106 @@ class NavigationManager {
         } else {
             results.innerHTML += '\n⚠️ Some tests failed. Check console for details.';
         }
+    }
+
+    initializeMobileConsoleLogging() {
+        const logsContainer = document.getElementById('mobileLogsContainer');
+        if (!logsContainer) return;
+
+        // Store original console methods
+        this.originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+
+        // Override console methods to capture logs
+        console.log = (...args) => {
+            this.originalConsole.log.apply(console, args);
+            this.addMobileLog(args.join(' '), 'debug');
+        };
+
+        console.error = (...args) => {
+            this.originalConsole.error.apply(console, args);
+            this.addMobileLog(args.join(' '), 'error');
+        };
+
+        console.warn = (...args) => {
+            this.originalConsole.warn.apply(console, args);
+            this.addMobileLog(args.join(' '), 'warn');
+        };
+
+        console.info = (...args) => {
+            this.originalConsole.info.apply(console, args);
+            this.addMobileLog(args.join(' '), 'info');
+        };
+
+        // Capture uncaught errors
+        window.addEventListener('error', (event) => {
+            this.addMobileLog(`Error: ${event.message} at ${event.filename}:${event.lineno}`, 'error');
+        });
+
+        // Capture unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            this.addMobileLog(`Unhandled Promise Rejection: ${event.reason}`, 'error');
+        });
+
+        // Create clear logs function
+        window.clearMobileLogs = () => {
+            if (logsContainer) {
+                logsContainer.innerHTML = `
+                    <div style="color: #28a745; margin-bottom: 4px;">
+                        <span style="color: #666;">[${new Date().toLocaleTimeString()}]</span> Console cleared
+                    </div>
+                `;
+            }
+        };
+    }
+
+    addMobileLog(message, type = 'debug') {
+        const logsContainer = document.getElementById('mobileLogsContainer');
+        if (!logsContainer) return;
+
+        const timestamp = new Date().toLocaleTimeString();
+        const colors = {
+            error: '#dc3545',
+            warn: '#ffc107',
+            info: '#17a2b8', 
+            debug: '#28a745'
+        };
+
+        const logEntry = document.createElement('div');
+        logEntry.style.cssText = `
+            margin-bottom: 4px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            background: ${type === 'error' ? 'rgba(220, 53, 69, 0.1)' : 'transparent'};
+        `;
+        
+        logEntry.innerHTML = `
+            <span style="color: #666; font-size: 10px;">[${timestamp}]</span>
+            <span style="color: ${colors[type]}; font-weight: ${type === 'error' ? 'bold' : 'normal'};">
+                ${this.escapeHtml(String(message))}
+            </span>
+        `;
+
+        logsContainer.appendChild(logEntry);
+        
+        // Auto-scroll to bottom
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+        
+        // Limit log entries to prevent memory issues
+        const entries = logsContainer.children;
+        if (entries.length > 50) {
+            logsContainer.removeChild(entries[0]);
+        }
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 
