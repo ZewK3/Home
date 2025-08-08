@@ -4397,6 +4397,8 @@ class ContentManager {
         console.log(`Exporting task: ${taskId}`);
         utils.showNotification('Chức năng xuất file đang được phát triển', 'info');
     }
+
+    getRoleClass(position) {
         const roleClasses = {
             'AD': 'admin-badge',
             'QL': 'manager-badge', 
