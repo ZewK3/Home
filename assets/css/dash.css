@@ -8180,6 +8180,10 @@ button:focus, .btn:focus, .menu-link:focus {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
+    background: var(--bg-glass);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
 }
 
 .personal-header {
@@ -8929,8 +8933,25 @@ button:focus, .btn:focus, .menu-link:focus {
 
 /* Enhanced Dark Mode for Personal Information */
 [data-theme="dark"] .personal-info-container {
-    background: var(--bg-main);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3);
+    color: #f8fafc;
+}
+
+[data-theme="dark"] .personal-info-container h1,
+[data-theme="dark"] .personal-info-container h2,
+[data-theme="dark"] .personal-info-container h3,
+[data-theme="dark"] .personal-info-container h4,
+[data-theme="dark"] .personal-info-container h5,
+[data-theme="dark"] .personal-info-container h6,
+[data-theme="dark"] .personal-info-container p,
+[data-theme="dark"] .personal-info-container span,
+[data-theme="dark"] .personal-info-container div,
+[data-theme="dark"] .personal-info-container label,
+[data-theme="dark"] .personal-info-container td,
+[data-theme="dark"] .personal-info-container th {
+    color: #ffffff !important;
 }
 
 [data-theme="dark"] .personal-header {
@@ -11053,12 +11074,19 @@ button:focus, .btn:focus, .menu-link:focus {
     color: white;
 }
 
-/* Dark mode styles for task assignment container - reduced brightness and improved contrast */
+/* Dark mode styles for task assignment container - improved readability */
 [data-theme="dark"] .task-assignment-container {
-    background: rgba(8, 12, 20, 0.98) !important;
-    border: 1px solid rgba(30, 41, 59, 0.6);
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
+    border: 1px solid rgba(51, 65, 85, 0.6);
     border-radius: var(--border-radius);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .attendance-request-container {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%) !important;
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .task-assignment-container h1,
@@ -11072,7 +11100,19 @@ button:focus, .btn:focus, .menu-link:focus {
 [data-theme="dark"] .task-assignment-container div,
 [data-theme="dark"] .task-assignment-container label,
 [data-theme="dark"] .task-assignment-container td,
-[data-theme="dark"] .task-assignment-container th {
+[data-theme="dark"] .task-assignment-container th,
+[data-theme="dark"] .attendance-request-container h1,
+[data-theme="dark"] .attendance-request-container h2,
+[data-theme="dark"] .attendance-request-container h3,
+[data-theme="dark"] .attendance-request-container h4,
+[data-theme="dark"] .attendance-request-container h5,
+[data-theme="dark"] .attendance-request-container h6,
+[data-theme="dark"] .attendance-request-container p,
+[data-theme="dark"] .attendance-request-container span,
+[data-theme="dark"] .attendance-request-container div,
+[data-theme="dark"] .attendance-request-container label,
+[data-theme="dark"] .attendance-request-container td,
+[data-theme="dark"] .attendance-request-container th {
     color: #ffffff !important;
 }
 
@@ -11131,6 +11171,32 @@ button:focus, .btn:focus, .menu-link:focus {
     border-color: rgba(96, 165, 250, 0.9);
     box-shadow: 0 6px 16px rgba(96, 165, 250, 0.25);
     transform: translateY(-1px);
+}
+
+/* Enhanced form inputs for dark mode in containers */
+[data-theme="dark"] .task-assignment-container .form-control,
+[data-theme="dark"] .attendance-request-container .form-control,
+[data-theme="dark"] .personal-info-container .form-control {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+[data-theme="dark"] .task-assignment-container .form-control:focus,
+[data-theme="dark"] .attendance-request-container .form-control:focus,
+[data-theme="dark"] .personal-info-container .form-control:focus {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(96, 165, 250, 0.8);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+    color: #ffffff;
+}
+
+[data-theme="dark"] .task-assignment-container .form-control::placeholder,
+[data-theme="dark"] .attendance-request-container .form-control::placeholder,
+[data-theme="dark"] .personal-info-container .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
 }
 
 /* Enhanced Editor Modular Component Styles */
@@ -12232,6 +12298,10 @@ button:focus, .btn:focus, .menu-link:focus {
     max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
+    background: var(--bg-glass);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
 }
 
 .request-type-selector {
