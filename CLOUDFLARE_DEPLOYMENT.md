@@ -2,9 +2,26 @@
 
 This project is configured for deployment on Cloudflare Pages with the following setup:
 
+## Required Files for SPA Routing
+
+### 1. Create `_redirects` file in `public/` directory:
+```
+/*    /index.html   200
+```
+
+### 2. Configure `package.json` build scripts:
+```json
+{
+  "scripts": {
+    "build": "vite build"
+  }
+}
+```
+(Output is automatically set to `dist` directory)
+
 ## Build Configuration
 
-- **Build Command**: `npm run build:cloudflare`
+- **Build Command**: `npm run build:cloudflare` (or just `npm run build`)
 - **Output Directory**: `dist`
 - **Node.js Version**: 20
 
@@ -17,8 +34,8 @@ This project is configured for deployment on Cloudflare Pages with the following
 3. Click "Create a project"
 4. Connect your GitHub repository `ZewK3/Home`
 5. Configure build settings:
-   - **Framework preset**: `None` (or `Vite`)
-   - **Build command**: `npm run build:cloudflare`
+   - **Framework preset**: `Vite`
+   - **Build command**: `npm run build`
    - **Build output directory**: `dist`
    - **Root directory**: `/` (leave empty or use root)
    - **Node.js version**: `20`
