@@ -5,6 +5,16 @@
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
 
+# Proper MIME types for JavaScript modules
+/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/assets/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/*.mjs
+  Content-Type: application/javascript; charset=utf-8
+
 # Cache static assets for 1 year
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

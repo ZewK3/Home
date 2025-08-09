@@ -17,9 +17,13 @@ This project is configured for deployment on Cloudflare Pages with the following
 3. Click "Create a project"
 4. Connect your GitHub repository `ZewK3/Home`
 5. Configure build settings:
+   - **Framework preset**: `None` (or `Vite`)
    - **Build command**: `npm run build:cloudflare`
    - **Build output directory**: `dist`
+   - **Root directory**: `/` (leave empty or use root)
    - **Node.js version**: `20`
+
+⚠️ **Important**: Make sure the "Build output directory" is set to `dist` and NOT the root directory. This ensures Cloudflare Pages serves the built files with proper asset references, not the development source files.
 
 ### 2. Environment Variables
 
@@ -47,11 +51,13 @@ To use a custom domain:
   - X-Content-Type-Options: nosniff
   - X-XSS-Protection: 1; mode=block
   - Referrer-Policy: strict-origin-when-cross-origin
+  - Proper MIME types for JavaScript modules
 
 ### ✅ Performance Optimization
 - Static assets cached for 1 year
 - HTML files cached for 1 hour
 - Optimized Vite build with asset hashing
+- Proper Content-Type headers for JS modules
 
 ## Local Development
 
@@ -84,3 +90,26 @@ This project was migrated from GitHub Pages with the following changes:
 - Added `_headers` file for security and performance
 - Removed GitHub Actions workflow (backed up as `deploy-github.yml.backup`)
 - Removed `gh-pages` dependency
+
+## Troubleshooting
+
+### MIME Type Error: "Expected a JavaScript-or-Wasm module script but the server responded with a MIME type of text/jsx"
+
+This error typically occurs when Cloudflare Pages is serving the development source files instead of the built files. To fix this:
+
+1. **Check Build Output Directory**: Ensure the "Build output directory" in Cloudflare Pages settings is set to `dist`, not `/` or empty.
+
+2. **Verify Build Command**: Make sure the build command is `npm run build:cloudflare` which includes copying the `_headers` file.
+
+3. **Check Deployment Logs**: In Cloudflare Pages dashboard, check the deployment logs to ensure the build completed successfully and the `dist` directory was created.
+
+4. **Force Redeploy**: Try triggering a new deployment by pushing a small change or using the "Retry deployment" button in Cloudflare Pages.
+
+5. **Clear Cache**: Clear your browser cache and try accessing the site in an incognito window.
+
+### Development vs Production Files
+
+- **Development**: `index.html` in root → loads `/src/main.jsx` directly
+- **Production**: `dist/index.html` → loads `/assets/index-[hash].js` (built file)
+
+The error indicates the development `index.html` is being served. Ensure Cloudflare Pages is configured to serve from the `dist` directory only.
