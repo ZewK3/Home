@@ -25,9 +25,9 @@
 
 .task-assignment-header h2 {
     color: var(--text-primary);
-    font-size: 1.75rem;
+    font-size: var(--font-size-3xl);
     font-weight: 700;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 var(--spacing-sm) 0;
 }
 
 .task-assignment-header p {
@@ -38,15 +38,15 @@
 .assignment-form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-    margin-bottom: 2rem;
+    gap: var(--spacing-3xl);
+    margin-bottom: var(--spacing-3xl);
 }
 
 .assignment-form-section {
     background: var(--bg-glass);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: var(--spacing-2xl);
 }
 
 [data-theme="dark"] .assignment-form-section {
@@ -56,23 +56,23 @@
 
 .assignment-form-section h3 {
     color: var(--text-primary);
-    font-size: 1.125rem;
+    font-size: var(--font-size-lg);
     font-weight: 600;
-    margin: 0 0 1rem 0;
+    margin: 0 0 var(--spacing-lg) 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
 }
 
 .assignment-form-section .material-icons-round {
     color: var(--primary);
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
 }
 
 /* Task Assignment Buttons */
 .task-assignment-actions {
     display: flex;
-    gap: 1rem;
+    gap: var(--spacing-lg);
     justify-content: flex-end;
     border-top: 1px solid var(--border-color);
     padding-top: 1.5rem;

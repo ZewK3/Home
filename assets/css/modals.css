@@ -42,7 +42,7 @@
 .modal-header {
     background: var(--bg-header);
     color: var(--text-light);
-    padding: 1.5rem 2rem;
+    padding: var(--spacing-2xl) var(--spacing-3xl);
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     display: flex;
     justify-content: space-between;
@@ -50,7 +50,7 @@
 }
 
 .modal-header h3 {
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
     font-weight: 600;
     margin: 0;
     color: var(--text-light) !important;
@@ -60,9 +60,9 @@
     background: transparent;
     border: none;
     color: var(--text-light);
-    font-size: 1.5rem;
+    font-size: var(--font-size-2xl);
     cursor: pointer;
-    padding: 0.5rem;
+    padding: var(--spacing-sm);
     border-radius: var(--border-radius-sm);
     transition: var(--transition);
 }
@@ -72,7 +72,7 @@
 }
 
 .modal-body {
-    padding: 2rem;
+    padding: var(--spacing-3xl);
 }
 
 /* Task Detail Enhanced Styles */
@@ -82,40 +82,40 @@
 
 .task-header-section {
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 1.5rem;
-    margin-bottom: 2rem;
+    padding-bottom: var(--spacing-2xl);
+    margin-bottom: var(--spacing-3xl);
 }
 
 .task-title-row {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-lg);
 }
 
 .task-main-title {
-    font-size: 1.75rem;
+    font-size: var(--font-size-3xl);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
     flex: 1;
-    margin-right: 1rem;
+    margin-right: var(--spacing-lg);
 }
 
 .task-meta-badges {
     display: flex;
-    gap: 0.75rem;
+    gap: var(--spacing-md);
     flex-shrink: 0;
 }
 
 .task-status-badge, .task-priority-badge {
-    padding: 0.5rem 1rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
     border-radius: var(--border-radius-sm);
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--spacing-sm);
 }
 
 .task-status-badge.pending {

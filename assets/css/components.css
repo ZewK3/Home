@@ -3,11 +3,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
     border: none;
     border-radius: var(--border-radius-sm);
-    font-size: 0.875rem;
+    font-size: var(--font-size-sm);
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
@@ -95,7 +95,7 @@
 
 .modern-btn {
     border-radius: var(--border-radius);
-    padding: 1rem 2rem;
+    padding: var(--spacing-lg) var(--spacing-3xl);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -117,12 +117,13 @@
 
 /* Form Styles */
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-2xl);
 }
 
 .form-label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -131,12 +132,13 @@
 .form-select,
 .form-textarea {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: var(--spacing-md) var(--spacing-lg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-sm);
     background: var(--bg-card);
     color: var(--text-primary);
     font-family: inherit;
+    font-size: var(--font-size-base);
     transition: var(--transition);
 }
 
@@ -175,30 +177,31 @@
 }
 
 .card-header {
-    padding: 1.5rem;
+    padding: var(--spacing-2xl);
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-glass);
 }
 
 .card-body {
-    padding: 1.5rem;
+    padding: var(--spacing-2xl);
 }
 
 .card-footer {
-    padding: 1rem 1.5rem;
+    padding: var(--spacing-lg) var(--spacing-2xl);
     border-top: 1px solid var(--border-color);
     background: var(--bg-glass);
 }
 
 .card-title {
-    font-size: 1.25rem;
+    font-size: var(--font-size-xl);
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 var(--spacing-sm) 0;
 }
 
 .card-subtitle {
     color: var(--text-muted);
+    font-size: var(--font-size-sm);
     margin: 0;
 }
 
@@ -206,9 +209,9 @@
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
+    padding: var(--spacing-xs) var(--spacing-md);
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
