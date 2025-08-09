@@ -15,7 +15,7 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router basename="/Home">
         <div className="App">
           <Routes>
             <Route path="/login" element={<Login />} />
