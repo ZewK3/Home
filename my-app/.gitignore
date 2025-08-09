@@ -1,11 +1,3 @@
-# Dependencies
-node_modules
-*.local
-
-# Production builds
-dist
-dist-ssr
-
 # Logs
 logs
 *.log
@@ -15,8 +7,10 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Legacy backup files
-legacy-html
+node_modules
+dist
+dist-ssr
+*.local
 
 # Editor directories and files
 .vscode/*
@@ -28,6 +22,3 @@ legacy-html
 *.njsproj
 *.sln
 *.sw?
-
-# Keep API backend
-!api/
