@@ -1369,6 +1369,29 @@ body {
     z-index: 1;
     display: block !important;
     visibility: visible !important;
+    /* Enhanced theming */
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 1px solid var(--border-color);
+}
+
+/* Dark theme optimizations */
+[data-theme="dark"] .main,
+[data-theme="dark"] .dashboard-main-fade-in {
+    background: linear-gradient(135deg, 
+        var(--bg-main) 0%, 
+        rgba(17, 24, 39, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Light theme optimizations */
+[data-theme="light"] .main,
+[data-theme="light"] .dashboard-main-fade-in {
+    background: linear-gradient(135deg, 
+        var(--bg-main) 0%, 
+        rgba(249, 250, 251, 0.95) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .content {
@@ -1380,6 +1403,41 @@ body {
     scroll-behavior: smooth;
     display: block !important;
     visibility: visible !important;
+    /* Enhanced theming */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced scrollbar for better UX */
+.content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Dark theme content optimizations */
+[data-theme="dark"] .content::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.3);
+}
+
+[data-theme="dark"] .content::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.6);
+}
+
+[data-theme="dark"] .content::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8);
 }
 
 .main::before {
@@ -12495,14 +12553,6 @@ button:focus, .btn:focus, .menu-link:focus {
 }
 
 /* ===== TIMESHEET STYLES ===== */
-.timesheet-container {
-    max-width: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    box-sizing: border-box;
-    overflow-x: auto;
-}
 
 .timesheet-controls {
     display: flex;
@@ -12518,6 +12568,44 @@ button:focus, .btn:focus, .menu-link:focus {
     gap: 25px;
     margin-top: 25px;
     min-height: 0; /* Prevent grid overflow */
+    /* Enhanced theming */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced timesheet container */
+.timesheet-container {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-x: auto;
+    /* Professional background with theme support */
+    background: var(--bg-main);
+    border-radius: var(--border-radius-lg);
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark theme timesheet optimizations */
+[data-theme="dark"] .timesheet-container {
+    background: linear-gradient(145deg, 
+        rgba(17, 24, 39, 0.8) 0%, 
+        rgba(31, 41, 55, 0.9) 100%);
+    border: 1px solid rgba(75, 85, 99, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Light theme timesheet optimizations */
+[data-theme="light"] .timesheet-container {
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.9) 0%, 
+        rgba(248, 250, 252, 0.95) 100%);
+    border: 1px solid rgba(229, 231, 235, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+                0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 @media (max-width: 1200px) {
@@ -12534,6 +12622,29 @@ button:focus, .btn:focus, .menu-link:focus {
     box-shadow: var(--shadow-sm);
     overflow-x: auto;
     min-width: 0; /* Prevent overflow */
+    /* Enhanced theming */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+}
+
+/* Dark theme calendar optimizations */
+[data-theme="dark"] .timesheet-calendar {
+    background: linear-gradient(145deg, 
+        rgba(31, 41, 55, 0.9) 0%, 
+        rgba(17, 24, 39, 0.95) 100%);
+    border: 1px solid rgba(75, 85, 99, 0.4);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 
+                0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+/* Light theme calendar optimizations */
+[data-theme="light"] .timesheet-calendar {
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(249, 250, 251, 0.98) 100%);
+    border: 1px solid rgba(229, 231, 235, 0.6);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 
+                0 4px 6px -2px rgba(0, 0, 0, 0.04);
 }
 
 .calendar-header {

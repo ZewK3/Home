@@ -2001,7 +2001,7 @@ class ContentManager {
                                 ${request.approvedAt ? `<span class="process-time">lúc ${new Date(request.approvedAt).toLocaleString('vi-VN')}</span>` : ''}
                             </div>
                         `}
-                        <button class="btn btn-outline modern-btn" onclick="event.stopPropagation(); contentManager.showRequestDetail('${request.id}')">
+                        <button class="btn btn-outline modern-btn" onclick="event.stopPropagation(); window.showRequestDetail('${request.id}')">
                             <span class="material-icons-round">visibility</span>
                             Chi tiết
                         </button>
