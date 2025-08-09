@@ -80,19 +80,14 @@ npm run dev
 ```
 Ứng dụng sẽ chạy tại: http://localhost:3000
 
-### Build production
+### Build for Cloudflare Pages
 ```bash
-npm run build
+npm run build:cloudflare
 ```
 
 ### Preview production build
 ```bash
 npm run preview
-```
-
-### Deploy to GitHub Pages
-```bash
-npm run deploy
 ```
 
 ## 🔐 Tài Khoản Test
@@ -167,17 +162,20 @@ Backend API sử dụng Cloudflare Workers:
 
 ## 🚀 Deployment
 
-### GitHub Pages (Automatic)
-Push code to main branch và GitHub Actions sẽ tự động build và deploy:
-- **Live URL**: https://zewk3.github.io/Home/
-- **Auto Deploy**: Mỗi lần push vào main branch
-- **Build Status**: Kiểm tra trong Actions tab
+### Cloudflare Pages (Recommended)
+Dự án được cấu hình để deploy trên Cloudflare Pages:
+- **Build Command**: `npm run build:cloudflare`
+- **Output Directory**: `dist`
+- **SPA Routing**: Được hỗ trợ với `_redirects` file
+- **Security Headers**: Được cấu hình trong `_headers` file
 
-### Manual Deploy
-```bash
-npm run build
-npm run deploy
-```
+Chi tiết deployment: Xem [CLOUDFLARE_DEPLOYMENT.md](./CLOUDFLARE_DEPLOYMENT.md)
+
+### GitHub Pages (Backup)
+GitHub Actions workflow được backup để sử dụng khi cần:
+- Rename `deploy-github.yml.backup` thành `deploy.yml`
+- Update `vite.config.js` base path về `/Home/`
+- Update React Router basename về `/Home`
 
 ### Vercel (Alternative)
 ```bash

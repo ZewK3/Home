@@ -17,7 +17,7 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Router basename="/Home">
+        <Router basename="/">
           <div className="App">
             <Routes>
               <Route path="/login" element={<Login />} />
