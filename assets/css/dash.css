@@ -1376,7 +1376,6 @@ body {
     visibility: visible !important;
     /* Enhanced theming */
     transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-left: 1px solid var(--border-color);
 }
 
 /* Dark theme optimizations */
@@ -14444,7 +14443,6 @@ button:focus, .btn:focus, .menu-link:focus {
 }
 
 /* Enhanced Container Content Spacing */
-.dashboard-main-fade-in,
 .timesheet-main-content {
     padding: var(--spacing-3xl);
     margin: var(--spacing-lg);
@@ -14457,7 +14455,6 @@ button:focus, .btn:focus, .menu-link:focus {
     max-width: calc(100% - var(--spacing-3xl));
 }
 
-[data-theme="dark"] .dashboard-main-fade-in,
 [data-theme="dark"] .timesheet-main-content {
     background: rgba(15, 23, 42, 0.92);
     border-color: #334155;
