@@ -491,10 +491,8 @@ class ContentManager {
                         </div>
                         <div class="card-body">
                             <div class="employee-grid modern-employee-grid" id="employeeGrid">
-                                <div class="loading-state">
-                                    <div class="loading-spinner">
-                                        <div class="spinner"></div>
-                                    </div>
+                                <div class="empty-state">
+                                    <span class="material-icons-round">people_outline</span>
                                     <p>Chọn cửa hàng để xem danh sách nhân viên</p>
                                 </div>
                             </div>
@@ -3767,7 +3765,11 @@ class ContentManager {
 
             // Get all tasks where the user is a participant
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const tasksResponse = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${userResponse.employeeId}&token=${token}`);
+            const tasksResponse = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${userResponse.employeeId}&token=${token}&page=1&limit=15`);
+            
+            // Handle new paginated response format
+            const tasks = tasksResponse?.data || tasksResponse || [];
+            const pagination = tasksResponse?.pagination || null;
             
             content.innerHTML = `
                 <div class="work-tasks-container">
@@ -3820,8 +3822,16 @@ class ContentManager {
                                 </button>
                             </div>
                             <div id="tasksList" class="tasks-list-enhanced">
-                                ${this.renderEnhancedTasksList(tasksResponse || [])}
+                                ${this.renderEnhancedTasksList(tasks || [])}
                             </div>
+                            ${pagination && pagination.hasMore ? `
+                                <div class="load-more-container">
+                                    <button class="load-more-btn modern-btn" onclick="contentManager.loadMoreTasks()" id="loadMoreTasksBtn">
+                                        <span class="material-icons-round">expand_more</span>
+                                        Tải thêm công việc
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -3841,7 +3851,11 @@ class ContentManager {
             `;
 
             this.setupEnhancedWorkTasksHandlers();
-            this.updateTaskStats(tasksResponse || []);
+            this.updateTaskStats(tasks || []);
+            
+            // Store pagination state for load more functionality
+            this.currentTasksPage = 1;
+            this.hasMoreTasks = pagination?.hasMore || false;
 
         } catch (error) {
             console.error('Work tasks error:', error);
@@ -4002,6 +4016,65 @@ class ContentManager {
         document.getElementById('totalTasks').textContent = total;
         document.getElementById('pendingTasks').textContent = pending;
         document.getElementById('completedTasks').textContent = completed;
+    }
+
+    async loadMoreTasks() {
+        try {
+            if (!this.hasMoreTasks) return;
+            
+            const loadMoreBtn = document.getElementById('loadMoreTasksBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.innerHTML = '<span class="material-icons-round spinning">refresh</span> Đang tải...';
+            }
+            
+            const userResponse = await API_CACHE.getUserData();
+            if (!userResponse) {
+                throw new Error('Could not get user data');
+            }
+
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            this.currentTasksPage += 1;
+            
+            const tasksResponse = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${userResponse.employeeId}&token=${token}&page=${this.currentTasksPage}&limit=15`);
+            
+            const newTasks = tasksResponse?.data || tasksResponse || [];
+            const pagination = tasksResponse?.pagination || null;
+            
+            if (newTasks.length > 0) {
+                // Append new tasks to existing list
+                const tasksList = document.getElementById('tasksList');
+                const newTasksHtml = this.renderEnhancedTasksList(newTasks);
+                
+                // Extract just the task cards from the rendered HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = newTasksHtml;
+                const taskCards = tempDiv.querySelectorAll('.task-card-enhanced');
+                
+                taskCards.forEach(card => {
+                    tasksList.appendChild(card);
+                });
+            }
+            
+            this.hasMoreTasks = pagination?.hasMore || false;
+            
+            if (loadMoreBtn) {
+                if (this.hasMoreTasks) {
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.innerHTML = '<span class="material-icons-round">expand_more</span> Tải thêm công việc';
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+            
+        } catch (error) {
+            console.error('Error loading more tasks:', error);
+            const loadMoreBtn = document.getElementById('loadMoreTasksBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.disabled = false;
+                loadMoreBtn.innerHTML = '<span class="material-icons-round">expand_more</span> Tải thêm công việc';
+            }
+        }
     }
 
     setupEnhancedWorkTasksHandlers() {

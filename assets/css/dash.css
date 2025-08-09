@@ -12204,6 +12204,7 @@ button:focus, .btn:focus, .menu-link:focus {
     max-width: 100vw;
     max-height: 100vh;
     overflow: hidden;
+    pointer-events: all !important;
 }
 
 @keyframes dashboardGradientFlow {
@@ -13577,6 +13578,48 @@ button:focus, .btn:focus, .menu-link:focus {
 
 .modern-btn .material-icons-round {
     font-size: 1rem !important;
+}
+
+/* Load More Button Styles */
+.load-more-container {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.load-more-btn {
+    background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.load-more-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+.load-more-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinning {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Enhanced Task Cards */

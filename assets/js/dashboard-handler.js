@@ -1203,9 +1203,13 @@ function showDashboardLoader() {
     if (dashboardLoader) {
         dashboardLoader.classList.remove('hidden');
         dashboardLoader.style.display = 'flex';
-        dashboardLoader.style.pointerEvents = 'auto'; // Allow pointer events when showing
+        dashboardLoader.style.pointerEvents = 'all'; // Block all pointer events on underlying elements
+        dashboardLoader.style.zIndex = '999999'; // Ensure highest z-index
         
-        console.log('✅ Dashboard loader shown');
+        // Also disable all interactive elements behind the loader
+        document.body.style.overflow = 'hidden';
+        
+        console.log('✅ Dashboard loader shown with complete interaction blocking');
     }
 }
 
@@ -1224,7 +1228,10 @@ async function hideDashboardLoader() {
             dashboardLoader.style.display = 'none';
             dashboardLoader.classList.remove('fade-out');
             dashboardLoader.classList.add('hidden'); // Ensure hidden class is added
-            dashboardLoader.style.pointerEvents = 'none'; // Ensure no pointer events
+            dashboardLoader.style.pointerEvents = 'none'; // Disable pointer events completely
+            
+            // Re-enable body scroll
+            document.body.style.overflow = '';
         }, 400);
         
         console.log('✅ Dashboard loader hidden (optimized for LCP)');
