@@ -325,8 +325,7 @@ class ContentManager {
             this.showGrantAccess());
         document.getElementById('openPersonalInformation')?.addEventListener('click', () => 
             this.showPersonalInfo());
-        document.getElementById('openWorkTasks')?.addEventListener('click', () => 
-            this.showWorkTasks());
+        // Removed duplicate event listener for openWorkTasks - navigation manager handles this
         
         // Registration Approval
         document.getElementById('openRegistrationApproval')?.addEventListener('click', () =>
@@ -3956,7 +3955,9 @@ class ContentManager {
             'pending': 'schedule',
             'in_progress': 'sync',
             'completed': 'check_circle',
-            'rejected': 'cancel'
+            'rejected': 'cancel',
+            'active': 'play_circle',
+            'inactive': 'pause_circle'
         };
         return `<span class="material-icons-round status-icon">${iconMap[status] || 'help'}</span>`;
     }
@@ -4049,7 +4050,9 @@ class ContentManager {
             'pending': 'Đang xử lý',
             'in_progress': 'Đang thực hiện', 
             'completed': 'Hoàn thành',
-            'rejected': 'Từ chối'
+            'rejected': 'Từ chối',
+            'active': 'Đang hoạt động',
+            'inactive': 'Không hoạt động'
         };
         return statusMap[status] || status;
     }
@@ -4091,9 +4094,25 @@ class ContentManager {
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const taskResponse = await utils.fetchAPI(`?action=getTaskDetail&taskId=${taskId}&token=${token}`);
             
+            console.log('DEBUG: Raw task response:', taskResponse);
+            
             if (!taskResponse) {
                 throw new Error('Cannot load task details');
             }
+
+            // Handle both direct object and wrapped response
+            let task = taskResponse;
+            if (taskResponse.status === 200 && taskResponse.data) {
+                task = taskResponse.data;
+            } else if (taskResponse.status === 200 && !taskResponse.id) {
+                // If status is 200 but no task data, it means the structure is different
+                task = {
+                    ...taskResponse,
+                    status: taskResponse.status === 200 ? 'active' : taskResponse.status
+                };
+            }
+
+            console.log('DEBUG: Processed task:', task);
 
             const modal = document.getElementById('taskDetailModal');
             const content = document.getElementById('taskDetailContent');
@@ -4102,21 +4121,21 @@ class ContentManager {
                 <div class="task-detail-enhanced">
                     <div class="task-header-section">
                         <div class="task-title-row">
-                            <h3 class="task-main-title">${taskResponse.title}</h3>
+                            <h3 class="task-main-title">${task.title || 'Không có tiêu đề'}</h3>
                             <div class="task-meta-badges">
-                                <span class="task-status-badge ${taskResponse.status}">
-                                    ${this.getStatusIcon(taskResponse.status)}
-                                    ${this.getStatusText(taskResponse.status)}
+                                <span class="task-status-badge ${task.status || 'active'}">
+                                    ${this.getStatusIcon(task.status || 'active')}
+                                    ${this.getStatusText(task.status || 'active')}
                                 </span>
-                                <span class="task-priority-badge priority-${taskResponse.priority}">
-                                    ${this.getPriorityIcon(taskResponse.priority)}
-                                    ${this.getPriorityText(taskResponse.priority)}
+                                <span class="task-priority-badge priority-${task.priority || 'medium'}">
+                                    ${this.getPriorityIcon(task.priority || 'medium')}
+                                    ${this.getPriorityText(task.priority || 'medium')}
                                 </span>
                             </div>
                         </div>
                         <div class="task-id-info">
-                            <span class="task-id">ID: ${taskResponse.id}</span>
-                            <span class="task-category">${taskResponse.category || 'Chung'}</span>
+                            <span class="task-id">ID: ${task.id || task.taskId || 'N/A'}</span>
+                            <span class="task-category">${task.category || 'Chung'}</span>
                         </div>
                     </div>
                     

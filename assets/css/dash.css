@@ -13656,6 +13656,16 @@ button:focus, .btn:focus, .menu-link:focus {
     color: #16a34a;
 }
 
+.task-status-badge.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.task-status-badge.inactive {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
 .task-status-badge.rejected {
     background: rgba(220, 38, 38, 0.1);
     color: #dc2626;
