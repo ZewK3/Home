@@ -151,7 +151,7 @@ class ContentManager {
         // Create global functions for commonly used methods that are called via onclick
         window.showDayDetails = (date) => this.showDayDetails(date);
         window.showRequestDetail = (requestId) => this.showRequestDetail(requestId);
-        window.showTaskDetail = (taskId) => this.showTaskDetail(taskId);
+        window.showTaskDetail = (taskId, taskData = null) => this.showTaskDetail(taskId, taskData);
         window.toggleEmployeeView = () => this.toggleEmployeeView();
         window.filterEmployees = () => this.filterEmployees();
         window.saveShiftAssignments = () => this.saveShiftAssignments();
@@ -3771,6 +3771,9 @@ class ContentManager {
             const tasks = tasksResponse?.data || tasksResponse || [];
             const pagination = tasksResponse?.pagination || null;
             
+            // Store tasks for later use in showTaskDetail
+            this.currentTasks = tasks;
+            
             content.innerHTML = `
                 <div class="work-tasks-container">
                     <!-- Enhanced Header with Stats -->
@@ -3875,7 +3878,7 @@ class ContentManager {
         }
     }
 
-    renderEnhancedTasksList(tasks) {
+    renderEnhancedTasksList(tasks, indexOffset = 0) {
         console.log('DEBUG: renderEnhancedTasksList received:', tasks);
         
         // Handle both array and object response formats
@@ -3902,13 +3905,14 @@ class ContentManager {
             `;
         }
 
-        return taskList.map(task => {
+        return taskList.map((task, index) => {
+            const actualIndex = index + indexOffset;
             const dueDate = task.deadline ? new Date(task.deadline) : null;
             const isOverdue = dueDate && dueDate < new Date() && task.status !== 'completed';
             const dueDateText = dueDate ? dueDate.toLocaleDateString('vi-VN') : 'Không giới hạn';
             
             return `
-                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="showTaskDetail('${task.id}')">
+                <div class="task-card-enhanced ${isOverdue ? 'overdue' : ''}" data-status="${task.status}" onclick="window.contentManager.showTaskDetailFromIndex(${actualIndex})">
                     <div class="task-card-header">
                         <div class="task-title-section">
                             <h4 class="task-title">${task.title}</h4>
@@ -3954,7 +3958,7 @@ class ContentManager {
                                 <div class="progress-fill" style="width: ${this.getTaskProgress(task.status)}%"></div>
                             </div>
                         </div>
-                        <button class="task-action-btn" onclick="event.stopPropagation(); showTaskDetail('${task.id}')">
+                        <button class="task-action-btn" onclick="event.stopPropagation(); window.contentManager.showTaskDetailFromIndex(${actualIndex})">>
                             <span class="material-icons-round">visibility</span>
                             Chi tiết
                         </button>
@@ -4042,9 +4046,19 @@ class ContentManager {
             const pagination = tasksResponse?.pagination || null;
             
             if (newTasks.length > 0) {
-                // Append new tasks to existing list
+                // Get current task count before adding new ones
+                const currentTaskCount = this.currentTasks ? this.currentTasks.length : 0;
+                
+                // Append new tasks to currentTasks array for task detail access
+                if (this.currentTasks) {
+                    this.currentTasks = this.currentTasks.concat(newTasks);
+                } else {
+                    this.currentTasks = newTasks;
+                }
+                
+                // Append new tasks to existing list with correct indices
                 const tasksList = document.getElementById('tasksList');
-                const newTasksHtml = this.renderEnhancedTasksList(newTasks);
+                const newTasksHtml = this.renderEnhancedTasksList(newTasks, currentTaskCount);
                 
                 // Extract just the task cards from the rendered HTML
                 const tempDiv = document.createElement('div');
@@ -4124,7 +4138,7 @@ class ContentManager {
             'in_progress': 'Đang thực hiện', 
             'completed': 'Hoàn thành',
             'rejected': 'Từ chối',
-            'active': 'Đang hoạt động',
+            'active': 'Hoạt động',
             'inactive': 'Không hoạt động'
         };
         return statusMap[status] || status;
@@ -4162,30 +4176,50 @@ class ContentManager {
         });
     }
 
-    async showTaskDetail(taskId) {
+    // Helper method to show task detail using index from current tasks array
+    async showTaskDetailFromIndex(index) {
+        if (this.currentTasks && this.currentTasks[index]) {
+            const task = this.currentTasks[index];
+            await this.showTaskDetail(task.id || task.taskId, task);
+        } else {
+            console.error('Task not found at index:', index);
+            utils.showNotification('Không thể tải chi tiết công việc', 'error');
+        }
+    }
+
+    async showTaskDetail(taskId, taskData = null) {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const taskResponse = await utils.fetchAPI(`?action=getTaskDetail&taskId=${taskId}&token=${token}`);
+            let task;
             
-            console.log('DEBUG: Raw task response:', taskResponse);
-            
-            if (!taskResponse) {
-                throw new Error('Cannot load task details');
-            }
+            // If task data is provided, use it directly instead of making API call
+            if (taskData) {
+                task = taskData;
+                console.log('DEBUG: Using provided task data:', task);
+            } else {
+                // Fallback to API call for backward compatibility
+                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                const taskResponse = await utils.fetchAPI(`?action=getTaskDetail&taskId=${taskId}&token=${token}`);
+                
+                console.log('DEBUG: Raw task response:', taskResponse);
+                
+                if (!taskResponse) {
+                    throw new Error('Cannot load task details');
+                }
 
-            // Handle both direct object and wrapped response
-            let task = taskResponse;
-            if (taskResponse.status === 200 && taskResponse.data) {
-                task = taskResponse.data;
-            } else if (taskResponse.status === 200 && !taskResponse.id) {
-                // If status is 200 but no task data, it means the structure is different
-                task = {
-                    ...taskResponse,
-                    status: taskResponse.status === 200 ? 'active' : taskResponse.status
-                };
-            }
+                // Handle both direct object and wrapped response
+                task = taskResponse;
+                if (task.status === 200 && task.data) {
+                    task = task.data;
+                } else if (task.status === 200 && !task.id) {
+                    // If status is 200 but no task data, it means the structure is different
+                    task = {
+                        ...taskResponse,
+                        status: task.status === 200 ? 'active' : task.status
+                    };
+                }
 
-            console.log('DEBUG: Processed task:', task);
+                console.log('DEBUG: Processed task from API:', task);
+            }
 
             const modal = document.getElementById('taskDetailModal');
             const content = document.getElementById('taskDetailContent');
@@ -4218,7 +4252,7 @@ class ContentManager {
                                 <span class="material-icons-round">description</span>
                                 <h4>Mô tả công việc</h4>
                             </div>
-                            <div class="description-content">${taskResponse.description || 'Không có mô tả'}</div>
+                            <div class="description-content">${task.description || 'Không có mô tả'}</div>
                         </div>
                         
                         <div class="task-people-grid">
@@ -4227,7 +4261,7 @@ class ContentManager {
                                     <span class="material-icons-round">supervisor_account</span>
                                     <h4>Người giao nhiệm vụ</h4>
                                 </div>
-                                <div class="people-list">${taskResponse.assignerNames || 'Không xác định'}</div>
+                                <div class="people-list">${task.assignerNames || 'Không xác định'}</div>
                             </div>
                             
                             <div class="people-card participants">
@@ -4235,16 +4269,16 @@ class ContentManager {
                                     <span class="material-icons-round">person</span>
                                     <h4>Người thực hiện</h4>
                                 </div>
-                                <div class="people-list">${taskResponse.participantNames || 'Chưa giao'}</div>
+                                <div class="people-list">${task.participantNames || 'Chưa giao'}</div>
                             </div>
                             
-                            ${taskResponse.supporterNames ? `
+                            ${task.supporterNames ? `
                             <div class="people-card supporters">
                                 <div class="people-header">
                                     <span class="material-icons-round">support_agent</span>
                                     <h4>Người hỗ trợ</h4>
                                 </div>
-                                <div class="people-list">${taskResponse.supporterNames}</div>
+                                <div class="people-list">${task.supporterNames}</div>
                             </div>
                             ` : ''}
                         </div>
@@ -4257,18 +4291,18 @@ class ContentManager {
                             <div class="timeline-info">
                                 <div class="timeline-item">
                                     <span class="timeline-label">Ngày tạo:</span>
-                                    <span class="timeline-value">${new Date(taskResponse.createdAt).toLocaleString('vi-VN')}</span>
+                                    <span class="timeline-value">${task.createdAt ? new Date(task.createdAt).toLocaleString('vi-VN') : 'N/A'}</span>
                                 </div>
-                                ${taskResponse.dueDate ? `
+                                ${(task.dueDate || task.deadline) ? `
                                 <div class="timeline-item">
                                     <span class="timeline-label">Hạn hoàn thành:</span>
-                                    <span class="timeline-value ${new Date(taskResponse.dueDate) < new Date() ? 'overdue' : ''}">${new Date(taskResponse.dueDate).toLocaleString('vi-VN')}</span>
+                                    <span class="timeline-value ${new Date(task.dueDate || task.deadline) < new Date() ? 'overdue' : ''}">${new Date(task.dueDate || task.deadline).toLocaleString('vi-VN')}</span>
                                 </div>
                                 ` : ''}
-                                ${taskResponse.completedAt ? `
+                                ${task.completedAt ? `
                                 <div class="timeline-item">
                                     <span class="timeline-label">Hoàn thành:</span>
-                                    <span class="timeline-value">${new Date(taskResponse.completedAt).toLocaleString('vi-VN')}</span>
+                                    <span class="timeline-value">${new Date(task.completedAt).toLocaleString('vi-VN')}</span>
                                 </div>
                                 ` : ''}
                             </div>
@@ -4280,21 +4314,21 @@ class ContentManager {
                                 <h4>Hành động</h4>
                             </div>
                             <div class="action-buttons">
-                                ${taskResponse.status !== 'completed' ? `
-                                    <button onclick="contentManager.updateTaskStatus('${taskResponse.id}', 'in_progress')" class="btn btn-warning action-btn">
+                                ${task.status !== 'completed' ? `
+                                    <button onclick="contentManager.updateTaskStatus('${task.id}', 'in_progress')" class="btn btn-warning action-btn">
                                         <span class="material-icons-round">play_arrow</span>
                                         Bắt đầu
                                     </button>
-                                    <button onclick="contentManager.updateTaskStatus('${taskResponse.id}', 'completed')" class="btn btn-success action-btn">
+                                    <button onclick="contentManager.updateTaskStatus('${task.id}', 'completed')" class="btn btn-success action-btn">
                                         <span class="material-icons-round">check</span>
                                         Hoàn thành
                                     </button>
                                 ` : ''}
-                                <button onclick="contentManager.printTask('${taskResponse.id}')" class="btn btn-info action-btn">
+                                <button onclick="contentManager.printTask('${task.id}')" class="btn btn-info action-btn">
                                     <span class="material-icons-round">print</span>
                                     In
                                 </button>
-                                <button onclick="contentManager.exportTask('${taskResponse.id}')" class="btn btn-secondary action-btn">
+                                <button onclick="contentManager.exportTask('${task.id}')" class="btn btn-secondary action-btn">
                                     <span class="material-icons-round">download</span>
                                     Xuất
                                 </button>
@@ -4307,12 +4341,12 @@ class ContentManager {
                                 <h4>Bình luận và ghi chú</h4>
                             </div>
                             <div id="commentsList" class="comments-list">
-                                ${this.renderEnhancedComments(taskResponse.comments || [])}
+                                ${this.renderEnhancedComments(task.comments || [])}
                             </div>
                             
                             <div class="add-comment-section">
                                 <textarea id="newComment" class="comment-textarea" placeholder="Thêm bình luận hoặc ghi chú..." rows="3"></textarea>
-                                <button onclick="contentManager.addComment('${taskResponse.id}')" class="btn btn-primary comment-btn">
+                                <button onclick="contentManager.addComment('${task.id}')" class="btn btn-primary comment-btn">
                                     <span class="material-icons-round">send</span>
                                     Gửi bình luận
                                 </button>
@@ -6516,7 +6550,7 @@ class ContentManager {
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">📊 Trạng thái:</span>
-                            <span class="detail-value status-text-${reg.status?.toLowerCase() || 'wait'}">${this.getStatusText(reg.status)}</span>
+                            <span class="detail-value status-text-${reg.status?.toLowerCase() || 'wait'}">${this.getEmployeeStatusText(reg.status)}</span>
                         </div>
                     </div>
                 </div>
@@ -6544,7 +6578,7 @@ class ContentManager {
         this.updatePaginationControls();
     }
     
-    getStatusText(status) {
+    getEmployeeStatusText(status) {
         const statusMap = {
             'Wait': '⏳ Chờ duyệt',
             'Approved': '✅ Đã duyệt', 
@@ -6629,7 +6663,7 @@ class ContentManager {
                         <div class="detail-item">
                             <span class="label">Trạng thái:</span>
                             <span class="value status-${registration.status || 'pending'}">
-                                ${this.getStatusText(registration.status || 'pending')}
+                                ${this.getRegistrationStatusText(registration.status || 'pending')}
                             </span>
                         </div>
                         ${registration.processedAt ? `
@@ -6663,7 +6697,7 @@ class ContentManager {
         modal.style.display = 'flex';
     }
 
-    getStatusText(status) {
+    getRegistrationStatusText(status) {
         switch (status) {
             case 'Wait':
             case 'wait':
