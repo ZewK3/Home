@@ -1766,10 +1766,13 @@ class ContentManager {
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             const attendanceRequestsResponse = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
             
-            // Handle different response formats - array or object with numeric keys
+            // Handle different response formats - new API format with data property, array or object with numeric keys
             let attendanceRequests = [];
             
-            if (Array.isArray(attendanceRequestsResponse)) {
+            if (attendanceRequestsResponse && attendanceRequestsResponse.data && Array.isArray(attendanceRequestsResponse.data)) {
+                // New API format: {data: [...], pagination: {...}}
+                attendanceRequests = attendanceRequestsResponse.data;
+            } else if (Array.isArray(attendanceRequestsResponse)) {
                 attendanceRequests = attendanceRequestsResponse;
             } else if (attendanceRequestsResponse && typeof attendanceRequestsResponse === 'object') {
                 // Handle object format with numeric keys like {"0": {...}, "1": {...}}
