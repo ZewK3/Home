@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:cloudflare": "vite build && cp public/_redirects dist/ && cp public/_headers dist/",
     "verify": "node verify-build.js", 
     "lint": "eslint .",
     "preview": "vite preview"
