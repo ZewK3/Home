@@ -2369,7 +2369,21 @@ async function handleGetTaskDetail(url, db, origin) {
     const task = taskQuery;
     task.comments = commentsQuery.results || [];
 
-    return jsonResponse(task, 200, origin);
+    // Add timestamp without overriding task status
+    const responseData = {
+      ...task,
+      timestamp: new Date().toISOString()
+    };
+
+    return new Response(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    });
 
   } catch (error) {
     console.error("Error getting task detail:", error);
@@ -2539,11 +2553,17 @@ async function handleSaveShiftAssignments(body, db, origin) {
 
     // Insert new assignments
     for (const shift of shifts) {
+      // Validate shift data for undefined values
+      if (!shift.employeeId || !shift.storeId || !shift.date || !shift.shiftType) {
+        console.error("Invalid shift data:", shift);
+        continue; // Skip invalid shifts
+      }
+
       await db
         .prepare(`
-          INSERT INTO shift_assignments (
-            employeeId, storeId, date, shiftType, assignedBy, assignedAt
-          ) VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO shift_requests (
+            employeeId, storeId, requestDate, shiftType, requestedBy, requestedAt, status
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)
         `)
         .bind(
           shift.employeeId,
@@ -2551,7 +2571,8 @@ async function handleSaveShiftAssignments(body, db, origin) {
           shift.date,
           shift.shiftType,
           session.employeeId,
-          new Date().toISOString()
+          new Date().toISOString(),
+          'pending'
         )
         .run();
     }

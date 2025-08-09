@@ -33,9 +33,10 @@
     background: var(--bg-glass);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-color);
-    width: 95%;
+    width: 90%;
+    height: 90vh;
     max-width: 1400px;
-    max-height: 95vh;
+    max-height: 90vh;
 }
 
 .modal-header {
@@ -200,6 +201,34 @@
     padding: 1.5rem;
 }
 
+.task-actions-card {
+    min-height: 120px;
+    padding: 2rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    min-width: 150px;
+    justify-content: center;
+}
+
 .section-header {
     display: flex;
     align-items: center;
@@ -292,24 +321,7 @@
     font-weight: 600;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    text-decoration: none;
-}
+/* Removed duplicate - consolidated above */
 
 /* Comments Enhanced Styles */
 .comments-list {
