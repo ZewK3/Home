@@ -37,6 +37,19 @@
     height: 90vh;
     max-width: 1400px;
     max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.enhanced-modal-content .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+#taskDetailContent {
+    height: 100%;
+    overflow-y: auto;
 }
 
 .modal-header {

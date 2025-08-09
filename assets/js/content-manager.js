@@ -5138,7 +5138,7 @@ class ContentManager {
 
     updateRoleStatistics() {
         
-        const userCards = document.querySelectorAll('.user-card');
+        const userCards = document.querySelectorAll('.modular-user-card');
         const counts = { AD: 0, QL: 0, AM: 0, NV: 0 };
         
         
@@ -5176,12 +5176,22 @@ class ContentManager {
         
         const searchTerm = searchInput.value.toLowerCase();
         const roleFilterValue = roleFilter.value;
-        const userCards = document.querySelectorAll('.user-card');
+        const userCards = document.querySelectorAll('.modular-user-card');
 
+        // If no search term and no role filter, show all users
+        if (!searchTerm && !roleFilterValue) {
+            userCards.forEach(card => {
+                card.style.display = 'flex';
+            });
+            return;
+        }
+
+        let visibleCount = 0;
         userCards.forEach(card => {
-            const userName = card.querySelector('h4').textContent.toLowerCase();
-            const userId = card.querySelector('.user-id').textContent.toLowerCase();
-            const userRole = card.dataset.role;
+            const userName = card.querySelector('.modular-user-name')?.textContent?.toLowerCase() || '';
+            const userIdElement = card.querySelector('.modular-user-id');
+            const userId = userIdElement?.textContent?.toLowerCase() || '';
+            const userRole = card.dataset.role || card.getAttribute('data-role') || '';
 
             // Enhanced search logic: search text ONLY in name and ID, not role
             const matchesSearch = !searchTerm || userName.includes(searchTerm) || userId.includes(searchTerm);
@@ -5189,9 +5199,36 @@ class ContentManager {
             // Role filter: exact match ONLY when role filter is selected
             const matchesRole = !roleFilterValue || userRole === roleFilterValue;
 
-            // Show card only if both search and role filter match
-            card.style.display = matchesSearch && matchesRole ? 'flex' : 'none';
+            if (matchesSearch && matchesRole) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
         });
+
+        // Show no results message if no users are visible
+        const userListContainer = document.getElementById('permissionUserList');
+        if (userListContainer) {
+            let noResultsMsg = userListContainer.querySelector('.no-search-results');
+            if (visibleCount === 0 && (searchTerm || roleFilterValue)) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.className = 'no-search-results';
+                    noResultsMsg.innerHTML = `
+                        <div class="no-data-state">
+                            <span class="no-data-icon">🔍</span>
+                            <h3>Không tìm thấy kết quả</h3>
+                            <p>Thử tìm kiếm với từ khóa khác hoặc thay đổi bộ lọc.</p>
+                        </div>
+                    `;
+                    userListContainer.appendChild(noResultsMsg);
+                }
+                noResultsMsg.style.display = 'block';
+            } else if (noResultsMsg) {
+                noResultsMsg.style.display = 'none';
+            }
+        }
     }
 
     async editUserRole(userId) {
@@ -5884,49 +5921,51 @@ class ContentManager {
                     <div class="card-body">
                         <!-- Enhanced Filters -->
                         <div class="approval-filters-enhanced">
-                            <div class="filter-group">
-                                <label>🏪 Cửa hàng:</label>
-                                <select id="storeFilterSelect" class="form-control">
-                                    <option value="">Tất cả cửa hàng</option>
-                                </select>
+                            <div class="filter-groups-row">
+                                <div class="filter-group">
+                                    <label>🏪 Cửa hàng:</label>
+                                    <select id="storeFilterSelect" class="form-control">
+                                        <option value="">Tất cả cửa hàng</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>📅 Ngày gửi:</label>
+                                    <select id="dateFilterSelect" class="form-control">
+                                        <option value="">Tất cả ngày</option>
+                                        <option value="today">Hôm nay</option>
+                                        <option value="yesterday">Hôm qua</option>
+                                        <option value="week">7 ngày qua</option>
+                                        <option value="month">30 ngày qua</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>🎯 Trạng thái:</label>
+                                    <select id="statusFilterSelect" class="form-control">
+                                        <option value="pending">Chờ duyệt</option>
+                                        <option value="approved">Đã duyệt</option>
+                                        <option value="rejected">Đã từ chối</option>
+                                        <option value="all">Tất cả</option>
+                                    </select>
+                                </div>
+                                <div class="filter-actions">
+                                    <button id="refreshPendingRegistrations" class="btn btn-secondary">
+                                        <span class="material-icons-round">refresh</span>
+                                        Làm mới
+                                    </button>
+                                    <button id="bulkApprovalBtn" class="btn btn-success" style="display: none;">
+                                        <span class="material-icons-round">done_all</span>
+                                        Duyệt hàng loạt
+                                    </button>
+                                </div>
                             </div>
-                            <div class="filter-group">
-                                <label>📅 Ngày gửi:</label>
-                                <select id="dateFilterSelect" class="form-control">
-                                    <option value="">Tất cả ngày</option>
-                                    <option value="today">Hôm nay</option>
-                                    <option value="yesterday">Hôm qua</option>
-                                    <option value="week">7 ngày qua</option>
-                                    <option value="month">30 ngày qua</option>
-                                </select>
-                            </div>
-                            <div class="filter-group">
-                                <label>🎯 Trạng thái:</label>
-                                <select id="statusFilterSelect" class="form-control">
-                                    <option value="pending">Chờ duyệt</option>
-                                    <option value="approved">Đã duyệt</option>
-                                    <option value="rejected">Đã từ chối</option>
-                                    <option value="all">Tất cả</option>
-                                </select>
-                            </div>
-                            <div class="filter-actions">
-                                <button id="refreshPendingRegistrations" class="btn btn-secondary">
-                                    <span class="material-icons-round">refresh</span>
-                                    Làm mới
-                                </button>
-                                <button id="bulkApprovalBtn" class="btn btn-success" style="display: none;">
-                                    <span class="material-icons-round">done_all</span>
-                                    Duyệt hàng loạt
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Search Bar -->
-                        <div class="search-section">
-                            <div class="search-bar">
-                                <span class="search-icon">🔍</span>
-                                <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, hoặc mã nhân viên..." class="search-input">
-                                <button id="clearSearch" class="clear-search-btn" style="display: none;">✕</button>
+                            
+                            <!-- Search Bar inside approval-filters-enhanced -->
+                            <div class="search-section">
+                                <div class="search-bar">
+                                    <span class="search-icon">🔍</span>
+                                    <input type="text" id="searchInput" placeholder="Tìm kiếm theo tên, email, hoặc mã nhân viên..." class="search-input">
+                                    <button id="clearSearch" class="clear-search-btn" style="display: none;">✕</button>
+                                </div>
                             </div>
                         </div>
 
