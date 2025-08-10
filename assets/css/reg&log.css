@@ -950,7 +950,7 @@ body {
     transition: var(--transition);
 }
 
-/* Notification - Professional Design */
+/* Notification - Professional Design with Auto-hide */
 .notification {
     position: fixed;
     top: 1rem;
