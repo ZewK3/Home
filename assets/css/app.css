@@ -1,0 +1,513 @@
+/* 
+=============================================================================
+  MAIN APPLICATION STYLESHEET
+  ZewK Management System - Professional Dashboard
+  
+  Modern CSS Architecture with Component-based Design
+=============================================================================
+*/
+
+/* Import Core Foundation */
+@import url('./app-core.css');
+
+/* Import Component Styles */
+@import url('./header.css');
+@import url('./sidebar.css');
+@import url('./main-content.css');
+@import url('./tables.css');
+@import url('./modals.css');
+
+/* =============================================================================
+   APPLICATION-SPECIFIC COMPONENTS
+============================================================================= */
+
+/* Dashboard Welcome Section */
+.dashboard-welcome {
+  background: linear-gradient(135deg, var(--primary-50), var(--primary-100));
+  border: 1px solid var(--primary-200);
+  border-radius: var(--border-radius-xl);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .dashboard-welcome {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.dashboard-welcome::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.welcome-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--primary-700);
+  margin: 0 0 0.5rem 0;
+}
+
+[data-theme="dark"] .welcome-title {
+  color: var(--primary-400);
+}
+
+.welcome-subtitle {
+  font-size: var(--font-size-lg);
+  color: var(--primary-600);
+  margin: 0;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .welcome-subtitle {
+  color: var(--primary-300);
+}
+
+/* Quick Actions Grid */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.quick-action-card {
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.quick-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-300);
+}
+
+.quick-action-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--border-radius-lg);
+  background: linear-gradient(135deg, var(--primary-500), var(--primary-600));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem auto;
+  font-size: 1.5rem;
+}
+
+.quick-action-title {
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  font-size: var(--font-size-sm);
+}
+
+.quick-action-description {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Task Management Components */
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.task-card {
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.task-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.task-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.task-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+  font-size: var(--font-size-lg);
+}
+
+.task-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.task-assignee {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.task-due-date {
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.task-due-date.overdue {
+  color: var(--error-600);
+}
+
+.task-due-date.due-soon {
+  color: var(--warning-600);
+}
+
+/* Filter and Search Components */
+.filter-bar {
+  background-color: var(--surface-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.filter-select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background-color: var(--surface-secondary);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  min-width: 8rem;
+}
+
+/* Progress Indicators */
+.progress-bar {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--surface-secondary);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+  border-radius: 9999px;
+  transition: width var(--transition-base);
+}
+
+.progress-fill.success {
+  background: linear-gradient(90deg, var(--success-500), var(--success-600));
+}
+
+.progress-fill.warning {
+  background: linear-gradient(90deg, var(--warning-500), var(--warning-600));
+}
+
+.progress-fill.error {
+  background: linear-gradient(90deg, var(--error-500), var(--error-600));
+}
+
+/* Attendance Components */
+.attendance-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: var(--border-color);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.attendance-day {
+  background-color: var(--surface-primary);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.attendance-day:hover {
+  background-color: var(--surface-hover);
+}
+
+.attendance-day.present {
+  background-color: var(--success-100);
+  color: var(--success-700);
+}
+
+.attendance-day.absent {
+  background-color: var(--error-100);
+  color: var(--error-700);
+}
+
+.attendance-day.late {
+  background-color: var(--warning-100);
+  color: var(--warning-700);
+}
+
+.attendance-day.holiday {
+  background-color: var(--gray-100);
+  color: var(--gray-600);
+}
+
+[data-theme="dark"] .attendance-day.present {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: var(--success-400);
+}
+
+[data-theme="dark"] .attendance-day.absent {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--error-400);
+}
+
+[data-theme="dark"] .attendance-day.late {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: var(--warning-400);
+}
+
+[data-theme="dark"] .attendance-day.holiday {
+  background-color: rgba(156, 163, 175, 0.2);
+  color: var(--gray-400);
+}
+
+/* File Upload Components */
+.file-upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: 3rem 2rem;
+  text-align: center;
+  background-color: var(--surface-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.file-upload-area:hover,
+.file-upload-area.dragover {
+  border-color: var(--primary-500);
+  background-color: var(--primary-50);
+}
+
+[data-theme="dark"] .file-upload-area:hover,
+[data-theme="dark"] .file-upload-area.dragover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.file-upload-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.file-upload-text {
+  font-size: var(--font-size-lg);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.file-upload-subtext {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* =============================================================================
+   RESPONSIVE ADAPTATIONS
+============================================================================= */
+
+@media (max-width: 1024px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+  
+  .task-grid {
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-welcome {
+    padding: 1.5rem;
+  }
+  
+  .welcome-title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .welcome-subtitle {
+    font-size: var(--font-size-base);
+  }
+  
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .quick-action-card {
+    padding: 1rem;
+  }
+  
+  .task-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .task-card {
+    padding: 1rem;
+  }
+  
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-section {
+    flex-wrap: wrap;
+  }
+  
+  .attendance-grid {
+    font-size: var(--font-size-xs);
+  }
+  
+  .attendance-day {
+    padding: 0.5rem 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .file-upload-area {
+    padding: 2rem 1rem;
+  }
+  
+  .file-upload-icon {
+    font-size: 2rem;
+  }
+}
+
+/* =============================================================================
+   PERFORMANCE OPTIMIZATIONS
+============================================================================= */
+
+/* GPU Acceleration for animations */
+.stat-card,
+.quick-action-card,
+.task-card,
+.btn {
+  will-change: transform;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000000;
+    --text-muted: #000000;
+  }
+  
+  [data-theme="dark"] {
+    --border-color: #ffffff;
+    --text-muted: #ffffff;
+  }
+}
+
+/* =============================================================================
+   PRINT STYLES
+============================================================================= */
+
+@media print {
+  .app-header,
+  .app-sidebar,
+  .mobile-menu-toggle,
+  .btn,
+  .modal-overlay,
+  .notification-container {
+    display: none !important;
+  }
+  
+  .app-main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .app-content {
+    padding: 0 !important;
+  }
+  
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a {
+    text-decoration: underline;
+  }
+}
