@@ -938,7 +938,7 @@ function setupMobileMenu() {
     // Open dialog function
     function openMobileMenu() {
         if (!isMenuOpen) {
-            mobileDialog.showModal();
+            mobileDialog.style.display = 'block';
             document.body.style.overflow = 'hidden';
             isMenuOpen = true;
             
@@ -957,7 +957,7 @@ function setupMobileMenu() {
             mobileDialog.style.transform = 'translateX(-100%)';
             
             setTimeout(() => {
-                mobileDialog.close();
+                mobileDialog.style.display = 'none';
                 document.body.style.overflow = '';
                 isMenuOpen = false;
             }, 300);
