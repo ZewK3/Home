@@ -6873,13 +6873,13 @@ class ContentManager {
         
         let calendarHTML = `
             <div class="calendar-header">
-                <div class="day-name">CN</div>
-                <div class="day-name">T2</div>
-                <div class="day-name">T3</div>
-                <div class="day-name">T4</div>
-                <div class="day-name">T5</div>
-                <div class="day-name">T6</div>
-                <div class="day-name">T7</div>
+                <div class="calendar-day-header">CN</div>
+                <div class="calendar-day-header">T2</div>
+                <div class="calendar-day-header">T3</div>
+                <div class="calendar-day-header">T4</div>
+                <div class="calendar-day-header">T5</div>
+                <div class="calendar-day-header">T6</div>
+                <div class="calendar-day-header">T7</div>
             </div>
             <div class="calendar-grid">
         `;
@@ -6900,10 +6900,10 @@ class ContentManager {
                      data-date="${dateStr}" 
                      onclick="showDayDetails('${dateStr}')"
                      style="cursor: pointer;">
-                    <div class="day-number">${day}</div>
-                    ${dayData ? `
-                        <div class="day-hours">${dayData.hoursWorked || 0}h</div>
-                    ` : '<div class="day-off">0h</div>'}
+                    <div class="calendar-day-number">${day}</div>
+                    <div class="calendar-day-info">
+                        ${dayData ? `${dayData.hoursWorked || 0}h` : '0h'}
+                    </div>
                 </div>
             `;
         }
