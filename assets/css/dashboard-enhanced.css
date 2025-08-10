@@ -1,0 +1,244 @@
+/* Master Enhanced Dashboard CSS - Modular Organization */
+
+/* Import Base Styles */
+@import url('base.css');
+@import url('components.css');
+@import url('containers.css');
+@import url('navigation.css');
+@import url('modals.css');
+
+/* Import Feature-Specific Modules */
+@import url('approval-management.css');
+@import url('task-management.css');
+@import url('personal-info.css');
+@import url('text-editor.css');
+@import url('user-management.css');
+@import url('dashboard-stats.css');
+@import url('forms.css');
+@import url('tables.css');
+
+/* Override styles for inline elements previously in HTML */
+.AppHeader-logo {
+    text-decoration: none !important;
+    color: inherit !important;
+    cursor: pointer !important;
+}
+
+.loading-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+/* Enhanced Professional Theme Optimizations */
+
+/* Dashboard main content fixes */
+.dashboard-main-fade-in {
+    /* Container takes full remaining space without constraints */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Timesheet main content enhancements */
+.timesheet-main-content {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    margin: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    overflow-y: auto;
+    flex: 1;
+}
+
+[data-theme="dark"] .timesheet-main-content {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: rgba(71, 85, 105, 0.5);
+}
+
+/* Enhanced Modal Content Display */
+.enhanced-modal-content {
+    width: 90%;
+    max-width: 1400px;
+    height: 90%;
+    max-height: 90vh;
+    margin: 5vh auto;
+    background: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.taskDetailContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Task header section fixes */
+.task-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.task-header-section h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+}
+
+.task-status-badge {
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+/* Professional spacing and layout improvements */
+.content-wrapper {
+    padding: 1.5rem;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.function-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Enhanced scrollbar for all containers */
+.dashboard-main-fade-in::-webkit-scrollbar,
+.timesheet-main-content::-webkit-scrollbar,
+.enhanced-modal-content::-webkit-scrollbar,
+.taskDetailContent::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dashboard-main-fade-in::-webkit-scrollbar-track,
+.timesheet-main-content::-webkit-scrollbar-track,
+.enhanced-modal-content::-webkit-scrollbar-track,
+.taskDetailContent::-webkit-scrollbar-track {
+    background: var(--bg-glass);
+    border-radius: 4px;
+}
+
+.dashboard-main-fade-in::-webkit-scrollbar-thumb,
+.timesheet-main-content::-webkit-scrollbar-thumb,
+.enhanced-modal-content::-webkit-scrollbar-thumb,
+.taskDetailContent::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.dashboard-main-fade-in::-webkit-scrollbar-thumb:hover,
+.timesheet-main-content::-webkit-scrollbar-thumb:hover,
+.enhanced-modal-content::-webkit-scrollbar-thumb:hover,
+.taskDetailContent::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+/* Professional Typography Scale */
+h1 { font-size: var(--font-size-3xl); font-weight: 700; line-height: 1.2; }
+h2 { font-size: var(--font-size-2xl); font-weight: 600; line-height: 1.3; }
+h3 { font-size: var(--font-size-xl); font-weight: 600; line-height: 1.4; }
+h4 { font-size: var(--font-size-lg); font-weight: 600; line-height: 1.4; }
+h5 { font-size: var(--font-size-md); font-weight: 600; line-height: 1.5; }
+h6 { font-size: var(--font-size-sm); font-weight: 600; line-height: 1.5; }
+
+p { font-size: var(--font-size-md); line-height: 1.6; margin-bottom: 1rem; }
+small { font-size: var(--font-size-sm); }
+
+/* Professional spacing utilities */
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: 0.5rem !important; }
+.mb-2 { margin-bottom: 1rem !important; }
+.mb-3 { margin-bottom: 1.5rem !important; }
+.mb-4 { margin-bottom: 2rem !important; }
+
+.mt-0 { margin-top: 0 !important; }
+.mt-1 { margin-top: 0.5rem !important; }
+.mt-2 { margin-top: 1rem !important; }
+.mt-3 { margin-top: 1.5rem !important; }
+.mt-4 { margin-top: 2rem !important; }
+
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.5rem !important; }
+.p-2 { padding: 1rem !important; }
+.p-3 { padding: 1.5rem !important; }
+.p-4 { padding: 2rem !important; }
+
+/* Enhanced responsive typography */
+@media (max-width: 768px) {
+    h1 { font-size: var(--font-size-2xl); }
+    h2 { font-size: var(--font-size-xl); }
+    h3 { font-size: var(--font-size-lg); }
+    h4 { font-size: var(--font-size-md); }
+    h5 { font-size: var(--font-size-sm); }
+    h6 { font-size: var(--font-size-xs); }
+    
+    p { font-size: var(--font-size-sm); }
+    
+    .content-wrapper {
+        padding: 1rem;
+    }
+    
+    .function-container {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .enhanced-modal-content {
+        width: 95%;
+        height: 95%;
+        margin: 2.5vh auto;
+    }
+    
+    .taskDetailContent {
+        padding: 1rem;
+    }
+    
+    .timesheet-main-content {
+        margin: 0.5rem;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 { font-size: var(--font-size-xl); }
+    h2 { font-size: var(--font-size-lg); }
+    h3 { font-size: var(--font-size-md); }
+    
+    .enhanced-modal-content {
+        width: 98%;
+        height: 98%;
+        margin: 1vh auto;
+    }
+    
+    .content-wrapper {
+        padding: 0.75rem;
+    }
+    
+    .function-container {
+        padding: 0.75rem;
+    }
+}
