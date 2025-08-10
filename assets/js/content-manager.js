@@ -1858,11 +1858,11 @@ class ContentManager {
                 </div>
 
                 <!-- Enhanced Request Detail Modal -->
-                <div id="requestDetailModal" class="modal enhanced-modal">
-                    <div class="modal-content enhanced-modal-content">
+                <div id="requestDetailModal" class="requestDetailModal">
+                    <div class="request-detail-content">
                         <div class="modal-header">
-                            <h3>Chi tiết đơn từ</h3>
-                            <button class="close-btn" onclick="contentManager.closeRequestDetailModal()">
+                            <h3 class="modal-title">Chi tiết đơn từ</h3>
+                            <button class="modal-close" onclick="contentManager.closeRequestDetailModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
@@ -1871,11 +1871,11 @@ class ContentManager {
                 </div>
 
                 <!-- Approval/Rejection Modal -->
-                <div id="approvalModal" class="modal enhanced-modal">
-                    <div class="modal-content enhanced-modal-content">
+                <div id="approvalModal" class="approvalModal">
+                    <div class="approval-content">
                         <div class="modal-header">
-                            <h3 id="approvalModalTitle">Xử lý đơn từ</h3>
-                            <button class="close-btn" onclick="contentManager.closeApprovalModal()">
+                            <h3 id="approvalModalTitle" class="modal-title">Xử lý đơn từ</h3>
+                            <button class="modal-close" onclick="contentManager.closeApprovalModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
@@ -2107,12 +2107,14 @@ class ContentManager {
             </div>
         `;
         
-        modal.style.display = 'block';
+        modal.style.display = 'flex';
+        modal.classList.add('show');
     }
 
     closeApprovalModal() {
         const modal = document.getElementById('approvalModal');
         modal.style.display = 'none';
+        modal.classList.remove('show');
     }
 
     async confirmRejectRequest(requestId) {
@@ -3843,15 +3845,15 @@ class ContentManager {
                 </div>
 
                 <!-- Enhanced Task Detail Modal -->
-                <div id="taskDetailModal" class="modal enhanced-modal">
-                    <div class="modal-content enhanced-modal-content">
-                        <div class="modal-header">
-                            <h3>Chi tiết công việc</h3>
-                            <button class="close-btn" onclick="contentManager.closeTaskDetailModal()">
+                <div id="taskDetailModal" class="taskDetailModal">
+                    <div class="task-detail-content">
+                        <div class="task-detail-header">
+                            <h3 class="task-detail-title">Chi tiết công việc</h3>
+                            <button class="task-detail-close" onclick="contentManager.closeTaskDetailModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
-                        <div id="taskDetailContent" class="modal-body"></div>
+                        <div id="taskDetailContent" class="task-detail-body"></div>
                     </div>
                 </div>
             `;
@@ -4359,7 +4361,8 @@ class ContentManager {
                 </div>
             `;
             
-            modal.style.display = 'block';
+            modal.style.display = 'flex';
+            modal.classList.add('show');
             
         } catch (error) {
             console.error('Error loading task detail:', error);
@@ -4507,7 +4510,7 @@ class ContentManager {
                 utils.showNotification('Đã trả lời bình luận', 'success');
                 // Refresh the current task detail modal
                 const modal = document.getElementById('taskDetailModal');
-                if (modal.style.display === 'block') {
+                if (modal.style.display === 'flex' || modal.classList.contains('show')) {
                     // Get the task ID from the modal and refresh
                     location.reload(); // Simple refresh for now
                 }
@@ -4524,6 +4527,7 @@ class ContentManager {
     closeTaskDetailModal() {
         const modal = document.getElementById('taskDetailModal');
         modal.style.display = 'none';
+        modal.classList.remove('show');
     }
 
     getPriorityIcon(priority) {
@@ -9643,6 +9647,7 @@ class ContentManager {
         const modal = document.getElementById('requestDetailModal');
         if (modal) {
             modal.style.display = 'none';
+            modal.classList.remove('show');
         }
     }
 

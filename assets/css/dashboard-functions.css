@@ -12,6 +12,10 @@
 @import url('./dashboard-functions/work-management.css');
 @import url('./dashboard-functions/analytics.css');
 @import url('./dashboard-functions/approval-management.css');
+@import url('./dashboard-functions/timesheet.css');
+@import url('./dashboard-functions/attendance-gps.css');
+@import url('./dashboard-functions/work-tasks.css');
+@import url('./dashboard-functions/personnel-management.css');
 
 /* 
 =============================================================================

@@ -1,0 +1,543 @@
+/* 
+=============================================================================
+  ATTENDANCE GPS MANAGEMENT
+  Dedicated styling for GPS-based attendance tracking functionality
+=============================================================================
+*/
+
+/* Attendance GPS Container */
+.attendance-gps-container {
+  background: linear-gradient(135deg, 
+    var(--surface-default) 0%, 
+    var(--surface-elevated) 100%);
+  border-radius: var(--border-radius-xl);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(15px);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.attendance-gps-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent 0%, 
+    rgba(var(--success-rgb), 0.05) 30%, 
+    rgba(var(--primary-rgb), 0.03) 70%, 
+    transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.attendance-gps-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* GPS Header */
+.gps-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.gps-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gps-title-icon {
+  color: var(--success);
+  font-size: 2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.gps-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-elevated);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-subtle);
+}
+
+.gps-status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+.gps-status-dot.active {
+  background: var(--success);
+  box-shadow: 0 0 10px rgba(var(--success-rgb), 0.5);
+}
+
+.gps-status-dot.inactive {
+  background: var(--error);
+  box-shadow: 0 0 10px rgba(var(--error-rgb), 0.5);
+}
+
+.gps-status-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Location Cards */
+.location-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.location-card {
+  background: linear-gradient(135deg, 
+    var(--surface-elevated) 0%, 
+    var(--surface-raised) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.location-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    var(--primary) 0%, 
+    var(--success) 100%);
+}
+
+.location-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary);
+}
+
+.location-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.location-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.location-distance {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.location-coordinates {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--surface-raised);
+  border-radius: var(--border-radius-md);
+  border-left: 3px solid var(--primary);
+}
+
+.location-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.location-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.location-btn.primary {
+  background: var(--primary);
+  color: var(--text-on-primary);
+}
+
+.location-btn.primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.location-btn.secondary {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.location-btn.secondary:hover {
+  background: var(--surface-raised);
+  border-color: var(--primary);
+}
+
+/* Current Location Display */
+.current-location-display {
+  background: linear-gradient(135deg, 
+    var(--success-light) 0%, 
+    var(--success) 100%);
+  color: var(--text-on-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.current-location-display::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    transparent 70%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.current-location-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.current-location-icon {
+  font-size: 1.5rem;
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-5px); }
+}
+
+.current-location-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.current-coordinates {
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+/* Check-in/Check-out Actions */
+.attendance-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.attendance-action-card {
+  background: linear-gradient(135deg, 
+    var(--surface-elevated) 0%, 
+    var(--surface-raised) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.attendance-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.attendance-action-card.check-in {
+  border-left: 4px solid var(--success);
+}
+
+.attendance-action-card.check-out {
+  border-left: 4px solid var(--error);
+}
+
+.action-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.action-icon.check-in {
+  color: var(--success);
+}
+
+.action-icon.check-out {
+  color: var(--error);
+}
+
+.action-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.action-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.action-button {
+  width: 100%;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.action-button.check-in {
+  background: var(--success);
+  color: var(--text-on-primary);
+}
+
+.action-button.check-in:hover {
+  background: var(--success-dark);
+  transform: scale(1.02);
+}
+
+.action-button.check-out {
+  background: var(--error);
+  color: var(--text-on-primary);
+}
+
+.action-button.check-out:hover {
+  background: var(--error-dark);
+  transform: scale(1.02);
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* GPS Accuracy Indicator */
+.gps-accuracy-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface-elevated);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 1.5rem;
+}
+
+.accuracy-icon {
+  color: var(--primary);
+  font-size: 1.5rem;
+}
+
+.accuracy-info {
+  flex: 1;
+}
+
+.accuracy-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.accuracy-value {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.accuracy-status {
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.accuracy-status.high {
+  background: var(--success-light);
+  color: var(--success-dark);
+}
+
+.accuracy-status.medium {
+  background: var(--warning-light);
+  color: var(--warning-dark);
+}
+
+.accuracy-status.low {
+  background: var(--error-light);
+  color: var(--error-dark);
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .attendance-gps-container {
+  background: linear-gradient(135deg, 
+    rgba(31, 41, 55, 0.95) 0%, 
+    rgba(55, 65, 81, 0.95) 100%);
+  border-color: rgba(75, 85, 99, 0.6);
+}
+
+[data-theme="dark"] .location-card {
+  background: linear-gradient(135deg, 
+    rgba(55, 65, 81, 0.9) 0%, 
+    rgba(75, 85, 99, 0.9) 100%);
+  border-color: rgba(75, 85, 99, 0.6);
+}
+
+[data-theme="dark"] .current-location-display {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.9) 0%, 
+    rgba(5, 150, 105, 0.9) 100%);
+}
+
+[data-theme="dark"] .attendance-action-card {
+  background: linear-gradient(135deg, 
+    rgba(55, 65, 81, 0.9) 0%, 
+    rgba(75, 85, 99, 0.9) 100%);
+  border-color: rgba(75, 85, 99, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .attendance-gps-container {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .gps-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .gps-title {
+    font-size: 1.5rem;
+  }
+  
+  .location-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .attendance-actions {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .attendance-action-card {
+    padding: 1.5rem;
+  }
+  
+  .action-icon {
+    font-size: 2.5rem;
+  }
+  
+  .action-title {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-gps-container {
+    padding: 1rem;
+  }
+  
+  .location-card {
+    padding: 1rem;
+  }
+  
+  .location-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .attendance-action-card {
+    padding: 1rem;
+  }
+  
+  .action-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .gps-accuracy-indicator {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+}
