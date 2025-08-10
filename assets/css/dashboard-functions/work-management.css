@@ -1,0 +1,468 @@
+/* 
+=============================================================================
+  WORK MANAGEMENT
+  Professional styling for shifts, attendance, and timesheet management
+=============================================================================
+*/
+
+/* Work Management Container */
+.work-management-section {
+  padding: 2rem;
+  background: linear-gradient(135deg, 
+    var(--surface-elevated) 0%, 
+    var(--surface-raised) 100%);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 2rem;
+}
+
+/* Timesheet Main Content */
+.timesheet-main-content {
+  background: linear-gradient(135deg, 
+    var(--surface-default) 0%, 
+    var(--surface-elevated) 100%);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Attendance Section */
+.attendance-section {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.attendance-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.attendance-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.attendance-icon {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.attendance-title h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+/* Attendance Status Cards */
+.attendance-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.attendance-status-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.attendance-status-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--success-500) 0%, var(--success-600) 100%);
+}
+
+.attendance-status-card.absent::before {
+  background: linear-gradient(90deg, var(--error-500) 0%, var(--error-600) 100%);
+}
+
+.attendance-status-card.late::before {
+  background: linear-gradient(90deg, var(--warning-500) 0%, var(--warning-600) 100%);
+}
+
+.attendance-status-icon {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, var(--success-100) 0%, var(--success-200) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--success-600);
+  font-size: 1.5rem;
+  margin: 0 auto 1rem auto;
+}
+
+.attendance-status-card.absent .attendance-status-icon {
+  background: linear-gradient(135deg, var(--error-100) 0%, var(--error-200) 100%);
+  color: var(--error-600);
+}
+
+.attendance-status-card.late .attendance-status-icon {
+  background: linear-gradient(135deg, var(--warning-100) 0%, var(--warning-200) 100%);
+  color: var(--warning-600);
+}
+
+.attendance-status-number {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.attendance-status-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Check-in/Check-out Controls */
+.check-in-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.check-in-btn,
+.check-out-btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: var(--border-radius-lg);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.check-in-btn {
+  background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.check-in-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--success-600) 0%, var(--success-700) 100%);
+}
+
+.check-out-btn {
+  background: linear-gradient(135deg, var(--error-500) 0%, var(--error-600) 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.check-out-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--error-600) 0%, var(--error-700) 100%);
+}
+
+.check-in-btn:disabled,
+.check-out-btn:disabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Shift Schedule */
+.shift-schedule-section {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.shift-schedule-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.shift-schedule-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.shift-schedule-icon {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.shift-schedule-title h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.shift-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.shift-card {
+  background: var(--surface-default);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  transition: all var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.shift-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-500) 0%, var(--primary-600) 100%);
+}
+
+.shift-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-300);
+}
+
+.shift-card.active::before {
+  background: linear-gradient(90deg, var(--success-500) 0%, var(--success-600) 100%);
+}
+
+.shift-card.upcoming::before {
+  background: linear-gradient(90deg, var(--warning-500) 0%, var(--warning-600) 100%);
+}
+
+.shift-time {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.shift-time-icon {
+  width: 2rem;
+  height: 2rem;
+  background: var(--primary-100);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-600);
+}
+
+.shift-time-details h4 {
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.shift-time-range {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.shift-location,
+.shift-role {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shift-status {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shift-status.scheduled {
+  background: rgba(107, 114, 128, 0.1);
+  color: var(--neutral-600);
+  border: 1px solid var(--neutral-200);
+}
+
+.shift-status.active {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success-600);
+  border: 1px solid var(--success-200);
+}
+
+.shift-status.completed {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary-600);
+  border: 1px solid var(--primary-200);
+}
+
+/* Time Tracking */
+.time-tracking-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.time-tracking-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.time-tracking-icon {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, var(--accent-100) 0%, var(--accent-200) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-600);
+  font-size: 1.5rem;
+  margin: 0 auto 1rem auto;
+}
+
+.time-tracking-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.time-tracking-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .work-management-section,
+  .attendance-section,
+  .shift-schedule-section {
+    padding: 1rem;
+  }
+  
+  .timesheet-main-content {
+    padding: 1rem;
+  }
+  
+  .attendance-header,
+  .shift-schedule-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .attendance-status-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .check-in-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .check-in-btn,
+  .check-out-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .shift-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .time-tracking-section {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+/* Dark Theme Specific */
+[data-theme="dark"] .work-management-section,
+[data-theme="dark"] .attendance-section,
+[data-theme="dark"] .shift-schedule-section {
+  background: linear-gradient(135deg, 
+    var(--surface-elevated) 0%, 
+    rgba(30, 41, 59, 0.8) 100%);
+}
+
+[data-theme="dark"] .timesheet-main-content {
+  background: linear-gradient(135deg, 
+    var(--surface-raised) 0%, 
+    var(--surface-elevated) 100%);
+  border-color: var(--border-muted);
+}
+
+[data-theme="dark"] .attendance-status-card,
+[data-theme="dark"] .shift-card,
+[data-theme="dark"] .time-tracking-card {
+  background: var(--surface-raised);
+  border-color: var(--border-muted);
+}
+
+[data-theme="dark"] .shift-card:hover {
+  border-color: var(--primary-400);
+}

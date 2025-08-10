@@ -920,7 +920,7 @@ async function initializeFinanceDashboard() {
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const mobileDialog = document.getElementById('mobile-nav-dialog');
-    const closeDialog = document.querySelector('.close-dialog');
+    const closeDialog = document.querySelector('.mobile-nav-close');
     
     if (!menuToggle || !mobileDialog) {
         console.warn('Mobile menu elements not found');
