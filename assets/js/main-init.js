@@ -13,6 +13,9 @@ async function initializeApplication() {
         // Initialize theme manager
         ThemeManager.initialize();
         
+        // Initialize menu manager
+        MenuManager.init();
+        
         // Initialize auth manager
         authManager = new AuthManager();
         window.authManager = authManager;

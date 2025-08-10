@@ -127,6 +127,12 @@
                             </ul>
                         </li>
                         <li class="nav-menu-item" data-role="AD,QL">
+                            <a href="#" id="mobileAnalytics" class="nav-menu-link">
+                                <span class="material-icons-round nav-menu-icon">analytics</span>
+                                <span class="nav-menu-text">Thống Kê</span>
+                            </a>
+                        </li>
+                        <li class="nav-menu-item" data-role="AD,QL">
                             <a href="#" id="mobileRegistrationApproval" class="nav-menu-link">
                                 <span class="material-icons-round nav-menu-icon">how_to_reg</span>
                                 <span class="nav-menu-text">Duyệt Đăng Ký</span>
@@ -178,16 +184,13 @@
             
             <!-- Header Actions -->
             <div class="header-actions">
-                <!-- Time Display -->
+                <!-- Time Display with Theme Toggle -->
                 <div class="time-display-container">
-                    <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                    <button id="themeToggle" class="theme-toggle-icon" aria-label="Toggle theme">
+                        <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
+                    </button>
                     <span id="timeDisplay" class="time-text">00:00</span>
                 </div>
-                
-                <!-- Theme Toggle -->
-                <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">
-                    <span class="material-icons-round theme-icon">dark_mode</span>
-                </button>
                 
                 <!-- User Info -->
                 <div class="header-user-info">
@@ -295,6 +298,12 @@
                             </ul>
                         </li>
                         <li class="nav-menu-item" data-role="AD,QL">
+                            <a href="#" id="openAnalytics" class="nav-menu-link">
+                                <span class="material-icons-round nav-menu-icon">analytics</span>
+                                <span class="nav-menu-text">Thống Kê</span>
+                            </a>
+                        </li>
+                        <li class="nav-menu-item" data-role="AD,QL">
                             <a href="#" id="openRegistrationApproval" class="nav-menu-link">
                                 <span class="material-icons-round nav-menu-icon">how_to_reg</span>
                                 <span class="nav-menu-text">Duyệt Đăng Ký</span>
@@ -398,48 +407,147 @@
                         </div>
                     </section>
                     
-                    <!-- Quick Actions -->
-                    <section class="content-section">
-                        <header class="section-header">
-                            <h2 class="section-title">
-                                <span class="material-icons-round section-icon">dashboard</span>
-                                Tính Năng Nhanh
-                            </h2>
-                        </header>
-                        <div class="quick-actions-grid">
-                            <a href="#" class="quick-action-card" id="quickTimesheet">
-                                <div class="quick-action-icon">
-                                    <span class="material-icons-round">schedule</span>
+                    <!-- Quick Actions Section -->
+                    <div class="quick-actions-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">dashboard</span>
+                                    Tính Năng Nhanh
+                                </h2>
+                            </header>
+                            <div class="quick-actions-grid">
+                                <a href="#" class="quick-action-card" id="quickTimesheet">
+                                    <div class="quick-action-icon">
+                                        <span class="material-icons-round">schedule</span>
+                                    </div>
+                                    <h3 class="quick-action-title">Bảng Công</h3>
+                                    <p class="quick-action-description">Xem và quản lý bảng chấm công</p>
+                                </a>
+                                
+                                <a href="#" class="quick-action-card" id="quickTasks">
+                                    <div class="quick-action-icon">
+                                        <span class="material-icons-round">task</span>
+                                    </div>
+                                    <h3 class="quick-action-title">Công Việc</h3>
+                                    <p class="quick-action-description">Quản lý nhiệm vụ được giao</p>
+                                </a>
+                                
+                                <a href="#" class="quick-action-card" id="quickRequests">
+                                    <div class="quick-action-icon">
+                                        <span class="material-icons-round">send</span>
+                                    </div>
+                                    <h3 class="quick-action-title">Gửi Yêu Cầu</h3>
+                                    <p class="quick-action-description">Tạo đơn từ và yêu cầu mới</p>
+                                </a>
+                                
+                                <a href="#" class="quick-action-card" id="quickProfile">
+                                    <div class="quick-action-icon">
+                                        <span class="material-icons-round">person</span>
+                                    </div>
+                                    <h3 class="quick-action-title">Hồ Sơ</h3>
+                                    <p class="quick-action-description">Xem thông tin cá nhân</p>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Analytics Section -->
+                    <div class="analytics-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">analytics</span>
+                                    Thống Kê & Báo Cáo
+                                </h2>
+                            </header>
+                            <div class="analytics-grid">
+                                <div class="analytics-card">
+                                    <h3>Báo Cáo Tháng</h3>
+                                    <p>Xem báo cáo hiệu suất tháng hiện tại</p>
                                 </div>
-                                <h3 class="quick-action-title">Bảng Công</h3>
-                                <p class="quick-action-description">Xem và quản lý bảng chấm công</p>
-                            </a>
-                            
-                            <a href="#" class="quick-action-card" id="quickTasks">
-                                <div class="quick-action-icon">
-                                    <span class="material-icons-round">task</span>
+                                <div class="analytics-card">
+                                    <h3>Xu Hướng</h3>
+                                    <p>Phân tích xu hướng làm việc</p>
                                 </div>
-                                <h3 class="quick-action-title">Công Việc</h3>
-                                <p class="quick-action-description">Quản lý nhiệm vụ được giao</p>
-                            </a>
-                            
-                            <a href="#" class="quick-action-card" id="quickRequests">
-                                <div class="quick-action-icon">
-                                    <span class="material-icons-round">send</span>
-                                </div>
-                                <h3 class="quick-action-title">Gửi Yêu Cầu</h3>
-                                <p class="quick-action-description">Tạo đơn từ và yêu cầu mới</p>
-                            </a>
-                            
-                            <a href="#" class="quick-action-card" id="quickProfile">
-                                <div class="quick-action-icon">
-                                    <span class="material-icons-round">person</span>
-                                </div>
-                                <h3 class="quick-action-title">Hồ Sơ</h3>
-                                <p class="quick-action-description">Xem thông tin cá nhân</p>
-                            </a>
-                        </div>
-                    </section>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Finance Section -->
+                    <div class="finance-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">account_balance</span>
+                                    Quản Lý Tài Chính
+                                </h2>
+                            </header>
+                            <div class="finance-content">
+                                <p>Quản lý lương, thưởng và các khoản tài chính</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Store Management Section -->
+                    <div class="store-management-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">store</span>
+                                    Quản Lý Cửa Hàng
+                                </h2>
+                            </header>
+                            <div class="store-management-content">
+                                <p>Quản lý thông tin và hoạt động các cửa hàng</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Registration Approval Section -->
+                    <div class="registration-approval-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">how_to_reg</span>
+                                    Duyệt Đăng Ký
+                                </h2>
+                            </header>
+                            <div class="approval-content">
+                                <p>Xử lý các đơn đăng ký tài khoản mới</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Personal Section -->
+                    <div class="personal-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">account_circle</span>
+                                    Thông Tin Cá Nhân
+                                </h2>
+                            </header>
+                            <div class="personal-content">
+                                <p>Quản lý thông tin cá nhân và cài đặt tài khoản</p>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Activities Section -->
+                    <div class="activities-section">
+                        <section class="content-section">
+                            <header class="section-header">
+                                <h2 class="section-title">
+                                    <span class="material-icons-round section-icon">history</span>
+                                    Hoạt Động Gần Đây
+                                </h2>
+                            </header>
+                            <div class="activities-content">
+                                <p>Xem lịch sử hoạt động và thông báo</p>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             </div>
         </main>

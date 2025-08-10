@@ -35,6 +35,48 @@ function setupModalCloseHandlers() {
     });
 }
 
+// Display user information in header
+async function displayUserInfoInHeader(userData) {
+    if (!userData) {
+        console.warn('No user data available for header display');
+        return;
+    }
+
+    try {
+        // Update user name
+        const userNameElement = document.getElementById('userName');
+        if (userNameElement) {
+            userNameElement.textContent = userData.fullName || 'Loading...';
+        }
+
+        // Update user role
+        const userRoleElement = document.getElementById('userRole');
+        if (userRoleElement) {
+            const roleMap = {
+                'AD': 'Administrator',
+                'QL': 'Quản Lý', 
+                'AM': 'Assistant Manager',
+                'NV': 'Nhân Viên'
+            };
+            userRoleElement.textContent = roleMap[userData.position] || userData.position || 'User';
+        }
+
+        // Update user initials
+        const userInitialsElement = document.getElementById('userInitials');
+        if (userInitialsElement && userData.fullName) {
+            const names = userData.fullName.split(' ');
+            const initials = names.length >= 2 
+                ? names[0].charAt(0) + names[names.length - 1].charAt(0)
+                : userData.fullName.charAt(0);
+            userInitialsElement.textContent = initials.toUpperCase();
+        }
+
+        console.log('✅ User info populated in header:', userData.fullName, userData.position);
+    } catch (error) {
+        console.error('Error displaying user info in header:', error);
+    }
+}
+
 // Initialize Dashboard - will be called by main-init.js
 async function initializeDashboard() {
     // Show dashboard loader immediately
@@ -112,11 +154,7 @@ async function initializeDashboard() {
         MenuManager.setupMenuInteractions();
 
         // Populate user info in header after role setup
-        const userInfoElement = document.getElementById("userInfo");
-        if (userInfoElement && userData) {
-            userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
-            console.log('✅ User info populated in header:', userData.fullName, userData.employeeId);
-        }
+        await displayUserInfoInHeader(userData);
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();

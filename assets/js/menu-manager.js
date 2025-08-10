@@ -1,23 +1,72 @@
 // Menu Manager
 class MenuManager {
+    static init() {
+        this.setupSubmenuToggling();
+    }
+
+    static setupSubmenuToggling() {
+        // Add click handlers for submenu toggles
+        document.querySelectorAll('.submenu-toggle').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const menuItem = toggle.closest('.nav-menu-item');
+                if (menuItem) {
+                    // Toggle expanded class
+                    menuItem.classList.toggle('expanded');
+                    
+                    // Close other expanded menus
+                    document.querySelectorAll('.nav-menu-item.expanded').forEach(item => {
+                        if (item !== menuItem) {
+                            item.classList.remove('expanded');
+                        }
+                    });
+                }
+            });
+        });
+
+        // Add click handlers for menu items with submenus
+        document.querySelectorAll('.nav-menu-item').forEach(item => {
+            const link = item.querySelector('.nav-menu-link');
+            const submenu = item.querySelector('.nav-submenu');
+            
+            if (link && submenu) {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Toggle expanded state
+                    item.classList.toggle('expanded');
+                    
+                    // Close other expanded menus
+                    document.querySelectorAll('.nav-menu-item.expanded').forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('expanded');
+                        }
+                    });
+                });
+            }
+        });
+    }
+
     static updateMenuByRole(userRole) {
         console.log('Updating menu visibility for role:', userRole);
-        document.querySelectorAll("#menuList .menu-item").forEach(item => {
+        document.querySelectorAll("#menuList .nav-menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
             const shouldShow = allowedRoles.includes(userRole);
             item.style.display = shouldShow ? "block" : "none";
             if (shouldShow) {
-                console.log('Menu item visible:', item.querySelector('.menu-link')?.textContent?.trim());
+                console.log('Menu item visible:', item.querySelector('.nav-menu-link')?.textContent?.trim());
             }
         });
         this.updateSubmenusByRole(userRole);
     }
 
     static updateSubmenusByRole(userRole) {
-        ['#openSchedule', '#openTaskProcessing', '#openSubmitRequest', '#openWorkManagement'].forEach(selector => {
-            const menuItem = document.querySelector(selector)?.closest('.menu-item');
+        ['#openWorkManagement', '#openSubmitRequest'].forEach(selector => {
+            const menuItem = document.querySelector(selector)?.closest('.nav-menu-item');
             if (menuItem) {
-                menuItem.querySelectorAll('.submenu-item').forEach(item => {
+                menuItem.querySelectorAll('.nav-submenu-item').forEach(item => {
                     const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
                     const shouldShow = allowedRoles.includes(userRole);
                     
@@ -26,7 +75,7 @@ class MenuManager {
                         item.style.display = 'block';
                         item.style.visibility = 'visible';
                         item.classList.add('role-visible');
-                        console.log('Submenu item made visible:', item.querySelector('.submenu-link')?.textContent?.trim());
+                        console.log('Submenu item made visible:', item.querySelector('.nav-submenu-link')?.textContent?.trim());
                     } else {
                         item.style.display = 'none';
                         item.style.visibility = 'hidden';
@@ -35,7 +84,7 @@ class MenuManager {
                 });
                 
                 // Check if any submenu items are visible, if not hide the parent menu
-                const visibleSubItems = menuItem.querySelectorAll('.submenu-item.role-visible');
+                const visibleSubItems = menuItem.querySelectorAll('.nav-submenu-item.role-visible');
                 if (visibleSubItems.length === 0) {
                     menuItem.style.display = 'none';
                 } else {

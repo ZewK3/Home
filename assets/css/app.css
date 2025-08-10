@@ -18,7 +18,384 @@
 @import url('./modals.css');
 
 /* =============================================================================
-   APPLICATION-SPECIFIC COMPONENTS
+   NOTIFICATION SYSTEM - PROFESSIONAL DESIGN
+============================================================================= */
+
+.notification-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10000;
+  min-width: 320px;
+  max-width: 480px;
+  border-radius: var(--border-radius-lg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-xl);
+  transform: translateX(100%);
+  transition: all var(--transition-smooth);
+  opacity: 0;
+}
+
+.notification-container.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  position: relative;
+}
+
+.notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.notification-message {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.notification-close:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+.notification-close .material-icons-round {
+  font-size: 1.25rem;
+}
+
+/* Success Notification */
+.notification-container.success {
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.1), 
+    rgba(34, 197, 94, 0.05)
+  );
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.notification-container.success .notification-icon {
+  background-color: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+[data-theme="dark"] .notification-container.success {
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.15), 
+    rgba(34, 197, 94, 0.08)
+  );
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+/* Error Notification */
+.notification-container.error {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.1), 
+    rgba(239, 68, 68, 0.05)
+  );
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.notification-container.error .notification-icon {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+[data-theme="dark"] .notification-container.error {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.15), 
+    rgba(239, 68, 68, 0.08)
+  );
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Warning Notification */
+.notification-container.warning {
+  background: linear-gradient(135deg, 
+    rgba(245, 158, 11, 0.1), 
+    rgba(245, 158, 11, 0.05)
+  );
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.notification-container.warning .notification-icon {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+[data-theme="dark"] .notification-container.warning {
+  background: linear-gradient(135deg, 
+    rgba(245, 158, 11, 0.15), 
+    rgba(245, 158, 11, 0.08)
+  );
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Info Notification */
+.notification-container.info {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.1), 
+    rgba(59, 130, 246, 0.05)
+  );
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.notification-container.info .notification-icon {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+[data-theme="dark"] .notification-container.info {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.15), 
+    rgba(59, 130, 246, 0.08)
+  );
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .notification-container {
+    top: 0.5rem;
+    right: 0.5rem;
+    left: 0.5rem;
+    min-width: unset;
+    max-width: unset;
+  }
+}
+
+/* =============================================================================
+   DASHBOARD CONTENT SECTIONS - COMPREHENSIVE STYLING
+============================================================================= */
+
+/* Section Containers */
+.quick-actions-section,
+.analytics-section,
+.finance-section,
+.store-management-section,
+.registration-approval-section,
+.personal-section,
+.activities-section {
+  margin-bottom: 2rem;
+  opacity: 1;
+  transition: all var(--transition-smooth);
+}
+
+/* Hidden sections */
+.quick-actions-section.role-hidden,
+.analytics-section.role-hidden,
+.finance-section.role-hidden,
+.store-management-section.role-hidden,
+.registration-approval-section.role-hidden,
+.personal-section.role-hidden,
+.activities-section.role-hidden {
+  display: none !important;
+}
+
+/* Analytics Section Specific Styles */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.analytics-card {
+  background: linear-gradient(135deg, var(--surface-primary), var(--surface-secondary));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.analytics-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-300);
+}
+
+.analytics-card h3 {
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.analytics-card p {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+[data-theme="dark"] .analytics-card {
+  background: linear-gradient(135deg, 
+    rgba(30, 41, 59, 0.8), 
+    rgba(51, 65, 85, 0.6)
+  );
+  backdrop-filter: blur(20px);
+}
+
+/* Finance Section Styles */
+.finance-content {
+  background: linear-gradient(135deg, var(--surface-primary), var(--surface-secondary));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.finance-content p {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  text-align: center;
+  margin: 0;
+}
+
+/* Store Management Section */
+.store-management-content {
+  background: linear-gradient(135deg, var(--surface-primary), var(--surface-secondary));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.store-management-content p {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  text-align: center;
+  margin: 0;
+}
+
+/* Registration Approval Section */
+.approval-content {
+  background: linear-gradient(135deg, var(--surface-primary), var(--surface-secondary));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.approval-content p {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  text-align: center;
+  margin: 0;
+}
+
+/* Personal Section */
+.personal-content {
+  background: linear-gradient(135deg, var(--surface-primary), var(--surface-secondary));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.personal-content p {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  text-align: center;
+  margin: 0;
+}
+
+/* Activities Section */
+.activities-content {
+  background: linear-gradient(135deg, var(--surface-primary), var(--surface-secondary));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  margin-top: 1.5rem;
+}
+
+.activities-content p {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  text-align: center;
+  margin: 0;
+}
+
+/* Enhanced Theme Toggle Styling */
+.theme-toggle-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-toggle-icon:hover {
+  background-color: var(--surface-hover);
+}
+
+.theme-toggle-icon .time-icon {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+/* Menu Manager Initialization */
+.nav-menu-item.expanded .nav-submenu {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.nav-submenu {
+  max-height: 0;
+  opacity: 0;
+  transition: all var(--transition-base);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .analytics-card,
+  .finance-content,
+  .store-management-content,
+  .approval-content,
+  .personal-content,
+  .activities-content {
+    padding: 1.5rem;
+  }
+}
+
+/* =============================================================================
+   APPLICATION-SPECIFIC COMPONENTS (CONTINUED)
 ============================================================================= */
 
 /* Dashboard Welcome Section */

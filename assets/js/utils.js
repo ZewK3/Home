@@ -1,6 +1,6 @@
 // Utility Functions
 const utils = {
-    showNotification(message, type = "success", duration = 3000) {
+    showNotification(message, type = "success", duration = 0, autoHide = false) {
         const notification = document.getElementById("notification");
         if (!notification) {
             console.warn("Notification element not found");
@@ -10,21 +10,38 @@ const utils = {
         const icons = {
             success: '✓',
             error: '✕', 
-            warning: '⚠'
+            warning: '⚠',
+            info: 'ℹ'
         };
 
         notification.innerHTML = `
-            <span class="notification-icon">${icons[type] || '✓'}</span>
-            <span class="notification-message">${this.escapeHtml(message)}</span>
+            <div class="notification-content">
+                <span class="notification-icon">${icons[type] || '✓'}</span>
+                <span class="notification-message">${this.escapeHtml(message)}</span>
+                <button class="notification-close" onclick="utils.hideNotification()" aria-label="Close notification">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
         `;
         
-        notification.className = `notification ${type} show`;
+        notification.className = `notification-container ${type} show`;
         
-        setTimeout(() => {
-            if (notification) {
-                notification.classList.remove("show");
-            }
-        }, duration);
+        // Only auto-hide if duration > 0 and autoHide is true
+        if (duration > 0 && autoHide) {
+            setTimeout(() => {
+                this.hideNotification();
+            }, duration);
+        }
+    },
+
+    hideNotification() {
+        const notification = document.getElementById("notification");
+        if (notification) {
+            notification.classList.remove("show");
+            setTimeout(() => {
+                notification.innerHTML = '';
+            }, 300); // Wait for transition to complete
+        }
     },
 
     formatDate(date) {
