@@ -1,6 +1,7 @@
 class ContentManager {
     constructor(user) {
         this.user = user;
+        this.attendanceRequests = []; // Store attendance requests to avoid duplicate API calls
         this.setupMenuHandlers();
         this.initializeTextEditor(); // Initialize text editor functionality
         
@@ -1762,24 +1763,33 @@ class ContentManager {
                 return;
             }
 
-            // Load attendance requests (đơn từ)
+            // Load attendance requests (đơn từ) - only if not cached
             const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const attendanceRequestsResponse = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
-            
-            // Handle different response formats - new API format with data property, array or object with numeric keys
             let attendanceRequests = [];
             
-            if (attendanceRequestsResponse && attendanceRequestsResponse.data && Array.isArray(attendanceRequestsResponse.data)) {
-                // New API format: {data: [...], pagination: {...}}
-                attendanceRequests = attendanceRequestsResponse.data;
-            } else if (Array.isArray(attendanceRequestsResponse)) {
-                attendanceRequests = attendanceRequestsResponse;
-            } else if (attendanceRequestsResponse && typeof attendanceRequestsResponse === 'object') {
-                // Handle object format with numeric keys like {"0": {...}, "1": {...}}
-                attendanceRequests = Object.keys(attendanceRequestsResponse)
-                    .filter(key => !isNaN(key)) // Only numeric keys
-                    .map(key => attendanceRequestsResponse[key])
-                    .filter(request => request && request.id); // Filter valid request records
+            // Check if we already have cached data
+            if (this.attendanceRequests.length === 0) {
+                const attendanceRequestsResponse = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+                
+                // Handle different response formats - new API format with data property, array or object with numeric keys
+                if (attendanceRequestsResponse && attendanceRequestsResponse.data && Array.isArray(attendanceRequestsResponse.data)) {
+                    // New API format: {data: [...], pagination: {...}}
+                    attendanceRequests = attendanceRequestsResponse.data;
+                } else if (Array.isArray(attendanceRequestsResponse)) {
+                    attendanceRequests = attendanceRequestsResponse;
+                } else if (attendanceRequestsResponse && typeof attendanceRequestsResponse === 'object') {
+                    // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                    attendanceRequests = Object.keys(attendanceRequestsResponse)
+                        .filter(key => !isNaN(key)) // Only numeric keys
+                        .map(key => attendanceRequestsResponse[key])
+                        .filter(request => request && request.id); // Filter valid request records
+                }
+                
+                // Cache the data
+                this.attendanceRequests = attendanceRequests;
+            } else {
+                // Use cached data
+                attendanceRequests = this.attendanceRequests;
             }
             
             content.innerHTML = `
@@ -2064,7 +2074,11 @@ class ContentManager {
         }
         
         if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => this.showTaskPersonnel());
+            refreshBtn.addEventListener('click', () => {
+                // Clear cached data and reload
+                this.attendanceRequests = [];
+                this.showPersonnelManagement();
+            });
         }
     }
 
@@ -9244,27 +9258,42 @@ class ContentManager {
         }
     }
 
-    // Show detailed request information
+    // Show detailed request information using cached data
     async showRequestDetail(requestId) {
         try {
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const response = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+            // Use cached data instead of making API call
+            let requests = this.attendanceRequests;
             
-            if (!response) {
-                throw new Error('Cannot load request details');
+            // If no cached data, try to reload it
+            if (!requests || requests.length === 0) {
+                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                const response = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+                
+                if (!response) {
+                    throw new Error('Cannot load request details');
+                }
+
+                // Handle different response formats
+                if (Array.isArray(response)) {
+                    requests = response;
+                } else if (response.data && Array.isArray(response.data)) {
+                    requests = response.data;
+                } else if (typeof response === 'object') {
+                    // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                    requests = Object.keys(response)
+                        .filter(key => !['timestamp', 'status'].includes(key))
+                        .map(key => response[key])
+                        .filter(item => item && typeof item === 'object');
+                }
+                
+                // Cache the data
+                this.attendanceRequests = requests;
             }
 
-            // Find the specific request from the list
+            // Find the specific request from the cached list
             let request = null;
-            if (Array.isArray(response)) {
-                request = response.find(r => r.id == requestId || r.requestId == requestId);
-            } else if (typeof response === 'object') {
-                // Handle object format response like {"0": {...}, "1": {...}}
-                const requestsList = Object.keys(response)
-                    .filter(key => !['timestamp', 'status'].includes(key))
-                    .map(key => response[key])
-                    .filter(item => item && typeof item === 'object');
-                request = requestsList.find(r => r.id == requestId || r.requestId == requestId);
+            if (Array.isArray(requests)) {
+                request = requests.find(r => r.id == requestId || r.requestId == requestId);
             }
 
             if (!request) {
