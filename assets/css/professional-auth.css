@@ -510,6 +510,32 @@ body {
     color: var(--primary-blue);
 }
 
+/* ====== BACKGROUND EFFECTS ====== */
+.light-streaks {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.light-streak {
+    position: absolute;
+    width: 2px;
+    height: 100px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: lightStreakMove var(--duration, 3s) linear infinite;
+}
+
+@keyframes lightStreakMove {
+    0% { transform: translateX(-100vw) translateY(-100vh) rotate(45deg); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateX(100vw) translateY(100vh) rotate(45deg); opacity: 0; }
+}
+
 /* ====== VISIBILITY STATES ====== */
 .form-container {
     display: none;
