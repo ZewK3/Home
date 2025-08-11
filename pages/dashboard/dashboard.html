@@ -354,63 +354,55 @@
                     </header>
                     
                     <!-- Dashboard Welcome Section -->
-                    <section class="dashboard-welcome">
+                    <section class="welcome-section">
                         <h2 class="welcome-title">Chào mừng trở lại!</h2>
                         <p class="welcome-subtitle">Quản lý nhân sự hiệu quả với hệ thống chuyên nghiệp</p>
                     </section>
                     
                     <!-- Main Statistics Grid -->
                     <section class="stats-grid">
-                        <div class="stat-card primary">
+                        <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon">
+                                <div class="stat-card-icon">
                                     <span class="material-icons-round">people</span>
                                 </div>
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Tổng Nhân Viên</h3>
-                                    <p class="stat-value" id="totalEmployees">-</p>
-                                    <span class="stat-trend">+2 tuần này</span>
-                                </div>
                             </div>
+                            <div class="stat-card-value" id="totalEmployees">-</div>
+                            <div class="stat-card-label">Tổng Nhân Viên</div>
+                            <div class="stat-card-change positive">+2 tuần này</div>
                         </div>
                         
-                        <div class="stat-card success">
+                        <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon">
+                                <div class="stat-card-icon">
                                     <span class="material-icons-round">event_available</span>
                                 </div>
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Ca Hôm Nay</h3>
-                                    <p class="stat-value" id="todayShift">Ca Đêm</p>
-                                    <span class="stat-trend">22:00 - 06:00</span>
-                                </div>
                             </div>
+                            <div class="stat-card-value" id="todayShift">Ca Đêm</div>
+                            <div class="stat-card-label">Ca Hôm Nay</div>
+                            <div class="stat-card-change neutral">22:00 - 06:00</div>
                         </div>
                         
-                        <div class="stat-card warning">
+                        <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon">
+                                <div class="stat-card-icon">
                                     <span class="material-icons-round">assignment</span>
                                 </div>
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Yêu Cầu Chờ</h3>
-                                    <p class="stat-value" id="pendingRequests">0</p>
-                                    <span class="stat-trend">Cần xử lý</span>
-                                </div>
                             </div>
+                            <div class="stat-card-value" id="pendingRequests">0</div>
+                            <div class="stat-card-label">Yêu Cầu Chờ</div>
+                            <div class="stat-card-change neutral">Cần xử lý</div>
                         </div>
                         
-                        <div class="stat-card error">
+                        <div class="stat-card">
                             <div class="stat-card-header">
-                                <div class="stat-icon">
+                                <div class="stat-card-icon">
                                     <span class="material-icons-round">work</span>
                                 </div>
-                                <div class="stat-info">
-                                    <h3 class="stat-label">Công Việc</h3>
-                                    <p class="stat-value" id="totalTasks">0</p>
-                                    <span class="stat-trend">Đang thực hiện</span>
-                                </div>
                             </div>
+                            <div class="stat-card-value" id="totalTasks">0</div>
+                            <div class="stat-card-label">Công Việc</div>
+                            <div class="stat-card-change neutral">Đang thực hiện</div>
                         </div>
                     </section>
                     
@@ -418,42 +410,39 @@
                     <div class="quick-actions-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">dashboard</span>
-                                    Tính Năng Nhanh
-                                </h2>
+                                <span class="section-header-icon material-icons-round">dashboard</span>
+                                <h2 class="section-header-title">Tính Năng Nhanh</h2>
                             </header>
-                            <div class="quick-actions-grid">
-                                <a href="#" class="quick-action-card" id="quickTimesheet">
-                                    <div class="quick-action-icon">
+                            <div class="quick-access-grid">
+                                <a href="#" class="quick-access-card" id="quickTimesheet">
+                                    <div class="quick-access-icon">
                                         <span class="material-icons-round">schedule</span>
                                     </div>
-                                    <h3 class="quick-action-title">Bảng Công</h3>
-                                    <p class="quick-action-description">Xem và quản lý bảng chấm công</p>
+                                    <h3 class="quick-access-title">Bảng Công</h3>
+                                    <p class="quick-access-description">Xem và quản lý bảng chấm công</p>
                                 </a>
                                 
-                                <a href="#" class="quick-action-card" id="quickTasks">
-                                    <div class="quick-action-icon">
+                                <a href="#" class="quick-access-card" id="quickTasks">
+                                    <div class="quick-access-icon">
                                         <span class="material-icons-round">task</span>
                                     </div>
-                                    <h3 class="quick-action-title">Công Việc</h3>
-                                    <p class="quick-action-description">Quản lý nhiệm vụ được giao</p>
+                                    <h3 class="quick-access-title">Công Việc</h3>
+                                    <p class="quick-access-description">Quản lý nhiệm vụ được giao</p>
                                 </a>
                                 
-                                <a href="#" class="quick-action-card" id="quickRequests">
-                                    <div class="quick-action-icon">
+                                <a href="#" class="quick-access-card" id="quickRequests">
+                                    <div class="quick-access-icon">
                                         <span class="material-icons-round">send</span>
                                     </div>
-                                    <h3 class="quick-action-title">Gửi Yêu Cầu</h3>
-                                    <p class="quick-action-description">Tạo đơn từ và yêu cầu mới</p>
+                                    <h3 class="quick-access-title">Gửi Yêu Cầu</h3>
+                                    <p class="quick-access-description">Tạo đơn từ và yêu cầu mới</p>
                                 </a>
-                                
-                                <a href="#" class="quick-action-card" id="quickProfile">
-                                    <div class="quick-action-icon">
+                                <a href="#" class="quick-access-card" id="quickProfile">
+                                    <div class="quick-access-icon">
                                         <span class="material-icons-round">person</span>
                                     </div>
-                                    <h3 class="quick-action-title">Hồ Sơ</h3>
-                                    <p class="quick-action-description">Xem thông tin cá nhân</p>
+                                    <h3 class="quick-access-title">Hồ Sơ</h3>
+                                    <p class="quick-access-description">Xem thông tin cá nhân</p>
                                 </a>
                             </div>
                         </section>
@@ -463,19 +452,21 @@
                     <div class="analytics-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">analytics</span>
-                                    Thống Kê & Báo Cáo
-                                </h2>
+                                <span class="section-header-icon material-icons-round">analytics</span>
+                                <h2 class="section-header-title">Thống Kê & Báo Cáo</h2>
                             </header>
-                            <div class="analytics-grid">
-                                <div class="analytics-card">
-                                    <h3>Báo Cáo Tháng</h3>
-                                    <p>Xem báo cáo hiệu suất tháng hiện tại</p>
+                            <div class="feature-grid">
+                                <div class="feature-card">
+                                    <div class="feature-card-header">
+                                        <h3 class="feature-card-title">Báo Cáo Tháng</h3>
+                                        <p class="feature-card-description">Xem báo cáo hiệu suất tháng hiện tại</p>
+                                    </div>
                                 </div>
-                                <div class="analytics-card">
-                                    <h3>Xu Hướng</h3>
-                                    <p>Phân tích xu hướng làm việc</p>
+                                <div class="feature-card">
+                                    <div class="feature-card-header">
+                                        <h3 class="feature-card-title">Xu Hướng</h3>
+                                        <p class="feature-card-description">Phân tích xu hướng làm việc</p>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -485,13 +476,13 @@
                     <div class="finance-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">account_balance</span>
-                                    Quản Lý Tài Chính
-                                </h2>
+                                <span class="section-header-icon material-icons-round">account_balance</span>
+                                <h2 class="section-header-title">Quản Lý Tài Chính</h2>
                             </header>
-                            <div class="finance-content">
-                                <p>Quản lý lương, thưởng và các khoản tài chính</p>
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <p class="feature-card-description">Quản lý lương, thưởng và các khoản tài chính</p>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -500,13 +491,13 @@
                     <div class="store-management-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">store</span>
-                                    Quản Lý Cửa Hàng
-                                </h2>
+                                <span class="section-header-icon material-icons-round">store</span>
+                                <h2 class="section-header-title">Quản Lý Cửa Hàng</h2>
                             </header>
-                            <div class="store-management-content">
-                                <p>Quản lý thông tin và hoạt động các cửa hàng</p>
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <p class="feature-card-description">Quản lý thông tin và hoạt động các cửa hàng</p>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -515,13 +506,13 @@
                     <div class="registration-approval-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">how_to_reg</span>
-                                    Duyệt Đăng Ký
-                                </h2>
+                                <span class="section-header-icon material-icons-round">how_to_reg</span>
+                                <h2 class="section-header-title">Duyệt Đăng Ký</h2>
                             </header>
-                            <div class="approval-content">
-                                <p>Xử lý các đơn đăng ký tài khoản mới</p>
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <p class="feature-card-description">Xử lý các đơn đăng ký tài khoản mới</p>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -530,13 +521,13 @@
                     <div class="personal-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">account_circle</span>
-                                    Thông Tin Cá Nhân
-                                </h2>
+                                <span class="section-header-icon material-icons-round">account_circle</span>
+                                <h2 class="section-header-title">Thông Tin Cá Nhân</h2>
                             </header>
-                            <div class="personal-content">
-                                <p>Quản lý thông tin cá nhân và cài đặt tài khoản</p>
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <p class="feature-card-description">Quản lý thông tin cá nhân và cài đặt tài khoản</p>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -545,13 +536,30 @@
                     <div class="activities-section">
                         <section class="content-section">
                             <header class="section-header">
-                                <h2 class="section-title">
-                                    <span class="material-icons-round section-icon">history</span>
-                                    Hoạt Động Gần Đây
-                                </h2>
+                                <span class="section-header-icon material-icons-round">history</span>
+                                <h2 class="section-header-title">Hoạt Động Gần Đây</h2>
                             </header>
-                            <div class="activities-content">
-                                <p>Xem lịch sử hoạt động và thông báo</p>
+                            <div class="activity-timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-icon">
+                                        <span class="material-icons-round">login</span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Đăng nhập hệ thống</div>
+                                        <div class="timeline-description">Bạn đã đăng nhập thành công vào hệ thống</div>
+                                        <div class="timeline-time">Vừa xong</div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-icon">
+                                        <span class="material-icons-round">update</span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-title">Cập nhật thông tin</div>
+                                        <div class="timeline-description">Hệ thống đã cập nhật dữ liệu mới nhất</div>
+                                        <div class="timeline-time">5 phút trước</div>
+                                    </div>
+                                </div>
                             </div>
                         </section>
                     </div>
