@@ -2076,6 +2076,7 @@ class ContentManager {
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
                 // Clear cached data and reload
+                API_CACHE.clearSpecificCache('attendanceRequests');
                 this.attendanceRequests = [];
                 this.showPersonnelManagement();
             });
@@ -6315,8 +6316,12 @@ class ContentManager {
             this.filterRegistrations();
         });
 
-        // Refresh button
+        // Refresh button - Clear cache before reloading
         document.getElementById('refreshPendingRegistrations')?.addEventListener('click', () => {
+            // Clear cached attendance requests data
+            API_CACHE.clearSpecificCache('attendanceRequests');
+            // Also clear local cache if it exists
+            this.attendanceRequests = [];
             this.loadPendingRegistrations();
         });
 
@@ -9261,33 +9266,21 @@ class ContentManager {
     // Show detailed request information using cached data
     async showRequestDetail(requestId) {
         try {
-            // Use cached data instead of making API call
-            let requests = this.attendanceRequests;
+            // Use API_CACHE for consistent caching across the application
+            const response = await API_CACHE.getAttendanceRequestsData();
+            let requests = response;
             
-            // If no cached data, try to reload it
-            if (!requests || requests.length === 0) {
-                const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-                const response = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
-                
-                if (!response) {
-                    throw new Error('Cannot load request details');
-                }
-
-                // Handle different response formats
-                if (Array.isArray(response)) {
-                    requests = response;
-                } else if (response.data && Array.isArray(response.data)) {
-                    requests = response.data;
-                } else if (typeof response === 'object') {
-                    // Handle object format with numeric keys like {"0": {...}, "1": {...}}
-                    requests = Object.keys(response)
-                        .filter(key => !['timestamp', 'status'].includes(key))
-                        .map(key => response[key])
-                        .filter(item => item && typeof item === 'object');
-                }
-                
-                // Cache the data
-                this.attendanceRequests = requests;
+            // Handle different response formats
+            if (Array.isArray(response)) {
+                requests = response;
+            } else if (response.data && Array.isArray(response.data)) {
+                requests = response.data;
+            } else if (typeof response === 'object') {
+                // Handle object format with numeric keys like {"0": {...}, "1": {...}}
+                requests = Object.keys(response)
+                    .filter(key => !['timestamp', 'status'].includes(key))
+                    .map(key => response[key])
+                    .filter(item => item && typeof item === 'object');
             }
 
             // Find the specific request from the cached list
@@ -9662,6 +9655,8 @@ class ContentManager {
     }
 
     refreshCalendar() {
+        // Clear timesheet cache before refreshing
+        API_CACHE.clearSpecificCache('timesheet');
         utils.showNotification('Đang làm mới dữ liệu lịch...', 'info');
         setTimeout(() => {
             utils.showNotification('Đã cập nhật dữ liệu lịch', 'success');
