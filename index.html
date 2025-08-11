@@ -4,17 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - HR Management System">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#0f172a">
     <link rel="icon" href="assets/icons/favicon-32x32.png" sizes="32x32">
     <title>HR Management System</title>
+    
+    <!-- Professional Redirect Styling -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .redirect-container {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+            border: 1px solid #374151;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+        
+        .redirect-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .redirect-message {
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+        
+        .loading-spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid #374151;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            margin: 0 auto;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .redirect-container {
+                padding: 1.5rem;
+            }
+            
+            .redirect-title {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+    
     <script>
         // Immediate redirect to auth page as requested
         window.location.href = "pages/auth/index.html";
     </script>
 </head>
 <body>
-    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
-        <p>Đang chuyển hướng đến trang đăng nhập...</p>
+    <div class="redirect-container">
+        <div class="logo">Z</div>
+        <h1 class="redirect-title">ZewK Management System</h1>
+        <p class="redirect-message">Đang chuyển hướng đến trang đăng nhập...</p>
+        <div class="loading-spinner"></div>
     </div>
 </body>
 </html>

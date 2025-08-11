@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#0f172a">
     <link rel="icon" href="../../assets/icons/favicon-32x32.png" sizes="32x32">
     <title>ZewK Management System - Professional Dashboard</title>
     
-    <!-- Unified Dashboard CSS - Single File -->
-    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+    <!-- Professional Dashboard CSS - Single Dark Theme -->
+    <link rel="stylesheet" href="../../assets/css/professional-dashboard.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -174,30 +179,24 @@
 
         <!-- Application Header -->
         <header class="app-header">
-            <!-- Mobile Menu Toggle -->
-            <button id="menuToggle" class="mobile-menu-toggle" aria-label="Toggle navigation">
-                <span class="menu-icon">
-                    <span class="menu-line"></span>
-                    <span class="menu-line"></span>
-                    <span class="menu-line"></span>
-                </span>
-            </button>
-            
-            <!-- Brand Logo -->
-            <a href="#" id="companyLogoLink" class="header-brand">
-                <div class="brand-logo">Z</div>
-                <span class="brand-text-desktop">ZewK Management System</span>
-                <span class="brand-text-mobile">ZewK</span>
-            </a>
+            <div class="header-left">
+                <!-- Mobile Menu Toggle -->
+                <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                
+                <div class="header-branding">
+                    <h1 class="header-title">ZewK Management System</h1>
+                    <p class="header-subtitle">Hệ Thống Quản Lý Nhân Sự</p>
+                </div>
+            </div>
             
             <!-- Header Actions -->
-            <div class="header-actions">
-                <!-- Time Display with Theme Toggle -->
+            <div class="header-right">
+                <!-- Time Display -->
                 <div class="time-display-container">
-                    <button id="themeToggle" class="theme-toggle-icon" aria-label="Toggle theme">
-                        <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
-                    </button>
-                    <span id="timeDisplay" class="time-text">00:00</span>
+                    <div id="timeDisplay" class="current-time">00:00</div>
+                    <div id="dateDisplay" class="current-date">Loading...</div>
                 </div>
                 
                 <!-- User Info -->
