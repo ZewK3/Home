@@ -1,0 +1,580 @@
+/* 
+=============================================================================
+  TIMESHEET CONTAINER - DEDICATED CSS
+=============================================================================
+*/
+
+/* =============================================================================
+   TIMESHEET MAIN CONTENT
+============================================================================= */
+
+.timesheet-main-content {
+    background: var(--surface-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.timesheet-header {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+}
+
+.timesheet-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 70%);
+    pointer-events: none;
+}
+
+.calendar-section.modern-card {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin: 2rem;
+}
+
+.calendar-header {
+    background: linear-gradient(135deg, var(--surface-secondary) 0%, var(--surface-primary) 100%);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.calendar-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.month-navigation {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 0.25rem;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn:hover {
+    background: var(--surface-hover);
+    color: var(--primary-500);
+}
+
+.current-month {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 120px;
+    text-align: center;
+}
+
+.view-toggle {
+    display: flex;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.view-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.view-btn.active {
+    background: var(--primary-500);
+    color: white;
+}
+
+.view-btn:not(.active):hover {
+    background: var(--surface-hover);
+    color: var(--primary-500);
+}
+
+.calendar-body {
+    padding: 2rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+}
+
+.calendar-header-cell {
+    background: var(--surface-secondary);
+    padding: 1rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calendar-cell {
+    background: var(--surface-primary);
+    min-height: 120px;
+    padding: 0.75rem 0.5rem;
+    position: relative;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.calendar-cell:hover {
+    background: var(--surface-hover);
+}
+
+.calendar-cell.other-month {
+    background: var(--surface-muted);
+    color: var(--text-muted);
+}
+
+.calendar-cell.today {
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+    border: 2px solid var(--primary-300);
+}
+
+.calendar-cell.has-timesheet {
+    background: linear-gradient(135deg, var(--success-50) 0%, var(--success-100) 100%);
+}
+
+.calendar-cell.has-timesheet::after {
+    content: '';
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 8px;
+    height: 8px;
+    background: var(--success-500);
+    border-radius: 50%;
+}
+
+.calendar-date {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.calendar-cell.other-month .calendar-date {
+    color: var(--text-muted);
+}
+
+.timesheet-summary {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.time-entry {
+    background: var(--primary-100);
+    color: var(--primary-700);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--border-radius-xs);
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.time-total {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 0.25rem;
+}
+
+.timesheet-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem;
+    padding: 2rem;
+    background: var(--surface-secondary);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.stat-card.timesheet-stat {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    text-align: center;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card.timesheet-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+}
+
+.stat-card.timesheet-stat.total-hours::before {
+    background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+}
+
+.stat-card.timesheet-stat.overtime::before {
+    background: linear-gradient(90deg, var(--warning-500), var(--warning-600));
+}
+
+.stat-card.timesheet-stat.attendance::before {
+    background: linear-gradient(90deg, var(--success-500), var(--success-600));
+}
+
+.stat-card.timesheet-stat.pending::before {
+    background: linear-gradient(90deg, var(--gray-500), var(--gray-600));
+}
+
+.stat-card.timesheet-stat:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.stat-card.timesheet-stat.overtime .stat-icon {
+    background: linear-gradient(135deg, var(--warning-500) 0%, var(--warning-600) 100%);
+}
+
+.stat-card.timesheet-stat.attendance .stat-icon {
+    background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+}
+
+.stat-card.timesheet-stat.pending .stat-icon {
+    background: linear-gradient(135deg, var(--gray-500) 0%, var(--gray-600) 100%);
+}
+
+.stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 500;
+}
+
+.timesheet-actions {
+    padding: 1.5rem 2rem;
+    background: var(--surface-secondary);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn.timesheet-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn.timesheet-btn.primary {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    color: white;
+}
+
+.btn.timesheet-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+}
+
+.btn.timesheet-btn.secondary {
+    background: var(--surface-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn.timesheet-btn.secondary:hover {
+    background: var(--surface-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.timesheet-legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    margin: 1rem 2rem;
+    padding: 1rem;
+    background: var(--surface-secondary);
+    border-radius: var(--border-radius-md);
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.legend-color.today {
+    background: var(--primary-500);
+}
+
+.legend-color.has-timesheet {
+    background: var(--success-500);
+}
+
+.legend-color.incomplete {
+    background: var(--warning-500);
+}
+
+.legend-color.pending {
+    background: var(--gray-500);
+}
+
+/* =============================================================================
+   DARK THEME SUPPORT
+============================================================================= */
+
+[data-theme="dark"] .timesheet-main-content {
+    background: var(--surface-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .timesheet-header {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+}
+
+[data-theme="dark"] .calendar-section.modern-card {
+    background: var(--surface-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .calendar-header {
+    background: linear-gradient(135deg, var(--surface-secondary) 0%, var(--surface-primary) 100%);
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .calendar-grid {
+    background: var(--border-color);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .calendar-header-cell {
+    background: var(--surface-secondary);
+}
+
+[data-theme="dark"] .calendar-cell {
+    background: var(--surface-primary);
+}
+
+[data-theme="dark"] .calendar-cell.other-month {
+    background: var(--surface-muted);
+}
+
+[data-theme="dark"] .calendar-cell.today {
+    background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-800) 100%);
+    border-color: var(--primary-400);
+}
+
+[data-theme="dark"] .calendar-cell.has-timesheet {
+    background: linear-gradient(135deg, var(--success-900) 0%, var(--success-800) 100%);
+}
+
+[data-theme="dark"] .timesheet-stats {
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .stat-card.timesheet-stat {
+    background: var(--surface-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .month-navigation,
+[data-theme="dark"] .view-toggle {
+    background: var(--surface-primary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .timesheet-legend {
+    background: var(--surface-secondary);
+}
+
+[data-theme="dark"] .btn.timesheet-btn.secondary {
+    background: var(--surface-primary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* =============================================================================
+   RESPONSIVE DESIGN
+============================================================================= */
+
+@media (max-width: 768px) {
+    .timesheet-main-content {
+        margin: 0 -1rem 2rem;
+        border-radius: 0;
+    }
+    
+    .timesheet-header,
+    .calendar-body,
+    .timesheet-stats {
+        padding: 1rem;
+    }
+    
+    .calendar-section.modern-card {
+        margin: 1rem;
+    }
+    
+    .calendar-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .calendar-controls {
+        justify-content: center;
+    }
+    
+    .calendar-grid {
+        font-size: var(--font-size-sm);
+    }
+    
+    .calendar-cell {
+        min-height: 80px;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .timesheet-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .timesheet-actions {
+        padding: 1rem;
+        flex-direction: column;
+    }
+    
+    .timesheet-legend {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-grid {
+        gap: 0;
+    }
+    
+    .calendar-cell {
+        min-height: 60px;
+        padding: 0.25rem;
+    }
+    
+    .calendar-date {
+        font-size: var(--font-size-sm);
+        margin-bottom: 0.25rem;
+    }
+    
+    .timesheet-summary {
+        display: none;
+    }
+    
+    .stat-card.timesheet-stat {
+        padding: 1rem;
+    }
+    
+    .stat-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .btn.timesheet-btn {
+        padding: 0.75rem 1rem;
+        font-size: var(--font-size-sm);
+    }
+}

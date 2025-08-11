@@ -88,20 +88,7 @@
     color: #ffffff !important;
 }
 
-/* Personal Info Container Enhanced */
-.personal-info-container {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-}
-
-[data-theme="dark"] .personal-info-container {
-    background: rgba(15, 23, 42, 0.95);
-    border-color: #334155;
-}
+/* Personal Info Container - Moved to personal-info-container.css */
 
 .personal-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
