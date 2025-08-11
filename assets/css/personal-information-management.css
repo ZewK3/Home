@@ -9,159 +9,331 @@
     min-height: 100vh;
 }
 
-/* Header Section */
+/* Header Section Enhanced */
 .personal-info-header-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    padding: 32px;
-    border-radius: 16px;
-    margin-bottom: 24px;
+    padding: 40px;
+    border-radius: 20px;
+    margin-bottom: 32px;
     color: white;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.personal-info-header-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    pointer-events: none;
 }
 
 .personal-info-user-avatar {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 32px;
+    position: relative;
+    z-index: 1;
 }
 
 .personal-info-avatar-circle {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    font-size: 40px;
     color: white;
     backdrop-filter: blur(10px);
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.personal-info-avatar-circle::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: rotate 3s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .personal-info-avatar-details h2 {
-    margin: 0 0 8px 0;
-    font-size: 32px;
-    font-weight: 700;
+    margin: 0 0 12px 0;
+    font-size: 36px;
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .personal-info-position-badge {
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 10px 20px;
+    border-radius: 25px;
     font-size: 14px;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(15px);
     margin-bottom: 8px;
     display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .personal-info-employee-id {
-    font-size: 16px;
-    opacity: 0.9;
+    font-size: 18px;
+    opacity: 0.95;
     margin: 0;
+    font-weight: 500;
 }
 
 .personal-info-action-buttons {
     display: flex;
-    gap: 12px;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
 }
 
 .personal-info-btn {
-    padding: 12px 24px;
-    border-radius: 10px;
+    padding: 14px 28px;
+    border-radius: 12px;
     border: none;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 14px;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .personal-info-btn-outline {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     color: white;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .personal-info-btn-outline:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
 .personal-info-btn-primary {
-    background: var(--success-color);
+    background: linear-gradient(135deg, var(--success-color), #059669);
     color: white;
     border: 2px solid var(--success-color);
+    box-shadow: 0 4px 20px rgba(5, 150, 105, 0.3);
 }
 
 .personal-info-btn-primary:hover {
-    background: var(--success-dark);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, var(--success-dark), #047857);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(5, 150, 105, 0.4);
 }
 
 .personal-info-btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
-/* Main Content Grid */
+/* Main Content Grid Enhanced */
 .personal-info-main-content {
-    margin-top: 24px;
+    margin-top: 32px;
 }
 
 .personal-info-grid-layout {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 32px;
 }
 
-/* Card Styles */
+/* Card Styles Enhanced */
 .personal-info-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    background: var(--card-background);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.personal-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
 .personal-info-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-6px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.personal-info-editable-card {
+    border-left: 4px solid var(--success-color);
+}
+
+.personal-info-readonly-card {
+    border-left: 4px solid var(--warning-color);
 }
 
 .personal-info-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
-    padding-bottom: 16px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
     border-bottom: 2px solid var(--border-color);
 }
 
 .personal-info-card-title {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .personal-info-card-title h3 {
     margin: 0;
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     color: var(--text-primary);
 }
 
 .personal-info-card-title .material-icons-round {
-    font-size: 24px;
+    font-size: 28px;
+    padding: 8px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-radius: 12px;
+}
+
+.personal-info-edit-badge {
+    background: linear-gradient(135deg, var(--success-color), #059669);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.personal-info-readonly-badge {
+    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form Styles Enhanced */
+.personal-info-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.personal-info-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.personal-info-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.personal-info-form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.personal-info-form-label .material-icons-round {
+    font-size: 20px;
+    color: var(--primary-color);
+}
+
+.personal-info-form-input,
+.personal-info-form-select,
+.personal-info-form-textarea {
+    padding: 16px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: var(--input-background);
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+.personal-info-form-input:focus,
+.personal-info-form-select:focus,
+.personal-info-form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    background: var(--card-background);
+}
+
+.personal-info-form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.personal-info-readonly-field {
+    background: var(--readonly-background);
+    border-color: var(--readonly-border);
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.personal-info-save-section {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-color);
+}
     color: var(--primary-color);
 }
 

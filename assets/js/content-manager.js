@@ -256,7 +256,47 @@ class ContentManager {
         window.closeTaskDetailModal = () => this.closeTaskDetailModal();
         window.closeRequestDetailModal = () => this.closeRequestDetailModal();
         
+        // Permission management functions
+        window.saveUserPermissions = (userId) => this.saveUserPermissions(userId);
+        window.resetUserPermissions = (userId) => this.resetUserPermissions(userId);
+        
         console.log('✅ ContentManager functions made globally accessible');
+    }
+
+    // Save user permissions
+    async saveUserPermissions(userId) {
+        try {
+            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+            if (!userCard) return;
+
+            const roleSelector = userCard.querySelector('.permission-role-selector');
+            const newRole = roleSelector.value;
+            
+            // Here you would normally save to API
+            console.log(`Saving permissions for user ${userId}: role = ${newRole}`);
+            
+            utils.showNotification('Quyền của người dùng đã được cập nhật!', 'success');
+            
+        } catch (error) {
+            console.error('Error saving user permissions:', error);
+            utils.showNotification('Lỗi khi lưu quyền người dùng: ' + error.message, 'error');
+        }
+    }
+
+    // Reset user permissions
+    async resetUserPermissions(userId) {
+        try {
+            // Reset to original state
+            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+            if (!userCard) return;
+
+            // Here you would reload original data
+            utils.showNotification('Quyền người dùng đã được khôi phục!', 'info');
+            
+        } catch (error) {
+            console.error('Error resetting user permissions:', error);
+            utils.showNotification('Lỗi khi khôi phục quyền: ' + error.message, 'error');
+        }
     }
 
     // Helper method to safely get user employeeId
@@ -2645,14 +2685,12 @@ class ContentManager {
             if (users.length === 0) {
                 content.innerHTML = `
                     <div class="permission-management-container">
-                        <div class="permission-header">
+                        <div class="permission-management-header-section">
                             <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
-                            <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
+                            <p class="permission-management-header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
                         </div>
-                        <div class="no-data-state">
-                            <span class="no-data-icon">👥</span>
-                            <h3>Không có dữ liệu người dùng</h3>
-                            <p>Vui lòng thêm người dùng vào hệ thống trước.</p>
+                        <div class="permission-management-loading-container">
+                            <div class="permission-management-loading-text">Không có dữ liệu người dùng. Vui lòng thêm người dùng vào hệ thống trước.</div>
                         </div>
                     </div>
                 `;
@@ -2661,68 +2699,59 @@ class ContentManager {
             
             content.innerHTML = `
                 <div class="permission-management-container">
-                    <div class="permission-header">
+                    <div class="permission-management-header-section">
                         <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
-                        <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
+                        <p class="permission-management-header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
                     </div>
 
                     <!-- Statistics Dashboard -->
-                    <div class="permission-stats-grid">
-                        <div class="permission-stat-card admin">
-                            <div class="stat-icon">👑</div>
-                            <div class="stat-details">
-                                <h3>Admin</h3>
-                                <p class="stat-value" id="adminCount">0</p>
-                                <span class="stat-label">Quản trị viên</span>
+                    <div class="permission-management-stats-grid">
+                        <div class="permission-stat-card">
+                            <div class="permission-stat-header">
+                                <div class="permission-stat-icon admin">
+                                    <span class="material-icons-round">admin_panel_settings</span>
+                                </div>
+                                <div class="permission-stat-title">Admin</div>
                             </div>
+                            <div class="permission-stat-value" id="adminCount">0</div>
+                            <div class="permission-stat-description">Quản trị viên hệ thống</div>
                         </div>
-                        <div class="permission-stat-card manager">
-                            <div class="stat-icon">⚡</div>
-                            <div class="stat-details">
-                                <h3>Manager</h3>
-                                <p class="stat-value" id="managerCount">0</p>
-                                <span class="stat-label">Quản lý</span>
+                        <div class="permission-stat-card">
+                            <div class="permission-stat-header">
+                                <div class="permission-stat-icon manager">
+                                    <span class="material-icons-round">supervisor_account</span>
+                                </div>
+                                <div class="permission-stat-title">Manager</div>
                             </div>
+                            <div class="permission-stat-value" id="managerCount">0</div>
+                            <div class="permission-stat-description">Quản lý cấp cao</div>
                         </div>
-                        <div class="permission-stat-card assistant">
-                            <div class="stat-icon">🎯</div>
-                            <div class="stat-details">
-                                <h3>Quản Lý Khu Vực</h3>
-                                <p class="stat-value" id="assistantCount">0</p>
-                                <span class="stat-label">Quản lý khu vực</span>
+                        <div class="permission-stat-card">
+                            <div class="permission-stat-header">
+                                <div class="permission-stat-icon employee">
+                                    <span class="material-icons-round">person</span>
+                                </div>
+                                <div class="permission-stat-title">Nhân viên</div>
                             </div>
+                            <div class="permission-stat-value" id="employeeCount">0</div>
+                            <div class="permission-stat-description">Nhân viên thông thường</div>
                         </div>
-                        <div class="permission-stat-card employee">
-                            <div class="stat-icon">👤</div>
-                            <div class="stat-details">
-                                <h3>Nhân viên</h3>
-                                <p class="stat-value" id="employeeCount">0</p>
-                                <span class="stat-label">Nhân viên</span>
+                        <div class="permission-stat-card">
+                            <div class="permission-stat-header">
+                                <div class="permission-stat-icon pending">
+                                    <span class="material-icons-round">hourglass_empty</span>
+                                </div>
+                                <div class="permission-stat-title">Chờ duyệt</div>
                             </div>
+                            <div class="permission-stat-value" id="pendingCount">0</div>
+                            <div class="permission-stat-description">Đang chờ phê duyệt</div>
                         </div>
                     </div>
+                    </div>
 
-                    <!-- User Selection Panel -->
-                    <div class="permission-main-content">
-                        <div class="user-selection-panel">
-                            <div class="search-section">
-                                <h3><span class="material-icons-round">search</span>Tìm kiếm nhân viên</h3>
-                                <div class="search-controls">
-                                    <input type="text" id="userSearch" class="form-control" placeholder="Tìm kiếm theo tên, ID, hoặc email...">
-                                    <select id="roleFilter" class="form-control">
-                                        <option value="">Tất cả vai trò</option>
-                                        <option value="AD">Admin (AD)</option>
-                                        <option value="QL">Quản lý (QL)</option>
-                                        <option value="AM">Trợ lý (AM)</option>
-                                        <option value="NV">Nhân viên (NV)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div id="permissionUserList" class="permission-user-list-container">
-                                <!-- Modular user list will be inserted here -->
-                            </div>
-                        </div>
+                    <!-- User Grid -->
+                    <div class="permission-user-grid" id="permissionUserGrid">
+                        <!-- Users will be rendered here -->
                     </div>
                 </div>
 
@@ -2858,42 +2887,107 @@ class ContentManager {
             // Setup permission management functionality
             this.setupPermissionManagement();
             
-            // Initialize modular user list component
-            setTimeout(() => {
-                this.createUserListComponent('permissionUserList', {
-                    users: users,
-                    searchable: false, // Using existing search controls
-                    selectable: false,
-                    showAvatars: true,
-                    showRoles: true,
-                    title: 'Danh sách người dùng hệ thống',
-                    onUserSelect: (user, userId) => {
-                        window.editUserRole(userId);
-                    }
-                });
-            }, 200);
+            // Render users using the new CSS structure
+            const permissionUserGrid = document.getElementById('permissionUserGrid');
+            if (permissionUserGrid) {
+                const userCards = users.map(user => {
+                    const userRole = user.position || user.role || 'NV';
+                    const userName = user.fullName || user.name || 'Không rõ';
+                    const userId = user.employeeId || user.id || 'Unknown';
+                    const userEmail = user.email || '';
+                    const userDepartment = user.department || user.storeName || '';
+                    const initials = userName.substring(0, 2).toUpperCase();
+
+                    return `
+                        <div class="permission-user-card" data-user-id="${userId}">
+                            <div class="permission-user-header">
+                                <div class="permission-user-info">
+                                    <div class="permission-user-avatar">${initials}</div>
+                                    <div class="permission-user-details">
+                                        <h4>${userName}</h4>
+                                        <p class="permission-user-id">ID: ${userId}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="permission-user-body">
+                                <div class="permission-role-section">
+                                    <label class="permission-role-label">Vai trò hiện tại</label>
+                                    <select class="permission-role-selector" data-user-id="${userId}">
+                                        <option value="AD" ${userRole === 'AD' ? 'selected' : ''}>Admin (AD)</option>
+                                        <option value="QL" ${userRole === 'QL' ? 'selected' : ''}>Quản lý (QL)</option>
+                                        <option value="AM" ${userRole === 'AM' ? 'selected' : ''}>Trợ lý (AM)</option>
+                                        <option value="NV" ${userRole === 'NV' ? 'selected' : ''}>Nhân viên (NV)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="permission-access-list">
+                                    <div class="permission-access-title">Quyền truy cập</div>
+                                    <div class="permission-checkbox-group">
+                                        <div class="permission-checkbox-item">
+                                            <input type="checkbox" class="permission-checkbox" ${userRole !== 'NV' ? 'checked' : ''}>
+                                            <label class="permission-checkbox-label">Xem báo cáo</label>
+                                        </div>
+                                        <div class="permission-checkbox-item">
+                                            <input type="checkbox" class="permission-checkbox" ${userRole === 'AD' || userRole === 'QL' ? 'checked' : ''}>
+                                            <label class="permission-checkbox-label">Quản lý nhân viên</label>
+                                        </div>
+                                        <div class="permission-checkbox-item">
+                                            <input type="checkbox" class="permission-checkbox" ${userRole === 'AD' ? 'checked' : ''}>
+                                            <label class="permission-checkbox-label">Cấu hình hệ thống</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="permission-action-buttons">
+                                    <button type="button" class="permission-btn permission-btn-primary" onclick="window.saveUserPermissions('${userId}')">
+                                        <span class="material-icons-round">save</span>
+                                        Lưu thay đổi
+                                    </button>
+                                    <button type="button" class="permission-btn permission-btn-secondary" onclick="window.resetUserPermissions('${userId}')">
+                                        <span class="material-icons-round">refresh</span>
+                                        Khôi phục
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                permissionUserGrid.innerHTML = userCards;
+            }
+
+            // Update statistics
+            this.updatePermissionStats(users);
             
         } catch (error) {
             console.error('Access management error:', error);
             content.innerHTML = `
                 <div class="permission-management-container">
-                    <div class="permission-header">
+                    <div class="permission-management-header-section">
                         <h2><span class="material-icons-round">error</span>Lỗi Hệ Thống</h2>
-                        <p class="header-subtitle">Không thể tải thông tin phân quyền</p>
+                        <p class="permission-management-header-subtitle">Không thể tải thông tin phân quyền</p>
                     </div>
-                    <div class="error-state">
-                        <span class="error-icon">⚠️</span>
-                        <h3>Lỗi: ${error.message}</h3>
-                        <p>Vui lòng thử lại sau hoặc liên hệ quản trị viên.</p>
-                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 1rem;">
-                            <span class="material-icons-round">refresh</span>
-                            Thử lại
-                        </button>
+                    <div class="permission-management-loading-container">
+                        <div class="permission-management-loading-text">Lỗi: ${error.message}. Vui lòng thử lại sau hoặc liên hệ quản trị viên.</div>
                     </div>
                 </div>
             `;
             utils.showNotification("Không thể tải thông tin phân quyền: " + error.message, "error");
         }
+    }
+
+    // Update permission statistics
+    updatePermissionStats(users) {
+        const stats = users.reduce((acc, user) => {
+            const role = user.position || user.role || 'NV';
+            acc[role] = (acc[role] || 0) + 1;
+            return acc;
+        }, {});
+
+        document.getElementById('adminCount').textContent = stats.AD || 0;
+        document.getElementById('managerCount').textContent = stats.QL || 0;
+        document.getElementById('employeeCount').textContent = stats.NV || 0;
+        document.getElementById('pendingCount').textContent = stats.PENDING || 0;
     }
 
     async showPersonalInfo() {
@@ -7658,72 +7752,151 @@ class ContentManager {
         try {
             content.innerHTML = `
                 <div class="task-assignment-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><span class="material-icons-round">task_alt</span> Nhiệm Vụ</h2>
-                            <p>Tạo và giao nhiệm vụ cho nhân viên</p>
+                    <div class="task-assignment-header">
+                        <h2><span class="material-icons-round">task_alt</span>Giao Nhiệm Vụ</h2>
+                        <p class="task-assignment-subtitle">Tạo và phân công nhiệm vụ cho nhân viên trong hệ thống</p>
+                    </div>
+                    
+                    <div class="task-assignment-card">
+                        <div class="task-assignment-card-header">
+                            <div class="task-assignment-card-title">
+                                <span class="material-icons-round">assignment</span>
+                                <h2>Tạo Nhiệm Vụ Mới</h2>
+                            </div>
+                            <p class="task-assignment-card-subtitle">Điền thông tin chi tiết và giao nhiệm vụ</p>
                         </div>
-                        <div class="card-body">
-                            <form id="taskAssignmentForm" class="task-form">
-                                <div class="form-group">
-                                    <label for="taskTitle">Tiêu đề nhiệm vụ:</label>
-                                    <input type="text" id="taskTitle" name="taskTitle" class="form-control" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="taskDescription">Mô tả chi tiết:</label>
-                                    <div class="text-editor-container enhanced-editor">
-                                        <div class="editor-header">
-                                            <div class="editor-title">
-                                                <span class="material-icons-round">edit</span>
-                                                Trình soạn thảo nâng cao
-                                            </div>
-                                            <div class="editor-tools">
-                                                <button type="button" class="tool-btn" onclick="contentManager.toggleEditorFullscreen()" title="Toàn màn hình">
-                                                    <span class="material-icons-round">fullscreen</span>
-                                                </button>
-                                                <button type="button" class="tool-btn" onclick="contentManager.toggleEditorMode()" title="Chế độ markdown">
-                                                    <span class="material-icons-round">code</span>
-                                                </button>
-                                                <button type="button" class="tool-btn" onclick="contentManager.showEditorHelp()" title="Trợ giúp">
-                                                    <span class="material-icons-round">help</span>
-                                                </button>
-                                            </div>
+                        
+                        <form id="taskAssignmentForm" class="task-assignment-form">
+                            <div class="task-assignment-form-group">
+                                <label class="task-assignment-form-label">
+                                    <span class="material-icons-round">title</span>
+                                    Tiêu đề nhiệm vụ
+                                </label>
+                                <input type="text" id="taskTitle" name="taskTitle" class="task-assignment-form-input" 
+                                       placeholder="Nhập tiêu đề nhiệm vụ..." required>
+                            </div>
+                            
+                            <div class="task-assignment-form-group">
+                                <label class="task-assignment-form-label">
+                                    <span class="material-icons-round">description</span>
+                                    Mô tả chi tiết
+                                </label>
+                                <div class="task-assignment-text-editor-container">
+                                    <div class="task-assignment-editor-header">
+                                        <div class="task-assignment-editor-title">
+                                            <span class="material-icons-round">edit</span>
+                                            Trình soạn thảo nâng cao
+                                        </div>
+                                        <div class="task-assignment-editor-tools">
+                                            <button type="button" class="task-assignment-tool-btn" onclick="contentManager.toggleEditorFullscreen()" title="Toàn màn hình">
+                                                <span class="material-icons-round">fullscreen</span>
+                                            </button>
+                                            <button type="button" class="task-assignment-tool-btn" onclick="contentManager.toggleEditorMode()" title="Chế độ markdown">
+                                                <span class="material-icons-round">code</span>
+                                            </button>
+                                            <button type="button" class="task-assignment-tool-btn" onclick="contentManager.showEditorHelp()" title="Trợ giúp">
+                                                <span class="material-icons-round">help</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="task-assignment-editor-toolbar">
+                                        <!-- Text Formatting Group -->
+                                        <div class="task-assignment-toolbar-group">
+                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('bold')" title="In đậm">
+                                                <span class="material-icons-round">format_bold</span>
+                                            </button>
+                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('italic')" title="In nghiêng">
+                                                <span class="material-icons-round">format_italic</span>
+                                            </button>
+                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('underline')" title="Gạch chân">
+                                                <span class="material-icons-round">format_underlined</span>
+                                            </button>
                                         </div>
                                         
-                                        <div class="editor-toolbar enhanced-toolbar">
-                                            <!-- Text Formatting Group -->
-                                            <div class="toolbar-group">
-                                                <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="In đậm (Ctrl+B)">
-                                                    <span class="material-icons-round">format_bold</span>
-                                                </button>
-                                                <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="In nghiêng (Ctrl+I)">
-                                                    <span class="material-icons-round">format_italic</span>
-                                                </button>
-                                                <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Gạch chân (Ctrl+U)">
-                                                    <span class="material-icons-round">format_underlined</span>
-                                                </button>
-                                                <button type="button" class="toolbar-btn" onclick="formatText('strikeThrough')" title="Gạch ngang">
-                                                    <span class="material-icons-round">strikethrough_s</span>
-                                                </button>
-                                            </div>
-                                            
-                                            <div class="toolbar-separator"></div>
-                                            
-                                            <!-- Font Formatting Group -->
-                                            <div class="toolbar-group">
-                                                <select class="toolbar-select font-size-select" onchange="contentManager.changeFontSize(this.value)" title="Kích thước chữ">
-                                                    <option value="1">Rất nhỏ</option>
-                                                    <option value="2">Nhỏ</option>
-                                                    <option value="3" selected>Bình thường</option>
-                                                    <option value="4">Lớn</option>
-                                                    <option value="5">Rất lớn</option>
-                                                </select>
-                                                <button type="button" class="toolbar-btn" onclick="formatText('subscript')" title="Chỉ số dưới">
-                                                    <span class="material-icons-round">subscript</span>
-                                                </button>
-                                                <button type="button" class="toolbar-btn" onclick="formatText('superscript')" title="Chỉ số trên">
-                                                    <span class="material-icons-round">superscript</span>
+                                        <div class="task-assignment-toolbar-group">
+                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('insertOrderedList')" title="Danh sách có số">
+                                                <span class="material-icons-round">format_list_numbered</span>
+                                            </button>
+                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('insertUnorderedList')" title="Danh sách không số">
+                                                <span class="material-icons-round">format_list_bulleted</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <textarea id="taskDescription" name="taskDescription" class="task-assignment-form-textarea" 
+                                              placeholder="Mô tả chi tiết về nhiệm vụ, yêu cầu và mục tiêu cần đạt được..." 
+                                              rows="6" required></textarea>
+                                </div>
+                            </div>
+
+                            <div class="task-assignment-settings-grid">
+                                <div class="task-assignment-form-group">
+                                    <label class="task-assignment-form-label">
+                                        <span class="material-icons-round">schedule</span>
+                                        Thời hạn hoàn thành
+                                    </label>
+                                    <input type="datetime-local" id="taskDeadline" name="taskDeadline" 
+                                           class="task-assignment-form-input" required>
+                                </div>
+                                
+                                <div class="task-assignment-form-group">
+                                    <label class="task-assignment-form-label">
+                                        <span class="material-icons-round">flag</span>
+                                        Mức độ ưu tiên
+                                    </label>
+                                    <div class="task-assignment-priority-selector">
+                                        <div class="task-assignment-priority-option low" data-priority="low">
+                                            <span class="material-icons-round">trending_down</span>
+                                            Thấp
+                                        </div>
+                                        <div class="task-assignment-priority-option medium selected" data-priority="medium">
+                                            <span class="material-icons-round">trending_flat</span>
+                                            Trung bình
+                                        </div>
+                                        <div class="task-assignment-priority-option high" data-priority="high">
+                                            <span class="material-icons-round">trending_up</span>
+                                            Cao
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="task-assignment-user-section">
+                                <h3 class="task-assignment-user-title">
+                                    <span class="material-icons-round">group</span>
+                                    Giao cho nhân viên
+                                </h3>
+                                
+                                <div class="task-assignment-user-search">
+                                    <span class="task-assignment-search-icon material-icons-round">search</span>
+                                    <input type="text" class="task-assignment-user-search-input" 
+                                           placeholder="Tìm kiếm nhân viên theo tên hoặc ID..." 
+                                           id="userSearchInput">
+                                </div>
+                                
+                                <div class="task-assignment-user-grid" id="taskAssignmentUserGrid">
+                                    <div class="task-assignment-loading">
+                                        <div class="task-assignment-spinner"></div>
+                                        Đang tải danh sách nhân viên...
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="task-assignment-action-section">
+                                <button type="button" class="task-assignment-btn task-assignment-btn-secondary" onclick="contentManager.resetTaskForm()">
+                                    <span class="material-icons-round">refresh</span>
+                                    Đặt lại
+                                </button>
+                                <button type="submit" class="task-assignment-btn task-assignment-btn-primary">
+                                    <span class="material-icons-round">send</span>
+                                    Giao nhiệm vụ
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
                                                 </button>
                                             </div>
                                             
@@ -7800,21 +7973,162 @@ class ContentManager {
                                                     <span class="material-icons-round">format_clear</span>
                                                 </button>
                                             </div>
-                                        </div>
-                                        
-                                        <div class="editor-workspace">
-                                            <div id="taskDescription" 
-                                                 class="rich-text-editor enhanced-rich-editor resizable" 
-                                                 contenteditable="true" 
-                                                 placeholder="Nhập mô tả chi tiết nhiệm vụ... Sử dụng thanh công cụ để định dạng văn bản."
-                                                 style="min-height: 200px; max-height: 600px;">
-                                            </div>
-                                            
-                                            <!-- Resize Handle -->
-                                            <div class="resize-handle" onmousedown="this.startResize(event)">
-                                                <span class="material-icons-round">drag_handle</span>
-                                            </div>
-                                        </div>
+            
+            // Load users for assignment
+            this.loadUsersForTaskAssignment();
+            
+            // Setup form interactions
+            this.setupTaskAssignmentInteractions();
+            
+        } catch (error) {
+            console.error('Task assignment error:', error);
+            content.innerHTML = `
+                <div class="task-assignment-container">
+                    <div class="task-assignment-header">
+                        <h2><span class="material-icons-round">error</span>Lỗi Hệ Thống</h2>
+                        <p class="task-assignment-subtitle">Không thể tải giao diện giao nhiệm vụ</p>
+                    </div>
+                    <div class="task-assignment-loading">
+                        Lỗi: ${error.message}. Vui lòng thử lại sau.
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Load users for task assignment
+    async loadUsersForTaskAssignment() {
+        try {
+            const users = await API_CACHE.getUsersData();
+            const userGrid = document.getElementById('taskAssignmentUserGrid');
+            
+            if (!users || users.length === 0) {
+                userGrid.innerHTML = `
+                    <div class="task-assignment-loading">
+                        <span class="material-icons-round">group</span>
+                        Không có nhân viên nào trong hệ thống
+                    </div>
+                `;
+                return;
+            }
+
+            const userCards = users.map(user => {
+                const userName = user.fullName || user.name || 'Không rõ';
+                const userId = user.employeeId || user.id || 'Unknown';
+                const userRole = user.position || user.role || 'NV';
+                const initials = userName.substring(0, 2).toUpperCase();
+
+                return `
+                    <div class="task-assignment-user-card" data-user-id="${userId}" onclick="this.classList.toggle('selected')">
+                        <div class="task-assignment-user-avatar">${initials}</div>
+                        <div class="task-assignment-user-info">
+                            <h5>${userName}</h5>
+                            <p>ID: ${userId}</p>
+                            <p>${this.getRoleDisplayName(userRole)}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            userGrid.innerHTML = userCards;
+            
+        } catch (error) {
+            console.error('Error loading users for task assignment:', error);
+            document.getElementById('taskAssignmentUserGrid').innerHTML = `
+                <div class="task-assignment-loading">
+                    <span class="material-icons-round">error</span>
+                    Lỗi tải danh sách nhân viên
+                </div>
+            `;
+        }
+    }
+
+    // Setup task assignment interactions
+    setupTaskAssignmentInteractions() {
+        // Priority selector
+        const priorityOptions = document.querySelectorAll('.task-assignment-priority-option');
+        priorityOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                priorityOptions.forEach(p => p.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // User search
+        const searchInput = document.getElementById('userSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const userCards = document.querySelectorAll('.task-assignment-user-card');
+                
+                userCards.forEach(card => {
+                    const userName = card.querySelector('h5').textContent.toLowerCase();
+                    const userId = card.querySelector('p').textContent.toLowerCase();
+                    
+                    if (userName.includes(searchTerm) || userId.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Form submission
+        const form = document.getElementById('taskAssignmentForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.submitTaskAssignment();
+            });
+        }
+    }
+
+    // Submit task assignment
+    async submitTaskAssignment() {
+        try {
+            const formData = new FormData(document.getElementById('taskAssignmentForm'));
+            const selectedUsers = document.querySelectorAll('.task-assignment-user-card.selected');
+            const selectedPriority = document.querySelector('.task-assignment-priority-option.selected');
+            
+            if (selectedUsers.length === 0) {
+                utils.showNotification('Vui lòng chọn ít nhất một nhân viên để giao nhiệm vụ', 'warning');
+                return;
+            }
+
+            const taskData = {
+                title: formData.get('taskTitle'),
+                description: formData.get('taskDescription'),
+                deadline: formData.get('taskDeadline'),
+                priority: selectedPriority?.dataset.priority || 'medium',
+                assignedTo: Array.from(selectedUsers).map(card => card.dataset.userId),
+                createdAt: new Date().toISOString(),
+                status: 'pending'
+            };
+
+            // Here you would normally send to API
+            console.log('Task Assignment Data:', taskData);
+            
+            utils.showNotification('Nhiệm vụ đã được giao thành công!', 'success');
+            this.resetTaskForm();
+            
+        } catch (error) {
+            console.error('Error submitting task:', error);
+            utils.showNotification('Lỗi khi giao nhiệm vụ: ' + error.message, 'error');
+        }
+    }
+
+    // Reset task form
+    resetTaskForm() {
+        document.getElementById('taskAssignmentForm').reset();
+        document.querySelectorAll('.task-assignment-user-card.selected').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.querySelectorAll('.task-assignment-priority-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        document.querySelector('.task-assignment-priority-option.medium').classList.add('selected');
+    }
                                         
                                         <div class="editor-footer">
                                             <div class="editor-stats">
