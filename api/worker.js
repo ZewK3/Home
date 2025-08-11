@@ -1726,7 +1726,7 @@ async function handleGetTimesheet(url, db, origin) {
         SELECT 
           DATE(targetTime) as date,
           targetTime,
-          type,
+          requestType,
           status
         FROM attendance_requests 
         WHERE employeeId = ? AND status = 'approved' 

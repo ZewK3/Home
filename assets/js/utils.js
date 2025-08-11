@@ -1,6 +1,6 @@
 // Utility Functions
 const utils = {
-    showNotification(message, type = "success", duration = 4000, autoHide = true) {
+    showNotification(message, type = "success", duration = 3000) {
         const notification = document.getElementById("notification");
         if (!notification) {
             console.warn("Notification element not found");
@@ -10,55 +10,21 @@ const utils = {
         const icons = {
             success: '✓',
             error: '✕', 
-            warning: '⚠',
-            info: 'ℹ'
+            warning: '⚠'
         };
 
-        // Check if we're on dashboard or auth page and use appropriate classes
-        const isDashboard = notification.classList.contains('notification-container') || 
-                           window.location.pathname.includes('dashboard');
+        notification.innerHTML = `
+            <span class="notification-icon">${icons[type] || '✓'}</span>
+            <span class="notification-message">${this.escapeHtml(message)}</span>
+        `;
         
-        if (isDashboard) {
-            notification.innerHTML = `
-                <div class="notification-content">
-                    <span class="notification-icon">${icons[type] || '✓'}</span>
-                    <span class="notification-message">${this.escapeHtml(message)}</span>
-                    <button class="notification-close" onclick="utils.hideNotification()" aria-label="Close notification">
-                        <span class="material-icons-round">close</span>
-                    </button>
-                </div>
-            `;
-            notification.className = `notification-container ${type} show`;
-        } else {
-            // Auth page format
-            notification.innerHTML = `
-                <div class="notification-content">
-                    <span class="notification-icon">${icons[type] || '✓'}</span>
-                    <span class="notification-message">${this.escapeHtml(message)}</span>
-                    <button class="notification-close" onclick="utils.hideNotification()" aria-label="Close notification">
-                        <span class="material-icons-round">close</span>
-                    </button>
-                </div>
-            `;
-            notification.className = `notification ${type} show`;
-        }
+        notification.className = `notification ${type} show`;
         
-        // Auto-hide notification after specified duration (default 4 seconds)
-        if (autoHide && duration > 0) {
-            setTimeout(() => {
-                this.hideNotification();
-            }, duration);
-        }
-    },
-
-    hideNotification() {
-        const notification = document.getElementById("notification");
-        if (notification) {
-            notification.classList.remove("show");
-            setTimeout(() => {
-                notification.innerHTML = '';
-            }, 300); // Wait for transition to complete
-        }
+        setTimeout(() => {
+            if (notification) {
+                notification.classList.remove("show");
+            }
+        }, duration);
     },
 
     formatDate(date) {

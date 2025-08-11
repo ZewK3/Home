@@ -13,9 +13,6 @@ async function initializeApplication() {
         // Initialize theme manager
         ThemeManager.initialize();
         
-        // Initialize menu manager
-        MenuManager.init();
-        
         // Initialize auth manager
         authManager = new AuthManager();
         window.authManager = authManager;
@@ -49,7 +46,7 @@ async function initializeApplication() {
 
 // Initialize professional styles (placeholder for future enhancements)
 function initializeProfessionalStyles() {
-    // Professional styles are already loaded via professional-unified.css
+    // Professional styles are already loaded via dash.css
     console.log('Professional styles initialized');
 }
 

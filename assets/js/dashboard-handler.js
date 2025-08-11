@@ -35,48 +35,6 @@ function setupModalCloseHandlers() {
     });
 }
 
-// Display user information in header
-async function displayUserInfoInHeader(userData) {
-    if (!userData) {
-        console.warn('No user data available for header display');
-        return;
-    }
-
-    try {
-        // Update user name
-        const userNameElement = document.getElementById('userName');
-        if (userNameElement) {
-            userNameElement.textContent = userData.fullName || 'Loading...';
-        }
-
-        // Update user role
-        const userRoleElement = document.getElementById('userRole');
-        if (userRoleElement) {
-            const roleMap = {
-                'AD': 'Administrator',
-                'QL': 'Quản Lý', 
-                'AM': 'Assistant Manager',
-                'NV': 'Nhân Viên'
-            };
-            userRoleElement.textContent = roleMap[userData.position] || userData.position || 'User';
-        }
-
-        // Update user initials
-        const userInitialsElement = document.getElementById('userInitials');
-        if (userInitialsElement && userData.fullName) {
-            const names = userData.fullName.split(' ');
-            const initials = names.length >= 2 
-                ? names[0].charAt(0) + names[names.length - 1].charAt(0)
-                : userData.fullName.charAt(0);
-            userInitialsElement.textContent = initials.toUpperCase();
-        }
-
-        console.log('✅ User info populated in header:', userData.fullName, userData.position);
-    } catch (error) {
-        console.error('Error displaying user info in header:', error);
-    }
-}
-
 // Initialize Dashboard - will be called by main-init.js
 async function initializeDashboard() {
     // Show dashboard loader immediately
@@ -154,7 +112,11 @@ async function initializeDashboard() {
         MenuManager.setupMenuInteractions();
 
         // Populate user info in header after role setup
-        await displayUserInfoInHeader(userData);
+        const userInfoElement = document.getElementById("userInfo");
+        if (userInfoElement && userData) {
+            userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
+            console.log('✅ User info populated in header:', userData.fullName, userData.employeeId);
+        }
 
         // Load dashboard stats immediately when page loads
         await getDashboardStats();
@@ -920,7 +882,7 @@ async function initializeFinanceDashboard() {
 function setupMobileMenu() {
     const menuToggle = document.getElementById('menuToggle');
     const mobileDialog = document.getElementById('mobile-nav-dialog');
-    const closeDialog = document.querySelector('.mobile-nav-close');
+    const closeDialog = document.querySelector('.close-dialog');
     
     if (!menuToggle || !mobileDialog) {
         console.warn('Mobile menu elements not found');
@@ -938,7 +900,7 @@ function setupMobileMenu() {
     // Open dialog function
     function openMobileMenu() {
         if (!isMenuOpen) {
-            mobileDialog.style.display = 'block';
+            mobileDialog.showModal();
             document.body.style.overflow = 'hidden';
             isMenuOpen = true;
             
@@ -957,7 +919,7 @@ function setupMobileMenu() {
             mobileDialog.style.transform = 'translateX(-100%)';
             
             setTimeout(() => {
-                mobileDialog.style.display = 'none';
+                mobileDialog.close();
                 document.body.style.overflow = '';
                 isMenuOpen = false;
             }, 300);

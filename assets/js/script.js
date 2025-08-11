@@ -2,7 +2,6 @@
 const API_URL = "https://zewk.tocotoco.workers.dev/";
 const TOKEN_KEY = "authToken";
 const REMEMBER_ME_KEY = "rememberedEmployeeId";
-const THEME_KEY = "theme";
 const SUCCESS_STATUS = 200;
 const ACCOUNT_EXISTS_STATUS = 209;
 const PHONE_EXISTS_STATUS = 210;
@@ -92,7 +91,6 @@ const elements = {
     forgotPasswordContainer: document.getElementById("forgotPasswordFormContainer"),
     resetPasswordContainer: document.getElementById("resetPasswordFormContainer"),
     notification: document.getElementById("notification"),
-    themeSwitch: document.getElementById("themeSwitch"),
     strengthMeter: document.querySelector(".strength-meter div"),
     strengthText: document.querySelector(".strength-text")
 };
@@ -803,52 +801,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load stores for registration form
     loadStores();
 
-    // Automatic time-based theme system
-    function setAutomaticTheme() {
-        const now = new Date();
-        const hour = now.getHours();
-        
-        // Dark mode: 18:00 (6 PM) to 06:59 (7 AM)
-        // Light mode: 07:00 (7 AM) to 17:59 (6 PM)
-        const isDarkTime = hour >= 18 || hour < 7;
-        const newTheme = isDarkTime ? "dark" : "light";
-        
-        document.documentElement.setAttribute("data-theme", newTheme);
-        localStorage.setItem(THEME_KEY, newTheme);
-        
-        // Update theme switch icon if it exists
-        const themeSwitch = document.getElementById("themeSwitch");
-        if (themeSwitch) {
-            const icon = themeSwitch.querySelector(".material-icons-round");
-            if (icon) {
-                icon.textContent = newTheme === "light" ? "dark_mode" : "light_mode";
-            }
-        }
-        
-        return newTheme;
-    }
-    
-    // Initialize automatic theme
-    setAutomaticTheme();
-    
-    // Update theme every minute to catch time changes
-    setInterval(setAutomaticTheme, 60000);
-    
-    // Remove manual theme toggle functionality - now automatic
-    const themeSwitch = document.getElementById("themeSwitch");
-    if (themeSwitch) {
-        // Display current time-based theme info on click
-        themeSwitch.addEventListener("click", () => {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-            const currentTheme = document.documentElement.getAttribute("data-theme");
-            const message = currentTheme === "dark" 
-                ? `🌙 Chế độ tối (${timeString}) - Tự động từ 6:00 PM đến 7:00 AM`
-                : `☀️ Chế độ sáng (${timeString}) - Tự động từ 7:00 AM đến 6:00 PM`;
-            
-            showNotification(message, "info", 3000);
-        });
-    }
+    // Initialize professional dark theme
+    document.documentElement.classList.add('professional-theme');
 
     // Remember me
     const rememberedId = localStorage.getItem(REMEMBER_ME_KEY);

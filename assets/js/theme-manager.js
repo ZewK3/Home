@@ -1,26 +1,19 @@
-// Automatic Time-Based Theme Manager
+// Professional Theme Manager - Single Dark Theme
 class ThemeManager {
     static initialize() {
-        // Set automatic theme based on time
-        this.setAutomaticTheme();
-        
-        // Update theme every minute
-        setInterval(() => this.setAutomaticTheme(), 60000);
+        // Set professional dark theme permanently
+        this.setProfessionalTheme();
     }
     
-    static setAutomaticTheme() {
-        const now = new Date();
-        const hour = now.getHours();
+    static setProfessionalTheme() {
+        // Remove any existing theme attributes and use unified dark theme
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.removeItem('theme');
         
-        // Dark mode: 18:00 (6 PM) to 06:59 (7 AM)
-        // Light mode: 07:00 (7 AM) to 17:59 (6 PM)
-        const isDarkTime = hour >= 18 || hour < 7;
-        const newTheme = isDarkTime ? "dark" : "light";
+        // Add professional theme class
+        document.documentElement.classList.add('professional-theme');
         
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, newTheme);
-        
-        return newTheme;
+        return 'professional';
     }
 }
 
