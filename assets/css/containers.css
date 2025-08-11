@@ -11,11 +11,6 @@
     transition: var(--transition);
 }
 
-[data-theme="dark"] .task-assignment-container {
-    background: rgba(8, 12, 20, 0.98);
-    border-color: #334155;
-    backdrop-filter: blur(10px);
-}
 
 .task-assignment-header {
     border-bottom: 1px solid var(--border-color);
@@ -49,10 +44,6 @@
     padding: var(--spacing-2xl);
 }
 
-[data-theme="dark"] .assignment-form-section {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: #475569;
-}
 
 .assignment-form-section h3 {
     color: var(--text-primary);
@@ -78,15 +69,7 @@
     padding-top: 1.5rem;
 }
 
-[data-theme="dark"] .task-assignment-container .btn {
-    border: 1px solid #475569;
-}
 
-[data-theme="dark"] .task-assignment-container .btn:hover {
-    background: rgba(96, 165, 250, 0.1);
-    border-color: #60a5fa;
-    color: #ffffff !important;
-}
 
 /* Personal Info Container Enhanced */
 .personal-info-container {
@@ -98,10 +81,6 @@
     transition: var(--transition);
 }
 
-[data-theme="dark"] .personal-info-container {
-    background: rgba(15, 23, 42, 0.95);
-    border-color: #334155;
-}
 
 .personal-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -112,9 +91,6 @@
     gap: 2rem;
 }
 
-[data-theme="dark"] .personal-header {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-}
 
 .personal-avatar {
     display: flex;
@@ -197,10 +173,6 @@
     padding: 1.5rem;
 }
 
-[data-theme="dark"] .info-section {
-    background: rgba(15, 23, 42, 0.6);
-    border-color: #475569;
-}
 
 .info-section h3 {
     color: var(--text-primary);
@@ -265,10 +237,6 @@
     box-shadow: var(--shadow);
 }
 
-[data-theme="dark"] .user-selection-panel {
-    background: rgba(15, 23, 42, 0.95);
-    border-color: #334155;
-}
 
 .user-selection-header {
     border-bottom: 1px solid var(--border-color);
@@ -299,11 +267,6 @@
     transition: var(--transition);
 }
 
-[data-theme="dark"] .user-search-input {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: #475569;
-    color: #ffffff !important;
-}
 
 .user-search-input:focus {
     outline: none;
@@ -328,10 +291,6 @@
     background: var(--bg-card);
 }
 
-[data-theme="dark"] .user-list {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: #475569;
-}
 
 .user-item {
     display: flex;
@@ -351,9 +310,6 @@
     background: var(--bg-glass);
 }
 
-[data-theme="dark"] .user-item:hover {
-    background: rgba(59, 130, 246, 0.1);
-}
 
 .user-item.selected {
     background: rgba(59, 130, 246, 0.1);

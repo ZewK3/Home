@@ -4,6 +4,7 @@ const CONFIG = {
     STORAGE_KEYS: {
         AUTH_TOKEN: "authToken",
         USER_DATA: "loggedInUser",
+        THEME: "theme",
         REMEMBER_ME: "rememberedEmployeeId"
     },
     POLLING_INTERVAL: 3000,

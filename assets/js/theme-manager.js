@@ -1,19 +1,15 @@
-// Professional Theme Manager - Single Dark Theme
+// Light Theme Only Manager
 class ThemeManager {
     static initialize() {
-        // Set professional dark theme permanently
-        this.setProfessionalTheme();
+        // Set light theme permanently
+        this.setLightTheme();
     }
     
-    static setProfessionalTheme() {
-        // Remove any existing theme attributes and use unified dark theme
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.removeItem('theme');
+    static setLightTheme() {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, 'light');
         
-        // Add professional theme class
-        document.documentElement.classList.add('professional-theme');
-        
-        return 'professional';
+        return 'light';
     }
 }
 

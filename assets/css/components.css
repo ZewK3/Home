@@ -339,25 +339,6 @@
 }
 
 /* Dark mode adjustments for components */
-[data-theme="dark"] .form-input,
-[data-theme="dark"] .form-select,
-[data-theme="dark"] .form-textarea {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: #334155;
-    color: #ffffff !important;
-}
 
-[data-theme="dark"] .form-input::placeholder,
-[data-theme="dark"] .form-select::placeholder,
-[data-theme="dark"] .form-textarea::placeholder {
-    color: #94a3b8;
-}
 
-[data-theme="dark"] .table {
-    background: rgba(15, 23, 42, 0.8);
-}
 
-[data-theme="dark"] .card {
-    background: rgba(15, 23, 42, 0.8);
-    border-color: #334155;
-}

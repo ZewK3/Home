@@ -1,5 +1,5 @@
 /* Sidebar Navigation Styles */
-.sidebar {
+.app-sidebar {
     position: fixed;
     left: 0;
     top: 0;
@@ -14,25 +14,25 @@
     overflow-y: auto;
 }
 
-.sidebar-header {
+.app-sidebar-header {
     padding: var(--spacing-2xl);
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-header);
     color: var(--text-light);
 }
 
-.sidebar-header h2 {
+.app-sidebar-header h2 {
     font-size: var(--font-size-2xl);
     font-weight: 700;
     margin-bottom: var(--spacing-sm);
 }
 
-.sidebar-header p {
+.app-sidebar-header p {
     opacity: 0.9;
     font-size: var(--font-size-sm);
 }
 
-.sidebar-nav {
+.app-sidebar-nav {
     padding: var(--spacing-lg) 0;
 }
 
@@ -113,11 +113,11 @@
         justify-content: center !important;
     }
     
-    .sidebar {
+    .app-sidebar {
         transform: translateX(-100%);
     }
     
-    .sidebar.active {
+    .app-sidebar.active {
         transform: translateX(0);
     }
 }
