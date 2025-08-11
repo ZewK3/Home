@@ -256,47 +256,7 @@ class ContentManager {
         window.closeTaskDetailModal = () => this.closeTaskDetailModal();
         window.closeRequestDetailModal = () => this.closeRequestDetailModal();
         
-        // Permission management functions
-        window.saveUserPermissions = (userId) => this.saveUserPermissions(userId);
-        window.resetUserPermissions = (userId) => this.resetUserPermissions(userId);
-        
         console.log('✅ ContentManager functions made globally accessible');
-    }
-
-    // Save user permissions
-    async saveUserPermissions(userId) {
-        try {
-            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
-            if (!userCard) return;
-
-            const roleSelector = userCard.querySelector('.permission-role-selector');
-            const newRole = roleSelector.value;
-            
-            // Here you would normally save to API
-            console.log(`Saving permissions for user ${userId}: role = ${newRole}`);
-            
-            utils.showNotification('Quyền của người dùng đã được cập nhật!', 'success');
-            
-        } catch (error) {
-            console.error('Error saving user permissions:', error);
-            utils.showNotification('Lỗi khi lưu quyền người dùng: ' + error.message, 'error');
-        }
-    }
-
-    // Reset user permissions
-    async resetUserPermissions(userId) {
-        try {
-            // Reset to original state
-            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
-            if (!userCard) return;
-
-            // Here you would reload original data
-            utils.showNotification('Quyền người dùng đã được khôi phục!', 'info');
-            
-        } catch (error) {
-            console.error('Error resetting user permissions:', error);
-            utils.showNotification('Lỗi khi khôi phục quyền: ' + error.message, 'error');
-        }
     }
 
     // Helper method to safely get user employeeId
@@ -766,25 +726,25 @@ class ContentManager {
             const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
-                <div class="timesheet-container-WeeklyShifts">
+                <div class="timesheet-container modern-container">
                     <!-- Enhanced Professional Header -->
-                    <div class="timesheet-page-header-WeeklyShifts">
-                        <div class="timesheet-header-content-WeeklyShifts">
-                            <div class="timesheet-header-title-WeeklyShifts">
-                                <div class="timesheet-title-icon-wrapper-WeeklyShifts">
-                                    <span class="material-icons-round timesheet-header-icon-WeeklyShifts">calendar_view_month</span>
+                    <div class="page-header professional-header">
+                        <div class="header-content">
+                            <div class="header-title">
+                                <div class="title-icon-wrapper">
+                                    <span class="material-icons-round header-icon">calendar_view_month</span>
                                 </div>
-                                <div class="timesheet-title-text-WeeklyShifts">
+                                <div class="title-text">
                                     <h1>Bảng Công Chuyên Nghiệp</h1>
-                                    <p class="timesheet-header-subtitle-WeeklyShifts">Theo dõi và phân tích thời gian làm việc với giao diện hiện đại</p>
+                                    <p class="header-subtitle">Theo dõi và phân tích thời gian làm việc với giao diện hiện đại</p>
                                 </div>
                             </div>
-                            <div class="timesheet-header-actions-WeeklyShifts">
-                                <button class="timesheet-btn-WeeklyShifts timesheet-action-btn-WeeklyShifts timesheet-export-btn-WeeklyShifts" onclick="exportTimesheet()">
+                            <div class="header-actions">
+                                <button class="modern-btn action-btn export-btn" onclick="exportTimesheet()">
                                     <span class="material-icons-round">download</span>
                                     Xuất Excel
                                 </button>
-                                <button class="timesheet-btn-WeeklyShifts timesheet-action-btn-WeeklyShifts timesheet-print-btn-WeeklyShifts" onclick="printTimesheet()">
+                                <button class="modern-btn action-btn print-btn" onclick="printTimesheet()">
                                     <span class="material-icons-round">print</span>
                                     In báo cáo
                                 </button>
@@ -793,35 +753,35 @@ class ContentManager {
                     </div>
 
                     <!-- Professional Control Panel -->
-                    <div class="timesheet-card-WeeklyShifts timesheet-control-panel-WeeklyShifts">
-                        <div class="timesheet-card-body-WeeklyShifts">
-                            <div class="timesheet-controls-WeeklyShifts">
-                                <div class="timesheet-control-section-WeeklyShifts">
-                                    <div class="timesheet-filter-group-WeeklyShifts">
-                                        <label for="timesheetMonth" class="timesheet-filter-label-WeeklyShifts">
+                    <div class="card modern-card control-panel">
+                        <div class="card-body">
+                            <div class="timesheet-controls modern-controls">
+                                <div class="control-section">
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="timesheetMonth" class="filter-label">
                                             <span class="material-icons-round">date_range</span>
                                             Chọn tháng/năm
                                         </label>
-                                        <input type="month" id="timesheetMonth" class="timesheet-form-control-WeeklyShifts" value="${this.getCurrentMonth()}">
+                                        <input type="month" id="timesheetMonth" class="form-control modern-input" value="${this.getCurrentMonth()}">
                                     </div>
-                                    <div class="timesheet-filter-group-WeeklyShifts">
-                                        <label for="timesheetView" class="timesheet-filter-label-WeeklyShifts">
+                                    <div class="filter-group enhanced-filter">
+                                        <label for="timesheetView" class="filter-label">
                                             <span class="material-icons-round">view_module</span>
                                             Chế độ xem
                                         </label>
-                                        <select id="timesheetView" class="timesheet-form-control-WeeklyShifts timesheet-select-WeeklyShifts">
+                                        <select id="timesheetView" class="form-control modern-select">
                                             <option value="calendar">Lịch tháng</option>
                                             <option value="list">Danh sách</option>
                                             <option value="summary">Tóm tắt</option>
                                         </select>
                                     </div>
                                 </div>
-                                <div class="timesheet-action-section-WeeklyShifts">
-                                    <button id="loadTimesheetData" class="timesheet-btn-WeeklyShifts timesheet-btn-primary-WeeklyShifts">
+                                <div class="action-section">
+                                    <button id="loadTimesheetData" class="btn btn-primary modern-btn">
                                         <span class="material-icons-round">refresh</span>
                                         Tải dữ liệu
                                     </button>
-                                    <button class="timesheet-btn-WeeklyShifts timesheet-secondary-btn-WeeklyShifts" onclick="contentManager.resetTimesheetView()">
+                                    <button class="btn modern-btn secondary-btn" onclick="contentManager.resetTimesheetView()">
                                         <span class="material-icons-round">restore</span>
                                         Đặt lại
                                     </button>
@@ -831,28 +791,28 @@ class ContentManager {
                     </div>
                     
                     <!-- Enhanced Main Content Area -->
-                    <div class="timesheet-main-content-WeeklyShifts">
-                        <div class="timesheet-content-grid-WeeklyShifts">
+                    <div class="timesheet-main-content">
+                        <div class="content-grid">
                             <!-- Professional Calendar Section -->
-                            <div class="timesheet-card-WeeklyShifts timesheet-calendar-section-WeeklyShifts">
-                                <div class="timesheet-card-header-WeeklyShifts">
+                            <div class="card modern-card calendar-section">
+                                <div class="card-header modern-header">
                                     <h3>
                                         <span class="material-icons-round">calendar_today</span>
                                         Lịch công tháng
                                     </h3>
-                                    <div class="timesheet-header-tools-WeeklyShifts">
-                                        <button class="timesheet-tool-btn-WeeklyShifts" onclick="contentManager.toggleCalendarView()" title="Chuyển đổi hiển thị">
+                                    <div class="header-tools">
+                                        <button class="tool-btn" onclick="contentManager.toggleCalendarView()" title="Chuyển đổi hiển thị">
                                             <span class="material-icons-round">view_agenda</span>
                                         </button>
-                                        <button class="timesheet-tool-btn-WeeklyShifts" onclick="contentManager.refreshCalendar()" title="Làm mới">
+                                        <button class="tool-btn" onclick="contentManager.refreshCalendar()" title="Làm mới">
                                             <span class="material-icons-round">refresh</span>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="timesheet-card-body-WeeklyShifts">
-                                    <div class="timesheet-calendar-WeeklyShifts" id="timesheetCalendar">
-                                        <div class="timesheet-loading-spinner-WeeklyShifts">
-                                            <div class="timesheet-spinner-WeeklyShifts"></div>
+                                <div class="card-body">
+                                    <div class="timesheet-calendar modern-calendar" id="timesheetCalendar">
+                                        <div class="loading-spinner">
+                                            <div class="spinner"></div>
                                             <p>Đang tải bảng công...</p>
                                         </div>
                                     </div>
@@ -1898,11 +1858,11 @@ class ContentManager {
                 </div>
 
                 <!-- Enhanced Request Detail Modal -->
-                <div id="requestDetailModal" class="requestDetailModal">
-                    <div class="request-detail-content">
+                <div id="requestDetailModal" class="modal enhanced-modal">
+                    <div class="modal-content enhanced-modal-content">
                         <div class="modal-header">
-                            <h3 class="modal-title">Chi tiết đơn từ</h3>
-                            <button class="modal-close" onclick="contentManager.closeRequestDetailModal()">
+                            <h3>Chi tiết đơn từ</h3>
+                            <button class="close-btn" onclick="contentManager.closeRequestDetailModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
@@ -1911,11 +1871,11 @@ class ContentManager {
                 </div>
 
                 <!-- Approval/Rejection Modal -->
-                <div id="approvalModal" class="approvalModal">
-                    <div class="approval-content">
+                <div id="approvalModal" class="modal enhanced-modal">
+                    <div class="modal-content enhanced-modal-content">
                         <div class="modal-header">
-                            <h3 id="approvalModalTitle" class="modal-title">Xử lý đơn từ</h3>
-                            <button class="modal-close" onclick="contentManager.closeApprovalModal()">
+                            <h3 id="approvalModalTitle">Xử lý đơn từ</h3>
+                            <button class="close-btn" onclick="contentManager.closeApprovalModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
@@ -2147,14 +2107,12 @@ class ContentManager {
             </div>
         `;
         
-        modal.style.display = 'flex';
-        modal.classList.add('show');
+        modal.style.display = 'block';
     }
 
     closeApprovalModal() {
         const modal = document.getElementById('approvalModal');
         modal.style.display = 'none';
-        modal.classList.remove('show');
     }
 
     async confirmRejectRequest(requestId) {
@@ -2685,12 +2643,14 @@ class ContentManager {
             if (users.length === 0) {
                 content.innerHTML = `
                     <div class="permission-management-container">
-                        <div class="permission-management-header-section">
+                        <div class="permission-header">
                             <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
-                            <p class="permission-management-header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
+                            <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
                         </div>
-                        <div class="permission-management-loading-container">
-                            <div class="permission-management-loading-text">Không có dữ liệu người dùng. Vui lòng thêm người dùng vào hệ thống trước.</div>
+                        <div class="no-data-state">
+                            <span class="no-data-icon">👥</span>
+                            <h3>Không có dữ liệu người dùng</h3>
+                            <p>Vui lòng thêm người dùng vào hệ thống trước.</p>
                         </div>
                     </div>
                 `;
@@ -2699,59 +2659,68 @@ class ContentManager {
             
             content.innerHTML = `
                 <div class="permission-management-container">
-                    <div class="permission-management-header-section">
+                    <div class="permission-header">
                         <h2><span class="material-icons-round">admin_panel_settings</span>Quản Lý Phân Quyền</h2>
-                        <p class="permission-management-header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
+                        <p class="header-subtitle">Quản lý phân quyền và vai trò người dùng trong hệ thống HR</p>
                     </div>
 
                     <!-- Statistics Dashboard -->
-                    <div class="permission-management-stats-grid">
-                        <div class="permission-stat-card">
-                            <div class="permission-stat-header">
-                                <div class="permission-stat-icon admin">
-                                    <span class="material-icons-round">admin_panel_settings</span>
-                                </div>
-                                <div class="permission-stat-title">Admin</div>
+                    <div class="permission-stats-grid">
+                        <div class="permission-stat-card admin">
+                            <div class="stat-icon">👑</div>
+                            <div class="stat-details">
+                                <h3>Admin</h3>
+                                <p class="stat-value" id="adminCount">0</p>
+                                <span class="stat-label">Quản trị viên</span>
                             </div>
-                            <div class="permission-stat-value" id="adminCount">0</div>
-                            <div class="permission-stat-description">Quản trị viên hệ thống</div>
                         </div>
-                        <div class="permission-stat-card">
-                            <div class="permission-stat-header">
-                                <div class="permission-stat-icon manager">
-                                    <span class="material-icons-round">supervisor_account</span>
-                                </div>
-                                <div class="permission-stat-title">Manager</div>
+                        <div class="permission-stat-card manager">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-details">
+                                <h3>Manager</h3>
+                                <p class="stat-value" id="managerCount">0</p>
+                                <span class="stat-label">Quản lý</span>
                             </div>
-                            <div class="permission-stat-value" id="managerCount">0</div>
-                            <div class="permission-stat-description">Quản lý cấp cao</div>
                         </div>
-                        <div class="permission-stat-card">
-                            <div class="permission-stat-header">
-                                <div class="permission-stat-icon employee">
-                                    <span class="material-icons-round">person</span>
-                                </div>
-                                <div class="permission-stat-title">Nhân viên</div>
+                        <div class="permission-stat-card assistant">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-details">
+                                <h3>Quản Lý Khu Vực</h3>
+                                <p class="stat-value" id="assistantCount">0</p>
+                                <span class="stat-label">Quản lý khu vực</span>
                             </div>
-                            <div class="permission-stat-value" id="employeeCount">0</div>
-                            <div class="permission-stat-description">Nhân viên thông thường</div>
                         </div>
-                        <div class="permission-stat-card">
-                            <div class="permission-stat-header">
-                                <div class="permission-stat-icon pending">
-                                    <span class="material-icons-round">hourglass_empty</span>
-                                </div>
-                                <div class="permission-stat-title">Chờ duyệt</div>
+                        <div class="permission-stat-card employee">
+                            <div class="stat-icon">👤</div>
+                            <div class="stat-details">
+                                <h3>Nhân viên</h3>
+                                <p class="stat-value" id="employeeCount">0</p>
+                                <span class="stat-label">Nhân viên</span>
                             </div>
-                            <div class="permission-stat-value" id="pendingCount">0</div>
-                            <div class="permission-stat-description">Đang chờ phê duyệt</div>
                         </div>
-                    </div>
                     </div>
 
-                    <!-- User Grid -->
-                    <div class="permission-user-grid" id="permissionUserGrid">
-                        <!-- Users will be rendered here -->
+                    <!-- User Selection Panel -->
+                    <div class="permission-main-content">
+                        <div class="user-selection-panel">
+                            <div class="search-section">
+                                <h3><span class="material-icons-round">search</span>Tìm kiếm nhân viên</h3>
+                                <div class="search-controls">
+                                    <input type="text" id="userSearch" class="form-control" placeholder="Tìm kiếm theo tên, ID, hoặc email...">
+                                    <select id="roleFilter" class="form-control">
+                                        <option value="">Tất cả vai trò</option>
+                                        <option value="AD">Admin (AD)</option>
+                                        <option value="QL">Quản lý (QL)</option>
+                                        <option value="AM">Trợ lý (AM)</option>
+                                        <option value="NV">Nhân viên (NV)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div id="permissionUserList" class="permission-user-list-container">
+                                <!-- Modular user list will be inserted here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2887,88 +2856,37 @@ class ContentManager {
             // Setup permission management functionality
             this.setupPermissionManagement();
             
-            // Render users using the new CSS structure
-            const permissionUserGrid = document.getElementById('permissionUserGrid');
-            if (permissionUserGrid) {
-                const userCards = users.map(user => {
-                    const userRole = user.position || user.role || 'NV';
-                    const userName = user.fullName || user.name || 'Không rõ';
-                    const userId = user.employeeId || user.id || 'Unknown';
-                    const userEmail = user.email || '';
-                    const userDepartment = user.department || user.storeName || '';
-                    const initials = userName.substring(0, 2).toUpperCase();
-
-                    return `
-                        <div class="permission-user-card" data-user-id="${userId}">
-                            <div class="permission-user-header">
-                                <div class="permission-user-info">
-                                    <div class="permission-user-avatar">${initials}</div>
-                                    <div class="permission-user-details">
-                                        <h4>${userName}</h4>
-                                        <p class="permission-user-id">ID: ${userId}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="permission-user-body">
-                                <div class="permission-role-section">
-                                    <label class="permission-role-label">Vai trò hiện tại</label>
-                                    <select class="permission-role-selector" data-user-id="${userId}">
-                                        <option value="AD" ${userRole === 'AD' ? 'selected' : ''}>Admin (AD)</option>
-                                        <option value="QL" ${userRole === 'QL' ? 'selected' : ''}>Quản lý (QL)</option>
-                                        <option value="AM" ${userRole === 'AM' ? 'selected' : ''}>Trợ lý (AM)</option>
-                                        <option value="NV" ${userRole === 'NV' ? 'selected' : ''}>Nhân viên (NV)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="permission-access-list">
-                                    <div class="permission-access-title">Quyền truy cập</div>
-                                    <div class="permission-checkbox-group">
-                                        <div class="permission-checkbox-item">
-                                            <input type="checkbox" class="permission-checkbox" ${userRole !== 'NV' ? 'checked' : ''}>
-                                            <label class="permission-checkbox-label">Xem báo cáo</label>
-                                        </div>
-                                        <div class="permission-checkbox-item">
-                                            <input type="checkbox" class="permission-checkbox" ${userRole === 'AD' || userRole === 'QL' ? 'checked' : ''}>
-                                            <label class="permission-checkbox-label">Quản lý nhân viên</label>
-                                        </div>
-                                        <div class="permission-checkbox-item">
-                                            <input type="checkbox" class="permission-checkbox" ${userRole === 'AD' ? 'checked' : ''}>
-                                            <label class="permission-checkbox-label">Cấu hình hệ thống</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="permission-action-buttons">
-                                    <button type="button" class="permission-btn permission-btn-primary" onclick="window.saveUserPermissions('${userId}')">
-                                        <span class="material-icons-round">save</span>
-                                        Lưu thay đổi
-                                    </button>
-                                    <button type="button" class="permission-btn permission-btn-secondary" onclick="window.resetUserPermissions('${userId}')">
-                                        <span class="material-icons-round">refresh</span>
-                                        Khôi phục
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                permissionUserGrid.innerHTML = userCards;
-            }
-
-            // Update statistics
-            this.updatePermissionStats(users);
+            // Initialize modular user list component
+            setTimeout(() => {
+                this.createUserListComponent('permissionUserList', {
+                    users: users,
+                    searchable: false, // Using existing search controls
+                    selectable: false,
+                    showAvatars: true,
+                    showRoles: true,
+                    title: 'Danh sách người dùng hệ thống',
+                    onUserSelect: (user, userId) => {
+                        window.editUserRole(userId);
+                    }
+                });
+            }, 200);
             
         } catch (error) {
             console.error('Access management error:', error);
             content.innerHTML = `
                 <div class="permission-management-container">
-                    <div class="permission-management-header-section">
+                    <div class="permission-header">
                         <h2><span class="material-icons-round">error</span>Lỗi Hệ Thống</h2>
-                        <p class="permission-management-header-subtitle">Không thể tải thông tin phân quyền</p>
+                        <p class="header-subtitle">Không thể tải thông tin phân quyền</p>
                     </div>
-                    <div class="permission-management-loading-container">
-                        <div class="permission-management-loading-text">Lỗi: ${error.message}. Vui lòng thử lại sau hoặc liên hệ quản trị viên.</div>
+                    <div class="error-state">
+                        <span class="error-icon">⚠️</span>
+                        <h3>Lỗi: ${error.message}</h3>
+                        <p>Vui lòng thử lại sau hoặc liên hệ quản trị viên.</p>
+                        <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 1rem;">
+                            <span class="material-icons-round">refresh</span>
+                            Thử lại
+                        </button>
                     </div>
                 </div>
             `;
@@ -2976,21 +2894,8 @@ class ContentManager {
         }
     }
 
-    // Update permission statistics
-    updatePermissionStats(users) {
-        const stats = users.reduce((acc, user) => {
-            const role = user.position || user.role || 'NV';
-            acc[role] = (acc[role] || 0) + 1;
-            return acc;
-        }, {});
-
-        document.getElementById('adminCount').textContent = stats.AD || 0;
-        document.getElementById('managerCount').textContent = stats.QL || 0;
-        document.getElementById('employeeCount').textContent = stats.NV || 0;
-        document.getElementById('pendingCount').textContent = stats.PENDING || 0;
-    }
-
     async showPersonalInfo() {
+        const content = document.getElementById('content');
         try {
             // Use cached user data instead of making fresh API calls
             const response = await API_CACHE.getUserData();
@@ -3001,66 +2906,66 @@ class ContentManager {
             // Update instance user data
             this.user = response;
             
-            const htmlContent = `
-                <div class="personal-info-management-container">
-                    <div class="personal-info-header-section">
-                        <div class="personal-info-user-avatar">
-                            <div class="personal-info-avatar-circle">
+            content.innerHTML = `
+                <div class="personal-info-container">
+                    <div class="personal-header">
+                        <div class="personal-avatar">
+                            <div class="avatar-circle">
                                 <span class="material-icons-round">person</span>
                             </div>
-                            <div class="personal-info-avatar-details">
+                            <div class="avatar-info">
                                 <h2>${response.fullName || 'Chưa cập nhật'}</h2>
-                                <p class="personal-info-position-badge ${this.getRoleBadgeClass(response.position)}">${this.getRoleDisplayName(response.position)}</p>
-                                <p class="personal-info-employee-id">ID: ${response.employeeId}</p>
+                                <p class="position-badge ${this.getRoleBadgeClass(response.position)}">${this.getRoleDisplayName(response.position)}</p>
+                                <p class="employee-id">ID: ${response.employeeId}</p>
                             </div>
                         </div>
-                        <div class="personal-info-action-buttons">
-                            <button type="button" class="personal-info-btn personal-info-btn-outline" id="exportInfoBtn">
+                        <div class="personal-actions">
+                            <button type="button" class="btn btn-outline" id="exportInfoBtn">
                                 <span class="material-icons-round">download</span>
                                 Xuất thông tin
                             </button>
                         </div>
                     </div>
 
-                    <div class="personal-info-main-content">
-                        <div class="personal-info-grid-layout">
+                    <div class="personal-content">
+                        <div class="info-grid">
                             <!-- Editable Information Card -->
-                            <div class="personal-info-card personal-info-editable-card">
-                                <div class="personal-info-card-header">
-                                    <div class="personal-info-card-title">
+                            <div class="info-card editable-card">
+                                <div class="card-header">
+                                    <div class="card-title">
                                         <span class="material-icons-round">edit</span>
                                         <h3>Thông tin có thể chỉnh sửa</h3>
                                     </div>
-                                    <span class="personal-info-edit-badge">Tự cập nhật</span>
+                                    <span class="edit-badge">Tự cập nhật</span>
                                 </div>
-                                <form id="editableInfoForm" class="personal-info-form">
-                                    <div class="personal-info-form-row">
-                                        <div class="personal-info-form-group">
-                                            <label class="personal-info-form-label">
+                                <form id="editableInfoForm" class="info-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label class="form-label">
                                                 <span class="material-icons-round">email</span>
                                                 Email
                                             </label>
-                                            <input type="email" name="email" class="personal-info-form-input" 
+                                            <input type="email" name="email" class="form-input" 
                                                 value="${response.email || ''}" required>
-                                            <small class="personal-info-form-hint">Địa chỉ email để liên lạc và nhận thông báo</small>
+                                            <small class="form-hint">Địa chỉ email để liên lạc và nhận thông báo</small>
                                         </div>
-                                        <div class="personal-info-form-group">
-                                            <label class="personal-info-form-label">
+                                        <div class="form-group">
+                                            <label class="form-label">
                                                 <span class="material-icons-round">phone</span>
                                                 Số điện thoại
                                             </label>
-                                            <input type="tel" name="phone" class="personal-info-form-input" 
+                                            <input type="tel" name="phone" class="form-input" 
                                                 value="${response.phone || ''}" pattern="[0-9]{10}" required>
-                                            <small class="personal-info-form-hint">Số điện thoại liên lạc (10 chữ số)</small>
+                                            <small class="form-hint">Số điện thoại liên lạc (10 chữ số)</small>
                                         </div>
                                     </div>
-                                    <div class="personal-info-form-actions">
-                                        <button type="submit" class="personal-info-btn personal-info-btn-primary" disabled>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary" disabled>
                                             <span class="material-icons-round">save</span>
-                                            <span class="personal-info-btn-text">Cập nhật</span>
-                                            <span class="personal-info-btn-loader"></span>
+                                            <span class="btn-text">Cập nhật</span>
+                                            <span class="btn-loader"></span>
                                         </button>
-                                        <button type="reset" class="personal-info-btn personal-info-btn-outline">
+                                        <button type="reset" class="btn btn-outline">
                                             <span class="material-icons-round">refresh</span>
                                             Hoàn tác
                                         </button>
@@ -3069,85 +2974,85 @@ class ContentManager {
                             </div>
 
                             <!-- Read-only Information Card -->
-                            <div class="personal-info-card personal-info-readonly-card">
-                                <div class="personal-info-card-header">
-                                    <div class="personal-info-card-title">
+                            <div class="info-card readonly-card">
+                                <div class="card-header">
+                                    <div class="card-title">
                                         <span class="material-icons-round">lock</span>
                                         <h3>Thông tin cố định</h3>
                                     </div>
-                                    <span class="personal-info-readonly-badge">Chỉ đọc</span>
+                                    <span class="readonly-badge">Chỉ đọc</span>
                                 </div>
-                                <div class="personal-info-readonly-section">
-                                    <div class="personal-info-data-item">
-                                        <div class="personal-info-data-label">
+                                <div class="readonly-info">
+                                    <div class="info-item">
+                                        <div class="info-label">
                                             <span class="material-icons-round">badge</span>
                                             Mã nhân viên
                                         </div>
-                                        <div class="personal-info-data-value">${response.employeeId || 'Chưa cập nhật'}</div>
+                                        <div class="info-value">${response.employeeId || 'Chưa cập nhật'}</div>
                                     </div>
-                                    <div class="personal-info-data-item">
-                                        <div class="personal-info-data-label">
+                                    <div class="info-item">
+                                        <div class="info-label">
                                             <span class="material-icons-round">person</span>
                                             Họ và tên
                                         </div>
-                                        <div class="personal-info-data-value">${response.fullName || 'Chưa cập nhật'}</div>
+                                        <div class="info-value">${response.fullName || 'Chưa cập nhật'}</div>
                                     </div>
-                                    <div class="personal-info-data-item">
-                                        <div class="personal-info-data-label">
+                                    <div class="info-item">
+                                        <div class="info-label">
                                             <span class="material-icons-round">work</span>
                                             Chức vụ
                                         </div>
-                                        <div class="personal-info-data-value">
-                                            <span class="personal-info-position-tag ${this.getRoleBadgeClass(response.position)}">
+                                        <div class="info-value">
+                                            <span class="position-tag ${this.getRoleBadgeClass(response.position)}">
                                                 ${this.getRoleDisplayName(response.position)}
                                             </span>
                                         </div>
                                     </div>
-                                    <div class="personal-info-data-item">
-                                        <div class="personal-info-data-label">
+                                    <div class="info-item">
+                                        <div class="info-label">
                                             <span class="material-icons-round">store</span>
                                             Cửa hàng
                                         </div>
-                                        <div class="personal-info-data-value">${response.storeName || 'Chưa cập nhật'}</div>
+                                        <div class="info-value">${response.storeName || 'Chưa cập nhật'}</div>
                                     </div>
-                                    <div class="personal-info-data-item">
-                                        <div class="personal-info-data-label">
+                                    <div class="info-item">
+                                        <div class="info-label">
                                             <span class="material-icons-round">calendar_today</span>
                                             Ngày gia nhập
                                         </div>
-                                        <div class="personal-info-data-value">${response.joinDate ? utils.formatDate(response.joinDate) : 'Chưa cập nhật'}</div>
+                                        <div class="info-value">${response.joinDate ? utils.formatDate(response.joinDate) : 'Chưa cập nhật'}</div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Request Changes Card -->
-                            <div class="personal-info-card personal-info-request-card">
-                                <div class="personal-info-card-header">
-                                    <div class="personal-info-card-title">
+                            <div class="info-card request-card">
+                                <div class="card-header">
+                                    <div class="card-title">
                                         <span class="material-icons-round">request_quote</span>
                                         <h3>Yêu cầu thay đổi</h3>
                                     </div>
-                                    <span class="personal-info-request-badge">Cần duyệt</span>
+                                    <span class="request-badge">Cần duyệt</span>
                                 </div>
-                                <div class="personal-info-request-section">
-                                    <p class="personal-info-request-description">
+                                <div class="request-info">
+                                    <p class="request-description">
                                         Để thay đổi thông tin như tên, chức vụ, cửa hàng hoặc ngày gia nhập, 
                                         bạn cần gửi yêu cầu để được ban quản lý duyệt.
                                     </p>
-                                    <div class="personal-info-request-buttons">
-                                        <button type="button" class="personal-info-btn-request-change" data-field="fullName" data-current="${response.fullName || ''}">
+                                    <div class="request-buttons">
+                                        <button type="button" class="btn-request-change" data-field="fullName" data-current="${response.fullName || ''}">
                                             <span class="material-icons-round">person</span>
                                             Đổi tên
                                         </button>
-                                        <button type="button" class="personal-info-btn-request-change" data-field="position" data-current="${response.position || ''}">
+                                        <button type="button" class="btn-request-change" data-field="position" data-current="${response.position || ''}">
                                             <span class="material-icons-round">work</span>
                                             Đổi chức vụ
                                         </button>
-                                        <button type="button" class="personal-info-btn-request-change" data-field="storeName" data-current="${response.storeName || ''}">
+                                        <button type="button" class="btn-request-change" data-field="storeName" data-current="${response.storeName || ''}">
                                             <span class="material-icons-round">store</span>
                                             Đổi cửa hàng
                                         </button>
-                                        <button type="button" class="personal-info-btn-request-change" data-field="joinDate" data-current="${response.joinDate || ''}">
+                                        <button type="button" class="btn-request-change" data-field="joinDate" data-current="${response.joinDate || ''}">
                                             <span class="material-icons-round">calendar_today</span>
                                             Đổi ngày gia nhập
                                         </button>
@@ -3156,35 +3061,36 @@ class ContentManager {
                             </div>
 
                             <!-- Statistics Card -->
-                            <div class="personal-info-card personal-info-stats-card">
-                                <div class="personal-info-card-header">
-                                    <div class="personal-info-card-title">
+                            <div class="info-card stats-card">
+                                <div class="card-header">
+                                    <div class="card-title">
                                         <span class="material-icons-round">analytics</span>
                                         <h3>Thống kê cá nhân</h3>
                                     </div>
                                 </div>
-                                <div class="personal-info-statistics-section">
-                                    <div class="personal-info-stat-item">
-                                        <div class="personal-info-stat-icon">📅</div>
-                                        <div class="personal-info-stat-details">
-                                            <div class="personal-info-stat-value" id="workDaysThisMonth">-</div>
-                                            <div class="personal-info-stat-label">Ngày làm tháng này</div>
+                                <div class="personal-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-icon">📅</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="workDaysThisMonth">-</div>
+                                            <div class="stat-label">Ngày làm tháng này</div>
                                         </div>
                                     </div>
-                                    <div class="personal-info-stat-item">
-                                        <div class="personal-info-stat-icon">⏰</div>
-                                        <div class="personal-info-stat-details">
-                                            <div class="personal-info-stat-value" id="totalHoursThisMonth">- giờ</div>
-                                            <div class="personal-info-stat-label">Tổng giờ làm</div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">⏰</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="totalHoursThisMonth">- giờ</div>
+                                            <div class="stat-label">Tổng giờ làm</div>
                                         </div>
                                     </div>
-                                    <div class="personal-info-stat-item">
-                                        <div class="personal-info-stat-icon">🎯</div>
-                                        <div class="personal-info-stat-details">
-                                            <div class="personal-info-stat-value" id="attendanceRate">-%</div>
-                                            <div class="personal-info-stat-label">Tỷ lệ chuyên cần</div>
+                                    <div class="stat-item">
+                                        <div class="stat-icon">🎯</div>
+                                        <div class="stat-info">
+                                            <div class="stat-value" id="attendanceRate">-%</div>
+                                            <div class="stat-label">Tỷ lệ chuyên cần</div>
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -3192,86 +3098,78 @@ class ContentManager {
                 </div>
 
                 <!-- Password Confirmation Modal -->
-                <div id="passwordConfirmModal" class="personal-info-modal" style="display: none;">
-                    <div class="personal-info-modal-content">
-                        <div class="personal-info-modal-header">
+                <div id="passwordConfirmModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
                             <h3>Xác nhận mật khẩu</h3>
-                            <button type="button" class="personal-info-modal-close">&times;</button>
+                            <button type="button" class="modal-close">&times;</button>
                         </div>
                         <form id="passwordConfirmForm">
-                            <div class="personal-info-modal-body">
+                            <div class="modal-body">
                                 <p>Để bảo mật thông tin, vui lòng xác nhận mật khẩu trước khi cập nhật.</p>
-                                <div class="personal-info-form-group">
-                                    <label class="personal-info-form-label">
+                                <div class="form-group">
+                                    <label class="form-label">
                                         <span class="material-icons-round">lock</span>
                                         Mật khẩu hiện tại
                                     </label>
-                                    <input type="password" id="confirmPassword" class="personal-info-form-input" required>
+                                    <input type="password" id="confirmPassword" class="form-input" required>
                                 </div>
                             </div>
-                            <div class="personal-info-modal-footer">
-                                <button type="button" class="personal-info-btn personal-info-btn-outline" onclick="closePasswordModal()">Hủy</button>
-                                <button type="submit" class="personal-info-btn personal-info-btn-primary">Xác nhận</button>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline" onclick="closePasswordModal()">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Xác nhận</button>
                             </div>
                         </form>
                     </div>
                 </div>
 
                 <!-- Change Request Modal -->
-                <div id="changeRequestModal" class="personal-info-modal" style="display: none;">
-                    <div class="personal-info-modal-content">
-                        <div class="personal-info-modal-header">
+                <div id="changeRequestModal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
                             <h3>Gửi yêu cầu thay đổi thông tin</h3>
-                            <button type="button" class="personal-info-modal-close">&times;</button>
+                            <button type="button" class="modal-close">&times;</button>
                         </div>
                         <form id="changeRequestForm">
-                            <div class="personal-info-modal-body">
-                                <div class="personal-info-form-group">
-                                    <label class="personal-info-form-label" id="changeFieldLabel">Trường cần thay đổi</label>
-                                    <input type="text" id="currentValue" class="personal-info-form-input" readonly>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label class="form-label" id="changeFieldLabel">Trường cần thay đổi</label>
+                                    <input type="text" id="currentValue" class="form-input" readonly>
                                 </div>
-                                <div class="personal-info-form-group">
-                                    <label class="personal-info-form-label">Giá trị mới</label>
-                                    <input type="text" id="newValue" class="personal-info-form-input" required>
+                                <div class="form-group">
+                                    <label class="form-label">Giá trị mới</label>
+                                    <input type="text" id="newValue" class="form-input" required>
                                 </div>
-                                <div class="personal-info-form-group">
-                                    <label class="personal-info-form-label">Lý do thay đổi</label>
-                                    <textarea id="changeReason" class="personal-info-form-input" rows="3" required 
+                                <div class="form-group">
+                                    <label class="form-label">Lý do thay đổi</label>
+                                    <textarea id="changeReason" class="form-input" rows="3" required 
                                         placeholder="Vui lòng nêu rõ lý do cần thay đổi thông tin này..."></textarea>
                                 </div>
                             </div>
-                            <div class="personal-info-modal-footer">
-                                <button type="button" class="personal-info-btn personal-info-btn-outline" onclick="closeChangeRequestModal()">Hủy</button>
-                                <button type="submit" class="personal-info-btn personal-info-btn-primary">Gửi yêu cầu</button>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline" onclick="closeChangeRequestModal()">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
                             </div>
                         </form>
                     </div>
                 </div>
             `;
 
-            // Set content and setup handlers
-            const content = document.getElementById('content');
-            content.innerHTML = htmlContent;
             this.setupPersonalInfoHandlers();
             this.loadPersonalStats();
             
-            return htmlContent;
-            
         } catch (error) {
             console.error('Personal info error:', error);
-            const errorContent = `
-                <div class="personal-info-error-container">
-                    <div class="personal-info-error-card">
-                        <span class="material-icons-round personal-info-error-icon">error</span>
+            content.innerHTML = `
+                <div class="error-container">
+                    <div class="error-card">
+                        <span class="material-icons-round error-icon">error</span>
                         <h3>Không thể tải thông tin cá nhân</h3>
                         <p>Đã xảy ra lỗi khi tải thông tin. Vui lòng thử lại sau.</p>
-                        <button onclick="contentManager.showPersonalInfo()" class="personal-info-btn personal-info-btn-primary">Thử lại</button>
+                        <button onclick="contentManager.showPersonalInfo()" class="btn btn-primary">Thử lại</button>
                     </div>
                 </div>
             `;
-            const content = document.getElementById('content');
-            content.innerHTML = errorContent;
-            return errorContent;
         }
     }
 
@@ -3945,15 +3843,15 @@ class ContentManager {
                 </div>
 
                 <!-- Enhanced Task Detail Modal -->
-                <div id="taskDetailModal" class="taskDetailModal">
-                    <div class="task-detail-content">
-                        <div class="task-detail-header">
-                            <h3 class="task-detail-title">Chi tiết công việc</h3>
-                            <button class="task-detail-close" onclick="contentManager.closeTaskDetailModal()">
+                <div id="taskDetailModal" class="modal enhanced-modal">
+                    <div class="modal-content enhanced-modal-content">
+                        <div class="modal-header">
+                            <h3>Chi tiết công việc</h3>
+                            <button class="close-btn" onclick="contentManager.closeTaskDetailModal()">
                                 <span class="material-icons-round">close</span>
                             </button>
                         </div>
-                        <div id="taskDetailContent" class="task-detail-body"></div>
+                        <div id="taskDetailContent" class="modal-body"></div>
                     </div>
                 </div>
             `;
@@ -4461,8 +4359,7 @@ class ContentManager {
                 </div>
             `;
             
-            modal.style.display = 'flex';
-            modal.classList.add('show');
+            modal.style.display = 'block';
             
         } catch (error) {
             console.error('Error loading task detail:', error);
@@ -4610,7 +4507,7 @@ class ContentManager {
                 utils.showNotification('Đã trả lời bình luận', 'success');
                 // Refresh the current task detail modal
                 const modal = document.getElementById('taskDetailModal');
-                if (modal.style.display === 'flex' || modal.classList.contains('show')) {
+                if (modal.style.display === 'block') {
                     // Get the task ID from the modal and refresh
                     location.reload(); // Simple refresh for now
                 }
@@ -4627,7 +4524,6 @@ class ContentManager {
     closeTaskDetailModal() {
         const modal = document.getElementById('taskDetailModal');
         modal.style.display = 'none';
-        modal.classList.remove('show');
     }
 
     getPriorityIcon(priority) {
@@ -6973,13 +6869,13 @@ class ContentManager {
         
         let calendarHTML = `
             <div class="calendar-header">
-                <div class="calendar-day-header">CN</div>
-                <div class="calendar-day-header">T2</div>
-                <div class="calendar-day-header">T3</div>
-                <div class="calendar-day-header">T4</div>
-                <div class="calendar-day-header">T5</div>
-                <div class="calendar-day-header">T6</div>
-                <div class="calendar-day-header">T7</div>
+                <div class="day-name">CN</div>
+                <div class="day-name">T2</div>
+                <div class="day-name">T3</div>
+                <div class="day-name">T4</div>
+                <div class="day-name">T5</div>
+                <div class="day-name">T6</div>
+                <div class="day-name">T7</div>
             </div>
             <div class="calendar-grid">
         `;
@@ -7000,10 +6896,10 @@ class ContentManager {
                      data-date="${dateStr}" 
                      onclick="showDayDetails('${dateStr}')"
                      style="cursor: pointer;">
-                    <div class="calendar-day-number">${day}</div>
-                    <div class="calendar-day-info">
-                        ${dayData ? `${dayData.hoursWorked || 0}h` : '0h'}
-                    </div>
+                    <div class="day-number">${day}</div>
+                    ${dayData ? `
+                        <div class="day-hours">${dayData.hoursWorked || 0}h</div>
+                    ` : '<div class="day-off">0h</div>'}
                 </div>
             `;
         }
@@ -7752,148 +7648,266 @@ class ContentManager {
         try {
             content.innerHTML = `
                 <div class="task-assignment-container">
-                    <div class="task-assignment-header">
-                        <h2><span class="material-icons-round">task_alt</span>Giao Nhiệm Vụ</h2>
-                        <p class="task-assignment-subtitle">Tạo và phân công nhiệm vụ cho nhân viên trong hệ thống</p>
-                    </div>
-                    
-                    <div class="task-assignment-card">
-                        <div class="task-assignment-card-header">
-                            <div class="task-assignment-card-title">
-                                <span class="material-icons-round">assignment</span>
-                                <h2>Tạo Nhiệm Vụ Mới</h2>
-                            </div>
-                            <p class="task-assignment-card-subtitle">Điền thông tin chi tiết và giao nhiệm vụ</p>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><span class="material-icons-round">task_alt</span> Nhiệm Vụ</h2>
+                            <p>Tạo và giao nhiệm vụ cho nhân viên</p>
                         </div>
-                        
-                        <form id="taskAssignmentForm" class="task-assignment-form">
-                            <div class="task-assignment-form-group">
-                                <label class="task-assignment-form-label">
-                                    <span class="material-icons-round">title</span>
-                                    Tiêu đề nhiệm vụ
-                                </label>
-                                <input type="text" id="taskTitle" name="taskTitle" class="task-assignment-form-input" 
-                                       placeholder="Nhập tiêu đề nhiệm vụ..." required>
-                            </div>
-                            
-                            <div class="task-assignment-form-group">
-                                <label class="task-assignment-form-label">
-                                    <span class="material-icons-round">description</span>
-                                    Mô tả chi tiết
-                                </label>
-                                <div class="task-assignment-text-editor-container">
-                                    <div class="task-assignment-editor-header">
-                                        <div class="task-assignment-editor-title">
-                                            <span class="material-icons-round">edit</span>
-                                            Trình soạn thảo nâng cao
-                                        </div>
-                                        <div class="task-assignment-editor-tools">
-                                            <button type="button" class="task-assignment-tool-btn" onclick="contentManager.toggleEditorFullscreen()" title="Toàn màn hình">
-                                                <span class="material-icons-round">fullscreen</span>
-                                            </button>
-                                            <button type="button" class="task-assignment-tool-btn" onclick="contentManager.toggleEditorMode()" title="Chế độ markdown">
-                                                <span class="material-icons-round">code</span>
-                                            </button>
-                                            <button type="button" class="task-assignment-tool-btn" onclick="contentManager.showEditorHelp()" title="Trợ giúp">
-                                                <span class="material-icons-round">help</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="task-assignment-editor-toolbar">
-                                        <!-- Text Formatting Group -->
-                                        <div class="task-assignment-toolbar-group">
-                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('bold')" title="In đậm">
-                                                <span class="material-icons-round">format_bold</span>
-                                            </button>
-                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('italic')" title="In nghiêng">
-                                                <span class="material-icons-round">format_italic</span>
-                                            </button>
-                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('underline')" title="Gạch chân">
-                                                <span class="material-icons-round">format_underlined</span>
-                                            </button>
+                        <div class="card-body">
+                            <form id="taskAssignmentForm" class="task-form">
+                                <div class="form-group">
+                                    <label for="taskTitle">Tiêu đề nhiệm vụ:</label>
+                                    <input type="text" id="taskTitle" name="taskTitle" class="form-control" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="taskDescription">Mô tả chi tiết:</label>
+                                    <div class="text-editor-container enhanced-editor">
+                                        <div class="editor-header">
+                                            <div class="editor-title">
+                                                <span class="material-icons-round">edit</span>
+                                                Trình soạn thảo nâng cao
+                                            </div>
+                                            <div class="editor-tools">
+                                                <button type="button" class="tool-btn" onclick="contentManager.toggleEditorFullscreen()" title="Toàn màn hình">
+                                                    <span class="material-icons-round">fullscreen</span>
+                                                </button>
+                                                <button type="button" class="tool-btn" onclick="contentManager.toggleEditorMode()" title="Chế độ markdown">
+                                                    <span class="material-icons-round">code</span>
+                                                </button>
+                                                <button type="button" class="tool-btn" onclick="contentManager.showEditorHelp()" title="Trợ giúp">
+                                                    <span class="material-icons-round">help</span>
+                                                </button>
+                                            </div>
                                         </div>
                                         
-                                        <div class="task-assignment-toolbar-group">
-                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('insertOrderedList')" title="Danh sách có số">
-                                                <span class="material-icons-round">format_list_numbered</span>
-                                            </button>
-                                            <button type="button" class="task-assignment-toolbar-btn" onclick="formatText('insertUnorderedList')" title="Danh sách không số">
-                                                <span class="material-icons-round">format_list_bulleted</span>
-                                            </button>
+                                        <div class="editor-toolbar enhanced-toolbar">
+                                            <!-- Text Formatting Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="In đậm (Ctrl+B)">
+                                                    <span class="material-icons-round">format_bold</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="In nghiêng (Ctrl+I)">
+                                                    <span class="material-icons-round">format_italic</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('underline')" title="Gạch chân (Ctrl+U)">
+                                                    <span class="material-icons-round">format_underlined</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('strikeThrough')" title="Gạch ngang">
+                                                    <span class="material-icons-round">strikethrough_s</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Font Formatting Group -->
+                                            <div class="toolbar-group">
+                                                <select class="toolbar-select font-size-select" onchange="contentManager.changeFontSize(this.value)" title="Kích thước chữ">
+                                                    <option value="1">Rất nhỏ</option>
+                                                    <option value="2">Nhỏ</option>
+                                                    <option value="3" selected>Bình thường</option>
+                                                    <option value="4">Lớn</option>
+                                                    <option value="5">Rất lớn</option>
+                                                </select>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('subscript')" title="Chỉ số dưới">
+                                                    <span class="material-icons-round">subscript</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('superscript')" title="Chỉ số trên">
+                                                    <span class="material-icons-round">superscript</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Color Group -->
+                                            <div class="toolbar-group">
+                                                <input type="color" class="toolbar-color-picker" onchange="contentManager.changeTextColor(this.value)" title="Màu chữ">
+                                                <input type="color" class="toolbar-color-picker" onchange="contentManager.changeBackgroundColor(this.value)" title="Màu nền" value="#ffffff">
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- List Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Danh sách dấu chấm">
+                                                    <span class="material-icons-round">format_list_bulleted</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Danh sách số">
+                                                    <span class="material-icons-round">format_list_numbered</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('indent')" title="Thụt lề">
+                                                    <span class="material-icons-round">format_indent_increase</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('outdent')" title="Giảm thụt lề">
+                                                    <span class="material-icons-round">format_indent_decrease</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Alignment Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyLeft')" title="Căn trái">
+                                                    <span class="material-icons-round">format_align_left</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyCenter')" title="Căn giữa">
+                                                    <span class="material-icons-round">format_align_center</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyRight')" title="Căn phải">
+                                                    <span class="material-icons-round">format_align_right</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="formatText('justifyFull')" title="Căn đều">
+                                                    <span class="material-icons-round">format_align_justify</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Insert Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertLink()" title="Chèn liên kết">
+                                                    <span class="material-icons-round">link</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertTable()" title="Chèn bảng">
+                                                    <span class="material-icons-round">table_chart</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertHorizontalRule()" title="Chèn đường kẻ">
+                                                    <span class="material-icons-round">horizontal_rule</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Action Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.undoEditor()" title="Hoàn tác (Ctrl+Z)">
+                                                    <span class="material-icons-round">undo</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.redoEditor()" title="Làm lại (Ctrl+Y)">
+                                                    <span class="material-icons-round">redo</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.clearFormatting()" title="Xóa định dạng">
+                                                    <span class="material-icons-round">format_clear</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="editor-workspace">
+                                            <div id="taskDescription" 
+                                                 class="rich-text-editor enhanced-rich-editor resizable" 
+                                                 contenteditable="true" 
+                                                 placeholder="Nhập mô tả chi tiết nhiệm vụ... Sử dụng thanh công cụ để định dạng văn bản."
+                                                 style="min-height: 200px; max-height: 600px;">
+                                            </div>
+                                            
+                                            <!-- Resize Handle -->
+                                            <div class="resize-handle" onmousedown="this.startResize(event)">
+                                                <span class="material-icons-round">drag_handle</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="editor-footer">
+                                            <div class="editor-stats">
+                                                <span class="char-count">Ký tự: <span id="charCount">0</span></span>
+                                                <span class="word-count">Từ: <span id="wordCount">0</span></span>
+                                            </div>
+                                            <div class="editor-actions">
+                                                <button type="button" class="btn btn-sm secondary-btn" onclick="contentManager.saveAsDraft()">
+                                                    <span class="material-icons-round">save</span>
+                                                    Lưu nháp
+                                                </button>
+                                                <button type="button" class="btn btn-sm secondary-btn" onclick="contentManager.previewContent()">
+                                                    <span class="material-icons-round">preview</span>
+                                                    Xem trước
+                                                </button>
+                                            </div>
+                                        </div>
+                                        
+                                        <input type="hidden" name="taskDescription" id="taskDescriptionInput">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="taskPriority">Mức độ ưu tiên:</label>
+                                        <select id="taskPriority" name="taskPriority" class="form-control" required>
+                                            <option value="">Chọn mức độ</option>
+                                            <option value="low">Thấp</option>
+                                            <option value="medium">Trung bình</option>
+                                            <option value="high">Cao</option>
+                                            <option value="urgent">Khẩn cấp</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="taskDeadline">Thời hạn:</label>
+                                        <input type="datetime-local" id="taskDeadline" name="taskDueDate" class="form-control" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="user-selection-section">
+                                    <h3><span class="material-icons-round">people</span> Phân Công Nhân Viên</h3>
+                                    
+                                    <!-- Role Filter Section -->
+                                    <div class="role-filter-section">
+                                        <label>Lọc theo chức vụ:</label>
+                                        <div class="role-filter-buttons">
+                                            <button type="button" class="role-filter-btn active" data-role="ALL">Tất cả</button>
+                                            <button type="button" class="role-filter-btn" data-role="AD">Admin</button>
+                                            <button type="button" class="role-filter-btn" data-role="AM">Quản lý phụ</button>
+                                            <button type="button" class="role-filter-btn" data-role="QL">Quản lý</button>
+                                            <button type="button" class="role-filter-btn" data-role="NV">Nhân viên</button>
                                         </div>
                                     </div>
                                     
-                                    <textarea id="taskDescription" name="taskDescription" class="task-assignment-form-textarea" 
-                                              placeholder="Mô tả chi tiết về nhiệm vụ, yêu cầu và mục tiêu cần đạt được..." 
-                                              rows="6" required></textarea>
-                                </div>
-                            </div>
-
-                            <div class="task-assignment-settings-grid">
-                                <div class="task-assignment-form-group">
-                                    <label class="task-assignment-form-label">
-                                        <span class="material-icons-round">schedule</span>
-                                        Thời hạn hoàn thành
-                                    </label>
-                                    <input type="datetime-local" id="taskDeadline" name="taskDeadline" 
-                                           class="task-assignment-form-input" required>
-                                </div>
-                                
-                                <div class="task-assignment-form-group">
-                                    <label class="task-assignment-form-label">
-                                        <span class="material-icons-round">flag</span>
-                                        Mức độ ưu tiên
-                                    </label>
-                                    <div class="task-assignment-priority-selector">
-                                        <div class="task-assignment-priority-option low" data-priority="low">
-                                            <span class="material-icons-round">trending_down</span>
-                                            Thấp
+                                    <div class="user-selector">
+                                        <label>Người tham gia:</label>
+                                        <div class="user-selection-panel" id="participantsPanel">
+                                            <div class="user-search">
+                                                <input type="text" id="participantSearch" placeholder="Tìm kiếm nhân viên..." class="form-control">
+                                                <span class="material-icons-round">search</span>
+                                            </div>
+                                            <div class="user-list" id="participantsList"></div>
+                                            <div class="selected-users" id="selectedParticipants"></div>
                                         </div>
-                                        <div class="task-assignment-priority-option medium selected" data-priority="medium">
-                                            <span class="material-icons-round">trending_flat</span>
-                                            Trung bình
+                                    </div>
+                                    
+                                    <div class="user-selector">
+                                        <label>Người hỗ trợ:</label>
+                                        <div class="user-selection-panel" id="supportersPanel">
+                                            <div class="user-search">
+                                                <input type="text" id="supporterSearch" placeholder="Tìm kiếm nhân viên..." class="form-control">
+                                                <span class="material-icons-round">search</span>
+                                            </div>
+                                            <div class="user-list" id="supportersList"></div>
+                                            <div class="selected-users" id="selectedSupporters"></div>
                                         </div>
-                                        <div class="task-assignment-priority-option high" data-priority="high">
-                                            <span class="material-icons-round">trending_up</span>
-                                            Cao
+                                    </div>
+                                    
+                                    <div class="user-selector">
+                                        <label>Người giao nhiệm vụ:</label>
+                                        <div class="user-selection-panel" id="assignersPanel">
+                                            <div class="user-search">
+                                                <input type="text" id="assignerSearch" placeholder="Tìm kiếm nhân viên..." class="form-control">
+                                                <span class="material-icons-round">search</span>
+                                            </div>
+                                            <div class="user-list" id="assignersList"></div>
+                                            <div class="selected-users" id="selectedAssigners"></div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="task-assignment-user-section">
-                                <h3 class="task-assignment-user-title">
-                                    <span class="material-icons-round">group</span>
-                                    Giao cho nhân viên
-                                </h3>
                                 
-                                <div class="task-assignment-user-search">
-                                    <span class="task-assignment-search-icon material-icons-round">search</span>
-                                    <input type="text" class="task-assignment-user-search-input" 
-                                           placeholder="Tìm kiếm nhân viên theo tên hoặc ID..." 
-                                           id="userSearchInput">
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <span class="material-icons-round">send</span>
+                                        Gửi Nhiệm Vụ
+                                    </button>
+                                    <button type="reset" class="btn btn-secondary">
+                                        <span class="material-icons-round">refresh</span>
+                                        Làm Lại
+                                    </button>
                                 </div>
-                                
-                                <div class="task-assignment-user-grid" id="taskAssignmentUserGrid">
-                                    <div class="task-assignment-loading">
-                                        <div class="task-assignment-spinner"></div>
-                                        Đang tải danh sách nhân viên...
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="task-assignment-action-section">
-                                <button type="button" class="task-assignment-btn task-assignment-btn-secondary" onclick="contentManager.resetTaskForm()">
-                                    <span class="material-icons-round">refresh</span>
-                                    Đặt lại
-                                </button>
-                                <button type="submit" class="task-assignment-btn task-assignment-btn-primary">
-                                    <span class="material-icons-round">send</span>
-                                    Giao nhiệm vụ
-                                </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             `;
@@ -9629,7 +9643,6 @@ class ContentManager {
         const modal = document.getElementById('requestDetailModal');
         if (modal) {
             modal.style.display = 'none';
-            modal.classList.remove('show');
         }
     }
 

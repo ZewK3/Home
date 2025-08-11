@@ -49,7 +49,7 @@ async function initializeApplication() {
 
 // Initialize professional styles (placeholder for future enhancements)
 function initializeProfessionalStyles() {
-    // Professional styles are already loaded via dash.css
+    // Professional styles are already loaded via professional-unified.css
     console.log('Professional styles initialized');
 }
 
