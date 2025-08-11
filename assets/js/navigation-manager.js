@@ -6,6 +6,7 @@
 class NavigationManager {
     constructor(contentManager) {
         this.contentManager = contentManager;
+        this.isLogging = false; // Prevent console logging recursion
         this.setupNavigationHandlers();
         this.createTestingInterface();
     }
@@ -302,6 +303,13 @@ class NavigationManager {
     }
 
     showTestingPanel() {
+        // Check if user has AD role - only AD users can access Test Navigation
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (!userData.position || userData.position !== 'AD') {
+            utils.showNotification('Chức năng Test Navigation chỉ dành cho Administrator (AD)', 'error', 3000);
+            return;
+        }
+
         const panel = document.createElement('div');
         panel.id = 'navigationTestPanel';
         panel.style.cssText = `
@@ -540,41 +548,49 @@ class NavigationManager {
     }
 
     addMobileLog(message, type = 'debug') {
-        const logsContainer = document.getElementById('mobileLogsContainer');
-        if (!logsContainer) return;
+        // Prevent recursion by checking if we're already logging
+        if (this.isLogging) return;
+        this.isLogging = true;
 
-        const timestamp = new Date().toLocaleTimeString();
-        const colors = {
-            error: '#dc3545',
-            warn: '#ffc107',
-            info: '#17a2b8', 
-            debug: '#28a745'
-        };
+        try {
+            const logsContainer = document.getElementById('mobileLogsContainer');
+            if (!logsContainer) return;
 
-        const logEntry = document.createElement('div');
-        logEntry.style.cssText = `
-            margin-bottom: 4px;
-            padding: 2px 4px;
-            border-radius: 2px;
-            background: ${type === 'error' ? 'rgba(220, 53, 69, 0.1)' : 'transparent'};
-        `;
-        
-        logEntry.innerHTML = `
-            <span style="color: #666; font-size: 10px;">[${timestamp}]</span>
-            <span style="color: ${colors[type]}; font-weight: ${type === 'error' ? 'bold' : 'normal'};">
-                ${this.escapeHtml(String(message))}
-            </span>
-        `;
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                error: '#dc3545',
+                warn: '#ffc107',
+                info: '#17a2b8', 
+                debug: '#28a745'
+            };
 
-        logsContainer.appendChild(logEntry);
-        
-        // Auto-scroll to bottom
-        logsContainer.scrollTop = logsContainer.scrollHeight;
-        
-        // Limit log entries to prevent memory issues
-        const entries = logsContainer.children;
-        if (entries.length > 50) {
-            logsContainer.removeChild(entries[0]);
+            const logEntry = document.createElement('div');
+            logEntry.style.cssText = `
+                margin-bottom: 4px;
+                padding: 2px 4px;
+                border-radius: 2px;
+                background: ${type === 'error' ? 'rgba(220, 53, 69, 0.1)' : 'transparent'};
+            `;
+            
+            logEntry.innerHTML = `
+                <span style="color: #666; font-size: 10px;">[${timestamp}]</span>
+                <span style="color: ${colors[type]}; font-weight: ${type === 'error' ? 'bold' : 'normal'};">
+                    ${this.escapeHtml(String(message))}
+                </span>
+            `;
+
+            logsContainer.appendChild(logEntry);
+            
+            // Auto-scroll to bottom
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // Limit log entries to prevent memory issues
+            const entries = logsContainer.children;
+            if (entries.length > 50) {
+                logsContainer.removeChild(entries[0]);
+            }
+        } finally {
+            this.isLogging = false;
         }
     }
 

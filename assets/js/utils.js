@@ -58,7 +58,34 @@ const utils = {
             .replace(/'/g, "&#039;");
     },
 
+    // API rate limiting - 1 call per minute per API endpoint
+    apiCallTimestamps: {},
+
+    isApiCallAllowed(apiAction) {
+        const now = Date.now();
+        const lastCall = this.apiCallTimestamps[apiAction];
+        const oneMinute = 60 * 1000; // 60 seconds in milliseconds
+        
+        if (!lastCall || (now - lastCall) >= oneMinute) {
+            this.apiCallTimestamps[apiAction] = now;
+            return true;
+        }
+        
+        const remainingTime = Math.ceil((oneMinute - (now - lastCall)) / 1000);
+        console.warn(`API call ${apiAction} blocked. Try again in ${remainingTime} seconds.`);
+        return false;
+    },
+
     async fetchAPI(endpoint, options = {}) {
+        // Extract API action from endpoint for rate limiting
+        const urlParams = new URLSearchParams(endpoint.substring(1)); // Remove '?' prefix
+        const apiAction = urlParams.get('action');
+        
+        // Apply rate limiting only if it's a recognized API action
+        if (apiAction && !this.isApiCallAllowed(apiAction)) {
+            throw new Error(`API call ${apiAction} rate limited. Please wait before trying again.`);
+        }
+
         const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
         console.log(`API Call: ${endpoint}`); // Debug logging for API tracking
         try {

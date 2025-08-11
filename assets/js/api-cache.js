@@ -4,10 +4,16 @@ const API_CACHE = {
     usersData: null,
     storesData: null,
     dashboardStats: null,
+    timesheetData: null,
+    attendanceRequestsData: null,
+    workTasksData: null,
     lastUserDataFetch: null,
     lastUsersDataFetch: null,
     lastStoresDataFetch: null,
     lastDashboardStatsFetch: null,
+    lastTimesheetDataFetch: null,
+    lastAttendanceRequestsDataFetch: null,
+    lastWorkTasksDataFetch: null,
     CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
     
     // Track ongoing API calls to prevent duplicates
@@ -19,10 +25,16 @@ const API_CACHE = {
         this.usersData = null;
         this.storesData = null;
         this.dashboardStats = null;
+        this.timesheetData = null;
+        this.attendanceRequestsData = null;
+        this.workTasksData = null;
         this.lastUserDataFetch = null;
         this.lastUsersDataFetch = null;
         this.lastStoresDataFetch = null;
         this.lastDashboardStatsFetch = null;
+        this.lastTimesheetDataFetch = null;
+        this.lastAttendanceRequestsDataFetch = null;
+        this.lastWorkTasksDataFetch = null;
         this.ongoingCalls.clear();
     },
     
@@ -151,5 +163,105 @@ const API_CACHE = {
                 throw error;
             }
         });
+    },
+    
+    // Get cached timesheet data or fetch new with duplicate call prevention
+    async getTimesheetData() {
+        if (this.timesheetData && this.isCacheValid(this.lastTimesheetDataFetch)) {
+            return this.timesheetData;
+        }
+        
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) {
+            throw new Error('No auth token found');
+        }
+        
+        const endpoint = `getTimesheet_${token}`;
+        return await this.safeAPICall(endpoint, async () => {
+            try {
+                this.timesheetData = await utils.fetchAPI(`?action=getTimesheet&token=${token}`);
+                this.lastTimesheetDataFetch = Date.now();
+                return this.timesheetData;
+            } catch (error) {
+                console.error('Failed to fetch timesheet data:', error);
+                throw error;
+            }
+        });
+    },
+    
+    // Get cached attendance requests data or fetch new with duplicate call prevention
+    async getAttendanceRequestsData() {
+        if (this.attendanceRequestsData && this.isCacheValid(this.lastAttendanceRequestsDataFetch)) {
+            return this.attendanceRequestsData;
+        }
+        
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) {
+            throw new Error('No auth token found');
+        }
+        
+        const endpoint = `getAttendanceRequests_${token}`;
+        return await this.safeAPICall(endpoint, async () => {
+            try {
+                this.attendanceRequestsData = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
+                this.lastAttendanceRequestsDataFetch = Date.now();
+                return this.attendanceRequestsData;
+            } catch (error) {
+                console.error('Failed to fetch attendance requests data:', error);
+                throw error;
+            }
+        });
+    },
+    
+    // Get cached work tasks data or fetch new with duplicate call prevention
+    async getWorkTasksData() {
+        if (this.workTasksData && this.isCacheValid(this.lastWorkTasksDataFetch)) {
+            return this.workTasksData;
+        }
+        
+        const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        if (!token) {
+            throw new Error('No auth token found');
+        }
+        
+        const endpoint = `getWorkTasks_${token}`;
+        return await this.safeAPICall(endpoint, async () => {
+            try {
+                this.workTasksData = await utils.fetchAPI(`?action=getWorkTasks&token=${token}`);
+                this.lastWorkTasksDataFetch = Date.now();
+                return this.workTasksData;
+            } catch (error) {
+                console.error('Failed to fetch work tasks data:', error);
+                throw error;
+            }
+        });
+    },
+    
+    // Clear specific cache type and force refresh
+    clearSpecificCache(cacheType) {
+        switch(cacheType) {
+            case 'timesheet':
+                this.timesheetData = null;
+                this.lastTimesheetDataFetch = null;
+                break;
+            case 'attendanceRequests':
+                this.attendanceRequestsData = null;
+                this.lastAttendanceRequestsDataFetch = null;
+                break;
+            case 'workTasks':
+                this.workTasksData = null;
+                this.lastWorkTasksDataFetch = null;
+                break;
+            case 'userData':
+                this.userData = null;
+                this.lastUserDataFetch = null;
+                break;
+            case 'storesData':
+                this.storesData = null;
+                this.lastStoresDataFetch = null;
+                break;
+            default:
+                console.warn(`Unknown cache type: ${cacheType}`);
+        }
     }
 };

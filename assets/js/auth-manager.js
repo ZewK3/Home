@@ -7,10 +7,16 @@ class AuthManager {
         this.cachedStores = null;
         this.cachedUser = null;
         this.cachedDashboardStats = null;
+        this.cachedTimesheet = null;
+        this.cachedAttendanceRequests = null;
+        this.cachedWorkTasks = null;
         this.cacheTimestamp = {
             stores: null,
             user: null,
-            dashboardStats: null
+            dashboardStats: null,
+            timesheet: null,
+            attendanceRequests: null,
+            workTasks: null
         };
         this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     }
@@ -93,6 +99,63 @@ class AuthManager {
         }
     }
 
+    // Get timesheet data with caching
+    async getTimesheetData() {
+        if (this.cachedTimesheet && this.isCacheValid('timesheet')) {
+            console.log('Using cached timesheet data');
+            return this.cachedTimesheet;
+        }
+
+        try {
+            console.log('Fetching fresh timesheet data');
+            const timesheet = await utils.fetchAPI(`?action=getTimesheet&token=${this.token}`);
+            this.cachedTimesheet = timesheet;
+            this.cacheTimestamp.timesheet = Date.now();
+            return timesheet;
+        } catch (error) {
+            console.error('Error fetching timesheet:', error);
+            return this.cachedTimesheet || [];
+        }
+    }
+
+    // Get attendance requests data with caching
+    async getAttendanceRequestsData() {
+        if (this.cachedAttendanceRequests && this.isCacheValid('attendanceRequests')) {
+            console.log('Using cached attendance requests data');
+            return this.cachedAttendanceRequests;
+        }
+
+        try {
+            console.log('Fetching fresh attendance requests data');
+            const attendanceRequests = await utils.fetchAPI(`?action=getAttendanceRequests&token=${this.token}`);
+            this.cachedAttendanceRequests = attendanceRequests;
+            this.cacheTimestamp.attendanceRequests = Date.now();
+            return attendanceRequests;
+        } catch (error) {
+            console.error('Error fetching attendance requests:', error);
+            return this.cachedAttendanceRequests || [];
+        }
+    }
+
+    // Get work tasks data with caching
+    async getWorkTasksData() {
+        if (this.cachedWorkTasks && this.isCacheValid('workTasks')) {
+            console.log('Using cached work tasks data');
+            return this.cachedWorkTasks;
+        }
+
+        try {
+            console.log('Fetching fresh work tasks data');
+            const workTasks = await utils.fetchAPI(`?action=getWorkTasks&token=${this.token}`);
+            this.cachedWorkTasks = workTasks;
+            this.cacheTimestamp.workTasks = Date.now();
+            return workTasks;
+        } catch (error) {
+            console.error('Error fetching work tasks:', error);
+            return this.cachedWorkTasks || [];
+        }
+    }
+
     // Clear specific cache
     clearCache(cacheType = null) {
         if (cacheType) {
@@ -103,10 +166,16 @@ class AuthManager {
             this.cachedStores = null;
             this.cachedUser = null;
             this.cachedDashboardStats = null;
+            this.cachedTimesheet = null;
+            this.cachedAttendanceRequests = null;
+            this.cachedWorkTasks = null;
             this.cacheTimestamp = {
                 stores: null,
                 user: null,
-                dashboardStats: null
+                dashboardStats: null,
+                timesheet: null,
+                attendanceRequests: null,
+                workTasks: null
             };
         }
     }
