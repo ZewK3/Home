@@ -1,0 +1,699 @@
+/* Registration Approval System Styles - Dedicated CSS */
+
+/* Main Container */
+.registration-approval-system-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--background);
+    min-height: 100vh;
+}
+
+/* Header Section */
+.registration-approval-system-header {
+    background: linear-gradient(135deg, #ea580c, #dc2626);
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.registration-approval-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.registration-approval-title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.registration-approval-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.registration-approval-header-icon {
+    font-size: 28px;
+    color: white;
+}
+
+.registration-approval-title-text h1 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.registration-approval-subtitle {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.registration-approval-pending-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.registration-approval-pending-icon {
+    font-size: 20px;
+}
+
+.registration-approval-pending-text {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.registration-approval-pending-count {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-weight: 700;
+    margin-left: 8px;
+}
+
+/* Enhanced Filters Section */
+.registration-approval-filters-enhanced {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.registration-approval-filter-groups-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: nowrap;
+}
+
+.registration-approval-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.registration-approval-filter-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.registration-approval-filter-select {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.registration-approval-filter-select:focus {
+    outline: none;
+    border-color: #ea580c;
+    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+}
+
+.registration-approval-filter-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.registration-approval-search-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.registration-approval-search-input {
+    width: 100%;
+    padding: 12px 16px 12px 48px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.registration-approval-search-wrapper {
+    position: relative;
+}
+
+.registration-approval-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 20px;
+}
+
+.registration-approval-search-input:focus {
+    outline: none;
+    border-color: #ea580c;
+    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+}
+
+.registration-approval-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.registration-approval-btn-primary {
+    background: #ea580c;
+    color: white;
+    border: 2px solid #ea580c;
+}
+
+.registration-approval-btn-primary:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+}
+
+.registration-approval-btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.registration-approval-btn-secondary:hover {
+    border-color: #ea580c;
+    color: #ea580c;
+    transform: translateY(-2px);
+}
+
+/* Registration Cards Grid */
+.registration-approval-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.registration-approval-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.registration-approval-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.registration-approval-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #ea580c, #dc2626);
+}
+
+.registration-approval-card.pending::before {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.registration-approval-card.approved::before {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.registration-approval-card.rejected::before {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.registration-approval-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.registration-approval-user-info {
+    flex: 1;
+}
+
+.registration-approval-user-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.registration-approval-user-email {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 8px 0;
+}
+
+.registration-approval-user-id {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: monospace;
+    background: var(--background-light);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.registration-approval-status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.registration-approval-status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid #f59e0b;
+}
+
+.registration-approval-status-badge.approved {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.registration-approval-status-badge.rejected {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+    border: 1px solid #dc2626;
+}
+
+.registration-approval-card-content {
+    margin-bottom: 20px;
+}
+
+.registration-approval-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.registration-approval-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.registration-approval-info-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.registration-approval-info-value {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.registration-approval-dates-section {
+    background: var(--background-light);
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.registration-approval-date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.registration-approval-date-item:last-child {
+    margin-bottom: 0;
+}
+
+.registration-approval-date-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.registration-approval-date-value {
+    font-size: 12px;
+    color: var(--text-primary);
+    font-family: monospace;
+}
+
+.registration-approval-card-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.registration-approval-action-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.registration-approval-btn-approve {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.registration-approval-btn-approve:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+}
+
+.registration-approval-btn-reject {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+}
+
+.registration-approval-btn-reject:hover {
+    background: linear-gradient(135deg, #b91c1c, #991b1b);
+    transform: translateY(-2px);
+}
+
+.registration-approval-btn-view {
+    background: var(--background-light);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.registration-approval-btn-view:hover {
+    background: #ea580c;
+    color: white;
+    border-color: #ea580c;
+    transform: translateY(-2px);
+}
+
+.registration-approval-btn-view.full-width {
+    flex: 1;
+}
+
+/* Detail Modal */
+.registration-approval-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.registration-approval-detail-modal.show {
+    display: flex;
+}
+
+.registration-approval-detail-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 0;
+    max-width: 700px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.registration-approval-detail-header {
+    padding: 24px 24px 16px 24px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #ea580c, #dc2626);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.registration-approval-detail-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.registration-approval-detail-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.registration-approval-detail-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.registration-approval-detail-body {
+    padding: 24px;
+}
+
+/* Empty State */
+.registration-approval-empty-state {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-secondary);
+}
+
+.registration-approval-empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    color: var(--border-color);
+}
+
+.registration-approval-empty-state h3 {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.registration-approval-empty-state p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Error Container */
+.registration-approval-error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px;
+}
+
+.registration-approval-error-card {
+    text-align: center;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    max-width: 400px;
+}
+
+.registration-approval-error-icon {
+    font-size: 64px;
+    color: var(--danger-color);
+    margin-bottom: 16px;
+}
+
+.registration-approval-error-card h3 {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.registration-approval-error-card p {
+    margin-bottom: 24px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .registration-approval-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .registration-approval-filter-groups-row {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .registration-approval-filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .registration-approval-system-container {
+        padding: 16px;
+    }
+
+    .registration-approval-header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .registration-approval-filter-groups-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .registration-approval-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .registration-approval-title-text h1 {
+        font-size: 24px;
+    }
+
+    .registration-approval-info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .registration-approval-card-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .registration-approval-detail-content {
+        width: 95%;
+        margin: 20px;
+    }
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .registration-approval-system-container {
+    background: var(--dark-bg);
+}
+
+[data-theme="dark"] .registration-approval-filters-enhanced,
+[data-theme="dark"] .registration-approval-card {
+    background: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .registration-approval-filter-select,
+[data-theme="dark"] .registration-approval-search-input {
+    background: var(--dark-input-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .registration-approval-user-id,
+[data-theme="dark"] .registration-approval-dates-section {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .registration-approval-btn-view {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+    color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .registration-approval-detail-content {
+    background: var(--dark-card-bg);
+}
+
+/* Animation for loading states */
+@keyframes registrationApprovalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.registration-approval-system-container {
+    animation: registrationApprovalFadeIn 0.5s ease-out;
+}
+
+.registration-approval-card {
+    animation: registrationApprovalFadeIn 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.registration-approval-card:nth-child(1) { animation-delay: 0.1s; }
+.registration-approval-card:nth-child(2) { animation-delay: 0.2s; }
+.registration-approval-card:nth-child(3) { animation-delay: 0.3s; }
+.registration-approval-card:nth-child(4) { animation-delay: 0.4s; }
+.registration-approval-card:nth-child(5) { animation-delay: 0.5s; }
+.registration-approval-card:nth-child(6) { animation-delay: 0.6s; }

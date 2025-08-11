@@ -1,0 +1,651 @@
+/* Permission Management System Styles - Dedicated CSS */
+
+/* Main Container */
+.permission-access-management-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--background);
+    min-height: 100vh;
+}
+
+/* Loading State */
+.permission-access-loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px;
+}
+
+.permission-access-loading-text {
+    font-size: 18px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Header Section */
+.permission-access-header-section {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.permission-access-header-section h2 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.permission-access-header-subtitle {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+/* Statistics Grid */
+.permission-access-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.permission-access-stat-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.permission-access-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.permission-access-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.permission-access-stat-card.admin::before {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.permission-access-stat-card.manager::before {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+}
+
+.permission-access-stat-card.assistant::before {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.permission-access-stat-card.employee::before {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
+.permission-access-stat-icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+}
+
+.permission-access-stat-details h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.permission-access-stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.permission-access-stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Main Content */
+.permission-access-main-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+/* Filters Section */
+.permission-access-filters-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.permission-access-filters-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+}
+
+.permission-access-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.permission-access-filter-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.permission-access-filter-input {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.permission-access-filter-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.permission-access-filter-select {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.permission-access-filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* User List Container */
+.permission-access-user-list-container {
+    margin-top: 24px;
+}
+
+.permission-access-user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.permission-access-user-card {
+    background: var(--background-light);
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.permission-access-user-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.permission-access-user-card.selected {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.permission-access-user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.permission-access-user-info h4 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.permission-access-user-id {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.permission-access-user-email {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.permission-access-user-role {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.permission-access-user-role.role-ad {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+}
+
+.permission-access-user-role.role-ql {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+    color: white;
+}
+
+.permission-access-user-role.role-am {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+}
+
+.permission-access-user-role.role-nv {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white;
+}
+
+.permission-access-user-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.permission-access-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.permission-access-btn-edit {
+    background: var(--warning-color);
+    color: white;
+}
+
+.permission-access-btn-edit:hover {
+    background: var(--warning-dark);
+    transform: translateY(-1px);
+}
+
+.permission-access-btn-delete {
+    background: var(--danger-color);
+    color: white;
+}
+
+.permission-access-btn-delete:hover {
+    background: var(--danger-dark);
+    transform: translateY(-1px);
+}
+
+/* Modal Styles */
+.permission-access-edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.permission-access-edit-modal.show {
+    display: flex;
+}
+
+.permission-access-edit-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.permission-access-edit-header {
+    padding: 24px 24px 16px 24px;
+    border-bottom: 2px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.permission-access-edit-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.permission-access-btn-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.permission-access-btn-close:hover {
+    color: var(--danger-color);
+    background: var(--danger-light);
+}
+
+.permission-access-edit-body {
+    padding: 24px;
+}
+
+.permission-access-current-user-info {
+    background: var(--background-light);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.permission-access-user-edit-section {
+    margin-bottom: 24px;
+}
+
+.permission-access-user-edit-section h4 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.permission-access-user-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.permission-access-edit-form-group {
+    margin-bottom: 16px;
+}
+
+.permission-access-edit-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.permission-access-form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.permission-access-form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.permission-access-form-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* No Data State */
+.permission-access-no-data-state {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-secondary);
+}
+
+.permission-access-no-data-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.permission-access-no-data-state h3 {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.permission-access-no-data-state p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Error State */
+.permission-access-error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px;
+}
+
+.permission-access-error-card {
+    text-align: center;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    max-width: 400px;
+}
+
+.permission-access-error-icon {
+    font-size: 64px;
+    color: var(--danger-color);
+    margin-bottom: 16px;
+}
+
+.permission-access-error-card h3 {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.permission-access-error-card p {
+    margin-bottom: 24px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.permission-access-btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border: 2px solid var(--primary-color);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.permission-access-btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .permission-access-management-container {
+        padding: 16px;
+    }
+
+    .permission-access-stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .permission-access-filters-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .permission-access-user-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .permission-access-user-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .permission-access-edit-content {
+        width: 95%;
+        margin: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .permission-access-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .permission-access-header-section {
+        padding: 20px;
+    }
+
+    .permission-access-header-section h2 {
+        font-size: 24px;
+    }
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .permission-access-management-container {
+    background: var(--dark-bg);
+}
+
+[data-theme="dark"] .permission-access-stat-card {
+    background: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .permission-access-main-content {
+    background: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .permission-access-user-card {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .permission-access-filter-input,
+[data-theme="dark"] .permission-access-filter-select,
+[data-theme="dark"] .permission-access-form-control {
+    background: var(--dark-input-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .permission-access-edit-content {
+    background: var(--dark-card-bg);
+}
+
+[data-theme="dark"] .permission-access-current-user-info {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+}
+
+/* Animation for loading states */
+@keyframes permissionAccessFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.permission-access-management-container {
+    animation: permissionAccessFadeIn 0.5s ease-out;
+}
+
+.permission-access-stat-card {
+    animation: permissionAccessFadeIn 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.permission-access-stat-card:nth-child(1) { animation-delay: 0.1s; }
+.permission-access-stat-card:nth-child(2) { animation-delay: 0.2s; }
+.permission-access-stat-card:nth-child(3) { animation-delay: 0.3s; }
+.permission-access-stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+.permission-access-user-card {
+    animation: permissionAccessFadeIn 0.4s ease-out;
+    animation-fill-mode: both;
+}
+
+.permission-access-user-card:nth-child(odd) { animation-delay: 0.1s; }
+.permission-access-user-card:nth-child(even) { animation-delay: 0.2s; }

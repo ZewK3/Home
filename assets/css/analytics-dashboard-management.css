@@ -1,0 +1,714 @@
+/* Analytics Dashboard System Styles - Dedicated CSS */
+
+/* Main Container */
+.analytics-dashboard-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--background);
+    min-height: 100vh;
+}
+
+/* Header Section */
+.analytics-dashboard-header {
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
+    padding: 32px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-dashboard-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.analytics-dashboard-title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.analytics-dashboard-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.analytics-dashboard-header-icon {
+    font-size: 28px;
+    color: white;
+}
+
+.analytics-dashboard-title-text h1 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+.analytics-dashboard-subtitle {
+    margin: 0;
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+.analytics-dashboard-time-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.analytics-dashboard-time-btn {
+    padding: 8px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.analytics-dashboard-time-btn:hover,
+.analytics-dashboard-time-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* KPI Summary Section */
+.analytics-dashboard-kpi-section {
+    margin-bottom: 32px;
+}
+
+.analytics-dashboard-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.analytics-dashboard-kpi-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-dashboard-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.analytics-dashboard-kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.analytics-dashboard-kpi-card.performance::before {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.analytics-dashboard-kpi-card.attendance::before {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.analytics-dashboard-kpi-card.tasks::before {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.analytics-dashboard-kpi-card.efficiency::before {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.analytics-dashboard-kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.analytics-dashboard-kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.analytics-dashboard-kpi-card.performance .analytics-dashboard-kpi-icon {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.analytics-dashboard-kpi-card.attendance .analytics-dashboard-kpi-icon {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.analytics-dashboard-kpi-card.tasks .analytics-dashboard-kpi-icon {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.analytics-dashboard-kpi-card.efficiency .analytics-dashboard-kpi-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.analytics-dashboard-kpi-trend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.analytics-dashboard-trend-up {
+    color: #059669;
+}
+
+.analytics-dashboard-trend-down {
+    color: #dc2626;
+}
+
+.analytics-dashboard-trend-icon {
+    font-size: 16px;
+}
+
+.analytics-dashboard-kpi-content {
+    flex: 1;
+}
+
+.analytics-dashboard-kpi-title {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.analytics-dashboard-kpi-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.analytics-dashboard-kpi-description {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Charts and Analytics Grid */
+.analytics-dashboard-main-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+/* Chart Section */
+.analytics-dashboard-chart-section {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.analytics-dashboard-chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.analytics-dashboard-chart-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analytics-dashboard-chart-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.analytics-dashboard-chart-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--background-light);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.analytics-dashboard-chart-btn:hover,
+.analytics-dashboard-chart-btn.active {
+    background: #1e40af;
+    color: white;
+    border-color: #1e40af;
+}
+
+.analytics-dashboard-chart-container {
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-light);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.analytics-dashboard-chart-placeholder {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.analytics-dashboard-chart-placeholder .material-icons-round {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: var(--border-color);
+}
+
+/* Statistics Panel */
+.analytics-dashboard-stats-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.analytics-dashboard-stats-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+.analytics-dashboard-stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.analytics-dashboard-stats-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.analytics-dashboard-stats-action {
+    font-size: 12px;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.analytics-dashboard-stats-action:hover {
+    text-decoration: underline;
+}
+
+/* Top Performers */
+.analytics-dashboard-performers-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.analytics-dashboard-performer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--background-light);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.analytics-dashboard-performer-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-dashboard-performer-rank {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.analytics-dashboard-performer-rank.first {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.analytics-dashboard-performer-rank.second {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+}
+
+.analytics-dashboard-performer-rank.third {
+    background: linear-gradient(135deg, #cd7c0f, #92400e);
+}
+
+.analytics-dashboard-performer-info {
+    flex: 1;
+}
+
+.analytics-dashboard-performer-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.analytics-dashboard-performer-role {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.analytics-dashboard-performer-score {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e40af;
+}
+
+/* Recent Activities */
+.analytics-dashboard-activities-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.analytics-dashboard-activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: var(--background-light);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.analytics-dashboard-activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+}
+
+.analytics-dashboard-activity-icon.task {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.analytics-dashboard-activity-icon.attendance {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.analytics-dashboard-activity-icon.alert {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.analytics-dashboard-activity-content {
+    flex: 1;
+}
+
+.analytics-dashboard-activity-text {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.analytics-dashboard-activity-time {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Filter and Export Section */
+.analytics-dashboard-controls {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.analytics-dashboard-controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 20px;
+    align-items: end;
+}
+
+.analytics-dashboard-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.analytics-dashboard-filter-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.analytics-dashboard-filter-select {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.analytics-dashboard-filter-select:focus {
+    outline: none;
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.analytics-dashboard-controls-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.analytics-dashboard-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.analytics-dashboard-btn-primary {
+    background: #1e40af;
+    color: white;
+    border: 2px solid #1e40af;
+}
+
+.analytics-dashboard-btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.analytics-dashboard-btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+}
+
+.analytics-dashboard-btn-secondary:hover {
+    border-color: #1e40af;
+    color: #1e40af;
+    transform: translateY(-2px);
+}
+
+/* Error Container */
+.analytics-dashboard-error-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px;
+}
+
+.analytics-dashboard-error-card {
+    text-align: center;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+    max-width: 400px;
+}
+
+.analytics-dashboard-error-icon {
+    font-size: 64px;
+    color: var(--danger-color);
+    margin-bottom: 16px;
+}
+
+.analytics-dashboard-error-card h3 {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    font-size: 24px;
+}
+
+.analytics-dashboard-error-card p {
+    margin-bottom: 24px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .analytics-dashboard-main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .analytics-dashboard-controls-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .analytics-dashboard-controls-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+
+    .analytics-dashboard-kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .analytics-dashboard-container {
+        padding: 16px;
+    }
+
+    .analytics-dashboard-header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .analytics-dashboard-controls-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .analytics-dashboard-kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .analytics-dashboard-title-text h1 {
+        font-size: 24px;
+    }
+
+    .analytics-dashboard-time-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .analytics-dashboard-stats-panel {
+        gap: 16px;
+    }
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] .analytics-dashboard-container {
+    background: var(--dark-bg);
+}
+
+[data-theme="dark"] .analytics-dashboard-controls,
+[data-theme="dark"] .analytics-dashboard-kpi-card,
+[data-theme="dark"] .analytics-dashboard-chart-section,
+[data-theme="dark"] .analytics-dashboard-stats-card {
+    background: var(--dark-card-bg);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .analytics-dashboard-filter-select {
+    background: var(--dark-input-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .analytics-dashboard-performer-item,
+[data-theme="dark"] .analytics-dashboard-activity-item {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .analytics-dashboard-chart-container {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .analytics-dashboard-chart-btn {
+    background: var(--dark-bg-light);
+    border-color: var(--dark-border);
+    color: var(--dark-text-secondary);
+}
+
+/* Animation for loading states */
+@keyframes analyticsDashboardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.analytics-dashboard-container {
+    animation: analyticsDashboardFadeIn 0.5s ease-out;
+}
+
+.analytics-dashboard-kpi-card {
+    animation: analyticsDashboardFadeIn 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.analytics-dashboard-kpi-card:nth-child(1) { animation-delay: 0.1s; }
+.analytics-dashboard-kpi-card:nth-child(2) { animation-delay: 0.2s; }
+.analytics-dashboard-kpi-card:nth-child(3) { animation-delay: 0.3s; }
+.analytics-dashboard-kpi-card:nth-child(4) { animation-delay: 0.4s; }
