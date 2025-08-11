@@ -2,109 +2,280 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - HR Management System">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hệ thống đăng nhập và đăng ký - ZewK Management System">
     <meta name="theme-color" content="#0f172a">
-    <link rel="icon" href="assets/icons/favicon-32x32.png" sizes="32x32">
-    <title>HR Management System</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ZewK Management System - Đăng nhập</title>
     
-    <!-- Professional Redirect Styling -->
+    <!-- Professional Auth CSS - Single Dark Theme -->
+    <link rel="stylesheet" href="assets/css/professional-auth.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="icon" type="image/png" href="assets/icons/favicon-32x32.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #f8fafc;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             overflow: hidden;
         }
-        
-        .redirect-container {
-            text-align: center;
-            padding: 2rem;
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
-            border: 1px solid #374151;
-            border-radius: 1rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(20px);
-            max-width: 400px;
-            width: 90%;
-        }
-        
-        .logo {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #3b82f6, #10b981);
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            color: white;
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-        
-        .redirect-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, #3b82f6, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .redirect-message {
-            color: #94a3b8;
-            margin-bottom: 1.5rem;
-        }
-        
-        .loading-spinner {
-            width: 2rem;
-            height: 2rem;
-            border: 2px solid #374151;
-            border-top: 2px solid #3b82f6;
-            border-radius: 50%;
-            margin: 0 auto;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 480px) {
-            .redirect-container {
-                padding: 1.5rem;
-            }
-            
-            .redirect-title {
-                font-size: 1.25rem;
-            }
-        }
     </style>
-    
-    <script>
-        // Immediate redirect to auth page as requested
-        window.location.href = "pages/auth/index.html";
-    </script>
 </head>
 <body>
-    <div class="redirect-container">
-        <div class="logo">Z</div>
-        <h1 class="redirect-title">ZewK Management System</h1>
-        <p class="redirect-message">Đang chuyển hướng đến trang đăng nhập...</p>
-        <div class="loading-spinner"></div>
+    <div class='flag-vn'></div>
+    <div class="glass-bg">
+        <div class="glass-circle circle-1"></div>
+        <div class="glass-circle circle-2"></div>
+        <div class="glass-circle circle-3"></div>
     </div>
+
+    <div class="aurora"></div>
+    <div class="stars"></div>
+    <div class="light-streaks"></div>
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container active">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng nhập</h2>
+                </div>
+            </div>
+
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
+                        <label for="loginEmployeeId">Mã nhân viên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">login</span>
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <div class="footer-row">
+                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng ký</h2>
+                </div>
+            </div>
+
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
+                        <label for="fullName">Họ và tên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">phone</span>
+                        <input type="tel" id="phone" name="phone" placeholder=" " required autocomplete="tel">
+                        <label for="phone">Số điện thoại</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+                        <label for="email">Email</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">store</span>
+                        <select id="storeName" name="storeName" required>
+                            <option value="">Chọn cửa hàng</option>
+                        </select>
+                        <label for="storeName">Cửa hàng</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
+                        <label for="password">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="terms-container">
+                        <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Tôi đồng ý với <a href="#" class="terms-link" onclick="showTermsModal()">điều khoản sử dụng</a> và <a href="#" class="terms-link" onclick="showPrivacyModal()">chính sách bảo mật</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">person_add</span>
+                    <span class="btn-text">Tạo tài khoản</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Quên mật khẩu</h2>
+                </div>
+            </div>
+
+            <form id="forgotPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="forgotEmail" name="forgotEmail" placeholder=" " required autocomplete="email">
+                        <label for="forgotEmail">Email tài khoản</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">send</span>
+                    <span class="btn-text">Lấy mã đổi mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Nhớ lại mật khẩu? <a href="#" id="goToLoginFromForgot" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="resetPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đặt lại mật khẩu</h2>
+                </div>
+            </div>
+
+            <form id="resetPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">vpn_key</span>
+                        <input type="text" id="resetCode" name="resetCode" placeholder=" " required maxlength="6">
+                        <label for="resetCode">Mã xác thực (6 số)</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="newPassword" name="newPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">lock_reset</span>
+                    <span class="btn-text">Đặt lại mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Chưa nhận được mã? <a href="#" id="goToForgotFromReset" class="form-link">Gửi lại mã</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="assets/js/script.js"></script>
 </body>
 </html>
