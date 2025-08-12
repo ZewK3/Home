@@ -267,7 +267,7 @@ class ContentManager {
         }
         
         try {
-            const userData = await API_CACHE.getUserData();
+            const userData = await window.authManager.getUserData();
             this.user = userData; // Update the instance user data
             return userData.employeeId;
         } catch (error) {
@@ -372,7 +372,7 @@ class ContentManager {
         const content = document.getElementById('content');
         try {
             // Get current user's role and stores to determine permissions using cache
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             
             // Only AD, AM, QL can assign shifts
             if (!['AD', 'AM', 'QL'].includes(userResponse.position)) {
@@ -580,7 +580,7 @@ class ContentManager {
     async showWorkShifts() {
         const content = document.getElementById('content');
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
@@ -636,7 +636,7 @@ class ContentManager {
     async showAttendance() {
         const content = document.getElementById('content');
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
@@ -723,7 +723,7 @@ class ContentManager {
     async showTimesheet() {
         const content = document.getElementById('content');
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
@@ -968,7 +968,7 @@ class ContentManager {
     async showAttendanceGPS() {
         const content = document.getElementById('content');
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
 
             content.innerHTML = `
@@ -1040,7 +1040,7 @@ class ContentManager {
     async loadStoresForShiftAssignment() {
         try {
             // Use AuthManager's cached stores data
-            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            const response = await window.authManager.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -1065,7 +1065,7 @@ class ContentManager {
     async loadStoresForAttendance() {
         try {
             // Use AuthManager's cached stores data
-            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            const response = await window.authManager.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -1747,7 +1747,7 @@ class ContentManager {
         const content = document.getElementById('content');
         try {
             // Get current user role for permission check
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             if (!userResponse || !['QL', 'AD'].includes(userResponse.position)) {
                 content.innerHTML = `
                     <div class="access-denied-enhanced">
@@ -2076,7 +2076,7 @@ class ContentManager {
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
                 // Clear cached data and reload
-                API_CACHE.clearSpecificCache('attendanceRequests');
+                window.authManager.clearSpecificCache('attendanceRequests');
                 this.attendanceRequests = [];
                 this.showPersonnelManagement();
             });
@@ -2297,7 +2297,7 @@ class ContentManager {
         const content = document.getElementById('content');
         try {
             // Get current user role for permission check
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             if (!userResponse || !['AM', 'AD'].includes(userResponse.position)) {
                 content.innerHTML = `
                     <div class="access-denied">
@@ -2448,7 +2448,7 @@ class ContentManager {
 
     async loadStoreFilterOptions() {
         try {
-            const stores = await API_CACHE.getStoresData();
+            const stores = await window.authManager.getStoresData();
             const storeFilter = document.getElementById('shiftRequestStoreFilter');
             
             if (Array.isArray(stores)) {
@@ -2617,7 +2617,7 @@ class ContentManager {
             let users = [];
             
             try {
-                response = await API_CACHE.getUsersData();
+                response = await window.authManager.getUsersData();
                 console.log('Permission Management - Raw API Response:', response);
                 console.log('Permission Management - Response type:', typeof response);
                 console.log('Permission Management - Is Array:', Array.isArray(response));
@@ -2913,7 +2913,7 @@ class ContentManager {
         const content = document.getElementById('content');
         try {
             // Use cached user data instead of making fresh API calls
-            const response = await API_CACHE.getUserData();
+            const response = await window.authManager.getUserData();
             if (!response) {
                 throw new Error('Could not get user data from cache');
             }
@@ -3191,7 +3191,7 @@ class ContentManager {
     async showAnalytics() {
         const content = document.getElementById('content');
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             
             content.innerHTML = `
                 <div class="analytics-container modern-container">
@@ -3776,7 +3776,7 @@ class ContentManager {
         const content = document.getElementById('content');
         try {
             // Get current user's information
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             if (!userResponse) {
                 throw new Error('Could not get user data');
             }
@@ -4050,7 +4050,7 @@ class ContentManager {
                 loadMoreBtn.innerHTML = '<span class="material-icons-round spinning">refresh</span> Đang tải...';
             }
             
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             if (!userResponse) {
                 throw new Error('Could not get user data');
             }
@@ -5338,7 +5338,7 @@ class ContentManager {
     async loadStoresForPermissionEdit() {
         try {
             // Use AuthManager's cached stores data
-            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            const response = await window.authManager.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -6075,7 +6075,7 @@ class ContentManager {
     async loadStoreMapping() {
         try {
             // Use AuthManager's cached stores data
-            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            const response = await window.authManager.getStoresData();
             
             let stores = [];
             if (Array.isArray(response)) {
@@ -6119,7 +6119,7 @@ class ContentManager {
     async loadStoresForFilter() {
         try {
             // Use AuthManager's cached stores data 
-            const response = window.authManager ? await window.authManager.getStoresData() : await API_CACHE.getStoresData();
+            const response = await window.authManager.getStoresData();
             console.log('Stores API response:', response);
             
             let allStores = [];
@@ -6136,7 +6136,7 @@ class ContentManager {
             }
             
             // Get user's current info to apply proper filtering using cached data
-            const currentUser = window.authManager ? await window.authManager.getUserData() : await API_CACHE.getUserData();
+            const currentUser = await window.authManager.getUserData();
             if (!currentUser) {
                 throw new Error('Could not get user data from cache');
             }
@@ -6319,7 +6319,7 @@ class ContentManager {
         // Refresh button - Clear cache before reloading
         document.getElementById('refreshPendingRegistrations')?.addEventListener('click', () => {
             // Clear cached attendance requests data
-            API_CACHE.clearSpecificCache('attendanceRequests');
+            window.authManager.clearSpecificCache('attendanceRequests');
             // Also clear local cache if it exists
             this.attendanceRequests = [];
             this.loadPendingRegistrations();
@@ -6975,12 +6975,12 @@ class ContentManager {
 
     setupTimesheetHandlers() {
         document.getElementById('loadTimesheetData')?.addEventListener('click', async () => {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             await this.loadTimesheetData(userResponse.employeeId);
         });
 
         document.getElementById('timesheetMonth')?.addEventListener('change', async () => {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             await this.loadTimesheetData(userResponse.employeeId);
         });
     }
@@ -6988,7 +6988,7 @@ class ContentManager {
     // Show detailed view for selected day
     async showDayDetails(date) {
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
             
             // Get attendance history for the selected date
@@ -7075,7 +7075,7 @@ class ContentManager {
         
         try {
             // Use cached stores data instead of making new API call
-            const storesResponse = await API_CACHE.getStoresData();
+            const storesResponse = await window.authManager.getStoresData();
             
             // Handle different response formats
             if (Array.isArray(storesResponse)) {
@@ -7241,7 +7241,7 @@ class ContentManager {
                 <span class="btn-text">Đang xử lý...</span>
             `;
 
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             
             // Fix location field names to match worker.js expectations
             const locationData = {
@@ -7595,7 +7595,7 @@ class ContentManager {
 
     async submitAttendanceRequest(type, formData) {
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             // Convert hyphenated types to underscore format for database constraint
             const dbType = type.replace(/-/g, '_');
             const requestData = {
@@ -7954,7 +7954,7 @@ class ContentManager {
             let allUsers = [];
             
             try {
-                const allUsersResponse = await API_CACHE.getUsersData();
+                const allUsersResponse = await window.authManager.getUsersData();
                 
                 if (Array.isArray(allUsersResponse)) {
                     allUsers = allUsersResponse;
@@ -8155,7 +8155,7 @@ class ContentManager {
                 let usersData = this.currentFilteredUsers;
                 if (!usersData || usersData.length === 0) {
                     try {
-                        const response = await API_CACHE.getUsersData();
+                        const response = await window.authManager.getUsersData();
                         if (Array.isArray(response)) {
                             usersData = response;
                         } else if (response && Array.isArray(response.results)) {
@@ -8303,7 +8303,7 @@ class ContentManager {
             console.log('==========================');
             
             // Get current user as default assigner if no assigner selected
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             const finalAssignerId = assigners.length > 0 ? assigners[0] : userResponse.employeeId;
             
             const taskData = {
@@ -8560,7 +8560,7 @@ class ContentManager {
     // System testing functions - only accessible to AD users
     async showSystemTesting() {
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             
             // Only AD (Admin) users can access testing functions
             if (userResponse.position !== 'AD') {
@@ -8787,7 +8787,7 @@ class ContentManager {
         this.logTest('🔐 Testing user permissions...', 'info');
         
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             this.logTest(`👤 Current User: ${userResponse.fullName}`, 'info');
             this.logTest(`🎭 Role: ${userResponse.position}`, 'info');
             this.logTest(`📧 Email: ${userResponse.email}`, 'info');
@@ -9266,8 +9266,8 @@ class ContentManager {
     // Show detailed request information using cached data
     async showRequestDetail(requestId) {
         try {
-            // Use API_CACHE for consistent caching across the application
-            const response = await API_CACHE.getAttendanceRequestsData();
+            // Use authManager for consistent caching across the application
+            const response = await window.authManager.getAttendanceRequestsData();
             let requests = response;
             
             // Handle different response formats
@@ -9656,7 +9656,7 @@ class ContentManager {
 
     refreshCalendar() {
         // Clear timesheet cache before refreshing
-        API_CACHE.clearSpecificCache('timesheet');
+        window.authManager.clearSpecificCache('timesheet');
         utils.showNotification('Đang làm mới dữ liệu lịch...', 'info');
         setTimeout(() => {
             utils.showNotification('Đã cập nhật dữ liệu lịch', 'success');
@@ -9955,7 +9955,7 @@ class ContentManager {
                     // Try to get fresh user data from API
                     let userData = [];
                     try {
-                        const response = await API_CACHE.getUsersData();
+                        const response = await window.authManager.getUsersData();
                         
                         if (Array.isArray(response)) {
                             userData = response;
@@ -10148,7 +10148,7 @@ class ContentManager {
     // System testing functions - only accessible to AD users
     async showSystemTesting() {
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             
             // Only AD (Admin) users can access testing functions
             if (userResponse.position !== 'AD') {
@@ -10324,7 +10324,7 @@ class ContentManager {
         this.logTest('🔐 Testing user permissions...', 'info');
         
         try {
-            const userResponse = await API_CACHE.getUserData();
+            const userResponse = await window.authManager.getUserData();
             this.logTest(`👤 Current User: ${userResponse.fullName}`, 'info');
             this.logTest(`🎭 Role: ${userResponse.position}`, 'info');
             this.logTest(`📧 Email: ${userResponse.email}`, 'info');

@@ -333,7 +333,7 @@ async function updateWelcomeStats() {
         console.log('📊 Updating welcome section statistics...');
         
         // Get current user data
-        const userData = await API_CACHE.getUserData();
+        const userData = await window.authManager.getUserData();
         if (!userData) {
             console.warn('No user data available for stats update');
             return;
@@ -398,7 +398,7 @@ async function initializeRoleBasedUI() {
     
     // Use cached user data instead of making fresh API calls
     try {
-        const freshUserData = await API_CACHE.getUserData();
+        const freshUserData = await window.authManager.getUserData();
         if (freshUserData && freshUserData.position) {
             userPosition = freshUserData.position;
             console.log('🔐 Using cached role for UI initialization:', userPosition);
@@ -507,7 +507,7 @@ async function applyRoleBasedSectionVisibility() {
     
     // Use cached user data instead of making fresh API calls
     try {
-        const freshUserData = await API_CACHE.getUserData();
+        const freshUserData = await window.authManager.getUserData();
         if (freshUserData && freshUserData.position) {
             userRole = freshUserData.position;
             console.log('🔐 Using cached role for section visibility:', userRole);
@@ -768,7 +768,7 @@ function exportReports() {
 async function refreshUserRoleAndPermissions() {
     try {
         // Use cached user data instead of making fresh API calls
-        const freshUserData = await API_CACHE.getUserData();
+        const freshUserData = await window.authManager.getUserData();
         if (freshUserData && freshUserData.position) {
             
             // Update role-based UI with cached data
@@ -1357,7 +1357,7 @@ async function initializeEnhancedDashboard() {
         showDashboardContent();
         
         // Use cached user data instead of making fresh API calls
-        const freshUserData = await API_CACHE.getUserData();
+        const freshUserData = await window.authManager.getUserData();
         if (!freshUserData || !freshUserData.position) {
             console.error('Failed to fetch user data from cache');
             return;
@@ -1537,7 +1537,7 @@ async function showWelcomeSection() {
         
         // Use cached user data instead of making fresh API calls
         try {
-            const freshUserData = await API_CACHE.getUserData();
+            const freshUserData = await window.authManager.getUserData();
             if (freshUserData && freshUserData.position) {
                 userRole = freshUserData.position;
                 console.log('🔐 Using cached role for welcome section:', userRole);
