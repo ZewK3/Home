@@ -1,17 +1,74 @@
-// Auth Manager with integrated API caching system
+// Auth Manager with integrated API caching system and enhanced security options
 class AuthManager {
-    constructor() {
-        this.token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        
-        // Safely parse user data from localStorage
-        try {
-            const userDataString = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
-            this.userData = userDataString ? JSON.parse(userDataString) : null;
-        } catch (error) {
-            console.warn('Failed to parse user data from localStorage:', error);
-            this.userData = null;
+    constructor(options = {}) {
+        // Initialize secure storage if available
+        this.useSecureStorage = options.useSecureStorage && window.SecureStorageManager;
+        if (this.useSecureStorage) {
+            this.secureStorage = new SecureStorageManager({
+                useEncryption: options.useEncryption !== false,
+                secure: options.secure !== false,
+                sameSite: options.sameSite || 'Strict'
+            });
+            console.log('🔐 AuthManager initialized with secure storage');
         }
         
+        // Get token from storage (secure or regular)
+        this.token = this.getFromStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        
+        // Safely parse user data from storage
+        try {
+            this.userData = this.getFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
+        } catch (error) {
+            console.warn('Failed to parse user data from storage:', error);
+            this.userData = null;
+        }
+    
+    // Enhanced storage methods that support both secure and regular storage
+    setToStorage(key, value) {
+        if (this.useSecureStorage) {
+            // Use secure cookies for sensitive data like tokens
+            if (key === CONFIG.STORAGE_KEYS.AUTH_TOKEN) {
+                this.secureStorage.setCookie(key, value, { httpOnly: false }); // httpOnly must be false for client access
+            } else {
+                this.secureStorage.setLocalStorage(key, value);
+            }
+        } else {
+            // Fallback to regular localStorage
+            localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        }
+    }
+    
+    getFromStorage(key) {
+        if (this.useSecureStorage) {
+            // Try secure cookie first for tokens, then secure localStorage
+            if (key === CONFIG.STORAGE_KEYS.AUTH_TOKEN) {
+                return this.secureStorage.getCookie(key) || this.secureStorage.getLocalStorage(key);
+            } else {
+                return this.secureStorage.getLocalStorage(key);
+            }
+        } else {
+            // Fallback to regular localStorage
+            const value = localStorage.getItem(key);
+            if (!value) return null;
+            try {
+                return JSON.parse(value);
+            } catch {
+                return value; // Return as string if not JSON
+            }
+        }
+    }
+    
+    removeFromStorage(key) {
+        if (this.useSecureStorage) {
+            this.secureStorage.deleteCookie(key);
+            localStorage.removeItem(key); // Also clear from localStorage for safety
+        } else {
+            localStorage.removeItem(key);
+        }
+    }
+    
+    // Initialize cache and enhanced security features  
+    initializeCacheSystem() {
         // Enhanced cache system integrated from API_CACHE
         this.cachedStores = null;
         this.cachedUser = null;
@@ -38,16 +95,19 @@ class AuthManager {
         
         // Initialize cache with localStorage data to reduce API calls during initialization
         this.initializeCacheFromLocalStorage();
+        
+        // Initialize the cache system
+        this.initializeCacheSystem();
     }
     
-    // Initialize cache with localStorage data to avoid unnecessary API calls during page load
+    // Initialize cache with storage data to avoid unnecessary API calls during page load
     initializeCacheFromLocalStorage() {
         if (this.userData && this.userData.employeeId) {
             this.cachedUser = this.userData;
             this.cacheTimestamp.user = Date.now();
-            console.log('Cache initialized with localStorage user data:', this.userData.fullName);
+            console.log('Cache initialized with stored user data:', this.userData.fullName);
         } else {
-            console.log('No valid userData found in localStorage for cache initialization');
+            console.log('No valid userData found in storage for cache initialization');
         }
     }
 
@@ -110,8 +170,8 @@ class AuthManager {
             return this.cachedUser;
         }
 
-        // Then check localStorage
-        const userData = this.userData || JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        // Then check storage
+        const userData = this.userData || this.getFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
         if (userData && userData.employeeId && userData.fullName) {
             console.log('Using localStorage user data');
             // Update cache with localStorage data
@@ -134,8 +194,8 @@ class AuthManager {
                 if (user && user.employeeId) {
                     this.cachedUser = user;
                     this.cacheTimestamp.user = Date.now();
-                    // Update localStorage
-                    localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+                    // Update storage
+                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, user);
                     this.userData = user;
                     return user;
                 }
@@ -346,8 +406,8 @@ class AuthManager {
                 return user;
             }
 
-            // If no cached data, check localStorage first
-            const userData = this.userData || JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            // If no cached data, check storage first
+            const userData = this.userData || this.getFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
             if (userData && userData.employeeId && userData.fullName) {
                 console.log('Using localStorage user data for authentication');
                 // Set as cached data to prevent future API calls
@@ -368,8 +428,8 @@ class AuthManager {
             if (user && user.employeeId && user.fullName) {
                 console.log('Successfully authenticated via API call:', user.fullName);
                 
-                // Update localStorage for future use
-                localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+                // Update storage for future use
+                this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, user);
                 this.userData = user;
                 
                 const userInfoElement = document.getElementById("userInfo");
@@ -395,8 +455,16 @@ class AuthManager {
 
     logout() {
         this.clearCache(); // Clear all cached data
-        localStorage.removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
+        
+        // Use enhanced storage removal
+        this.removeFromStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        this.removeFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
+        
+        // Clear secure storage if available
+        if (this.useSecureStorage) {
+            this.secureStorage.clearAllData();
+        }
+        
         // window.location.href = "index.html"; // Commented for testing
     }
 }
