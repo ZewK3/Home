@@ -124,7 +124,7 @@ async function initializeDashboard() {
         // Ensure stats-grid is visible and updated
         await updateStatsGrid();
 
-        // Initialize enhanced dashboard
+        // Initialize enhanced dashboard with cached user data
         await initializeEnhancedDashboard();
 
         // Hide dashboard loader and show content after initialization is complete
@@ -396,17 +396,24 @@ async function updateWelcomeStats() {
 async function initializeRoleBasedUI() {
     let userPosition = 'NV'; // Default fallback
     
-    // Use cached user data instead of making fresh API calls
+    // Use cached user data instead of making fresh API calls during initialization
     try {
-        const freshUserData = await window.authManager.getUserData();
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+        } else {
+            // Fallback to localStorage data if cache is not available  
+            freshUserData = window.authManager.userData;
+        }
+        
         if (freshUserData && freshUserData.position) {
             userPosition = freshUserData.position;
             console.log('🔐 Using cached role for UI initialization:', userPosition);
         } else {
-            console.warn('⚠️ No cached user data found, using default role NV');
+            console.warn('⚠️ No user data found, using default role NV');
         }
     } catch (error) {
-        console.warn('⚠️ Using default role due to cache error:', error);
+        console.warn('⚠️ Using default role due to error:', error);
     }
     
     console.log('🔐 Initializing role-based UI for position:', userPosition);
@@ -505,17 +512,24 @@ async function initializeRoleBasedUI() {
 async function applyRoleBasedSectionVisibility() {
     let userRole = 'NV'; // Default fallback
     
-    // Use cached user data instead of making fresh API calls
+    // Use cached user data instead of making fresh API calls during initialization
     try {
-        const freshUserData = await window.authManager.getUserData();
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+        } else {
+            // Fallback to localStorage data if cache is not available  
+            freshUserData = window.authManager.userData;
+        }
+        
         if (freshUserData && freshUserData.position) {
             userRole = freshUserData.position;
             console.log('🔐 Using cached role for section visibility:', userRole);
         } else {
-            console.warn('⚠️ No cached user data found, using default role NV');
+            console.warn('⚠️ No user data found, using default role NV');
         }
     } catch (error) {
-        console.warn('⚠️ Using default role due to cache error:', error);
+        console.warn('⚠️ Using default role due to error:', error);
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
@@ -764,11 +778,20 @@ function exportReports() {
     utils.showNotification('Tính năng xuất báo cáo đang được phát triển', 'warning');
 }
 
-// Refresh user role and permissions using fresh API data
+// Refresh user role and permissions using cached data during initialization
 async function refreshUserRoleAndPermissions() {
     try {
-        // Use cached user data instead of making fresh API calls
-        const freshUserData = await window.authManager.getUserData();
+        // Use cached user data instead of making fresh API calls during initialization
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+            console.log('🔐 Using cached user data for role permissions');
+        } else {
+            // Fallback to localStorage data if cache is not available  
+            freshUserData = window.authManager.userData;
+            console.log('🔐 Using localStorage user data for role permissions');
+        }
+        
         if (freshUserData && freshUserData.position) {
             
             // Update role-based UI with cached data
@@ -1356,15 +1379,24 @@ async function initializeEnhancedDashboard() {
         // First ensure content is visible
         showDashboardContent();
         
-        // Use cached user data instead of making fresh API calls
-        const freshUserData = await window.authManager.getUserData();
+        // Use cached user data - don't make fresh API calls during initialization
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+            console.log('📊 Using cached user data for dashboard initialization');
+        } else {
+            // Fallback to localStorage data if cache is not available
+            freshUserData = window.authManager.userData;
+            console.log('📊 Using localStorage user data for dashboard initialization');
+        }
+        
         if (!freshUserData || !freshUserData.position) {
-            console.error('Failed to fetch user data from cache');
+            console.error('Failed to get user data for dashboard initialization');
             return;
         }
 
         const userPosition = freshUserData.position;
-        console.log('📊 Cached user data:', { 
+        console.log('📊 Dashboard user data:', { 
             employeeId: freshUserData.employeeId, 
             fullName: freshUserData.fullName, 
             position: userPosition,
@@ -1535,17 +1567,24 @@ async function showWelcomeSection() {
         // Get user role first before building content using cached data
         let userRole = 'NV'; // Default fallback
         
-        // Use cached user data instead of making fresh API calls
+        // Use cached user data instead of making fresh API calls during initialization
         try {
-            const freshUserData = await window.authManager.getUserData();
+            let freshUserData = null;
+            if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+                freshUserData = window.authManager.cachedUser;
+            } else {
+                // Fallback to localStorage data if cache is not available  
+                freshUserData = window.authManager.userData;
+            }
+            
             if (freshUserData && freshUserData.position) {
                 userRole = freshUserData.position;
                 console.log('🔐 Using cached role for welcome section:', userRole);
             } else {
-                console.warn('⚠️ No cached user data found, using default role NV');
+                console.warn('⚠️ No user data found, using default role NV');
             }
         } catch (error) {
-            console.warn('⚠️ Using default role due to cache error:', error);
+            console.warn('⚠️ Using default role due to error:', error);
         }
         
         console.log('🏗️ Building content for role:', userRole);

@@ -2,7 +2,15 @@
 class AuthManager {
     constructor() {
         this.token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        this.userData = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA));
+        
+        // Safely parse user data from localStorage
+        try {
+            const userDataString = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
+            this.userData = userDataString ? JSON.parse(userDataString) : null;
+        } catch (error) {
+            console.warn('Failed to parse user data from localStorage:', error);
+            this.userData = null;
+        }
         
         // Enhanced cache system integrated from API_CACHE
         this.cachedStores = null;
@@ -27,6 +35,20 @@ class AuthManager {
         
         // Track ongoing API calls to prevent duplicates (from API_CACHE)
         this.ongoingCalls = new Map();
+        
+        // Initialize cache with localStorage data to reduce API calls during initialization
+        this.initializeCacheFromLocalStorage();
+    }
+    
+    // Initialize cache with localStorage data to avoid unnecessary API calls during page load
+    initializeCacheFromLocalStorage() {
+        if (this.userData && this.userData.employeeId) {
+            this.cachedUser = this.userData;
+            this.cacheTimestamp.user = Date.now();
+            console.log('Cache initialized with localStorage user data:', this.userData.fullName);
+        } else {
+            console.log('No valid userData found in localStorage for cache initialization');
+        }
     }
 
     // Check if cache is valid
@@ -105,11 +127,14 @@ class AuthManager {
                 }
                 throw new Error("Invalid user data");
             } catch (error) {
-                console.warn('API not available, using localStorage data for testing:', error.message);
-                // Fallback to localStorage data for testing
-                this.cachedUser = this.userData;
-                this.cacheTimestamp.user = Date.now();
-                return this.cachedUser;
+                console.warn('API not available, using localStorage data:', error.message);
+                // Fallback to localStorage data - ensure cache is set properly
+                if (userData && userData.employeeId) {
+                    this.cachedUser = userData;
+                    this.cacheTimestamp.user = Date.now();
+                    return this.cachedUser;
+                }
+                throw new Error("No user data available");
             }
         });
     }

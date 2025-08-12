@@ -25,13 +25,13 @@ async function initializeApplication() {
         if (user) {
             authManager.setupLogoutHandler();
             console.log('User authenticated:', user.fullName);
+            
+            // Initialize dashboard components with user data already cached
+            await initializeDashboard();
+        } else {
+            console.warn('Authentication failed, redirecting to login');
+            return;
         }
-        
-        // Initialize dashboard components
-        await initializeDashboard();
-        
-        // Run system data refresh
-        await refreshSystemData();
         
         // Initialize professional CSS styles
         initializeProfessionalStyles();
