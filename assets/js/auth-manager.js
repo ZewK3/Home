@@ -326,9 +326,10 @@ class AuthManager {
         }
 
         try {
-            // Use cached user data method
-            const user = await this.getUserData();
-            if (user) {
+            // First try to use cached data if available
+            if (this.cachedUser && this.isCacheValid('user')) {
+                console.log('Using cached user data for authentication');
+                const user = this.cachedUser;
                 const userInfoElement = document.getElementById("userInfo");
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
@@ -336,8 +337,26 @@ class AuthManager {
                 MenuManager.updateMenuByRole(user.position);
                 return user;
             }
-            throw new Error("Invalid session");
+
+            // If no cached data, use localStorage data directly to avoid API calls during authentication
+            const userData = this.userData || JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+            if (userData && userData.employeeId && userData.fullName) {
+                console.log('Using localStorage user data for authentication');
+                // Set as cached data to prevent future API calls
+                this.cachedUser = userData;
+                this.cacheTimestamp.user = Date.now();
+                
+                const userInfoElement = document.getElementById("userInfo");
+                if (userInfoElement) {
+                    userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
+                }
+                MenuManager.updateMenuByRole(userData.position);
+                return userData;
+            }
+
+            throw new Error("No valid user data found in cache or localStorage");
         } catch (error) {
+            console.error('Authentication check failed:', error);
             utils.showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning");
             this.logout();
             return null;
