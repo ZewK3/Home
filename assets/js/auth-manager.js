@@ -22,6 +22,10 @@ class AuthManager {
             console.warn('Failed to parse user data from storage:', error);
             this.userData = null;
         }
+        
+        // Initialize the cache system
+        this.initializeCacheSystem();
+    }
     
     // Enhanced storage methods that support both secure and regular storage
     setToStorage(key, value) {
@@ -95,9 +99,6 @@ class AuthManager {
         
         // Initialize cache with localStorage data to reduce API calls during initialization
         this.initializeCacheFromLocalStorage();
-        
-        // Initialize the cache system
-        this.initializeCacheSystem();
     }
     
     // Initialize cache with storage data to avoid unnecessary API calls during page load
