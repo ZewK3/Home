@@ -86,7 +86,9 @@ class AuthManager {
             return this.cachedUser;
         }
 
-        const employeeId = this.userData?.employeeId || this.userData?.loginEmployeeId;
+        // Get fresh userData from localStorage if this.userData is not available
+        const userData = this.userData || JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        const employeeId = userData?.employeeId || userData?.loginEmployeeId;
         if (!employeeId) {
             throw new Error('No employee ID found');
         }
