@@ -118,10 +118,7 @@ async function initializeDashboard() {
             console.log('✅ User info populated in header:', userData.fullName, userData.employeeId);
         }
 
-        // Load dashboard stats immediately when page loads
-        await getDashboardStats();
-        
-        // Ensure stats-grid is visible and updated
+        // Ensure stats-grid is visible and updated (stats will be loaded in initializeEnhancedDashboard)
         await updateStatsGrid();
 
         // Initialize enhanced dashboard with cached user data
@@ -165,7 +162,137 @@ setTimeout(() => {
     setupMobileMenu();
 }, 3000);
 
-// Enhanced Dashboard Stats Initialization - Using unified dashboard API
+// Update dashboard stats UI using cached data - no API calls
+async function updateDashboardStatsUI() {
+    console.log('📊 Updating dashboard stats UI with cached data...');
+    
+    // First, ensure the welcome section and stats-grid are visible
+    const welcomeSection = document.querySelector('.welcome-section');
+    const statsGrid = document.querySelector('.stats-grid');
+    const content = document.getElementById('content');
+    
+    if (welcomeSection) {
+        welcomeSection.style.display = 'block';
+    } else {
+        console.warn('⚠️ Welcome section not found in DOM');
+    }
+    
+    if (statsGrid) {
+        statsGrid.style.display = 'grid';
+    } else {
+        console.warn('⚠️ Stats grid not found in DOM');
+    }
+    
+    if (content) {
+        content.style.display = 'block';
+    }
+    
+    // Wait a moment for DOM to be ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const elements = {
+        totalEmployees: document.getElementById('totalEmployees'),
+        todaySchedule: document.getElementById('todaySchedule'), 
+        pendingRequests: document.getElementById('pendingRequests'),
+        recentMessages: document.getElementById('recentMessages'),
+        todayScheduleDay: document.getElementById('todayScheduleDay')
+    };
+
+    console.log('📊 Stats elements found:', {
+        totalEmployees: !!elements.totalEmployees,
+        todaySchedule: !!elements.todaySchedule,
+        pendingRequests: !!elements.pendingRequests,
+        recentMessages: !!elements.recentMessages,
+        todayScheduleDay: !!elements.todayScheduleDay
+    });
+
+    try {
+        // Get cached stats from AuthManager - no API call
+        const stats = await window.authManager.getDashboardStats();
+        
+        console.log('📈 Using cached dashboard stats:', stats);
+        
+        if (stats && typeof stats === 'object') {
+            
+            // Update dashboard statistics
+            if (elements.totalEmployees) {
+                const value = stats.totalEmployees?.toString() || '0';
+                elements.totalEmployees.textContent = value;
+                console.log(`Updated totalEmployees: ${value}`);
+            }
+            
+            if (elements.todaySchedule) {
+                const value = stats.todaySchedules?.toString() || '0';
+                elements.todaySchedule.textContent = value;
+                console.log(`Updated todaySchedule: ${value}`);
+            }
+            
+            if (elements.pendingRequests) {
+                const value = stats.pendingRequests?.toString() || '0';
+                elements.pendingRequests.textContent = value;
+                console.log(`Updated pendingRequests: ${value}`);
+            }
+
+            if (elements.recentMessages) {
+                const value = stats.recentMessages?.toString() || '0';
+                elements.recentMessages.textContent = value;
+                console.log(`Updated recentMessages: ${value}`);
+            }
+            
+            // Update day info
+            if (elements.todayScheduleDay) {
+                const dayNames = {
+                    'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 
+                    'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7', 'CN': 'Chủ Nhật'
+                };
+                const value = dayNames[stats.currentDay] || 'Hôm nay';
+                elements.todayScheduleDay.textContent = value;
+                console.log(`Updated todayScheduleDay: ${value}`);
+            }
+            
+        } else {
+            console.warn('⚠️ Invalid or empty cached stats, setting defaults');
+            // Set loading state
+            Object.keys(elements).forEach(key => {
+                if (elements[key] && key !== 'todayScheduleDay') {
+                    elements[key].textContent = '-';
+                }
+            });
+        }
+        
+        // Always run role checking after stats are loaded to ensure proper permissions
+        await refreshUserRoleAndPermissions();
+        
+    } catch (error) {
+        console.error('❌ Failed to load cached dashboard stats:', error);
+        // Set default values on error
+        if (elements.totalEmployees) {
+            elements.totalEmployees.textContent = '0';
+            console.log('Set totalEmployees default: 0');
+        }
+        if (elements.todaySchedule) {
+            elements.todaySchedule.textContent = '0';
+            console.log('Set todaySchedule default: 0');
+        }
+        if (elements.pendingRequests) {
+            elements.pendingRequests.textContent = '0';
+            console.log('Set pendingRequests default: 0');
+        }
+        if (elements.recentMessages) {
+            elements.recentMessages.textContent = '0';
+            console.log('Set recentMessages default: 0');
+        }
+        if (elements.todayScheduleDay) {
+            elements.todayScheduleDay.textContent = 'Hôm nay';
+            console.log('Set todayScheduleDay default: Hôm nay');
+        }
+        
+        // Show error notification
+        utils.showNotification('Không thể tải thống kê dashboard', 'warning');
+    }
+}
+
+// Enhanced Dashboard Stats Initialization - Using unified dashboard API (LEGACY - kept for manual refresh only)
 async function getDashboardStats() {
     
     // First, ensure the welcome section and stats-grid are visible
@@ -745,7 +872,17 @@ function generateReports() {
 async function refreshDashboardStats() {
     try {
         utils.showNotification('Đang làm mới dữ liệu...', 'info');
-        await getDashboardStats();
+        
+        // Clear dashboard stats cache to force fresh API call
+        window.authManager.clearSpecificCache('dashboardStats');
+        
+        // Load fresh stats (will call API since cache is cleared)
+        await window.authManager.getDashboardStats();
+        
+        // Update UI with fresh data
+        await updateDashboardStatsUI();
+        
+        // Load fresh report data
         await loadReportData();
         
         // Ensure role permissions are refreshed after stats update
@@ -758,10 +895,11 @@ async function refreshDashboardStats() {
     }
 }
 
-// Load report data
+// Load report data using cached stats to avoid duplicate API calls
 async function loadReportData() {
     try {
-        const stats = await utils.fetchAPI('?action=getDashboardStats');
+        // Use cached dashboard stats from AuthManager instead of making fresh API call
+        const stats = await window.authManager.getDashboardStats();
         if (stats) {
             document.getElementById('reportTotalEmployees').textContent = stats.totalEmployees || '0';
             document.getElementById('reportTodayActive').textContent = stats.todaySchedules || '0';
@@ -1409,9 +1547,14 @@ async function initializeEnhancedDashboard() {
             userInfoElement.textContent = `Chào ${freshUserData.fullName} - ${freshUserData.employeeId}`;
         }
         
-        // Initialize all dashboard components
-        console.log('📊 Initializing dashboard stats and role checking...');
-        await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
+        // Initialize all dashboard components using cached data to prevent duplicate API calls
+        console.log('📊 Initializing dashboard with cached stats and role checking...');
+        
+        // Load stats ONCE using AuthManager cache system
+        await window.authManager.getDashboardStats();
+        
+        // Update the UI with cached stats
+        await updateDashboardStatsUI();
         
         // Initialize role-based UI and menu visibility with cached data
         await initializeRoleBasedUI();
@@ -1602,8 +1745,8 @@ async function showWelcomeSection() {
         // Make sure content is visible first
         showDashboardContent();
         
-        // Run getDashboardStats to update the stats numbers
-        await getDashboardStats();
+        // Use cached stats to update the stats numbers (no fresh API call)
+        await updateDashboardStatsUI();
         
         
     } catch (error) {
