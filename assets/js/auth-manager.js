@@ -102,39 +102,47 @@ class AuthManager {
     }
 
     // Get user data with enhanced caching and duplicate call prevention
+    // Prioritizes cached and localStorage data, falls back to API when necessary
     async getUserData() {
+        // First check cache
         if (this.cachedUser && this.isCacheValid('user')) {
             console.log('Using cached user data');
             return this.cachedUser;
         }
 
-        // Get fresh userData from localStorage if this.userData is not available
+        // Then check localStorage
         const userData = this.userData || JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
+        if (userData && userData.employeeId && userData.fullName) {
+            console.log('Using localStorage user data');
+            // Update cache with localStorage data
+            this.cachedUser = userData;
+            this.cacheTimestamp.user = Date.now();
+            return userData;
+        }
+
+        // If no cached or localStorage data, and we have an employeeId from token/login, fetch from API
         const employeeId = userData?.employeeId || userData?.loginEmployeeId;
         if (!employeeId) {
-            throw new Error('No employee ID found');
+            throw new Error('No employee ID found for API call');
         }
 
         const endpoint = `getUser_${employeeId}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh user data');
+                console.log('Fetching fresh user data from API');
                 const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
-                if (user) {
+                if (user && user.employeeId) {
                     this.cachedUser = user;
                     this.cacheTimestamp.user = Date.now();
+                    // Update localStorage
+                    localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+                    this.userData = user;
                     return user;
                 }
-                throw new Error("Invalid user data");
+                throw new Error("Invalid user data received from API");
             } catch (error) {
-                console.warn('API not available, using localStorage data:', error.message);
-                // Fallback to localStorage data - ensure cache is set properly
-                if (userData && userData.employeeId) {
-                    this.cachedUser = userData;
-                    this.cacheTimestamp.user = Date.now();
-                    return this.cachedUser;
-                }
-                throw new Error("No user data available");
+                console.warn('API call failed, no fallback data available:', error.message);
+                throw new Error("No user data available from any source");
             }
         });
     }
@@ -320,7 +328,7 @@ class AuthManager {
     }
 
     async checkAuthentication() {
-        if (!this.token || !this.userData) {
+        if (!this.token) {
             // window.location.href = "index.html"; // Commented for testing
             return null;
         }
@@ -338,7 +346,7 @@ class AuthManager {
                 return user;
             }
 
-            // If no cached data, use localStorage data directly to avoid API calls during authentication
+            // If no cached data, check localStorage first
             const userData = this.userData || JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA) || '{}');
             if (userData && userData.employeeId && userData.fullName) {
                 console.log('Using localStorage user data for authentication');
@@ -354,7 +362,25 @@ class AuthManager {
                 return userData;
             }
 
-            throw new Error("No valid user data found in cache or localStorage");
+            // If no valid localStorage data, try to fetch from API to establish authentication
+            console.log('No valid cached/localStorage data found, attempting to fetch user data from API');
+            const user = await this.getUserData();
+            if (user && user.employeeId && user.fullName) {
+                console.log('Successfully authenticated via API call:', user.fullName);
+                
+                // Update localStorage for future use
+                localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(user));
+                this.userData = user;
+                
+                const userInfoElement = document.getElementById("userInfo");
+                if (userInfoElement) {
+                    userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
+                }
+                MenuManager.updateMenuByRole(user.position);
+                return user;
+            }
+
+            throw new Error("No valid user data found in cache, localStorage, or API");
         } catch (error) {
             console.error('Authentication check failed:', error);
             utils.showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning");
