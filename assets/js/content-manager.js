@@ -2884,6 +2884,11 @@ class ContentManager {
                         window.editUserRole(userId);
                     }
                 });
+                
+                // Update statistics after user list is created
+                setTimeout(() => {
+                    this.updateRoleStatistics();
+                }, 100);
             }, 200);
             
         } catch (error) {
@@ -5033,10 +5038,10 @@ class ContentManager {
 
     setupPermissionManagement() {
         
-        // Count roles and update statistics - with delay to ensure DOM is ready
+        // Count roles and update statistics - with longer delay to ensure DOM and user cards are ready
         setTimeout(() => {
             this.updateRoleStatistics();
-        }, 100);
+        }, 500);
 
         // Setup search functionality
         const searchInput = document.getElementById('userSearch');

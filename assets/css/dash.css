@@ -2847,7 +2847,7 @@ body {
     }
     
     .filter-groups-row {
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 16px;
         margin-bottom: 16px;
         padding: 16px;
@@ -7739,7 +7739,7 @@ select option:checked {
     /* Removed duplicate approval-filters-enhanced definition from mobile section */
     
     .filter-groups-row {
-        flex-direction: column;
+        flex-wrap: wrap;
         gap: 1rem;
         margin-bottom: 1rem;
     }

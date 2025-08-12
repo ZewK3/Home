@@ -261,7 +261,10 @@ async function updateDashboardStatsUI() {
         }
         
         // Always run role checking after stats are loaded to ensure proper permissions
-        await refreshUserRoleAndPermissions();
+        // Skip during initialization to prevent duplicate calls
+        if (!window.dashboardInitializing) {
+            await refreshUserRoleAndPermissions();
+        }
         
     } catch (error) {
         console.error('❌ Failed to load cached dashboard stats:', error);
@@ -932,24 +935,28 @@ async function refreshUserRoleAndPermissions() {
         
         if (freshUserData && freshUserData.position) {
             
-            // Update role-based UI with cached data
-            await initializeRoleBasedUI();
-            MenuManager.updateMenuByRole(freshUserData.position);
-            
-            // Verify AD functions are visible if user is AD
-            if (freshUserData.position === 'AD') {
-                setTimeout(async () => {
-                    const adElements = document.querySelectorAll('[data-role*="AD"]');
-                    const visibleADElements = Array.from(adElements).filter(el => 
-                        el.style.display !== 'none' && !el.classList.contains('role-hidden')
-                    );
-                    
-                    if (visibleADElements.length < adElements.length) {
-                        console.warn('⚠️ Re-applying AD permissions...');
-                        await initializeRoleBasedUI();
-                        MenuManager.updateMenuByRole(freshUserData.position);
-                    }
-                }, 500);
+            // Update role-based UI with cached data (only if not during initialization)
+            if (!window.dashboardInitializing) {
+                await initializeRoleBasedUI();
+                MenuManager.updateMenuByRole(freshUserData.position);
+                
+                // Verify AD functions are visible if user is AD
+                if (freshUserData.position === 'AD') {
+                    setTimeout(async () => {
+                        const adElements = document.querySelectorAll('[data-role*="AD"]');
+                        const visibleADElements = Array.from(adElements).filter(el => 
+                            el.style.display !== 'none' && !el.classList.contains('role-hidden')
+                        );
+                        
+                        if (visibleADElements.length < adElements.length) {
+                            console.warn('⚠️ Re-applying AD permissions...');
+                            await initializeRoleBasedUI();
+                            MenuManager.updateMenuByRole(freshUserData.position);
+                        }
+                    }, 500);
+                }
+            } else {
+                console.log('🔐 Skipping role UI update during dashboard initialization');
             }
         }
     } catch (error) {
@@ -1513,6 +1520,8 @@ function restoreOriginalDashboardContent() {
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
+        // Set initialization flag to prevent duplicate role-based UI calls
+        window.dashboardInitializing = true;
         
         // First ensure content is visible
         showDashboardContent();
@@ -1552,6 +1561,17 @@ async function initializeEnhancedDashboard() {
         
         // Load stats ONCE using AuthManager cache system
         await window.authManager.getDashboardStats();
+        
+        // Load personal stats and pending registrations during initialization
+        if (freshUserData.employeeId) {
+            await window.authManager.getPersonalStatsData(freshUserData.employeeId);
+            console.log('📊 Personal stats loaded and cached');
+        }
+        
+        if (userPosition === 'AD' || userPosition === 'Manager') {
+            await window.authManager.getPendingRegistrationsData();
+            console.log('📊 Pending registrations loaded and cached');
+        }
         
         // Update the UI with cached stats
         await updateDashboardStatsUI();
@@ -1617,9 +1637,14 @@ async function initializeEnhancedDashboard() {
         // Save the original dashboard content after initialization
         saveOriginalDashboardContent();
         
+        // Clear initialization flag
+        window.dashboardInitializing = false;
+        
     } catch (error) {
         console.error('Failed to initialize enhanced dashboard:', error);
         utils.showNotification('Có lỗi khi tải dashboard', 'error');
+        // Clear initialization flag even on error
+        window.dashboardInitializing = false;
     }
 }
 

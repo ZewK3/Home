@@ -81,6 +81,8 @@ class AuthManager {
         this.cachedTimesheet = null;
         this.cachedAttendanceRequests = null;
         this.cachedWorkTasks = null;
+        this.cachedPersonalStats = null;
+        this.cachedPendingRegistrations = null;
         
         this.cacheTimestamp = {
             stores: null,
@@ -89,10 +91,12 @@ class AuthManager {
             dashboardStats: null,
             timesheet: null,
             attendanceRequests: null,
-            workTasks: null
+            workTasks: null,
+            personalStats: null,
+            pendingRegistrations: null
         };
         
-        this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
+        this.cacheTimeout = 60 * 60 * 1000; // 1 hour
         
         // Track ongoing API calls to prevent duplicates (from API_CACHE)
         this.ongoingCalls = new Map();
@@ -323,6 +327,54 @@ class AuthManager {
         });
     }
 
+    // Get personal stats data with enhanced caching and duplicate call prevention
+    async getPersonalStatsData(employeeId) {
+        if (this.cachedPersonalStats && this.isCacheValid('personalStats')) {
+            console.log('Using cached personal stats data');
+            return this.cachedPersonalStats;
+        }
+
+        const endpoint = `getPersonalStats_${employeeId}`;
+        return await this.safeAPICall(endpoint, async () => {
+            try {
+                console.log('Fetching fresh personal stats data');
+                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
+                this.cachedPersonalStats = personalStats;
+                this.cacheTimestamp.personalStats = Date.now();
+                return personalStats;
+            } catch (error) {
+                console.error('Error fetching personal stats:', error);
+                return this.cachedPersonalStats || {
+                    workDaysThisMonth: 0,
+                    totalHoursThisMonth: 0,
+                    attendanceRate: 0
+                };
+            }
+        });
+    }
+
+    // Get pending registrations data with enhanced caching and duplicate call prevention
+    async getPendingRegistrationsData() {
+        if (this.cachedPendingRegistrations && this.isCacheValid('pendingRegistrations')) {
+            console.log('Using cached pending registrations data');
+            return this.cachedPendingRegistrations;
+        }
+
+        const endpoint = `getPendingRegistrations_${this.token}`;
+        return await this.safeAPICall(endpoint, async () => {
+            try {
+                console.log('Fetching fresh pending registrations data');
+                const pendingRegistrations = await utils.fetchAPI(`?action=getPendingRegistrations&token=${this.token}`);
+                this.cachedPendingRegistrations = pendingRegistrations;
+                this.cacheTimestamp.pendingRegistrations = Date.now();
+                return pendingRegistrations;
+            } catch (error) {
+                console.error('Error fetching pending registrations:', error);
+                return this.cachedPendingRegistrations || [];
+            }
+        });
+    }
+
     // Enhanced cache clearing with specific cache type support (from API_CACHE)
     clearCache(cacheType = null) {
         if (cacheType) {
@@ -358,6 +410,14 @@ class AuthManager {
                     this.cachedDashboardStats = null;
                     this.cacheTimestamp.dashboardStats = null;
                     break;
+                case 'personalStats':
+                    this.cachedPersonalStats = null;
+                    this.cacheTimestamp.personalStats = null;
+                    break;
+                case 'pendingRegistrations':
+                    this.cachedPendingRegistrations = null;
+                    this.cacheTimestamp.pendingRegistrations = null;
+                    break;
                 default:
                     console.warn(`Unknown cache type: ${cacheType}`);
             }
@@ -370,6 +430,8 @@ class AuthManager {
             this.cachedTimesheet = null;
             this.cachedAttendanceRequests = null;
             this.cachedWorkTasks = null;
+            this.cachedPersonalStats = null;
+            this.cachedPendingRegistrations = null;
             this.cacheTimestamp = {
                 stores: null,
                 user: null,
@@ -377,7 +439,9 @@ class AuthManager {
                 dashboardStats: null,
                 timesheet: null,
                 attendanceRequests: null,
-                workTasks: null
+                workTasks: null,
+                personalStats: null,
+                pendingRegistrations: null
             };
             this.ongoingCalls.clear();
         }
