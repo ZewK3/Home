@@ -1763,21 +1763,19 @@ class ContentManager {
                 return;
             }
 
-            // Load attendance requests (đơn từ) - only if not cached
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            // Load attendance requests (đơn từ) from cache
             let attendanceRequests = [];
             
-            // Check if we already have cached data
-            if (this.attendanceRequests.length === 0) {
-                const attendanceRequestsResponse = await utils.fetchAPI(`?action=getAttendanceRequests&token=${token}`);
-                
-                // Handle different response formats - new API format with data property, array or object with numeric keys
-                if (attendanceRequestsResponse && attendanceRequestsResponse.data && Array.isArray(attendanceRequestsResponse.data)) {
-                    // New API format: {data: [...], pagination: {...}}
-                    attendanceRequests = attendanceRequestsResponse.data;
-                } else if (Array.isArray(attendanceRequestsResponse)) {
-                    attendanceRequests = attendanceRequestsResponse;
-                } else if (attendanceRequestsResponse && typeof attendanceRequestsResponse === 'object') {
+            // Use cached data instead of making API calls
+            const attendanceRequestsResponse = await window.authManager.getAttendanceRequestsData();
+            
+            // Handle different response formats - new API format with data property, array or object with numeric keys
+            if (attendanceRequestsResponse && attendanceRequestsResponse.data && Array.isArray(attendanceRequestsResponse.data)) {
+                // New API format: {data: [...], pagination: {...}}
+                attendanceRequests = attendanceRequestsResponse.data;
+            } else if (Array.isArray(attendanceRequestsResponse)) {
+                attendanceRequests = attendanceRequestsResponse;
+            } else if (attendanceRequestsResponse && typeof attendanceRequestsResponse === 'object') {
                     // Handle object format with numeric keys like {"0": {...}, "1": {...}}
                     attendanceRequests = Object.keys(attendanceRequestsResponse)
                         .filter(key => !isNaN(key)) // Only numeric keys
@@ -1785,12 +1783,8 @@ class ContentManager {
                         .filter(request => request && request.id); // Filter valid request records
                 }
                 
-                // Cache the data
+                // Cache the data locally for filtering
                 this.attendanceRequests = attendanceRequests;
-            } else {
-                // Use cached data
-                attendanceRequests = this.attendanceRequests;
-            }
             
             content.innerHTML = `
                 <div class="personnel-management-container">
@@ -2078,7 +2072,7 @@ class ContentManager {
                 // Clear cached data and reload
                 window.authManager.clearSpecificCache('attendanceRequests');
                 this.attendanceRequests = [];
-                this.showPersonnelManagement();
+                this.showTaskPersonnel();
             });
         }
     }
@@ -3780,15 +3774,14 @@ class ContentManager {
     async showWorkTasks() {
         const content = document.getElementById('content');
         try {
-            // Get current user's information
+            // Get current user's information from cache
             const userResponse = await window.authManager.getUserData();
             if (!userResponse) {
                 throw new Error('Could not get user data');
             }
 
-            // Get all tasks where the user is a participant
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-            const tasksResponse = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${userResponse.employeeId}&token=${token}&page=1&limit=15`);
+            // Use cached work tasks data instead of making API calls
+            const tasksResponse = await window.authManager.getWorkTasksData(userResponse.employeeId);
             
             // Handle new paginated response format
             const tasks = tasksResponse?.data || tasksResponse || [];
@@ -3822,6 +3815,10 @@ class ContentManager {
                                     <span class="stat-number" id="completedTasks">0</span>
                                     <span class="stat-label">Hoàn thành</span>
                                 </div>
+                                <button id="refreshWorkTasks" class="btn btn-secondary refresh-btn" title="Làm mới dữ liệu">
+                                    <span class="material-icons-round">refresh</span>
+                                    Làm mới
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -4125,6 +4122,13 @@ class ContentManager {
                 const status = e.currentTarget.dataset.status;
                 this.filterTasksByStatus(status);
             });
+        });
+        
+        // Refresh button - Clear cache before reloading
+        document.getElementById('refreshWorkTasks')?.addEventListener('click', async () => {
+            // Clear cached work tasks data
+            window.authManager.clearSpecificCache('workTasks');
+            await this.showWorkTasks();
         });
     }
 
@@ -4833,8 +4837,8 @@ class ContentManager {
             // Get user employee ID safely
             const employeeId = await this.getUserEmployeeId();
             
-            // Load personal statistics
-            const statsResponse = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
+            // Use cached personal stats data instead of making API calls
+            const statsResponse = await window.authManager.getPersonalStatsData(employeeId);
             
             if (statsResponse && statsResponse.stats) {
                 const stats = statsResponse.stats;
@@ -6202,7 +6206,6 @@ class ContentManager {
         
         try {
             const statusFilter = document.getElementById('statusFilterSelect')?.value || 'pending';
-            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             
             // Show loading state
             const container = document.getElementById('pendingRegistrationsList');
@@ -6214,18 +6217,10 @@ class ContentManager {
                 `;
             }
             
-            // Improved URL construction 
-            let url = `?action=getPendingRegistrations&token=${token}`;
-            if (store) {
-                url += `&store=${encodeURIComponent(store)}`;
-            }
-            if (statusFilter && statusFilter !== 'pending') {
-                url += `&status=${statusFilter}`;
-            }
-            
-            console.log('Loading pending registrations from:', CONFIG.API_URL + url);
-            const response = await utils.fetchAPI(url);
-            console.log('Full API response:', response);
+            // Use cached data instead of making API calls
+            console.log('Loading pending registrations from cache...');
+            const response = await window.authManager.getPendingRegistrationsData();
+            console.log('Cached API response:', response);
             
             // Convert object format {0: {data}, 1: {data}, ...} to array
             let registrations = [];
@@ -6323,10 +6318,8 @@ class ContentManager {
 
         // Refresh button - Clear cache before reloading
         document.getElementById('refreshPendingRegistrations')?.addEventListener('click', () => {
-            // Clear cached attendance requests data
-            window.authManager.clearSpecificCache('attendanceRequests');
-            // Also clear local cache if it exists
-            this.attendanceRequests = [];
+            // Clear cached pending registrations data
+            window.authManager.clearSpecificCache('pendingRegistrations');
             this.loadPendingRegistrations();
         });
 
@@ -9374,6 +9367,8 @@ class ContentManager {
             `;
 
             modal.style.display = 'flex';
+            // Add show class for animation
+            setTimeout(() => modal.classList.add('show'), 10);
 
         } catch (error) {
             console.error('Error showing request detail:', error);
@@ -9671,7 +9666,10 @@ class ContentManager {
     closeRequestDetailModal() {
         const modal = document.getElementById('requestDetailModal');
         if (modal) {
-            modal.style.display = 'none';
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
         }
     }
 

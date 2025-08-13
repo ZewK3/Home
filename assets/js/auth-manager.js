@@ -284,17 +284,17 @@ class AuthManager {
     }
 
     // Get work tasks data with enhanced caching and duplicate call prevention
-    async getWorkTasksData() {
+    async getWorkTasksData(employeeId) {
         if (this.cachedWorkTasks && this.isCacheValid('workTasks')) {
             console.log('Using cached work tasks data');
             return this.cachedWorkTasks;
         }
 
-        const endpoint = `getWorkTasks_${this.token}`;
+        const endpoint = `getWorkTasks_${employeeId}_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh work tasks data');
-                const workTasks = await utils.fetchAPI(`?action=getWorkTasks&token=${this.token}`);
+                const workTasks = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${employeeId}&token=${this.token}&page=1&limit=15`);
                 this.cachedWorkTasks = workTasks;
                 this.cacheTimestamp.workTasks = Date.now();
                 return workTasks;

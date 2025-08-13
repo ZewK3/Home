@@ -936,12 +936,13 @@ async function refreshUserRoleAndPermissions() {
         if (freshUserData && freshUserData.position) {
             
             // Update role-based UI with cached data (only if not during initialization)
-            if (!window.dashboardInitializing) {
+            if (!window.dashboardInitializing && !window.roleUIInitialized) {
                 await initializeRoleBasedUI();
                 MenuManager.updateMenuByRole(freshUserData.position);
+                window.roleUIInitialized = true;
                 
-                // Verify AD functions are visible if user is AD
-                if (freshUserData.position === 'AD') {
+                // Verify AD functions are visible if user is AD (only once)
+                if (freshUserData.position === 'AD' && !window.adRoleVerified) {
                     setTimeout(async () => {
                         const adElements = document.querySelectorAll('[data-role*="AD"]');
                         const visibleADElements = Array.from(adElements).filter(el => 
@@ -953,10 +954,11 @@ async function refreshUserRoleAndPermissions() {
                             await initializeRoleBasedUI();
                             MenuManager.updateMenuByRole(freshUserData.position);
                         }
+                        window.adRoleVerified = true;
                     }, 500);
                 }
             } else {
-                console.log('🔐 Skipping role UI update during dashboard initialization');
+                console.log('🔐 Skipping role UI update (during initialization or already initialized)');
             }
         }
     } catch (error) {
@@ -1579,6 +1581,7 @@ async function initializeEnhancedDashboard() {
         // Initialize role-based UI and menu visibility with cached data
         await initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
+        window.roleUIInitialized = true; // Mark as initialized to prevent duplicates
         
         // Comprehensive AD functions verification
         if (userPosition === 'AD') {
