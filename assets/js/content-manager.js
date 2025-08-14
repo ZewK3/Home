@@ -326,7 +326,10 @@ class ContentManager {
             this.showGrantAccess());
         document.getElementById('openPersonalInformation')?.addEventListener('click', () => 
             this.showPersonalInfo());
-        // Removed duplicate event listener for openWorkTasks - navigation manager handles this
+        
+        // Work Tasks menu item
+        document.getElementById('openWorkTasks')?.addEventListener('click', () => 
+            this.showWorkTasks());
         
         // Registration Approval
         document.getElementById('openRegistrationApproval')?.addEventListener('click', () =>
@@ -2003,6 +2006,18 @@ class ContentManager {
                                 <span class="material-icons-round">person</span>
                                 <span>Xử lý bởi: ${request.approverName || 'N/A'}</span>
                                 ${request.approvedAt ? `<span class="process-time">lúc ${new Date(request.approvedAt).toLocaleString('vi-VN')}</span>` : ''}
+                                ${request.status === 'approved' && !request.completed ? `
+                                    <button class="btn btn-success modern-btn complete-btn" onclick="event.stopPropagation(); window.contentManager.completeRequest('${request.id}')">
+                                        <span class="material-icons-round">task_alt</span>
+                                        Hoàn thành
+                                    </button>
+                                ` : ''}
+                                ${request.completed ? `
+                                    <span class="completion-badge">
+                                        <span class="material-icons-round">done_all</span>
+                                        Đã hoàn thành
+                                    </span>
+                                ` : ''}
                             </div>
                         `}
                         <button class="btn btn-outline modern-btn" onclick="event.stopPropagation(); window.showRequestDetail('${request.id}')">
@@ -2284,6 +2299,31 @@ class ContentManager {
         } catch (error) {
             console.error('Error rejecting attendance request:', error);
             utils.showNotification('Lỗi khi từ chối đơn từ', 'error');
+        }
+    }
+
+    async completeRequest(requestId) {
+        try {
+            const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+            const response = await utils.fetchAPI('?action=completeRequest', {
+                method: 'POST',
+                body: JSON.stringify({
+                    requestId: requestId,
+                    completedBy: (await window.authManager.getUserData()).employeeId,
+                    completedAt: new Date().toISOString()
+                })
+            });
+
+            if (response && response.success) {
+                utils.showNotification('Đã đánh dấu hoàn thành đơn từ', 'success');
+                this.showTaskPersonnel(); // Refresh the list
+            } else {
+                throw new Error(response.message || 'Không thể hoàn thành đơn từ');
+            }
+
+        } catch (error) {
+            console.error('Error completing request:', error);
+            utils.showNotification('Lỗi khi hoàn thành đơn từ: ' + error.message, 'error');
         }
     }
 
