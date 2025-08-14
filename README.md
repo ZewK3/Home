@@ -8,7 +8,8 @@ HR-Management-System/
 ├── assets/                    # Static assets
 │   ├── css/                   # Stylesheets
 │   │   ├── dash.css           # Main dashboard styles
-│   │   └── reg&log.css        # Authentication page styles
+│   │   ├── professional-auth.css # Professional authentication styles
+│   │   └── professional-user-management.css # Professional UI components
 │   ├── js/                    # JavaScript modules
 │   │   ├── api-cache.js       # API caching and data management
 │   │   ├── auth-manager.js    # Authentication management
