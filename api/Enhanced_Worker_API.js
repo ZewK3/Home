@@ -1067,6 +1067,301 @@ class AuthenticationAPI {
   }
 }
 
+// Legacy API handler for backward compatibility
+async function handleLegacyAPI(request, env, action, url) {
+  const dbManager = new DatabaseManager(env.DATABASE);
+  const authService = new AuthenticationService(dbManager);
+  
+  try {
+    // Check if action requires authentication
+    const protectedActions = [
+      "update", "getUser", "getUsers", 
+      "updateUser", "getPendingRegistrations",
+      "getPendingRequests", "getTasks", "getPermissions",
+      "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
+      "getAttendanceData", "checkIn", "checkOut", "getTimesheet", "processAttendance",
+      "getAttendanceHistory", "createAttendanceRequest", "createTaskAssignment",
+      "getWorkTasks", "getTaskDetail", "addTaskComment", "replyToComment",
+      "getEmployeesByStore", "saveShiftAssignments", "getShiftRequests",
+      "approveShiftRequest", "rejectShiftRequest", "getAttendanceRequests",
+      "approveAttendanceRequest", "rejectAttendanceRequest", "getDashboardStats",
+      "getPersonalStats"
+    ];
+
+    // Authenticate if needed
+    let user = null;
+    if (protectedActions.includes(action)) {
+      user = await authenticateToken(request, env);
+    }
+
+    // Handle specific actions
+    switch (action) {
+      case "getDashboardStats":
+        const dashboardStats = await handleGetDashboardStats(env.DATABASE, '*');
+        return new Response(JSON.stringify(dashboardStats), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "getPersonalStats":
+        const personalStats = await handleGetPersonalStats(url, env.DATABASE, '*');
+        return new Response(JSON.stringify(personalStats), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "getWorkTasks":
+        const workTasks = await handleGetWorkTasks(url, env.DATABASE, '*');
+        return new Response(JSON.stringify(workTasks), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "getTimesheet":
+        const timesheet = await handleGetTimesheet(url, env.DATABASE, '*');
+        return new Response(JSON.stringify(timesheet), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "getAttendanceRequests":
+        const attendanceRequests = await handleGetAttendanceRequests(url, env.DATABASE, '*');
+        return new Response(JSON.stringify(attendanceRequests), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "getPendingRegistrations":
+        const pendingRegistrations = await handleGetPendingRegistrations(url, env.DATABASE, '*');
+        return new Response(JSON.stringify(pendingRegistrations), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "getStores":
+        const stores = await handleGetStores(env.DATABASE, '*');
+        return new Response(JSON.stringify(stores), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+
+      case "register":
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return await handleRegistration(body, env);
+        }
+        break;
+
+      case "login":
+        if (request.method === 'POST') {
+          const body = await request.json();
+          return await handleLogin(body, env);
+        }
+        break;
+
+      default:
+        throw new Error(`Action '${action}' not implemented in legacy API`);
+    }
+
+  } catch (error) {
+    console.error('Legacy API Error:', error);
+    
+    let statusCode = 500;
+    if (error.message.includes('Authentication failed')) statusCode = 401;
+    else if (error.message.includes('not found')) statusCode = 404;
+    else if (error.message.includes('required')) statusCode = 400;
+
+    return new Response(JSON.stringify({
+      success: false,
+      message: error.message,
+      timestamp: TimezoneUtils.toHanoiISOString()
+    }), {
+      status: statusCode,
+      headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+    });
+  }
+}
+
+// Legacy registration handler
+async function handleRegistration(body, env) {
+  try {
+    const { fullName, phone, email, storeName, password } = body;
+    
+    // Validate required fields
+    if (!fullName || !phone || !email || !storeName || !password) {
+      throw new Error("Vui lòng điền đầy đủ thông tin!");
+    }
+
+    const dbManager = new DatabaseManager(env.DATABASE);
+    
+    // Check if user already exists
+    const existingUser = await dbManager.db.prepare(
+      "SELECT * FROM users WHERE email = ? OR phone = ?"
+    ).bind(email, phone).first();
+
+    if (existingUser) {
+      if (existingUser.email === email) {
+        return new Response(JSON.stringify({
+          success: false,
+          message: "Email đã được đăng ký!"
+        }), {
+          status: 409,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+      }
+      if (existingUser.phone === phone) {
+        return new Response(JSON.stringify({
+          success: false,
+          message: "Số điện thoại đã được đăng ký!"
+        }), {
+          status: 409,
+          headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+        });
+      }
+    }
+
+    // Generate employee ID
+    const employeeId = `NV${Date.now().toString().slice(-6)}`;
+    
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+    
+    // Send verification email
+    const verificationCode = await sendVerificationEmail(email, employeeId, fullName, env);
+    
+    // Create user record
+    await dbManager.db.prepare(`
+      INSERT INTO users (
+        employee_id, full_name, email, phone, password_hash, 
+        status, verification_code, organization_id, created_at
+      ) VALUES (?, ?, ?, ?, ?, 'pending_verification', ?, 
+        (SELECT id FROM organizations WHERE name = ? LIMIT 1),
+        ?)
+    `).bind(
+      employeeId, fullName, email, phone, hashedPassword, 
+      verificationCode, storeName, TimezoneUtils.toHanoiISOString()
+    ).run();
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.",
+      employeeId: employeeId
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      message: error.message || "Lỗi đăng ký tài khoản!"
+    }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+    });
+  }
+}
+
+// Legacy login handler
+async function handleLogin(body, env) {
+  try {
+    const { loginEmployeeId, loginPassword } = body;
+    
+    if (!loginEmployeeId || !loginPassword) {
+      throw new Error("Vui lòng nhập đầy đủ thông tin đăng nhập!");
+    }
+
+    const dbManager = new DatabaseManager(env.DATABASE);
+    const authService = new AuthenticationService(dbManager);
+    
+    // Find user
+    const user = await dbManager.db.prepare(
+      "SELECT * FROM users WHERE employee_id = ? OR email = ?"
+    ).bind(loginEmployeeId, loginEmployeeId).first();
+
+    if (!user) {
+      throw new Error("Mã nhân viên hoặc mật khẩu không chính xác!");
+    }
+
+    // Verify password
+    const isValidPassword = await verifyPassword(loginPassword, user.password_hash);
+    if (!isValidPassword) {
+      throw new Error("Mã nhân viên hoặc mật khẩu không chính xác!");
+    }
+
+    // Check account status
+    if (user.status === 'pending_verification') {
+      throw new Error("Tài khoản chưa được xác thực. Vui lòng kiểm tra email!");
+    }
+    if (user.status === 'pending_approval') {
+      throw new Error("Tài khoản đang chờ phê duyệt từ quản lý!");
+    }
+    if (user.status !== 'active') {
+      throw new Error("Tài khoản đã bị khóa!");
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = await authService.generateTokens(user.id);
+    
+    // Create session
+    await dbManager.db.prepare(`
+      INSERT INTO sessions (user_id, access_token, refresh_token, expires_at, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      user.id, 
+      accessToken, 
+      refreshToken,
+      new Date(Date.now() + SECURITY_CONFIG.SESSION_TIMEOUT).toISOString(),
+      TimezoneUtils.toHanoiISOString()
+    ).run();
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Đăng nhập thành công!",
+      token: accessToken,
+      user: {
+        id: user.id,
+        employeeId: user.employee_id,
+        fullName: user.full_name,
+        email: user.email,
+        phone: user.phone,
+        position: user.job_position || 'NV',
+        role: user.job_position || 'NV',
+        status: user.status
+      }
+    }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+    });
+
+  } catch (error) {
+    console.error('Login error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      message: error.message || "Lỗi đăng nhập!"
+    }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
+    });
+  }
+}
+
+// Password hashing utilities
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function verifyPassword(password, hash) {
+  const hashedInput = await hashPassword(password);
+  return hashedInput === hash;
+}
+
 // =====================================================
 // MAIN WORKER HANDLER
 // =====================================================
@@ -1112,6 +1407,12 @@ export default {
           status: 400,
           headers: { 'Content-Type': 'application/json', ...CORS_CONFIG }
         });
+      }
+
+      // Legacy API compatibility - support query parameter based routing
+      const action = url.searchParams.get('action');
+      if (action) {
+        return await handleLegacyAPI(request, env, action, url);
       }
 
       // Route handling
@@ -1214,6 +1515,316 @@ export default {
     }
   }
 };
+
+// =====================================================
+// ADDITIONAL FUNCTIONS FROM LEGACY API
+// =====================================================
+
+// Get SendGrid API key from KV storage
+async function getSendGridApiKey(env) {
+  try {
+    return await env.KV_STORE.get("SENDGRID_API_KEY");
+  } catch (error) {
+    console.error("Failed to get SendGrid API key from KV:", error);
+    return null;
+  }
+}
+
+// SendGrid Email Verification Function
+async function sendVerificationEmail(email, employeeId, fullName, env) {
+  const verificationCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+  
+  // Get SendGrid API key from KV storage
+  const SENDGRID_API_KEY = await getSendGridApiKey(env);
+  if (!SENDGRID_API_KEY) {
+    throw new Error("SendGrid API key not found in KV storage");
+  }
+  
+  const emailData = {
+    personalizations: [{
+      to: [{ email: email }],
+      subject: "Xác nhận đăng ký tài khoản HR Management System"
+    }],
+    from: { 
+      email: "noreply@zewk.fun",
+      name: "HR Management System"
+    },
+    content: [{
+      type: "text/html",
+      value: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 10px;">
+          <div style="background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); color: white; padding: 30px; border-radius: 8px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">HR Management System</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Xác nhận đăng ký tài khoản</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Xin chào ${fullName}!</h2>
+            
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+              Cảm ơn bạn đã đăng ký tài khoản với HR Management System. Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác nhận dưới đây:
+            </p>
+            
+            <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
+              <p style="color: #6b7280; margin-bottom: 10px; font-size: 14px;">Mã xác nhận của bạn:</p>
+              <div style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 4px; font-family: monospace;">
+                ${verificationCode}
+              </div>
+            </div>
+            
+            <div style="background: #fef3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="color: #92400e; margin: 0; font-size: 14px;">
+                <strong>Lưu ý quan trọng:</strong> Sau khi nhập mã xác nhận, tài khoản của bạn sẽ được gửi tới quản lý cửa hàng để phê duyệt. Bạn sẽ nhận được thông báo khi tài khoản được kích hoạt.
+              </p>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                <strong>Thông tin đăng ký:</strong><br>
+                Mã nhân viên: ${employeeId}<br>
+                Email: ${email}<br>
+                Thời gian đăng ký: ${TimezoneUtils.formatDateTime()}
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              Nếu bạn không yêu cầu đăng ký này, vui lòng bỏ qua email này.
+            </p>
+          </div>
+        </div>
+      `
+    }]
+  };
+
+  try {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${SENDGRID_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(emailData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`SendGrid API error: ${response.status}`);
+    }
+
+    return verificationCode;
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw error;
+  }
+}
+
+// Dashboard statistics handler
+async function handleGetDashboardStats(db, origin) {
+  try {
+    // Count total employees
+    const totalEmployees = await db.prepare("SELECT COUNT(*) as count FROM users WHERE status != 'deleted'").first();
+    
+    // Count active tasks today
+    const today = TimezoneUtils.toHanoiISOString().split('T')[0];
+    const todayTasks = await db.prepare("SELECT COUNT(*) as count FROM tasks WHERE DATE(created_at) = ?").bind(today).first();
+
+    // Count pending requests
+    const pendingRequests = await db.prepare("SELECT COUNT(*) as count FROM requests WHERE status = 'pending'").first();
+
+    // Count recent activities in 24h
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recentActivities = await db.prepare("SELECT COUNT(*) as count FROM audit_logs WHERE created_at >= ?").bind(twentyFourHoursAgo).first();
+
+    const stats = {
+      totalEmployees: totalEmployees?.count || 0,
+      todayTasks: todayTasks?.count || 0,
+      recentActivities: recentActivities?.count || 0,
+      pendingRequests: pendingRequests?.count || 0,
+      currentDay: TimezoneUtils.formatDateTime(null, 'date')
+    };
+
+    return ResponseFormatter.success(stats, 'Dashboard statistics retrieved successfully');
+  } catch (error) {
+    console.error("Error getting dashboard stats:", error);
+    throw error;
+  }
+}
+
+// Personal statistics handler
+async function handleGetPersonalStats(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  
+  if (!employeeId) {
+    throw new Error("Thiếu employeeId!");
+  }
+
+  try {
+    // Get user data
+    const user = await db.prepare("SELECT * FROM users WHERE employee_id = ?").bind(employeeId).first();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Calculate work days this month
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    
+    const workDays = await db.prepare(`
+      SELECT COUNT(*) as count FROM attendance_records 
+      WHERE user_id = ? AND strftime('%m', check_in_time) = ? AND strftime('%Y', check_in_time) = ?
+    `).bind(user.id, currentMonth.toString().padStart(2, '0'), currentYear.toString()).first();
+
+    // Calculate total hours this month
+    const hoursQuery = await db.prepare(`
+      SELECT SUM(
+        CASE 
+          WHEN check_out_time IS NOT NULL 
+          THEN (julianday(check_out_time) - julianday(check_in_time)) * 24
+          ELSE 0
+        END
+      ) as total_hours
+      FROM attendance_records 
+      WHERE user_id = ? AND strftime('%m', check_in_time) = ? AND strftime('%Y', check_in_time) = ?
+    `).bind(user.id, currentMonth.toString().padStart(2, '0'), currentYear.toString()).first();
+
+    const stats = {
+      workDaysThisMonth: workDays?.count || 0,
+      totalHoursThisMonth: Math.round((hoursQuery?.total_hours || 0) * 100) / 100,
+      attendanceRate: Math.min(100, Math.round(((workDays?.count || 0) / 22) * 100)) // Assuming 22 work days per month
+    };
+
+    return ResponseFormatter.success(stats, 'Personal statistics retrieved successfully');
+  } catch (error) {
+    console.error("Error getting personal stats:", error);
+    throw error;
+  }
+}
+
+// Work tasks handler
+async function handleGetWorkTasks(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  
+  if (!employeeId) {
+    throw new Error("Thiếu employeeId!");
+  }
+
+  try {
+    const user = await db.prepare("SELECT id FROM users WHERE employee_id = ?").bind(employeeId).first();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const tasks = await db.prepare(`
+      SELECT t.*, u.full_name as assigned_by_name
+      FROM tasks t
+      LEFT JOIN users u ON t.assigned_by = u.id
+      WHERE t.assigned_to = ?
+      ORDER BY t.created_at DESC
+      LIMIT 50
+    `).bind(user.id).all();
+
+    return ResponseFormatter.success(tasks.results || [], 'Work tasks retrieved successfully');
+  } catch (error) {
+    console.error("Error getting work tasks:", error);
+    throw error;
+  }
+}
+
+// Timesheet handler
+async function handleGetTimesheet(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  const month = url.searchParams.get("month") || new Date().getMonth() + 1;
+  const year = url.searchParams.get("year") || new Date().getFullYear();
+  
+  if (!employeeId) {
+    throw new Error("Thiếu employeeId!");
+  }
+
+  try {
+    const user = await db.prepare("SELECT id FROM users WHERE employee_id = ?").bind(employeeId).first();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const timesheet = await db.prepare(`
+      SELECT *
+      FROM attendance_records
+      WHERE user_id = ? AND strftime('%m', check_in_time) = ? AND strftime('%Y', check_in_time) = ?
+      ORDER BY check_in_time DESC
+    `).bind(user.id, month.toString().padStart(2, '0'), year.toString()).all();
+
+    return ResponseFormatter.success(timesheet.results || [], 'Timesheet retrieved successfully');
+  } catch (error) {
+    console.error("Error getting timesheet:", error);
+    throw error;
+  }
+}
+
+// Attendance requests handler
+async function handleGetAttendanceRequests(url, db, origin) {
+  const employeeId = url.searchParams.get("employeeId");
+  
+  if (!employeeId) {
+    throw new Error("Thiếu employeeId!");
+  }
+
+  try {
+    const user = await db.prepare("SELECT id FROM users WHERE employee_id = ?").bind(employeeId).first();
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const requests = await db.prepare(`
+      SELECT r.*, u.full_name as requested_by_name
+      FROM requests r
+      LEFT JOIN users u ON r.user_id = u.id
+      WHERE r.user_id = ? OR r.assigned_to = ?
+      ORDER BY r.created_at DESC
+      LIMIT 50
+    `).bind(user.id, user.id).all();
+
+    return ResponseFormatter.success(requests.results || [], 'Attendance requests retrieved successfully');
+  } catch (error) {
+    console.error("Error getting attendance requests:", error);
+    throw error;
+  }
+}
+
+// Pending registrations handler
+async function handleGetPendingRegistrations(url, db, origin) {
+  try {
+    const pendingRegistrations = await db.prepare(`
+      SELECT u.*, o.name as organization_name
+      FROM users u
+      LEFT JOIN organizations o ON u.organization_id = o.id
+      WHERE u.status = 'pending_approval'
+      ORDER BY u.created_at DESC
+    `).all();
+
+    return ResponseFormatter.success(pendingRegistrations.results || [], 'Pending registrations retrieved successfully');
+  } catch (error) {
+    console.error("Error getting pending registrations:", error);
+    throw error;
+  }
+}
+
+// Stores handler
+async function handleGetStores(db, origin) {
+  try {
+    const stores = await db.prepare(`
+      SELECT id, name, address, status
+      FROM organizations
+      WHERE type = 'store' AND status = 'active'
+      ORDER BY name ASC
+    `).all();
+
+    return ResponseFormatter.success(stores.results || [], 'Stores retrieved successfully');
+  } catch (error) {
+    console.error("Error getting stores:", error);
+    throw error;
+  }
+}
 
 // =====================================================
 // NOTES FOR IMPLEMENTATION

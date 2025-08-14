@@ -1,5 +1,6 @@
-// Constants
+// Constants - Updated for Enhanced API
 const API_URL = "https://zewk.tocotoco.workers.dev/";
+const API_VERSION = "v2";
 const TOKEN_KEY = "authToken";
 const REMEMBER_ME_KEY = "rememberedEmployeeId";
 const THEME_KEY = "theme";
