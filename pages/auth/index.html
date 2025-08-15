@@ -8,18 +8,19 @@
     <!-- Meta tags for PWA -->
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - Đăng nhập an toàn và hiện đại">
     <meta name="theme-color" content="#4F46E5">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="./assets/css/auth.css" as="style">
-    <link rel="preload" href="./assets/js/auth.js" as="script">
+    <link rel="preload" href="../../assets/css/auth.css" as="style">
+    <link rel="preload" href="../../assets/js/auth.js" as="script">
     
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="./assets/css/auth.css">
+    <link rel="stylesheet" href="../../assets/css/auth.css">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    <link rel="icon" type="image/x-icon" href="../../assets/icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../assets/icons/favicon-32x32.png">
     
     <!-- Structured data for SEO -->
     <script type="application/ld+json">
@@ -407,17 +408,6 @@
     </div>
 
     <!-- JavaScript -->
-    <script src="./assets/js/auth.js"></script>
-    
-    <!-- PWA Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
-            });
-        }
-    </script>
+    <script src="../../assets/js/auth.js"></script>
 </body>
 </html>

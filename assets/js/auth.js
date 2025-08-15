@@ -20,7 +20,7 @@ class ProfessionalAuthSystem {
     init() {
         this.setupEventListeners();
         this.initializeParticleSystem();
-        this.initializeFormValidation();
+        this.setupRealTimeValidation();
         this.initializeAnimations();
         this.checkExistingSession();
         
