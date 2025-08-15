@@ -5,11 +5,61 @@
 
 class ProfessionalAuthSystem {
     constructor() {
-        this.apiBaseUrl = 'https://your-cloudflare-worker.your-domain.workers.dev/api/v1';
+        this.apiBaseUrl = 'https://zewk.tocotoco.workers.dev';
         this.currentTab = 'login';
         this.isLoading = false;
         this.particles = [];
         this.animationFrameId = null;
+        this.currentLanguage = 'vi';
+        this.listenersInitialized = false;
+        this.translations = {
+            vi: {
+                welcome: 'Chào Mừng Trở Lại!',
+                loginSubtext: 'Đăng nhập vào tài khoản của bạn để tiếp tục',
+                createAccount: 'Tạo Tài Khoản Mới',
+                registerSubtext: 'Điền thông tin để tạo tài khoản chuyên nghiệp',
+                email: 'Email',
+                password: 'Mật Khẩu',
+                firstName: 'Họ',
+                lastName: 'Tên',
+                phone: 'Số Điện Thoại',
+                department: 'Phòng Ban',
+                position: 'Chức Vụ',
+                employeeId: 'Mã Nhân Viên (Tùy chọn)',
+                confirmPassword: 'Xác Nhận Mật Khẩu',
+                rememberMe: 'Ghi nhớ đăng nhập',
+                forgotPassword: 'Quên mật khẩu?',
+                loginBtn: 'Đăng Nhập',
+                registerBtn: 'Tạo Tài Khoản',
+                haveAccount: 'Đã có tài khoản?',
+                noAccount: 'Chưa có tài khoản?',
+                loginNow: 'Đăng nhập ngay',
+                registerNow: 'Đăng ký ngay'
+            },
+            en: {
+                welcome: 'Welcome Back!',
+                loginSubtext: 'Sign in to your account to continue',
+                createAccount: 'Create New Account',
+                registerSubtext: 'Fill in the information to create a professional account',
+                email: 'Email',
+                password: 'Password',
+                firstName: 'First Name',
+                lastName: 'Last Name',
+                phone: 'Phone Number',
+                department: 'Department',
+                position: 'Position',
+                employeeId: 'Employee ID (Optional)',
+                confirmPassword: 'Confirm Password',
+                rememberMe: 'Remember me',
+                forgotPassword: 'Forgot password?',
+                loginBtn: 'Sign In',
+                registerBtn: 'Create Account',
+                haveAccount: 'Already have an account?',
+                noAccount: "Don't have an account?",
+                loginNow: 'Sign in now',
+                registerNow: 'Sign up now'
+            }
+        };
         
         this.init();
     }
@@ -31,14 +81,23 @@ class ProfessionalAuthSystem {
      * Set up all event listeners
      */
     setupEventListeners() {
+        // Prevent duplicate listeners
+        if (this.listenersInitialized) return;
+        
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+            btn.addEventListener('click', (e) => {
+                const tab = e.currentTarget.dataset.tab;
+                this.switchTab(tab);
+            });
         });
 
         // Form switch buttons
         document.querySelectorAll('[data-switch]').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.switch));
+            btn.addEventListener('click', (e) => {
+                const tab = e.currentTarget.dataset.switch;
+                this.switchTab(tab);
+            });
         });
 
         // Form submissions
@@ -76,6 +135,9 @@ class ProfessionalAuthSystem {
 
         // Responsive updates
         window.addEventListener('resize', () => this.handleResize());
+        
+        // Mark listeners as initialized
+        this.listenersInitialized = true;
     }
 
     /**
@@ -752,16 +814,151 @@ class ProfessionalAuthSystem {
      * Switch language
      */
     switchLanguage(lang) {
+        if (this.currentLanguage === lang) return;
+        
+        this.currentLanguage = lang;
+        
         // Update active language button
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
         });
         
+        // Update page language
+        document.documentElement.lang = lang;
+        
+        // Update text content based on language
+        this.updatePageTexts(lang);
+        
         // Store language preference
         localStorage.setItem('hr_language', lang);
         
-        // You can implement translation logic here
+        // Show language change notification
+        const message = lang === 'vi' ? 'Đã chuyển sang Tiếng Việt' : 'Switched to English';
+        this.showNotification(message, 'success', 2000);
+        
         this.trackEvent('language_change', { language: lang });
+    }
+
+    /**
+     * Update page texts based on selected language
+     */
+    updatePageTexts(lang) {
+        const t = this.translations[lang];
+        
+        // Update form headers
+        const loginHeader = document.querySelector('#login-form .form-header h2');
+        const loginSubtext = document.querySelector('#login-form .form-header p');
+        const registerHeader = document.querySelector('#register-form .form-header h2');
+        const registerSubtext = document.querySelector('#register-form .form-header p');
+        
+        if (loginHeader) loginHeader.textContent = t.welcome;
+        if (loginSubtext) loginSubtext.textContent = t.loginSubtext;
+        if (registerHeader) registerHeader.textContent = t.createAccount;
+        if (registerSubtext) registerSubtext.textContent = t.registerSubtext;
+        
+        // Update tab texts
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            const tabText = btn.querySelector('.tab-text');
+            if (tabText && btn.dataset.tab === 'login') {
+                tabText.textContent = lang === 'vi' ? 'Đăng Nhập' : 'Sign In';
+            } else if (tabText && btn.dataset.tab === 'register') {
+                tabText.textContent = lang === 'vi' ? 'Đăng Ký' : 'Sign Up';
+            }
+        });
+        
+        // Update labels
+        this.updateLabels(lang, t);
+        
+        // Update button texts
+        this.updateButtons(lang, t);
+        
+        // Update footer texts
+        this.updateFooterTexts(lang, t);
+    }
+
+    /**
+     * Update input labels
+     */
+    updateLabels(lang, t) {
+        const labelMap = {
+            'login-email': t.email,
+            'login-password': t.password,
+            'register-firstName': t.firstName,
+            'register-lastName': t.lastName,
+            'register-email': t.email,
+            'register-phone': t.phone,
+            'register-department': t.department,
+            'register-position': t.position,
+            'register-employeeId': t.employeeId,
+            'register-password': t.password,
+            'register-confirmPassword': t.confirmPassword
+        };
+        
+        Object.entries(labelMap).forEach(([id, text]) => {
+            const label = document.querySelector(`label[for="${id}"] .label-text`);
+            if (label) label.textContent = text;
+        });
+    }
+
+    /**
+     * Update button texts
+     */
+    updateButtons(lang, t) {
+        const loginBtn = document.querySelector('#login-btn .btn-text');
+        const registerBtn = document.querySelector('#register-btn .btn-text');
+        const rememberText = document.querySelector('.checkbox-text');
+        const forgotBtn = document.querySelector('#forgot-password-btn');
+        
+        if (loginBtn) loginBtn.textContent = t.loginBtn;
+        if (registerBtn) registerBtn.textContent = t.registerBtn;
+        if (rememberText) rememberText.textContent = t.rememberMe;
+        if (forgotBtn) forgotBtn.textContent = t.forgotPassword;
+        
+        // Update form switch links
+        const loginFooter = document.querySelector('#login-form .form-footer p');
+        const registerFooter = document.querySelector('#register-form .form-footer p');
+        
+        if (loginFooter) {
+            loginFooter.innerHTML = `${t.noAccount} <button type="button" class="link-btn" data-switch="register">${t.registerNow}</button>`;
+            // Re-attach event listener for this specific button
+            const switchBtn = loginFooter.querySelector('[data-switch]');
+            if (switchBtn) {
+                switchBtn.addEventListener('click', (e) => {
+                    const tab = e.currentTarget.dataset.switch;
+                    this.switchTab(tab);
+                });
+            }
+        }
+        if (registerFooter) {
+            registerFooter.innerHTML = `${t.haveAccount} <button type="button" class="link-btn" data-switch="login">${t.loginNow}</button>`;
+            // Re-attach event listener for this specific button
+            const switchBtn = registerFooter.querySelector('[data-switch]');
+            if (switchBtn) {
+                switchBtn.addEventListener('click', (e) => {
+                    const tab = e.currentTarget.dataset.switch;
+                    this.switchTab(tab);
+                });
+            }
+        }
+    }
+
+    /**
+     * Update footer texts
+     */
+    updateFooterTexts(lang, t) {
+        const footerLinks = document.querySelectorAll('.footer-link');
+        if (footerLinks.length >= 3) {
+            footerLinks[0].textContent = lang === 'vi' ? 'Hỗ trợ' : 'Support';
+            footerLinks[1].textContent = lang === 'vi' ? 'Liên hệ' : 'Contact';
+            footerLinks[2].textContent = lang === 'vi' ? 'Bảo mật' : 'Privacy';
+        }
+        
+        const footerText = document.querySelector('.footer-text');
+        if (footerText) {
+            footerText.textContent = lang === 'vi' 
+                ? '© 2024 Professional HR Management System. Đã đăng ký bản quyền.'
+                : '© 2024 Professional HR Management System. All rights reserved.';
+        }
     }
 
     /**

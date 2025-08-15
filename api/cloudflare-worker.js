@@ -26,10 +26,27 @@ export default {
     try {
       // Initialize response with CORS headers
       const response = await handleRequest(request, env, path, method);
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        response.headers.set(key, value);
-      });
-      return response;
+      
+      // Ensure response exists and has headers
+      if (response && response.headers) {
+        Object.entries(corsHeaders).forEach(([key, value]) => {
+          response.headers.set(key, value);
+        });
+        return response;
+      } else {
+        // Return a default response if handleRequest doesn't return proper response
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Invalid Response',
+          message: 'Invalid response from request handler'
+        }), {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          }
+        });
+      }
     } catch (error) {
       console.error('API Error:', error);
       return new Response(JSON.stringify({
@@ -941,6 +958,75 @@ async function updateAttendanceRequest(data, env, auth) { /* Implementation */ }
 async function approveRegistration(data, env, auth) { /* Implementation */ }
 async function deleteUser(userId, env, auth) { /* Implementation */ }
 async function deleteAttendanceRequest(requestId, env, auth) { /* Implementation */ }
-async function checkLoginAttempts(ip, env) { /* Implementation */ }
-async function recordFailedLoginAttempt(ip, env) { /* Implementation */ }
-async function clearFailedLoginAttempts(ip, env) { /* Implementation */ }
+async function checkLoginAttempts(ip, env) {
+  try {
+    const key = `login_attempts:${ip}`;
+    const data = await env.KV.get(key);
+    
+    if (!data) {
+      return { blocked: false, attempts: 0, lockoutTime: 0 };
+    }
+    
+    const attempts = JSON.parse(data);
+    const now = Date.now();
+    const lockoutDuration = 15 * 60 * 1000; // 15 minutes
+    const maxAttempts = 5;
+    
+    // Check if still in lockout period
+    if (attempts.lastAttempt && (now - attempts.lastAttempt) < lockoutDuration && attempts.count >= maxAttempts) {
+      const remainingTime = Math.ceil((lockoutDuration - (now - attempts.lastAttempt)) / 60000);
+      return { 
+        blocked: true, 
+        attempts: attempts.count, 
+        lockoutTime: remainingTime,
+        headers: { 'Content-Type': 'application/json' }
+      };
+    }
+    
+    // Reset if lockout period has passed
+    if (attempts.lastAttempt && (now - attempts.lastAttempt) >= lockoutDuration) {
+      await env.KV.delete(key);
+      return { blocked: false, attempts: 0, lockoutTime: 0 };
+    }
+    
+    return { 
+      blocked: false, 
+      attempts: attempts.count || 0, 
+      lockoutTime: 0,
+      headers: { 'Content-Type': 'application/json' }
+    };
+  } catch (error) {
+    console.error('Error checking login attempts:', error);
+    return { blocked: false, attempts: 0, lockoutTime: 0 };
+  }
+}
+
+async function recordFailedLoginAttempt(ip, env) {
+  try {
+    const key = `login_attempts:${ip}`;
+    const data = await env.KV.get(key);
+    
+    const attempts = data ? JSON.parse(data) : { count: 0 };
+    attempts.count = (attempts.count || 0) + 1;
+    attempts.lastAttempt = Date.now();
+    
+    // Store for 24 hours
+    await env.KV.put(key, JSON.stringify(attempts), { expirationTtl: 86400 });
+    
+    return attempts;
+  } catch (error) {
+    console.error('Error recording failed login attempt:', error);
+    return { count: 0 };
+  }
+}
+
+async function clearFailedLoginAttempts(ip, env) {
+  try {
+    const key = `login_attempts:${ip}`;
+    await env.KV.delete(key);
+    return true;
+  } catch (error) {
+    console.error('Error clearing failed login attempts:', error);
+    return false;
+  }
+}
