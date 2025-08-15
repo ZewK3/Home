@@ -1,274 +1,423 @@
-
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Hệ thống đăng nhập và đăng ký - ZewK Management System">
-    <meta name="theme-color" content="#4f46e5">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional HR System - Đăng nhập / Đăng ký</title>
+    
+    <!-- Meta tags for PWA -->
+    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - Đăng nhập an toàn và hiện đại">
+    <meta name="theme-color" content="#4F46E5">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>ZewK Management System - Đăng nhập</title>
-    <link rel="stylesheet" href="../../assets/css/professional-auth.css">
-    <link rel="icon" type="image/png" href="../../assets/icons/favicon-32x32.png">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <style>
-        body {
-            overflow: hidden;
-        }
-    </style>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./assets/css/auth.css" as="style">
+    <link rel="preload" href="./assets/js/auth.js" as="script">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./assets/css/auth.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="./assets/images/favicon.svg">
+    
+    <!-- Structured data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Professional HR Management System",
+        "description": "Hệ thống quản lý nhân sự chuyên nghiệp",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser"
+    }
+    </script>
 </head>
 <body>
-    <div class='flag-vn'></div>
-    <div class="glass-bg">
-        <div class="glass-circle circle-1"></div>
-        <div class="glass-circle circle-2"></div>
-        <div class="glass-circle circle-3"></div>
-    </div>
-
-    <div class="aurora"></div>
-    <div class="stars"></div>
-    <div class="light-streaks"></div>
-
-    <!-- Notification Element -->
-    <div id="notification" class="notification hidden"></div>
-
-    <!-- Auth Container -->
-    <div class="auth-container">
-        <!-- Login Form -->
-        <div id="loginFormContainer" class="form-container active">
-            <div class="form-header">
-                <div class="logo-container">
-                    <h2>Đăng nhập</h2>
-                </div>
-            </div>
-
-            <form id="loginForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">badge</span>
-                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
-                        <label for="loginEmployeeId">Mã nhân viên</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
-                        <label for="loginPassword">Mật khẩu</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-options">
-                    <label class="checkbox-container">
-                        <input type="checkbox" id="rememberMe" name="rememberMe">
-                        <span class="checkmark">
-                            <span class="material-icons-round">check</span>
-                        </span>
-                        <span>Ghi nhớ đăng nhập</span>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <span class="material-icons-round btn-icon">login</span>
-                    <span class="btn-text">Đăng nhập</span>
-                    <span class="btn-loader"></span>
-                </button>
-
-                <div class="form-footer">
-                    <div class="footer-row">
-                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
-                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Register Form -->
-        <div id="registerFormContainer" class="form-container">
-            <div class="form-header">
-                <div class="logo-container">
-                    <h2>Đăng ký</h2>
-                </div>
-            </div>
-
-            <form id="registerForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">person</span>
-                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
-                        <label for="fullName">Họ và tên</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">phone</span>
-                        <input type="tel" id="phone" name="phone" placeholder=" " required autocomplete="tel">
-                        <label for="phone">Số điện thoại</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">email</span>
-                        <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
-                        <label for="email">Email</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">store</span>
-                        <select id="storeName" name="storeName" required>
-                            <option value="">Chọn cửa hàng</option>
-                        </select>
-                        <label for="storeName">Cửa hàng</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
-                        <label for="password">Mật khẩu</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required autocomplete="new-password">
-                        <label for="confirmPassword">Xác nhận mật khẩu</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="terms-container">
-                        <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
-                        <span class="checkmark">
-                            <span class="material-icons-round">check</span>
-                        </span>
-                        <span>Tôi đồng ý với <a href="#" class="terms-link" onclick="showTermsModal()">điều khoản sử dụng</a> và <a href="#" class="terms-link" onclick="showPrivacyModal()">chính sách bảo mật</a></span>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <span class="material-icons-round btn-icon">person_add</span>
-                    <span class="btn-text">Tạo tài khoản</span>
-                    <span class="btn-loader"></span>
-                </button>
-
-                <div class="form-footer">
-                    <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
-                </div>
-            </form>
-        </div>
-
-        <!-- Forgot Password Form -->
-        <div id="forgotPasswordFormContainer" class="form-container">
-            <div class="form-header">
-                <div class="logo-container">
-                    <h2>Quên mật khẩu</h2>
-                </div>
-            </div>
-
-            <form id="forgotPasswordForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">email</span>
-                        <input type="email" id="forgotEmail" name="forgotEmail" placeholder=" " required autocomplete="email">
-                        <label for="forgotEmail">Email tài khoản</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <span class="material-icons-round btn-icon">send</span>
-                    <span class="btn-text">Lấy mã đổi mật khẩu</span>
-                    <span class="btn-loader"></span>
-                </button>
-
-                <div class="form-footer">
-                    <p>Nhớ lại mật khẩu? <a href="#" id="goToLoginFromForgot" class="form-link">Đăng nhập ngay</a></p>
-                </div>
-            </form>
-        </div>
-
-        <!-- Reset Password Form -->
-        <div id="resetPasswordFormContainer" class="form-container">
-            <div class="form-header">
-                <div class="logo-container">
-                    <h2>Đặt lại mật khẩu</h2>
-                </div>
-            </div>
-
-            <form id="resetPasswordForm" class="form">
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">vpn_key</span>
-                        <input type="text" id="resetCode" name="resetCode" placeholder=" " required maxlength="6">
-                        <label for="resetCode">Mã xác thực (6 số)</label>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="newPassword" name="newPassword" placeholder=" " required autocomplete="new-password">
-                        <label for="newPassword">Mật khẩu mới</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="input-group">
-                        <span class="material-icons-round input-icon">lock</span>
-                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder=" " required autocomplete="new-password">
-                        <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
-                        <button type="button" class="password-toggle">
-                            <span class="material-icons-round">visibility</span>
-                        </button>
-                        <div class="input-border"></div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">
-                    <span class="material-icons-round btn-icon">lock_reset</span>
-                    <span class="btn-text">Đặt lại mật khẩu</span>
-                    <span class="btn-loader"></span>
-                </button>
-
-                <div class="form-footer">
-                    <p>Chưa nhận được mã? <a href="#" id="goToForgotFromReset" class="form-link">Gửi lại mã</a></p>
-                </div>
-            </form>
+    <!-- Background Effects -->
+    <div class="cosmic-background">
+        <!-- Animated Aurora Effects -->
+        <div class="aurora aurora-1"></div>
+        <div class="aurora aurora-2"></div>
+        <div class="aurora aurora-3"></div>
+        
+        <!-- Particle System -->
+        <div class="particles-container" id="particles"></div>
+        
+        <!-- Floating Elements -->
+        <div class="floating-elements">
+            <div class="floating-shape shape-1"></div>
+            <div class="floating-shape shape-2"></div>
+            <div class="floating-shape shape-3"></div>
+            <div class="floating-shape shape-4"></div>
         </div>
     </div>
 
-    <script src="../../assets/js/script.js"></script>
+    <!-- Vietnamese Flag Integration -->
+    <div class="flag-container">
+        <div class="vietnamese-flag">
+            <div class="flag-background"></div>
+            <div class="flag-star">
+                <svg viewBox="0 0 24 24" class="star-icon">
+                    <path d="M12,2L13.09,8.26L19,7L14.78,12L19,17L13.09,15.74L12,22L10.91,15.74L5,17L9.22,12L5,7L10.91,8.26L12,2Z"/>
+                </svg>
+            </div>
+            <div class="flag-shimmer"></div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="main-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" class="logo-svg">
+                            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>Professional HR</h1>
+                        <p>Hệ Thống Quản Lý Nhân Sự</p>
+                    </div>
+                </div>
+                
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="vi">🇻🇳 VI</button>
+                    <button class="lang-btn" data-lang="en">🇺🇸 EN</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Authentication Container -->
+        <main class="auth-main">
+            <div class="auth-container">
+                <!-- Tab Navigation -->
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">
+                        <span class="tab-icon">🔐</span>
+                        <span class="tab-text">Đăng Nhập</span>
+                    </button>
+                    <button class="tab-btn" data-tab="register">
+                        <span class="tab-icon">👤</span>
+                        <span class="tab-text">Đăng Ký</span>
+                    </button>
+                    <div class="tab-indicator"></div>
+                </div>
+
+                <!-- Login Form -->
+                <div class="auth-form-container active" id="login-form">
+                    <div class="form-header">
+                        <h2>Chào Mừng Trở Lại!</h2>
+                        <p>Đăng nhập vào tài khoản của bạn để tiếp tục</p>
+                    </div>
+
+                    <form class="auth-form" id="loginForm">
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="email" id="login-email" name="email" required 
+                                       autocomplete="email" spellcheck="false">
+                                <label for="login-email" class="floating-label">
+                                    <span class="label-icon">📧</span>
+                                    <span class="label-text">Email</span>
+                                </label>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="field-error" id="login-email-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="password" id="login-password" name="password" required 
+                                       autocomplete="current-password">
+                                <label for="login-password" class="floating-label">
+                                    <span class="label-icon">🔒</span>
+                                    <span class="label-text">Mật Khẩu</span>
+                                </label>
+                                <button type="button" class="password-toggle" data-target="login-password">
+                                    <span class="toggle-icon">👁️</span>
+                                </button>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="field-error" id="login-password-error"></div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="remember-me" name="rememberMe">
+                                <span class="checkmark"></span>
+                                <span class="checkbox-text">Ghi nhớ đăng nhập</span>
+                            </label>
+                            
+                            <button type="button" class="link-btn" id="forgot-password-btn">
+                                Quên mật khẩu?
+                            </button>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="login-btn">
+                            <span class="btn-text">Đăng Nhập</span>
+                            <span class="btn-loader"></span>
+                        </button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p>Chưa có tài khoản? 
+                            <button type="button" class="link-btn" data-switch="register">
+                                Đăng ký ngay
+                            </button>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div class="auth-form-container" id="register-form">
+                    <div class="form-header">
+                        <h2>Tạo Tài Khoản Mới</h2>
+                        <p>Điền thông tin để tạo tài khoản chuyên nghiệp</p>
+                    </div>
+
+                    <form class="auth-form" id="registerForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="input-container">
+                                    <input type="text" id="register-firstName" name="firstName" required 
+                                           autocomplete="given-name" spellcheck="false">
+                                    <label for="register-firstName" class="floating-label">
+                                        <span class="label-icon">👤</span>
+                                        <span class="label-text">Họ</span>
+                                    </label>
+                                    <div class="input-border"></div>
+                                </div>
+                                <div class="field-error" id="register-firstName-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="input-container">
+                                    <input type="text" id="register-lastName" name="lastName" required 
+                                           autocomplete="family-name" spellcheck="false">
+                                    <label for="register-lastName" class="floating-label">
+                                        <span class="label-icon">👤</span>
+                                        <span class="label-text">Tên</span>
+                                    </label>
+                                    <div class="input-border"></div>
+                                </div>
+                                <div class="field-error" id="register-lastName-error"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="email" id="register-email" name="email" required 
+                                       autocomplete="email" spellcheck="false">
+                                <label for="register-email" class="floating-label">
+                                    <span class="label-icon">📧</span>
+                                    <span class="label-text">Email</span>
+                                </label>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="field-error" id="register-email-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="tel" id="register-phone" name="phone" 
+                                       autocomplete="tel" spellcheck="false">
+                                <label for="register-phone" class="floating-label">
+                                    <span class="label-icon">📱</span>
+                                    <span class="label-text">Số Điện Thoại</span>
+                                </label>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="field-error" id="register-phone-error"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <div class="input-container">
+                                    <input type="text" id="register-department" name="department" 
+                                           autocomplete="organization" spellcheck="false">
+                                    <label for="register-department" class="floating-label">
+                                        <span class="label-icon">🏢</span>
+                                        <span class="label-text">Phòng Ban</span>
+                                    </label>
+                                    <div class="input-border"></div>
+                                </div>
+                                <div class="field-error" id="register-department-error"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="input-container">
+                                    <input type="text" id="register-position" name="position" 
+                                           autocomplete="organization-title" spellcheck="false">
+                                    <label for="register-position" class="floating-label">
+                                        <span class="label-icon">💼</span>
+                                        <span class="label-text">Chức Vụ</span>
+                                    </label>
+                                    <div class="input-border"></div>
+                                </div>
+                                <div class="field-error" id="register-position-error"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="text" id="register-employeeId" name="employeeId" 
+                                       autocomplete="off" spellcheck="false">
+                                <label for="register-employeeId" class="floating-label">
+                                    <span class="label-icon">🏷️</span>
+                                    <span class="label-text">Mã Nhân Viên (Tùy chọn)</span>
+                                </label>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="field-error" id="register-employeeId-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="password" id="register-password" name="password" required 
+                                       autocomplete="new-password">
+                                <label for="register-password" class="floating-label">
+                                    <span class="label-icon">🔒</span>
+                                    <span class="label-text">Mật Khẩu</span>
+                                </label>
+                                <button type="button" class="password-toggle" data-target="register-password">
+                                    <span class="toggle-icon">👁️</span>
+                                </button>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="password-strength" id="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill"></div>
+                                </div>
+                                <p class="strength-text">Độ mạnh mật khẩu</p>
+                            </div>
+                            <div class="field-error" id="register-password-error"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="input-container">
+                                <input type="password" id="register-confirmPassword" name="confirmPassword" required 
+                                       autocomplete="new-password">
+                                <label for="register-confirmPassword" class="floating-label">
+                                    <span class="label-icon">🔒</span>
+                                    <span class="label-text">Xác Nhận Mật Khẩu</span>
+                                </label>
+                                <button type="button" class="password-toggle" data-target="register-confirmPassword">
+                                    <span class="toggle-icon">👁️</span>
+                                </button>
+                                <div class="input-border"></div>
+                            </div>
+                            <div class="field-error" id="register-confirmPassword-error"></div>
+                        </div>
+
+                        <div class="form-terms">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="terms-agreement" name="termsAgreement" required>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-text">
+                                    Tôi đồng ý với 
+                                    <button type="button" class="link-btn" id="terms-link">Điều khoản sử dụng</button> 
+                                    và 
+                                    <button type="button" class="link-btn" id="privacy-link">Chính sách bảo mật</button>
+                                </span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="register-btn">
+                            <span class="btn-text">Tạo Tài Khoản</span>
+                            <span class="btn-loader"></span>
+                        </button>
+                    </form>
+
+                    <div class="form-footer">
+                        <p>Đã có tài khoản? 
+                            <button type="button" class="link-btn" data-switch="login">
+                                Đăng nhập ngay
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <button type="button" class="footer-link">Hỗ trợ</button>
+                    <span class="footer-separator">•</span>
+                    <button type="button" class="footer-link">Liên hệ</button>
+                    <span class="footer-separator">•</span>
+                    <button type="button" class="footer-link">Bảo mật</button>
+                </div>
+                <p class="footer-text">© 2024 Professional HR Management System. Đã đăng ký bản quyền.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Notification System -->
+    <div class="notification-container" id="notifications"></div>
+
+    <!-- Modal Containers -->
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    
+    <!-- Terms Modal -->
+    <div class="modal" id="terms-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Điều Khoản Sử Dụng</h3>
+                <button type="button" class="modal-close" data-modal="terms-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-content">
+                    <h4>1. Chấp nhận điều khoản</h4>
+                    <p>Bằng việc sử dụng hệ thống, bạn đồng ý tuân thủ các điều khoản này.</p>
+                    
+                    <h4>2. Sử dụng hệ thống</h4>
+                    <p>Hệ thống chỉ được sử dụng cho mục đích quản lý nhân sự nội bộ công ty.</p>
+                    
+                    <h4>3. Bảo mật thông tin</h4>
+                    <p>Người dùng có trách nhiệm bảo mật thông tin đăng nhập và dữ liệu cá nhân.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div class="modal" id="privacy-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Chính Sách Bảo Mật</h3>
+                <button type="button" class="modal-close" data-modal="privacy-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="privacy-content">
+                    <h4>Thu thập thông tin</h4>
+                    <p>Chúng tôi chỉ thu thập thông tin cần thiết cho việc quản lý nhân sự.</p>
+                    
+                    <h4>Sử dụng thông tin</h4>
+                    <p>Thông tin được sử dụng để cung cấp dịch vụ quản lý nhân sự hiệu quả.</p>
+                    
+                    <h4>Bảo vệ dữ liệu</h4>
+                    <p>Dữ liệu được mã hóa và bảo vệ bằng các biện pháp bảo mật tiên tiến.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="./assets/js/auth.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+    </script>
 </body>
 </html>
