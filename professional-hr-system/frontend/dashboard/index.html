@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional HR Dashboard - Bảng Điều Khiển</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Bảng điều khiển hệ thống quản lý nhân sự chuyên nghiệp">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="../assets/css/dashboard.css" as="style">
+    <link rel="preload" href="../assets/js/dashboard.js" as="script">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../assets/images/favicon.svg">
+</head>
+<body class="dashboard-body">
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <h2>Đang khởi tạo hệ thống...</h2>
+            <p>Professional HR Management System</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container" id="dashboardContainer">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" class="logo-svg">
+                            <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>Professional HR</h1>
+                        <p>Management System</p>
+                    </div>
+                </div>
+                
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <svg viewBox="0 0 24 24" class="toggle-icon">
+                        <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#dashboard" class="nav-link active" data-page="dashboard">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">Tổng Quan</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#users" class="nav-link" data-page="users">
+                            <span class="nav-icon">👥</span>
+                            <span class="nav-text">Quản Lý Người Dùng</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#attendance" class="nav-link" data-page="attendance">
+                            <span class="nav-icon">📅</span>
+                            <span class="nav-text">Chấm Công</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#requests" class="nav-link" data-page="requests">
+                            <span class="nav-icon">📝</span>
+                            <span class="nav-text">Yêu Cầu</span>
+                            <span class="nav-badge" id="requestsBadge">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#reports" class="nav-link" data-page="reports">
+                            <span class="nav-icon">📈</span>
+                            <span class="nav-text">Báo Cáo</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#settings" class="nav-link" data-page="settings">
+                            <span class="nav-icon">⚙️</span>
+                            <span class="nav-text">Cài Đặt</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info" id="userInfo">
+                    <div class="user-avatar">
+                        <img src="../assets/images/default-avatar.png" alt="User Avatar" id="userAvatar">
+                    </div>
+                    <div class="user-details">
+                        <h4 id="userName">Loading...</h4>
+                        <p id="userRole">Loading...</p>
+                    </div>
+                </div>
+                
+                <button class="logout-btn" id="logoutBtn">
+                    <span class="logout-icon">🚪</span>
+                    <span class="logout-text">Đăng Xuất</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="mainContent">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                        <svg viewBox="0 0 24 24" class="menu-icon">
+                            <path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="page-title">
+                        <h1 id="pageTitle">Tổng Quan</h1>
+                        <p id="pageSubtitle">Xem tổng quan về hệ thống</p>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Tìm kiếm..." id="globalSearch">
+                        <button class="search-btn">
+                            <svg viewBox="0 0 24 24" class="search-icon">
+                                <path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="header-actions">
+                        <button class="action-btn" id="notificationBtn">
+                            <svg viewBox="0 0 24 24" class="action-icon">
+                                <path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7A7,7 0 0,1 20,14V16A1,1 0 0,1 19,17H5A1,1 0 0,1 4,16V14A7,7 0 0,1 11,7V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M19,19A1,1 0 0,1 18,20H6A1,1 0 0,1 5,19V18H19V19Z"/>
+                            </svg>
+                            <span class="notification-badge" id="notificationBadge">0</span>
+                        </button>
+
+                        <button class="action-btn" id="profileBtn">
+                            <svg viewBox="0 0 24 24" class="action-icon">
+                                <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M7.07,18.28C7.5,17.38 10.12,16.5 12,16.5C13.88,16.5 16.5,17.38 16.93,18.28C15.57,19.36 13.86,20 12,20C10.14,20 8.43,19.36 7.07,18.28M18.36,16.83C16.93,15.09 13.46,14.5 12,14.5C10.54,14.5 7.07,15.09 5.64,16.83C4.62,15.5 4,13.82 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,13.82 19.38,15.5 18.36,16.83M12,6C10.06,6 8.5,7.56 8.5,9.5C8.5,11.44 10.06,13 12,13C13.94,13 15.5,11.44 15.5,9.5C15.5,7.56 13.94,6 12,6Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Pages -->
+            <div class="content-container">
+                <!-- Dashboard Page -->
+                <div class="page-content active" id="dashboardPage">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-info">
+                                <h3 id="totalUsers">0</h3>
+                                <p>Tổng Nhân Viên</p>
+                            </div>
+                            <div class="stat-trend up">+5.2%</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <h3 id="activeUsers">0</h3>
+                                <p>Hoạt Động</p>
+                            </div>
+                            <div class="stat-trend up">+2.1%</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">⏳</div>
+                            <div class="stat-info">
+                                <h3 id="pendingRequests">0</h3>
+                                <p>Yêu Cầu Chờ</p>
+                            </div>
+                            <div class="stat-trend down">-1.3%</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-info">
+                                <h3 id="systemHealth">100%</h3>
+                                <p>Tình Trạng Hệ Thống</p>
+                            </div>
+                            <div class="stat-trend stable">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>Hoạt Động Gần Đây</h3>
+                                <button class="card-action">Xem Tất Cả</button>
+                            </div>
+                            <div class="card-content">
+                                <div class="activity-list" id="recentActivities">
+                                    <div class="activity-item">
+                                        <div class="activity-icon">👤</div>
+                                        <div class="activity-details">
+                                            <p><strong>Nguyễn Văn A</strong> đã đăng nhập</p>
+                                            <span class="activity-time">5 phút trước</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3>Yêu Cầu Cần Duyệt</h3>
+                                <button class="card-action">Quản Lý</button>
+                            </div>
+                            <div class="card-content">
+                                <div class="request-list" id="pendingRequestsList">
+                                    <div class="request-item">
+                                        <div class="request-info">
+                                            <h4>Nghỉ phép</h4>
+                                            <p>Trần Thị B - 2 ngày</p>
+                                        </div>
+                                        <div class="request-actions">
+                                            <button class="approve-btn">Duyệt</button>
+                                            <button class="reject-btn">Từ chối</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Page -->
+                <div class="page-content" id="usersPage">
+                    <div class="page-toolbar">
+                        <div class="toolbar-left">
+                            <button class="primary-btn" id="addUserBtn">
+                                <span class="btn-icon">➕</span>
+                                Thêm Nhân Viên
+                            </button>
+                            <button class="secondary-btn" id="exportUsersBtn">
+                                <span class="btn-icon">📤</span>
+                                Xuất Dữ Liệu
+                            </button>
+                        </div>
+                        <div class="toolbar-right">
+                            <div class="filter-group">
+                                <select class="filter-select" id="userRoleFilter">
+                                    <option value="">Tất cả vai trò</option>
+                                    <option value="AD">Quản trị viên</option>
+                                    <option value="Manager">Quản lý</option>
+                                    <option value="HR">Nhân sự</option>
+                                    <option value="NV">Nhân viên</option>
+                                </select>
+                                <select class="filter-select" id="userStatusFilter">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="active">Hoạt động</option>
+                                    <option value="inactive">Không hoạt động</option>
+                                    <option value="pending">Chờ duyệt</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-table-container">
+                        <table class="data-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Tên</th>
+                                    <th>Email</th>
+                                    <th>Vai Trò</th>
+                                    <th>Phòng Ban</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Other pages will be loaded dynamically -->
+                <div class="page-content" id="attendancePage">
+                    <h2>Quản Lý Chấm Công</h2>
+                    <!-- Attendance management content -->
+                </div>
+
+                <div class="page-content" id="requestsPage">
+                    <h2>Quản Lý Yêu Cầu</h2>
+                    <!-- Request management content -->
+                </div>
+
+                <div class="page-content" id="reportsPage">
+                    <h2>Báo Cáo Hệ Thống</h2>
+                    <!-- Reports content -->
+                </div>
+
+                <div class="page-content" id="settingsPage">
+                    <h2>Cài Đặt Hệ Thống</h2>
+                    <!-- Settings content -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notifications"></div>
+
+    <!-- Modal Container -->
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+
+    <!-- Add User Modal -->
+    <div class="modal" id="addUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Thêm Nhân Viên Mới</h3>
+                <button class="modal-close" data-modal="addUserModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form class="modal-form" id="addUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserFirstName">Họ *</label>
+                            <input type="text" id="newUserFirstName" name="firstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserLastName">Tên *</label>
+                            <input type="text" id="newUserLastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="newUserEmail">Email *</label>
+                        <input type="email" id="newUserEmail" name="email" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newUserRole">Vai Trò *</label>
+                            <select id="newUserRole" name="role" required>
+                                <option value="">Chọn vai trò</option>
+                                <option value="NV">Nhân viên</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="Manager">Quản lý</option>
+                                <option value="AD">Quản trị viên</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newUserDepartment">Phòng Ban</label>
+                            <input type="text" id="newUserDepartment" name="department">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" data-modal="addUserModal">Hủy</button>
+                <button class="primary-btn" id="saveUserBtn">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="../assets/js/dashboard.js"></script>
+</body>
+</html>
