@@ -73,7 +73,12 @@ async function handleRequest(request, env, path, method) {
   
   // API versioning support
   const apiVersion = path.startsWith('/api/v2') ? 'v2' : 'v1';
-  const endpoint = path.replace('/api/v1/', '').replace('/api/v2/', '');
+  let endpoint = path.replace('/api/v1/', '').replace('/api/v2/', '');
+  
+  // Handle direct calls without API prefix
+  if (endpoint === path && path.startsWith('/')) {
+    endpoint = path.substring(1); // Remove leading slash
+  }
 
   // Legacy query parameter support
   const action = url.searchParams.get('action');
