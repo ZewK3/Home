@@ -480,7 +480,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: var(--spacing-md) 0;
-    overflow-y: auto;
+    overflow: hidden; /* Remove scrollbar */
     min-height: 0;
 }
 
@@ -497,7 +497,9 @@ body {
     animation: container-entrance 0.8s var(--transition-bounce);
     margin: 0 auto;
     position: relative;
-    max-height: calc(100vh - 120px);
+    max-height: calc(100vh - 80px); /* Reduced from 120px for more space */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Enhanced glassmorphism effect */
@@ -590,12 +592,12 @@ body {
 /* Form Containers */
 .auth-form-container {
     display: none;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md); /* Reduced from --spacing-lg */
     opacity: 0;
     transform: translateX(20px);
     transition: all 0.3s ease-out;
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
+    flex: 1;
+    overflow-y: auto; /* Allow scrolling within container only if needed */
 }
 
 .auth-form-container.active {
@@ -619,7 +621,7 @@ body {
 /* Form Header */
 .form-header {
     text-align: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md); /* Reduced from --spacing-lg */
 }
 
 .form-header h2 {
@@ -640,7 +642,7 @@ body {
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md); /* Reduced from --spacing-lg */
 }
 
 .form-row {
@@ -651,7 +653,7 @@ body {
 
 .form-group {
     position: relative;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm); /* Reduced from --spacing-md */
 }
 
 /* Input Containers */
@@ -663,7 +665,7 @@ body {
 
 .input-container input {
     width: 100%;
-    padding: var(--spacing-md) var(--spacing-sm) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-xs); /* Reduced padding */
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid transparent;
     border-radius: var(--radius-lg);
@@ -673,7 +675,7 @@ body {
     transition: all var(--transition-normal);
     backdrop-filter: blur(10px);
     outline: none;
-    line-height: 1.5;
+    line-height: 1.4; /* Reduced line height */
 }
 
 .input-container input::placeholder {
@@ -796,14 +798,17 @@ body {
     color: var(--error-color);
     font-size: var(--font-size-sm);
     margin-top: var(--spacing-xs);
-    min-height: 1.25rem;
     font-weight: var(--font-weight-medium);
-    display: flex;
+    display: none; /* Hidden by default */
     align-items: center;
     gap: var(--spacing-xs);
 }
 
-.field-error:before {
+.field-error.show {
+    display: flex; /* Show when has error */
+}
+
+.field-error.show:before {
     content: "⚠️";
     font-size: var(--font-size-xs);
 }

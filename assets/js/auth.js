@@ -483,7 +483,7 @@ class ProfessionalAuthSystem {
         const errorElement = document.getElementById(`${fieldId}-error`);
         if (errorElement) {
             errorElement.textContent = message;
-            errorElement.style.opacity = '1';
+            errorElement.classList.add('show');
         }
         
         // Add error styling to input
@@ -500,7 +500,7 @@ class ProfessionalAuthSystem {
         const errorElement = document.getElementById(`${fieldId}-error`);
         if (errorElement) {
             errorElement.textContent = '';
-            errorElement.style.opacity = '0';
+            errorElement.classList.remove('show');
         }
         
         // Remove error styling from input
@@ -516,7 +516,7 @@ class ProfessionalAuthSystem {
     clearFieldErrors(formType) {
         document.querySelectorAll(`#${formType}-form .field-error`).forEach(error => {
             error.textContent = '';
-            error.style.opacity = '0';
+            error.classList.remove('show');
         });
         
         document.querySelectorAll(`#${formType}-form input`).forEach(input => {

@@ -969,7 +969,12 @@ async function checkLoginAttempts(ip, env) {
     const data = await env.KV.get(key);
     
     if (!data) {
-      return { blocked: false, attempts: 0, lockoutTime: 0 };
+      return { 
+        blocked: false, 
+        attempts: 0, 
+        lockoutTime: 0,
+        headers: { 'Content-Type': 'application/json' }
+      };
     }
     
     const attempts = JSON.parse(data);
@@ -991,7 +996,12 @@ async function checkLoginAttempts(ip, env) {
     // Reset if lockout period has passed
     if (attempts.lastAttempt && (now - attempts.lastAttempt) >= lockoutDuration) {
       await env.KV.delete(key);
-      return { blocked: false, attempts: 0, lockoutTime: 0 };
+      return { 
+        blocked: false, 
+        attempts: 0, 
+        lockoutTime: 0,
+        headers: { 'Content-Type': 'application/json' }
+      };
     }
     
     return { 
@@ -1002,7 +1012,12 @@ async function checkLoginAttempts(ip, env) {
     };
   } catch (error) {
     console.error('Error checking login attempts:', error);
-    return { blocked: false, attempts: 0, lockoutTime: 0 };
+    return { 
+      blocked: false, 
+      attempts: 0, 
+      lockoutTime: 0,
+      headers: { 'Content-Type': 'application/json' }
+    };
   }
 }
 
