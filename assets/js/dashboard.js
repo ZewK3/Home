@@ -197,13 +197,7 @@ class HRDashboard {
         if (sidebarToggle) {
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
-                if (sidebar.classList.contains('collapsed')) {
-                    mainContent.style.marginLeft = 'var(--sidebar-collapsed-width)';
-                    contentArea.style.marginLeft = '0';
-                } else {
-                    mainContent.style.marginLeft = 'var(--sidebar-width)';
-                    contentArea.style.marginLeft = '0';
-                }
+                // No need to manually adjust margins since we removed them from CSS
             });
         }
 
@@ -236,6 +230,14 @@ class HRDashboard {
                 }
             });
         });
+
+        // User profile click handler
+        const userProfile = document.querySelector('.user-profile');
+        if (userProfile) {
+            userProfile.addEventListener('click', () => {
+                this.openUserProfileModal();
+            });
+        }
     }
 
     addMobileOverlay() {
@@ -380,8 +382,21 @@ class HRDashboard {
             });
         }
 
+        // Initialize user profile modal
+        const userProfileModal = document.getElementById('userProfileModal');
+        const closeProfileModal = document.getElementById('closeProfileModal');
+        
+        if (closeProfileModal && userProfileModal) {
+            closeProfileModal.addEventListener('click', () => {
+                this.closeUserProfileModal();
+            });
+        }
+
         // Close modals when clicking outside
         document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('user-profile-modal')) {
+                this.closeUserProfileModal();
+            }
             if (e.target.classList.contains('modal-overlay')) {
                 this.closeModal(e.target.closest('.modal'));
             }
@@ -1238,6 +1253,75 @@ class HRDashboard {
         }
     }
 
+    // User Profile Modal methods
+    openUserProfileModal() {
+        const modal = document.getElementById('userProfileModal');
+        if (modal) {
+            this.populateUserProfileModal();
+            modal.classList.remove('hidden');
+        }
+    }
+
+    closeUserProfileModal() {
+        const modal = document.getElementById('userProfileModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
+
+    populateUserProfileModal() {
+        if (!this.currentUser) return;
+
+        // Update profile information
+        const profileFullName = document.getElementById('profileFullName');
+        const profileEmail = document.getElementById('profileEmail');
+        const profileEmployeeId = document.getElementById('profileEmployeeId');
+        const profileDepartment = document.getElementById('profileDepartment');
+        const profileJoinDate = document.getElementById('profileJoinDate');
+        const profileStatus = document.getElementById('profileStatus');
+        const profileRoleDisplay = document.getElementById('profileRoleDisplay');
+        const profileAvatarLarge = document.getElementById('profileAvatarLarge');
+
+        if (profileFullName) {
+            profileFullName.textContent = `${this.currentUser.firstName || 'Admin'} ${this.currentUser.lastName || 'User'}`;
+        }
+        
+        if (profileEmail) {
+            profileEmail.textContent = this.currentUser.email || 'admin@hrms.com';
+        }
+        
+        if (profileEmployeeId) {
+            profileEmployeeId.textContent = this.currentUser.employeeId || 'EMP001';
+        }
+        
+        if (profileDepartment) {
+            profileDepartment.textContent = this.currentUser.department || 'Quản Trị';
+        }
+        
+        if (profileJoinDate) {
+            const joinDate = this.currentUser.joinDate || new Date().toLocaleDateString('vi-VN');
+            profileJoinDate.textContent = joinDate;
+        }
+        
+        if (profileStatus) {
+            profileStatus.textContent = this.currentUser.status === 'active' ? 'Hoạt Động' : 'Không Hoạt Động';
+        }
+        
+        if (profileRoleDisplay) {
+            const roleNames = {
+                'admin': 'Quản Trị Viên',
+                'manager': 'Quản Lý',
+                'hr': 'Nhân Sự',
+                'employee': 'Nhân Viên'
+            };
+            profileRoleDisplay.textContent = roleNames[this.currentUser.role] || 'Nhân Viên';
+        }
+
+        if (profileAvatarLarge && this.currentUser.avatar) {
+            profileAvatarLarge.src = this.currentUser.avatar;
+        }
+    }
+
     // Notification methods
     showNotification(message, type = 'info', duration = 5000) {
         const notification = document.createElement('div');
@@ -1648,7 +1732,16 @@ class HRDashboard {
             attendance: 'Chấm công',
             payroll: 'Lương & Phúc lợi',
             reports: 'Báo cáo',
-            admin: 'Quản trị'
+            admin: 'Quản trị',
+            user_profile: 'Thông Tin Cá Nhân',
+            personal_info: 'Thông Tin Cá Nhân',
+            email: 'Email',
+            employee_id: 'Mã Nhân Viên',
+            department: 'Phòng Ban',
+            join_date: 'Ngày Tham Gia',
+            status: 'Trạng Thái',
+            edit_profile: 'Chỉnh Sửa',
+            change_password: 'Đổi Mật Khẩu'
         },
         en: {
             dashboard: 'Dashboard',
@@ -1656,7 +1749,16 @@ class HRDashboard {
             attendance: 'Attendance',
             payroll: 'Payroll',
             reports: 'Reports',
-            admin: 'Admin'
+            admin: 'Admin',
+            user_profile: 'User Profile',
+            personal_info: 'Personal Information',
+            email: 'Email',
+            employee_id: 'Employee ID',
+            department: 'Department',
+            join_date: 'Join Date',
+            status: 'Status',
+            edit_profile: 'Edit Profile',
+            change_password: 'Change Password'
         }
     };
 }

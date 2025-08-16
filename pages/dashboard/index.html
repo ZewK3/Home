@@ -447,6 +447,57 @@
         </defs>
     </svg>
 
+    <!-- User Profile Modal -->
+    <div class="user-profile-modal hidden" id="userProfileModal">
+        <div class="profile-modal-content">
+            <div class="profile-header">
+                <h2 data-i18n="user_profile">Thông Tin Cá Nhân</h2>
+                <button class="close-modal-btn" id="closeProfileModal">×</button>
+            </div>
+            
+            <div class="profile-info">
+                <div class="profile-avatar-section">
+                    <img src="../../public/images/avatar-default.png" alt="User Avatar" class="profile-avatar-large" id="profileAvatarLarge">
+                    <h3 class="profile-name" id="profileFullName">Admin User</h3>
+                    <span class="profile-role" id="profileRoleDisplay">Quản Trị Viên</span>
+                </div>
+                
+                <div class="profile-details">
+                    <h3 data-i18n="personal_info">Thông Tin Cá Nhân</h3>
+                    <div class="profile-field">
+                        <span class="profile-field-label" data-i18n="email">Email:</span>
+                        <span class="profile-field-value" id="profileEmail">admin@hrms.com</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-field-label" data-i18n="employee_id">Mã Nhân Viên:</span>
+                        <span class="profile-field-value" id="profileEmployeeId">EMP001</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-field-label" data-i18n="department">Phòng Ban:</span>
+                        <span class="profile-field-value" id="profileDepartment">Quản Trị</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-field-label" data-i18n="join_date">Ngày Tham Gia:</span>
+                        <span class="profile-field-value" id="profileJoinDate">01/01/2024</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-field-label" data-i18n="status">Trạng Thái:</span>
+                        <span class="profile-field-value" id="profileStatus">Hoạt Động</span>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button class="btn-edit-profile" id="editProfileBtn">
+                        <span data-i18n="edit_profile">Chỉnh Sửa</span>
+                    </button>
+                    <button class="btn-change-password" id="changePasswordBtn">
+                        <span data-i18n="change_password">Đổi Mật Khẩu</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../../assets/js/dashboard.js"></script>
     <script src="../../services/dashboard-service.js"></script>
     <script src="../../services/auth-service.js"></script>
