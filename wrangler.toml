@@ -1,5 +1,5 @@
 name = "hr-management-system"
-main = "backend/worker.js"
+main = "dist/backend/worker.js"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
