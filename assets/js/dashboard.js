@@ -564,13 +564,39 @@ class HRDashboard {
         const stats = this.dashboardData.stats;
         if (!stats) return;
 
-        // Update stat cards
-        this.updateStatCard('total-employees', stats.totalEmployees, 'Total Employees');
-        this.updateStatCard('active-today', stats.activeToday, 'Active Today');
-        this.updateStatCard('on-break', stats.onBreak, 'On Break');
-        this.updateStatCard('total-departments', stats.totalDepartments, 'Departments');
-        this.updateStatCard('pending-requests', stats.pendingRequests, 'Pending Requests');
-        this.updateStatCard('completed-tasks', stats.completedTasks, 'Completed Tasks');
+        // Update stat cards with correct IDs from HTML
+        const totalEmployeesEl = document.getElementById('totalEmployees');
+        const presentTodayEl = document.getElementById('presentToday');
+        const lateTodayEl = document.getElementById('lateToday');
+        const absentTodayEl = document.getElementById('absentToday');
+
+        if (totalEmployeesEl) totalEmployeesEl.textContent = stats.totalEmployees || 0;
+        if (presentTodayEl) presentTodayEl.textContent = stats.presentToday || 0;
+        if (lateTodayEl) lateTodayEl.textContent = stats.lateToday || 0;
+        if (absentTodayEl) absentTodayEl.textContent = stats.absentToday || 0;
+
+        // Animate the numbers
+        this.animateStatNumbers();
+    }
+
+    animateStatNumbers() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        statNumbers.forEach(el => {
+            const finalValue = parseInt(el.textContent) || 0;
+            el.textContent = '0';
+            
+            let currentValue = 0;
+            const increment = finalValue / 20;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    el.textContent = finalValue;
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.floor(currentValue);
+                }
+            }, 50);
+        });
     }
 
     updateStatCard(id, value, label) {
@@ -585,7 +611,7 @@ class HRDashboard {
     }
 
     updateRecentActivities() {
-        const activitiesContainer = document.getElementById('recent-activities');
+        const activitiesContainer = document.getElementById('activityList');
         if (!activitiesContainer || !this.dashboardData.activities) return;
 
         const activities = this.dashboardData.activities;
@@ -593,7 +619,9 @@ class HRDashboard {
         activitiesContainer.innerHTML = activities.map(activity => `
             <div class="activity-item">
                 <div class="activity-icon">
-                    <i class="fas fa-${this.getActivityIcon(activity.action)}"></i>
+                    <svg class="icon">
+                        <use href="#icon-${this.getActivityIcon(activity.action)}"></use>
+                    </svg>
                 </div>
                 <div class="activity-content">
                     <div class="activity-text">
@@ -929,7 +957,7 @@ class HRDashboard {
             </div>
         `;
 
-        document.querySelector('.main-content').innerHTML = content;
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadDashboardStats();
         await this.loadRecentActivities();
     }
@@ -952,7 +980,7 @@ class HRDashboard {
             </div>
         `;
 
-        document.querySelector('.main-content').innerHTML = content;
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadEmployees();
     }
 
@@ -974,7 +1002,7 @@ class HRDashboard {
             </div>
         `;
 
-        document.querySelector('.main-content').innerHTML = content;
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadAttendanceData();
     }
 
@@ -1393,7 +1421,7 @@ class HRDashboard {
             </div>
         `;
 
-        document.querySelector('.main-content').innerHTML = content;
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadPayrollData();
     }
 
@@ -1462,7 +1490,7 @@ class HRDashboard {
             </div>
         `;
 
-        document.querySelector('.main-content').innerHTML = content;
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadReportsData();
     }
 
@@ -1550,7 +1578,7 @@ class HRDashboard {
             </div>
         `;
 
-        document.querySelector('.main-content').innerHTML = content;
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadAdminData();
     }
 
