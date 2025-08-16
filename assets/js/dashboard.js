@@ -1321,15 +1321,6 @@ class HRDashboard {
             </div>
         `;
     }
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('contentArea').innerHTML = content;
-        await this.loadDashboardStats();
-        await this.loadRecentActivities();
-    }
 
     async loadEmployeesView() {
         const content = `
@@ -2115,7 +2106,6 @@ class HRDashboard {
             change_password: 'Change Password'
         }
     };
-    }
 
     // Department-specific view methods
     async loadSchedulesView() {
@@ -2188,6 +2178,7 @@ class HRDashboard {
         `;
         this.updateContentArea(content);
     }
+}
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
