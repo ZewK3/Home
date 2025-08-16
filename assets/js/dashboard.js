@@ -1083,7 +1083,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadDashboardStats();
         this.animateStatsCounters();
     }
@@ -2144,7 +2144,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 
     async loadTasksView() {
@@ -2163,7 +2163,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 
     async loadBudgetsView() {
@@ -2182,7 +2182,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 
     async loadSettingsView() {
@@ -2196,7 +2196,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 }
 
