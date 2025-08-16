@@ -401,6 +401,12 @@ class HRDashboard {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         
+        // Set department-specific theme color
+        if (this.departmentConfig) {
+            document.documentElement.style.setProperty('--department-color', this.departmentConfig.color);
+            document.documentElement.style.setProperty('--primary-color', this.departmentConfig.color);
+        }
+        
         const themeToggle = document.getElementById('themeToggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => {
