@@ -4,7 +4,7 @@
 
 /* Authentication Container */
 .auth-container {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -125,16 +125,17 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: var(--spacing-xl) var(--spacing-md);
+    padding: var(--spacing-md);
     position: relative;
     z-index: 5;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* Header */
 .auth-header {
     text-align: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
     animation: fadeIn 0.6s ease-out;
 }
 
@@ -142,22 +143,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
 }
 
 .logo-image {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
     background: var(--white);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
 }
 
 .logo-text {
     color: var(--white);
-    font-size: var(--text-3xl);
+    font-size: var(--text-xl);
     font-weight: var(--font-bold);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin: 0;
@@ -165,15 +166,16 @@
 
 .auth-subtitle {
     color: rgba(255, 255, 255, 0.8);
-    font-size: var(--text-lg);
+    font-size: var(--text-base);
     margin: 0;
 }
 
 /* Form Container */
 .auth-form-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 450px;
     animation: fadeIn 0.8s ease-out 0.2s both;
+    overflow: hidden;
 }
 
 .auth-form {
@@ -181,29 +183,31 @@
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-2xl);
-    padding: var(--spacing-2xl);
+    padding: var(--spacing-lg);
     box-shadow: 
         0 25px 50px -12px rgba(0, 0, 0, 0.25),
         0 0 0 1px rgba(255, 255, 255, 0.1);
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .form-title {
     text-align: center;
     color: var(--text-primary);
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
     font-weight: var(--font-bold);
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
 }
 
 /* Form Groups */
 .form-group {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
 }
 
 .input-container {
@@ -212,9 +216,9 @@
 
 .form-input {
     width: 100%;
-    padding: var(--spacing-md) var(--spacing-lg);
-    padding-left: 3rem;
-    font-size: var(--text-base);
+    padding: var(--spacing-sm) var(--spacing-md);
+    padding-left: 2.5rem;
+    font-size: var(--text-sm);
     color: var(--text-primary);
     background: var(--white);
     border: 2px solid var(--border-light);
@@ -300,10 +304,16 @@ select.form-input {
     font-size: var(--text-sm);
     color: var(--error-color);
     font-weight: var(--font-medium);
+    visibility: hidden;
+    opacity: 0;
+    height: 0;
 }
 
 .field-error.show {
     display: flex;
+    visibility: visible;
+    opacity: 1;
+    height: auto;
     align-items: center;
     gap: var(--spacing-xs);
     animation: slideUp 0.3s ease-out;
@@ -616,7 +626,7 @@ select.form-input {
 /* Responsive Design */
 @media (max-width: 768px) {
     .auth-content {
-        padding: var(--spacing-lg) var(--spacing-md);
+        padding: var(--spacing-sm);
     }
     
     .auth-form-container {
@@ -624,7 +634,8 @@ select.form-input {
     }
     
     .auth-form {
-        padding: var(--spacing-xl);
+        padding: var(--spacing-md);
+        max-height: 85vh;
     }
     
     .form-row {
@@ -639,16 +650,16 @@ select.form-input {
     }
     
     .logo-image {
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
     }
     
     .logo-text {
-        font-size: var(--text-2xl);
+        font-size: var(--text-lg);
     }
     
     .auth-subtitle {
-        font-size: var(--text-base);
+        font-size: var(--text-sm);
     }
     
     .lang-toggle {
@@ -670,7 +681,8 @@ select.form-input {
 
 @media (max-width: 480px) {
     .auth-form {
-        padding: var(--spacing-lg);
+        padding: var(--spacing-sm);
+        max-height: 90vh;
     }
     
     .form-input {

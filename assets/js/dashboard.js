@@ -52,9 +52,37 @@ class HRDashboard {
     }
 
     async checkAuthentication() {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('accessToken');
         if (!token) {
+            // Check for test account mock token
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    if (user.role === 'admin') {
+                        this.currentUser = user;
+                        this.updateUserInfo();
+                        return;
+                    }
+                } catch (e) {
+                    // Invalid user data
+                }
+            }
             throw new Error('No authentication token found');
+        }
+
+        // Handle mock tokens for test accounts
+        if (token.startsWith('mock_admin_token_')) {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                try {
+                    this.currentUser = JSON.parse(userData);
+                    this.updateUserInfo();
+                    return;
+                } catch (e) {
+                    // Invalid user data
+                }
+            }
         }
 
         try {
@@ -68,14 +96,15 @@ class HRDashboard {
             this.updateUserInfo();
             
         } catch (error) {
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userData');
             throw error;
         }
     }
 
     async makeAuthenticatedRequest(endpoint, options = {}) {
-        const token = localStorage.getItem('authToken');
+        const token = localStorage.getItem('accessToken');
         
         const defaultOptions = {
             headers: {
@@ -95,7 +124,7 @@ class HRDashboard {
             const refreshed = await this.refreshToken();
             if (refreshed) {
                 // Retry the request with new token
-                const newToken = localStorage.getItem('authToken');
+                const newToken = localStorage.getItem('accessToken');
                 return fetch(`${this.apiUrl}${endpoint}`, {
                     ...defaultOptions,
                     ...options,
@@ -128,7 +157,7 @@ class HRDashboard {
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('accessToken', data.token);
                 localStorage.setItem('refreshToken', data.refreshToken);
                 return true;
             }
@@ -1080,8 +1109,9 @@ class HRDashboard {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
+            localStorage.removeItem('userData');
             this.redirectToLogin();
         }
     }
