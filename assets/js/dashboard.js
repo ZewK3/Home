@@ -11,11 +11,64 @@ const TEST_ACCOUNTS = {
         firstName: 'Admin',
         lastName: 'User',
         role: 'admin',
+        department: 'administration',
+        departmentId: 'dept_admin',
         permissions: ['all'],
         avatar: null
     }
 };
 // END TEST ACCOUNTS
+
+// Department-specific configurations
+const DEPARTMENT_CONFIGS = {
+    administration: {
+        name: 'Administration',
+        color: '#6366f1',
+        sections: ['dashboard', 'employees', 'admin', 'reports', 'settings'],
+        features: {
+            userManagement: true,
+            systemSettings: true,
+            auditLogs: true,
+            organizationSettings: true,
+            globalReports: true
+        }
+    },
+    human_resources: {
+        name: 'Human Resources',
+        color: '#10b981',
+        sections: ['dashboard', 'employees', 'attendance', 'payroll', 'reports'],
+        features: {
+            employeeProfiles: true,
+            attendanceManagement: true,
+            payrollProcessing: true,
+            leaveManagement: true,
+            recruitmentTools: true
+        }
+    },
+    finance: {
+        name: 'Finance',
+        color: '#f59e0b',
+        sections: ['dashboard', 'payroll', 'reports', 'budgets'],
+        features: {
+            payrollManagement: true,
+            budgetTracking: true,
+            expenseReports: true,
+            financialAnalytics: true,
+            costCenter: true
+        }
+    },
+    operations: {
+        name: 'Operations',
+        color: '#ef4444',
+        sections: ['dashboard', 'attendance', 'schedules', 'tasks'],
+        features: {
+            scheduleManagement: true,
+            taskAssignment: true,
+            performanceTracking: true,
+            workforceOptimization: true
+        }
+    }
+};
 
 class HRDashboard {
     constructor() {
@@ -23,6 +76,7 @@ class HRDashboard {
         this.currentSection = 'dashboard';
         this.currentUser = null;
         this.dashboardData = {};
+        this.departmentConfig = null;
         
         this.init();
     }
@@ -31,6 +85,9 @@ class HRDashboard {
         try {
             // Check authentication
             await this.checkAuthentication();
+            
+            // Initialize department-specific configuration
+            this.initializeDepartmentConfig();
             
             // Initialize UI components
             this.initializeUI();
@@ -49,6 +106,23 @@ class HRDashboard {
             console.error('Dashboard initialization failed:', error);
             this.redirectToLogin();
         }
+    }
+
+    initializeDepartmentConfig() {
+        if (this.currentUser && this.currentUser.department) {
+            this.departmentConfig = DEPARTMENT_CONFIGS[this.currentUser.department] || DEPARTMENT_CONFIGS.administration;
+        } else {
+            // Default to administration for admin users
+            this.departmentConfig = DEPARTMENT_CONFIGS.administration;
+        }
+        
+        // Update document title with department
+        document.title = `${this.departmentConfig.name} Dashboard - Professional HR`;
+        
+        // Set department theme color
+        document.documentElement.style.setProperty('--department-color', this.departmentConfig.color);
+        
+        console.log('Department configuration loaded:', this.departmentConfig);
     }
 
     async checkAuthentication() {
@@ -170,6 +244,9 @@ class HRDashboard {
     }
 
     initializeUI() {
+        // Initialize department-specific navigation
+        this.initializeDepartmentNavigation();
+        
         // Initialize sidebar
         this.initializeSidebar();
         
@@ -184,6 +261,41 @@ class HRDashboard {
         
         // Initialize modals
         this.initializeModals();
+    }
+
+    initializeDepartmentNavigation() {
+        const navMenu = document.querySelector('.nav-menu');
+        if (!navMenu || !this.departmentConfig) return;
+
+        // Hide navigation items not available for this department
+        const navItems = navMenu.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            const link = item.querySelector('.nav-link');
+            const section = link?.getAttribute('data-section');
+            
+            if (section && !this.departmentConfig.sections.includes(section)) {
+                item.style.display = 'none';
+            } else {
+                item.style.display = 'block';
+            }
+        });
+
+        // Update sidebar header with department info
+        const logoText = document.querySelector('.logo-text');
+        if (logoText) {
+            logoText.textContent = this.departmentConfig.name;
+        }
+
+        // Add department badge to user info
+        this.updateDepartmentBadge();
+    }
+
+    updateDepartmentBadge() {
+        const userRole = document.querySelector('.user-role');
+        if (userRole && this.departmentConfig) {
+            userRole.textContent = this.departmentConfig.name;
+            userRole.style.color = this.departmentConfig.color;
+        }
     }
 
     initializeSidebar() {
@@ -872,6 +984,13 @@ class HRDashboard {
         const mainContent = document.querySelector('.main-content');
         if (!mainContent) return;
 
+        // Check if current section is allowed for user's department
+        if (this.departmentConfig && !this.departmentConfig.sections.includes(this.currentSection)) {
+            console.warn(`Section '${this.currentSection}' not available for department '${this.departmentConfig.name}'`);
+            this.navigateToSection('dashboard');
+            return;
+        }
+
         this.showLoading();
 
         try {
@@ -894,6 +1013,18 @@ class HRDashboard {
                 case 'admin':
                     await this.loadAdminView();
                     break;
+                case 'schedules':
+                    await this.loadSchedulesView();
+                    break;
+                case 'tasks':
+                    await this.loadTasksView();
+                    break;
+                case 'budgets':
+                    await this.loadBudgetsView();
+                    break;
+                case 'settings':
+                    await this.loadSettingsView();
+                    break;
                 default:
                     await this.loadDashboardView();
             }
@@ -907,10 +1038,16 @@ class HRDashboard {
 
     // View loading methods
     async loadDashboardView() {
+        const deptName = this.departmentConfig?.name || 'Administration';
+        const deptColor = this.departmentConfig?.color || '#6366f1';
+        
         const content = `
             <div class="dashboard-view">
                 <div class="dashboard-header">
-                    <h1>Dashboard</h1>
+                    <div class="header-content">
+                        <h1 style="color: ${deptColor}">${deptName} Dashboard</h1>
+                        <p class="department-description">${this.getDepartmentDescription()}</p>
+                    </div>
                     <div class="dashboard-actions">
                         <button class="btn btn-primary" onclick="hrDashboard.refreshDashboard()">
                             <i class="fas fa-sync-alt"></i> Refresh
@@ -918,55 +1055,272 @@ class HRDashboard {
                     </div>
                 </div>
                 
-                <div class="stats-grid">
-                    <div class="stat-card" id="total-employees">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">Total Employees</div>
-                        </div>
-                    </div>
-                    <div class="stat-card" id="active-today">
-                        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">Active Today</div>
-                        </div>
-                    </div>
-                    <div class="stat-card" id="on-break">
-                        <div class="stat-icon"><i class="fas fa-coffee"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">On Break</div>
-                        </div>
-                    </div>
-                    <div class="stat-card" id="total-departments">
-                        <div class="stat-icon"><i class="fas fa-building"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">Departments</div>
-                        </div>
-                    </div>
-                    <div class="stat-card" id="pending-requests">
-                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">Pending Requests</div>
-                        </div>
-                    </div>
-                    <div class="stat-card" id="completed-tasks">
-                        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                        <div class="stat-content">
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">Completed Tasks</div>
-                        </div>
-                    </div>
-                </div>
+                ${this.generateDepartmentStats()}
 
                 <div class="dashboard-content">
+                    ${this.generateDepartmentWidgets()}
+                </div>
+            </div>
+        `;
+
+        this.updateContentArea(content);
+        await this.loadDashboardStats();
+        this.animateStatsCounters();
+    }
+
+    getDepartmentDescription() {
+        const descriptions = {
+            administration: 'Quản lý tổng thể hệ thống và điều hành doanh nghiệp',
+            human_resources: 'Quản lý nhân sự, tuyển dụng và phát triển nhân tài',
+            finance: 'Quản lý tài chính, ngân sách và phân tích chi phí',
+            operations: 'Vận hành hoạt động, lập kế hoạch và tối ưu hóa quy trình'
+        };
+        return descriptions[this.currentUser?.department] || descriptions.administration;
+    }
+
+    generateDepartmentStats() {
+        const dept = this.currentUser?.department || 'administration';
+        
+        switch (dept) {
+            case 'human_resources':
+                return this.generateHRStats();
+            case 'finance':
+                return this.generateFinanceStats();
+            case 'operations':
+                return this.generateOperationsStats();
+            default:
+                return this.generateAdminStats();
+        }
+    }
+
+    generateAdminStats() {
+        return `
+            <div class="stats-grid">
+                <div class="stat-card" id="total-employees">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Tổng nhân viên</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="total-departments">
+                    <div class="stat-icon"><i class="fas fa-building"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Phòng ban</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="active-users">
+                    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Người dùng hoạt động</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="system-alerts">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Cảnh báo hệ thống</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateHRStats() {
+        return `
+            <div class="stats-grid">
+                <div class="stat-card" id="total-employees">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Tổng nhân viên</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="new-hires">
+                    <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Nhân viên mới</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="pending-leaves">
+                    <div class="stat-icon"><i class="fas fa-calendar-times"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Đơn nghỉ phép</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="recruitment-active">
+                    <div class="stat-icon"><i class="fas fa-search"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Vị trí tuyển dụng</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateFinanceStats() {
+        return `
+            <div class="stats-grid">
+                <div class="stat-card" id="monthly-payroll">
+                    <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Lương tháng này</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="pending-approvals">
+                    <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Chờ duyệt</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="budget-utilized">
+                    <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0%</div>
+                        <div class="stat-label">Ngân sách sử dụng</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="cost-savings">
+                    <div class="stat-icon"><i class="fas fa-piggy-bank"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Tiết kiệm chi phí</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateOperationsStats() {
+        return `
+            <div class="stats-grid">
+                <div class="stat-card" id="active-today">
+                    <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Có mặt hôm nay</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="on-break">
+                    <div class="stat-icon"><i class="fas fa-coffee"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Đang nghỉ giải lao</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="tasks-completed">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Công việc hoàn thành</div>
+                    </div>
+                </div>
+                <div class="stat-card" id="efficiency-rate">
+                    <div class="stat-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <div class="stat-content">
+                        <div class="stat-value">0%</div>
+                        <div class="stat-label">Hiệu suất làm việc</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateDepartmentWidgets() {
+        const dept = this.currentUser?.department || 'administration';
+        
+        switch (dept) {
+            case 'human_resources':
+                return this.generateHRWidgets();
+            case 'finance':
+                return this.generateFinanceWidgets();
+            case 'operations':
+                return this.generateOperationsWidgets();
+            default:
+                return this.generateAdminWidgets();
+        }
+    }
+
+    generateAdminWidgets() {
+        return `
+            <div class="dashboard-widgets">
+                <div class="widget-row">
                     <div class="recent-activities-section">
-                        <h3>Recent Activities</h3>
+                        <h3>Hoạt động gần đây</h3>
                         <div class="activities-container" id="recent-activities"></div>
+                    </div>
+                    <div class="system-status-section">
+                        <h3>Trạng thái hệ thống</h3>
+                        <div class="system-metrics" id="system-metrics"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateHRWidgets() {
+        return `
+            <div class="dashboard-widgets">
+                <div class="widget-row">
+                    <div class="recent-activities-section">
+                        <h3>Hoạt động nhân sự</h3>
+                        <div class="activities-container" id="recent-activities"></div>
+                    </div>
+                    <div class="pending-requests-section">
+                        <h3>Yêu cầu chờ xử lý</h3>
+                        <div class="requests-container" id="pending-requests"></div>
+                    </div>
+                </div>
+                <div class="widget-row">
+                    <div class="recruitment-section">
+                        <h3>Tuyển dụng</h3>
+                        <div class="recruitment-container" id="recruitment-status"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateFinanceWidgets() {
+        return `
+            <div class="dashboard-widgets">
+                <div class="widget-row">
+                    <div class="budget-overview-section">
+                        <h3>Tổng quan ngân sách</h3>
+                        <div class="budget-container" id="budget-overview"></div>
+                    </div>
+                    <div class="expense-analysis-section">
+                        <h3>Phân tích chi phí</h3>
+                        <div class="expense-container" id="expense-analysis"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    generateOperationsWidgets() {
+        return `
+            <div class="dashboard-widgets">
+                <div class="widget-row">
+                    <div class="workforce-section">
+                        <h3>Lực lượng lao động</h3>
+                        <div class="workforce-container" id="workforce-status"></div>
+                    </div>
+                    <div class="productivity-section">
+                        <h3>Năng suất làm việc</h3>
+                        <div class="productivity-container" id="productivity-metrics"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
                     </div>
                 </div>
             </div>
@@ -1761,7 +2115,79 @@ class HRDashboard {
             change_password: 'Change Password'
         }
     };
-}
+    }
+
+    // Department-specific view methods
+    async loadSchedulesView() {
+        const content = `
+            <div class="schedules-view">
+                <div class="page-header">
+                    <h1>Quản lý lịch làm việc</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Tạo lịch mới
+                        </button>
+                    </div>
+                </div>
+                <div class="schedules-content">
+                    <p>Chức năng quản lý lịch làm việc đang được phát triển.</p>
+                </div>
+            </div>
+        `;
+        this.updateContentArea(content);
+    }
+
+    async loadTasksView() {
+        const content = `
+            <div class="tasks-view">
+                <div class="page-header">
+                    <h1>Quản lý công việc</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Tạo công việc mới
+                        </button>
+                    </div>
+                </div>
+                <div class="tasks-content">
+                    <p>Chức năng quản lý công việc đang được phát triển.</p>
+                </div>
+            </div>
+        `;
+        this.updateContentArea(content);
+    }
+
+    async loadBudgetsView() {
+        const content = `
+            <div class="budgets-view">
+                <div class="page-header">
+                    <h1>Quản lý ngân sách</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Tạo ngân sách mới
+                        </button>
+                    </div>
+                </div>
+                <div class="budgets-content">
+                    <p>Chức năng quản lý ngân sách đang được phát triển.</p>
+                </div>
+            </div>
+        `;
+        this.updateContentArea(content);
+    }
+
+    async loadSettingsView() {
+        const content = `
+            <div class="settings-view">
+                <div class="page-header">
+                    <h1>Cài đặt hệ thống</h1>
+                </div>
+                <div class="settings-content">
+                    <p>Chức năng cài đặt hệ thống đang được phát triển.</p>
+                </div>
+            </div>
+        `;
+        this.updateContentArea(content);
+    }
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
