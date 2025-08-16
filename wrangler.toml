@@ -1,52 +1,28 @@
-name = "professional-hr-api"
-main = "api/cloudflare-worker.js"
+name = "hr-management-system"
+main = "backend/worker.js"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
-# Database binding for Cloudflare D2
+[env.production]
+name = "hr-management-prod"
+
+[env.staging]
+name = "hr-management-staging"
+
 [[d2_databases]]
 binding = "DB"
-database_name = "professional-hr-db"
-database_id = ""  # Add your D2 database ID here
+database_name = "hr-database"
+database_id = "your-d2-database-id"
 
-# R2 bucket for file storage
 [[r2_buckets]]
-binding = "R2"
-bucket_name = "professional-hr-files"
+binding = "BUCKET"
+bucket_name = "hr-files"
 
-# KV namespace for caching and sessions
-[[kv_namespaces]]
-binding = "KV"
-id = ""  # Add your KV namespace ID here
-
-# Environment variables for production
-[env.production]
-name = "professional-hr-api-prod"
-
-[env.production.vars]
-JWT_SECRET = ""  # Add your JWT secret
-SENDGRID_API_KEY = ""  # Add your SendGrid API key
-FROM_EMAIL = "noreply@yourcompany.com"
-FROM_NAME = "Professional HR Management System"
+[vars]
+ENVIRONMENT = "production"
+JWT_SECRET = "your-jwt-secret-key"
+SENDGRID_API_KEY = "your-sendgrid-api-key"
 FRONTEND_URL = "https://your-domain.com"
 
-# Environment variables for staging
-[env.staging]
-name = "professional-hr-api-staging"
-
-[env.staging.vars]
-JWT_SECRET = ""  # Add your staging JWT secret
-SENDGRID_API_KEY = ""  # Add your staging SendGrid API key
-FROM_EMAIL = "noreply-staging@yourcompany.com"
-FROM_NAME = "Professional HR Management System (Staging)"
-FRONTEND_URL = "https://staging.your-domain.com"
-
-# Development environment
-[env.development]
-name = "professional-hr-api-dev"
-
-[env.development.vars]
-JWT_SECRET = "dev-jwt-secret-change-in-production"
-SENDGRID_API_KEY = ""  # Add your development SendGrid API key
-FROM_EMAIL = "noreply-dev@yourcompany.com"
-FROM_NAME = "Professional HR Management System (Development)"
-FRONTEND_URL = "http://localhost:3000"
+[triggers]
+crons = ["0 0 * * *"]  # Daily cleanup

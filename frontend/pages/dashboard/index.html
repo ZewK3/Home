@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Professional HR</title>
+    <link rel="icon" type="image/x-icon" href="../../public/favicon.ico">
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="../../public/images/logo.png" alt="HR Logo" class="logo-image">
+                    <span class="logo-text">Professional HR</span>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <svg class="icon">
+                        <use href="#icon-menu"></use>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#dashboard" class="nav-link active" data-section="dashboard">
+                            <svg class="nav-icon">
+                                <use href="#icon-dashboard"></use>
+                            </svg>
+                            <span class="nav-text" data-i18n="dashboard">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#employees" class="nav-link" data-section="employees">
+                            <svg class="nav-icon">
+                                <use href="#icon-users"></use>
+                            </svg>
+                            <span class="nav-text" data-i18n="employees">Nhân viên</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#attendance" class="nav-link" data-section="attendance">
+                            <svg class="nav-icon">
+                                <use href="#icon-clock"></use>
+                            </svg>
+                            <span class="nav-text" data-i18n="attendance">Chấm công</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#payroll" class="nav-link" data-section="payroll">
+                            <svg class="nav-icon">
+                                <use href="#icon-money"></use>
+                            </svg>
+                            <span class="nav-text" data-i18n="payroll">Lương</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#reports" class="nav-link" data-section="reports">
+                            <svg class="nav-icon">
+                                <use href="#icon-chart"></use>
+                            </svg>
+                            <span class="nav-text" data-i18n="reports">Báo cáo</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#admin" class="nav-link" data-section="admin">
+                            <svg class="nav-icon">
+                                <use href="#icon-settings"></use>
+                            </svg>
+                            <span class="nav-text" data-i18n="admin">Quản trị</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <img src="../../public/images/avatar-default.png" alt="User Avatar" class="user-avatar">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Người dùng</span>
+                        <span class="user-role" id="userRole">Nhân viên</span>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <svg class="icon">
+                        <use href="#icon-logout"></use>
+                    </svg>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <svg class="icon">
+                            <use href="#icon-menu"></use>
+                        </svg>
+                    </button>
+                    <h1 class="page-title" id="pageTitle" data-i18n="dashboard">Dashboard</h1>
+                </div>
+
+                <div class="header-right">
+                    <!-- Language Toggle -->
+                    <div class="lang-toggle">
+                        <button class="lang-btn" data-lang="vi">
+                            <img src="../../public/images/flag-vn.png" alt="Vietnamese" class="flag-icon">
+                            VI
+                        </button>
+                        <button class="lang-btn" data-lang="en">
+                            <img src="../../public/images/flag-us.png" alt="English" class="flag-icon">
+                            EN
+                        </button>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="notifications" id="notifications">
+                        <button class="notification-btn">
+                            <svg class="icon">
+                                <use href="#icon-bell"></use>
+                            </svg>
+                            <span class="notification-badge" id="notificationBadge">3</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <h3 data-i18n="notifications">Thông báo</h3>
+                                <button class="mark-all-read" data-i18n="mark_all_read">Đánh dấu đã đọc</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <!-- Notifications will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="user-menu" id="userMenu">
+                        <button class="user-menu-btn">
+                            <img src="../../public/images/avatar-default.png" alt="User Avatar" class="user-avatar">
+                            <svg class="icon">
+                                <use href="#icon-chevron-down"></use>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="dropdown-item">
+                                <svg class="icon">
+                                    <use href="#icon-user"></use>
+                                </svg>
+                                <span data-i18n="profile">Hồ sơ</span>
+                            </div>
+                            <div class="dropdown-item">
+                                <svg class="icon">
+                                    <use href="#icon-settings"></use>
+                                </svg>
+                                <span data-i18n="settings">Cài đặt</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-item" id="logoutDropdown">
+                                <svg class="icon">
+                                    <use href="#icon-logout"></use>
+                                </svg>
+                                <span data-i18n="logout">Đăng xuất</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area" id="contentArea">
+                <!-- Dashboard Section -->
+                <section class="content-section active" id="dashboardSection">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon employees">
+                                <svg class="icon">
+                                    <use href="#icon-users"></use>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number" id="totalEmployees">0</h3>
+                                <p class="stat-label" data-i18n="total_employees">Tổng nhân viên</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon attendance">
+                                <svg class="icon">
+                                    <use href="#icon-clock"></use>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number" id="presentToday">0</h3>
+                                <p class="stat-label" data-i18n="present_today">Có mặt hôm nay</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon late">
+                                <svg class="icon">
+                                    <use href="#icon-alert"></use>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number" id="lateToday">0</h3>
+                                <p class="stat-label" data-i18n="late_today">Đi muộn hôm nay</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon absent">
+                                <svg class="icon">
+                                    <use href="#icon-x"></use>
+                                </svg>
+                            </div>
+                            <div class="stat-content">
+                                <h3 class="stat-number" id="absentToday">0</h3>
+                                <p class="stat-label" data-i18n="absent_today">Vắng mặt hôm nay</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-widgets">
+                        <div class="widget recent-activities">
+                            <div class="widget-header">
+                                <h3 class="widget-title" data-i18n="recent_activities">Hoạt động gần đây</h3>
+                                <button class="widget-action" data-i18n="view_all">Xem tất cả</button>
+                            </div>
+                            <div class="widget-content">
+                                <div class="activity-list" id="activityList">
+                                    <!-- Activities will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget attendance-chart">
+                            <div class="widget-header">
+                                <h3 class="widget-title" data-i18n="attendance_overview">Tổng quan chấm công</h3>
+                                <select class="widget-filter">
+                                    <option value="week" data-i18n="this_week">Tuần này</option>
+                                    <option value="month" data-i18n="this_month">Tháng này</option>
+                                    <option value="quarter" data-i18n="this_quarter">Quý này</option>
+                                </select>
+                            </div>
+                            <div class="widget-content">
+                                <canvas id="attendanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <h3 class="section-title" data-i18n="quick_actions">Thao tác nhanh</h3>
+                        <div class="action-grid">
+                            <button class="action-btn" data-action="add-employee">
+                                <svg class="icon">
+                                    <use href="#icon-user-plus"></use>
+                                </svg>
+                                <span data-i18n="add_employee">Thêm nhân viên</span>
+                            </button>
+                            <button class="action-btn" data-action="clock-in">
+                                <svg class="icon">
+                                    <use href="#icon-clock"></use>
+                                </svg>
+                                <span data-i18n="clock_in">Chấm công vào</span>
+                            </button>
+                            <button class="action-btn" data-action="generate-report">
+                                <svg class="icon">
+                                    <use href="#icon-file-text"></use>
+                                </svg>
+                                <span data-i18n="generate_report">Tạo báo cáo</span>
+                            </button>
+                            <button class="action-btn" data-action="payroll">
+                                <svg class="icon">
+                                    <use href="#icon-money"></use>
+                                </svg>
+                                <span data-i18n="calculate_payroll">Tính lương</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Other sections will be loaded dynamically -->
+                <section class="content-section" id="employeesSection">
+                    <div class="section-loading">
+                        <div class="loading-spinner"></div>
+                        <p data-i18n="loading">Đang tải...</p>
+                    </div>
+                </section>
+
+                <section class="content-section" id="attendanceSection">
+                    <div class="section-loading">
+                        <div class="loading-spinner"></div>
+                        <p data-i18n="loading">Đang tải...</p>
+                    </div>
+                </section>
+
+                <section class="content-section" id="payrollSection">
+                    <div class="section-loading">
+                        <div class="loading-spinner"></div>
+                        <p data-i18n="loading">Đang tải...</p>
+                    </div>
+                </section>
+
+                <section class="content-section" id="reportsSection">
+                    <div class="section-loading">
+                        <div class="loading-spinner"></div>
+                        <p data-i18n="loading">Đang tải...</p>
+                    </div>
+                </section>
+
+                <section class="content-section" id="adminSection">
+                    <div class="section-loading">
+                        <div class="loading-spinner"></div>
+                        <p data-i18n="loading">Đang tải...</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle"></h3>
+                <button class="modal-close" id="modalClose">
+                    <svg class="icon">
+                        <use href="#icon-x"></use>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <span class="notification-icon"></span>
+            <span class="notification-message"></span>
+        </div>
+    </div>
+
+    <!-- SVG Icons -->
+    <svg style="display: none;">
+        <defs>
+            <symbol id="icon-menu" viewBox="0 0 24 24">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </symbol>
+            <symbol id="icon-dashboard" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+            </symbol>
+            <symbol id="icon-users" viewBox="0 0 24 24">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </symbol>
+            <symbol id="icon-clock" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12,6 12,12 16,14"/>
+            </symbol>
+            <symbol id="icon-money" viewBox="0 0 24 24">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </symbol>
+            <symbol id="icon-chart" viewBox="0 0 24 24">
+                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+            </symbol>
+            <symbol id="icon-settings" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </symbol>
+            <symbol id="icon-logout" viewBox="0 0 24 24">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16,17 21,12 16,7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </symbol>
+            <symbol id="icon-bell" viewBox="0 0 24 24">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </symbol>
+            <symbol id="icon-chevron-down" viewBox="0 0 24 24">
+                <polyline points="6,9 12,15 18,9"/>
+            </symbol>
+            <symbol id="icon-user" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </symbol>
+            <symbol id="icon-user-plus" viewBox="0 0 24 24">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+            </symbol>
+            <symbol id="icon-file-text" viewBox="0 0 24 24">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </symbol>
+            <symbol id="icon-alert" viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </symbol>
+            <symbol id="icon-x" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <script src="../../assets/js/dashboard.js"></script>
+    <script src="../../services/dashboard-service.js"></script>
+    <script src="../../services/auth-service.js"></script>
+</body>
+</html>
