@@ -12,14 +12,16 @@
     <div class="auth-container">
         <!-- Language Toggle -->
         <div class="lang-toggle">
-            <button class="lang-btn" data-lang="vi">
+            <button class="lang-btn active" data-lang="vi" id="currentLangBtn">
                 <img src="../../public/images/flag-vn.png" alt="Vietnamese" class="flag-icon">
                 VI
             </button>
-            <button class="lang-btn" data-lang="en">
-                <img src="../../public/images/flag-us.png" alt="English" class="flag-icon">
-                EN
-            </button>
+            <div class="lang-dropdown" id="langDropdown" style="display: none;">
+                <button class="lang-btn" data-lang="en">
+                    <img src="../../public/images/flag-us.png" alt="English" class="flag-icon">
+                    EN
+                </button>
+            </div>
         </div>
 
         <!-- Background Elements -->

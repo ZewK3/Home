@@ -24,10 +24,25 @@
                     <a href="#contact" class="nav-link">Liên hệ</a>
                     <a href="pages/auth/login.html" class="nav-link nav-cta">Đăng nhập</a>
                 </div>
-                <div class="nav-toggle" id="nav-toggle">
-                    <span class="nav-toggle-line"></span>
-                    <span class="nav-toggle-line"></span>
-                    <span class="nav-toggle-line"></span>
+                <div class="nav-actions">
+                    <!-- Language Toggle -->
+                    <div class="lang-toggle">
+                        <button class="lang-btn active" data-lang="vi" id="currentLangBtn">
+                            <span class="flag-emoji">🇻🇳</span>
+                            VI
+                        </button>
+                        <div class="lang-dropdown" id="langDropdown" style="display: none;">
+                            <button class="lang-btn" data-lang="en">
+                                <span class="flag-emoji">🇺🇸</span>
+                                EN
+                            </button>
+                        </div>
+                    </div>
+                    <div class="nav-toggle" id="nav-toggle">
+                        <span class="nav-toggle-line"></span>
+                        <span class="nav-toggle-line"></span>
+                        <span class="nav-toggle-line"></span>
+                    </div>
                 </div>
             </div>
         </nav>

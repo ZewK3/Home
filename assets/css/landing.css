@@ -103,6 +103,78 @@
     transition: all var(--transition-fast);
 }
 
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Language Toggle */
+.lang-toggle {
+    position: relative;
+    display: inline-block;
+}
+
+.lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--gray-100);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 70px;
+    justify-content: center;
+}
+
+.lang-btn:hover {
+    background: var(--gray-200);
+    color: var(--text-primary);
+}
+
+.lang-btn.active {
+    background: var(--primary-500);
+    color: white;
+    border-color: var(--primary-500);
+}
+
+.lang-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    min-width: 70px;
+}
+
+.lang-dropdown .lang-btn {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+}
+
+.lang-dropdown .lang-btn:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.lang-dropdown .lang-btn:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+.flag-emoji {
+    font-size: 0.875rem;
+}
+
 /* Hero Section */
 .hero {
     padding: 120px 0 80px;

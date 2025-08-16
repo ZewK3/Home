@@ -81,8 +81,7 @@
     top: var(--spacing-lg);
     right: var(--spacing-lg);
     z-index: 10;
-    display: flex;
-    gap: var(--spacing-xs);
+    display: inline-block;
 }
 
 .lang-btn {
@@ -98,6 +97,9 @@
     font-weight: var(--font-medium);
     transition: all var(--transition-fast);
     backdrop-filter: blur(10px);
+    cursor: pointer;
+    min-width: 70px;
+    justify-content: center;
 }
 
 .lang-btn:hover {
@@ -109,6 +111,41 @@
 .lang-btn.active {
     background: rgba(59, 130, 246, 0.3);
     border-color: rgba(59, 130, 246, 0.5);
+}
+
+.lang-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--spacing-xs);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    backdrop-filter: blur(16px);
+    z-index: 1000;
+    min-width: 70px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+}
+
+.lang-dropdown .lang-btn {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.lang-dropdown .lang-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.lang-dropdown .lang-btn:first-child {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.lang-dropdown .lang-btn:last-child {
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .flag-icon {

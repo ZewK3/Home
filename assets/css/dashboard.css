@@ -313,37 +313,105 @@
 
 /* Language Toggle */
 .lang-toggle {
-    display: flex;
-    background: var(--gray-100);
-    border-radius: 8px;
-    padding: 2px;
+    position: relative;
+    display: inline-block;
 }
 
 .lang-btn {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.375rem 0.75rem;
-    border: none;
-    background: none;
-    border-radius: 6px;
-    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    background: var(--gray-100);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--text-secondary);
+    cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 80px;
+    justify-content: center;
 }
 
-.lang-btn:hover,
+.lang-btn:hover {
+    background: var(--gray-200);
+    color: var(--text-primary);
+}
+
 .lang-btn.active {
-    background: var(--primary-color);
-    color: var(--text-white);
-    box-shadow: var(--shadow-sm);
+    background: var(--primary-500);
+    color: white;
+    border-color: var(--primary-500);
+}
+
+.lang-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.5rem;
+    background: white;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    box-shadow: var(--glassmorphism-shadow);
+    z-index: 1000;
+    min-width: 80px;
+}
+
+.lang-dropdown .lang-btn {
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+}
+
+.lang-dropdown .lang-btn:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.lang-dropdown .lang-btn:last-child {
+    border-radius: 0 0 8px 8px;
 }
 
 .flag-emoji {
-    font-size: 14px;
-    margin-right: 0.25rem;
+    font-size: 1rem;
+}
+
+/* Mobile overlay for sidebar */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+}
+
+/* Main Content Layout */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+.content-area {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    background: transparent;
+    width: 100%;
 }
 
 /* Notifications */
@@ -933,6 +1001,10 @@
     
     .sidebar.open {
         transform: translateX(0);
+    }
+    
+    .sidebar.open + .main-content .mobile-overlay {
+        display: block;
     }
     
     .main-content {

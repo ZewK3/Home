@@ -14,6 +14,7 @@ class LandingPage {
         this.setupMobileMenu();
         this.setupStatsAnimation();
         this.setupDemoFeatures();
+        this.setupLanguageToggle();
     }
 
     setupNavigation() {
@@ -241,6 +242,118 @@ class LandingPage {
                 demoBtn.style.background = 'linear-gradient(135deg, var(--success-color), #10b981)';
             });
         }
+    }
+
+    setupLanguageToggle() {
+        this.currentLanguage = localStorage.getItem('language') || 'vi';
+        
+        const currentLangBtn = document.getElementById('currentLangBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        
+        if (currentLangBtn && langDropdown) {
+            // Toggle dropdown visibility
+            currentLangBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = langDropdown.style.display !== 'none';
+                langDropdown.style.display = isVisible ? 'none' : 'block';
+            });
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', () => {
+                langDropdown.style.display = 'none';
+            });
+            
+            // Handle language selection from dropdown
+            this.setupLanguageDropdownEvents();
+            this.updateLanguageUI();
+        }
+    }
+
+    setupLanguageDropdownEvents() {
+        const langDropdown = document.getElementById('langDropdown');
+        if (langDropdown) {
+            const dropdownBtn = langDropdown.querySelector('.lang-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const selectedLang = dropdownBtn.getAttribute('data-lang');
+                    
+                    if (selectedLang && selectedLang !== this.currentLanguage) {
+                        this.currentLanguage = selectedLang;
+                        localStorage.setItem('language', this.currentLanguage);
+                        this.updateLanguageUI();
+                        this.updatePageLanguage();
+                        langDropdown.style.display = 'none';
+                    }
+                });
+            }
+        }
+    }
+
+    updateLanguageUI() {
+        const currentLangBtn = document.getElementById('currentLangBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        
+        if (currentLangBtn && langDropdown) {
+            // Update current language button
+            const flagEmoji = this.currentLanguage === 'vi' ? '🇻🇳' : '🇺🇸';
+            const langText = this.currentLanguage.toUpperCase();
+            
+            currentLangBtn.innerHTML = `
+                <span class="flag-emoji">${flagEmoji}</span>
+                ${langText}
+            `;
+            
+            // Update dropdown to show other language
+            const otherLang = this.currentLanguage === 'vi' ? 'en' : 'vi';
+            const otherFlag = otherLang === 'vi' ? '🇻🇳' : '🇺🇸';
+            const otherText = otherLang.toUpperCase();
+            
+            langDropdown.innerHTML = `
+                <button class="lang-btn" data-lang="${otherLang}">
+                    <span class="flag-emoji">${otherFlag}</span>
+                    ${otherText}
+                </button>
+            `;
+            
+            // Re-setup dropdown events
+            this.setupLanguageDropdownEvents();
+        }
+    }
+
+    updatePageLanguage() {
+        // Update page content based on selected language
+        // This is a simplified version - in a real application you'd have complete translations
+        const elements = {
+            'hero-title': {
+                'vi': 'Hệ thống quản lý <span class="hero-highlight">nhân sự</span> chuyên nghiệp',
+                'en': 'Professional <span class="hero-highlight">HR Management</span> System'
+            },
+            'hero-description': {
+                'vi': 'Giải pháp toàn diện cho quản lý nhân sự, chấm công, tính lương và báo cáo với công nghệ cloud hiện đại',
+                'en': 'Complete solution for HR management, attendance tracking, payroll calculation and reporting with modern cloud technology'
+            }
+        };
+        
+        Object.keys(elements).forEach(id => {
+            const element = document.querySelector(`.${id}`);
+            if (element && elements[id][this.currentLanguage]) {
+                element.innerHTML = elements[id][this.currentLanguage];
+            }
+        });
+        
+        // Update navigation links
+        const navLinks = document.querySelectorAll('.nav-link');
+        const navTexts = {
+            'vi': ['Tính năng', 'Lợi ích', 'Liên hệ', 'Đăng nhập'],
+            'en': ['Features', 'Benefits', 'Contact', 'Sign In']
+        };
+        
+        navLinks.forEach((link, index) => {
+            if (index < navTexts[this.currentLanguage].length) {
+                link.textContent = navTexts[this.currentLanguage][index];
+            }
+        });
     }
 }
 

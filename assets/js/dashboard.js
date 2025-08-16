@@ -188,13 +188,36 @@ class HRDashboard {
 
     initializeSidebar() {
         const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.querySelector('.main-content');
+        const contentArea = document.getElementById('contentArea');
 
+        // Desktop sidebar toggle
         if (sidebarToggle) {
             sidebarToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('sidebar-collapsed');
+                if (sidebar.classList.contains('collapsed')) {
+                    mainContent.style.marginLeft = 'var(--sidebar-collapsed-width)';
+                    contentArea.style.marginLeft = '0';
+                } else {
+                    mainContent.style.marginLeft = 'var(--sidebar-width)';
+                    contentArea.style.marginLeft = '0';
+                }
+            });
+        }
+
+        // Mobile menu toggle
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                
+                // Add overlay for mobile
+                if (sidebar.classList.contains('open')) {
+                    this.addMobileOverlay();
+                } else {
+                    this.removeMobileOverlay();
+                }
             });
         }
 
@@ -205,8 +228,33 @@ class HRDashboard {
                 e.preventDefault();
                 const section = link.getAttribute('data-section');
                 this.navigateToSection(section);
+                
+                // Close mobile menu on navigation
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('open');
+                    this.removeMobileOverlay();
+                }
             });
         });
+    }
+
+    addMobileOverlay() {
+        if (!document.querySelector('.mobile-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'mobile-overlay';
+            overlay.addEventListener('click', () => {
+                document.getElementById('sidebar').classList.remove('open');
+                this.removeMobileOverlay();
+            });
+            document.body.appendChild(overlay);
+        }
+    }
+
+    removeMobileOverlay() {
+        const overlay = document.querySelector('.mobile-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
     }
 
     initializeTheme() {
@@ -229,13 +277,89 @@ class HRDashboard {
         this.currentLanguage = savedLanguage;
         this.updateLanguage();
         
-        const langToggle = document.getElementById('langToggle');
-        if (langToggle) {
-            langToggle.addEventListener('click', () => {
-                this.currentLanguage = this.currentLanguage === 'vi' ? 'en' : 'vi';
-                localStorage.setItem('language', this.currentLanguage);
-                this.updateLanguage();
+        // Handle new single button language toggle with dropdown
+        const currentLangBtn = document.getElementById('currentLangBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        const langButtons = document.querySelectorAll('.lang-btn');
+        
+        if (currentLangBtn && langDropdown) {
+            // Toggle dropdown visibility
+            currentLangBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = langDropdown.style.display !== 'none';
+                langDropdown.style.display = isVisible ? 'none' : 'block';
             });
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', () => {
+                langDropdown.style.display = 'none';
+            });
+            
+            // Handle language selection from dropdown
+            langButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const selectedLang = btn.getAttribute('data-lang');
+                    
+                    if (selectedLang && selectedLang !== this.currentLanguage) {
+                        this.currentLanguage = selectedLang;
+                        localStorage.setItem('language', this.currentLanguage);
+                        this.updateLanguage();
+                        this.updateLanguageUI();
+                        langDropdown.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Initialize language UI
+        this.updateLanguageUI();
+    }
+
+    updateLanguageUI() {
+        const currentLangBtn = document.getElementById('currentLangBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        
+        if (currentLangBtn) {
+            // Update current language button
+            const flagEmoji = this.currentLanguage === 'vi' ? '🇻🇳' : '🇺🇸';
+            const langText = this.currentLanguage.toUpperCase();
+            
+            currentLangBtn.innerHTML = `
+                <span class="flag-emoji">${flagEmoji}</span>
+                ${langText}
+            `;
+            
+            // Update dropdown to show other language
+            if (langDropdown) {
+                const otherLang = this.currentLanguage === 'vi' ? 'en' : 'vi';
+                const otherFlag = otherLang === 'vi' ? '🇻🇳' : '🇺🇸';
+                const otherText = otherLang.toUpperCase();
+                
+                langDropdown.innerHTML = `
+                    <button class="lang-btn" data-lang="${otherLang}">
+                        <span class="flag-emoji">${otherFlag}</span>
+                        ${otherText}
+                    </button>
+                `;
+                
+                // Re-attach event listener to new button
+                const newBtn = langDropdown.querySelector('.lang-btn');
+                if (newBtn) {
+                    newBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const selectedLang = newBtn.getAttribute('data-lang');
+                        
+                        if (selectedLang && selectedLang !== this.currentLanguage) {
+                            this.currentLanguage = selectedLang;
+                            localStorage.setItem('language', this.currentLanguage);
+                            this.updateLanguage();
+                            this.updateLanguageUI();
+                            langDropdown.style.display = 'none';
+                        }
+                    });
+                }
+            }
         }
     }
 
@@ -1219,6 +1343,273 @@ class HRDashboard {
             localStorage.removeItem('userData');
             this.redirectToLogin();
         }
+    }
+
+    async loadPayrollView() {
+        const content = `
+            <div class="payroll-view">
+                <div class="page-header">
+                    <h1 data-i18n="payroll">Payroll Management</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="hrDashboard.calculatePayroll()">
+                            <i class="fas fa-calculator"></i> <span data-i18n="calculate_payroll">Calculate Payroll</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="hrDashboard.generatePayslips()">
+                            <i class="fas fa-file-invoice"></i> <span data-i18n="generate_payslips">Generate Payslips</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="payroll-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalPayroll">₫0</div>
+                            <div class="stat-label" data-i18n="total_payroll">Total Payroll</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="payrollEmployees">0</div>
+                            <div class="stat-label" data-i18n="employees_processed">Employees Processed</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="pendingPayroll">0</div>
+                            <div class="stat-label" data-i18n="pending_approval">Pending Approval</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="payroll-content">
+                    <div class="payroll-table-container" id="payrollTableContainer">
+                        <div class="loading-spinner"></div>
+                        <p data-i18n="loading">Loading payroll data...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.querySelector('.main-content').innerHTML = content;
+        await this.loadPayrollData();
+    }
+
+    async loadReportsView() {
+        const content = `
+            <div class="reports-view">
+                <div class="page-header">
+                    <h1 data-i18n="reports">Reports & Analytics</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="hrDashboard.generateReport()">
+                            <i class="fas fa-chart-line"></i> <span data-i18n="generate_report">Generate Report</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="hrDashboard.scheduleReport()">
+                            <i class="fas fa-calendar-alt"></i> <span data-i18n="schedule_report">Schedule Report</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="reports-dashboard">
+                    <div class="report-cards">
+                        <div class="report-card" onclick="hrDashboard.viewAttendanceReport()">
+                            <div class="report-icon"><i class="fas fa-clock"></i></div>
+                            <div class="report-content">
+                                <h3 data-i18n="attendance_report">Attendance Report</h3>
+                                <p data-i18n="attendance_report_desc">Track employee attendance and punctuality</p>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card" onclick="hrDashboard.viewPayrollReport()">
+                            <div class="report-icon"><i class="fas fa-money-bill"></i></div>
+                            <div class="report-content">
+                                <h3 data-i18n="payroll_report">Payroll Report</h3>
+                                <p data-i18n="payroll_report_desc">Analyze salary and compensation data</p>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card" onclick="hrDashboard.viewPerformanceReport()">
+                            <div class="report-icon"><i class="fas fa-chart-bar"></i></div>
+                            <div class="report-content">
+                                <h3 data-i18n="performance_report">Performance Report</h3>
+                                <p data-i18n="performance_report_desc">Employee performance metrics and KPIs</p>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card" onclick="hrDashboard.viewLeaveReport()">
+                            <div class="report-icon"><i class="fas fa-calendar-times"></i></div>
+                            <div class="report-content">
+                                <h3 data-i18n="leave_report">Leave Report</h3>
+                                <p data-i18n="leave_report_desc">Track vacation and sick leave usage</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-container">
+                        <div class="chart-widget">
+                            <h3 data-i18n="attendance_trend">Attendance Trend</h3>
+                            <canvas id="attendanceTrendChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-widget">
+                            <h3 data-i18n="department_stats">Department Statistics</h3>
+                            <canvas id="departmentStatsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.querySelector('.main-content').innerHTML = content;
+        await this.loadReportsData();
+    }
+
+    async loadAdminView() {
+        // Check admin permissions
+        if (!this.hasAdminPermissions()) {
+            this.showNotification('Access denied. Admin permissions required.', 'error');
+            this.navigateToSection('dashboard');
+            return;
+        }
+
+        const content = `
+            <div class="admin-view">
+                <div class="page-header">
+                    <h1 data-i18n="admin">Admin Panel</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="hrDashboard.openSystemSettings()">
+                            <i class="fas fa-cog"></i> <span data-i18n="system_settings">System Settings</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="hrDashboard.viewAuditLogs()">
+                            <i class="fas fa-history"></i> <span data-i18n="audit_logs">Audit Logs</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="admin-dashboard">
+                    <div class="admin-cards">
+                        <div class="admin-card" onclick="hrDashboard.manageUsers()">
+                            <div class="admin-icon"><i class="fas fa-users-cog"></i></div>
+                            <div class="admin-content">
+                                <h3 data-i18n="user_management">User Management</h3>
+                                <p data-i18n="manage_user_accounts">Manage user accounts and permissions</p>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card" onclick="hrDashboard.manageDepartments()">
+                            <div class="admin-icon"><i class="fas fa-building"></i></div>
+                            <div class="admin-content">
+                                <h3 data-i18n="department_management">Department Management</h3>
+                                <p data-i18n="organize_departments">Organize company departments and structure</p>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card" onclick="hrDashboard.manageRoles()">
+                            <div class="admin-icon"><i class="fas fa-user-shield"></i></div>
+                            <div class="admin-content">
+                                <h3 data-i18n="role_management">Role Management</h3>
+                                <p data-i18n="configure_roles">Configure roles and permissions</p>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card" onclick="hrDashboard.systemBackup()">
+                            <div class="admin-icon"><i class="fas fa-database"></i></div>
+                            <div class="admin-content">
+                                <h3 data-i18n="system_backup">System Backup</h3>
+                                <p data-i18n="backup_restore">Backup and restore system data</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-content">
+                        <div class="system-stats">
+                            <h3 data-i18n="system_statistics">System Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-label" data-i18n="total_users">Total Users</div>
+                                    <div class="stat-value" id="totalUsers">0</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label" data-i18n="active_sessions">Active Sessions</div>
+                                    <div class="stat-value" id="activeSessions">0</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label" data-i18n="system_uptime">System Uptime</div>
+                                    <div class="stat-value" id="systemUptime">--</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label" data-i18n="database_size">Database Size</div>
+                                    <div class="stat-value" id="databaseSize">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.querySelector('.main-content').innerHTML = content;
+        await this.loadAdminData();
+    }
+
+    // Additional helper methods for the new sections
+    async loadPayrollData() {
+        try {
+            // Mock data for testing - replace with API call
+            const mockPayrollData = {
+                totalPayroll: 150000000,
+                employeesProcessed: 48,
+                pendingApproval: 3
+            };
+            
+            document.getElementById('totalPayroll').textContent = 
+                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(mockPayrollData.totalPayroll);
+            document.getElementById('payrollEmployees').textContent = mockPayrollData.employeesProcessed;
+            document.getElementById('pendingPayroll').textContent = mockPayrollData.pendingApproval;
+            
+        } catch (error) {
+            console.error('Failed to load payroll data:', error);
+            this.showNotification('Failed to load payroll data', 'error');
+        }
+    }
+
+    async loadReportsData() {
+        try {
+            // Initialize charts if Chart.js is available
+            if (typeof Chart !== 'undefined') {
+                this.initializeReportsCharts();
+            }
+        } catch (error) {
+            console.error('Failed to load reports data:', error);
+            this.showNotification('Failed to load reports data', 'error');
+        }
+    }
+
+    async loadAdminData() {
+        try {
+            // Mock admin data - replace with API call
+            const mockAdminData = {
+                totalUsers: 52,
+                activeSessions: 18,
+                systemUptime: '7 days, 3 hours',
+                databaseSize: '2.3 GB'
+            };
+            
+            document.getElementById('totalUsers').textContent = mockAdminData.totalUsers;
+            document.getElementById('activeSessions').textContent = mockAdminData.activeSessions;
+            document.getElementById('systemUptime').textContent = mockAdminData.systemUptime;
+            document.getElementById('databaseSize').textContent = mockAdminData.databaseSize;
+            
+        } catch (error) {
+            console.error('Failed to load admin data:', error);
+            this.showNotification('Failed to load admin data', 'error');
+        }
+    }
+
+    hasAdminPermissions() {
+        return this.currentUser && (this.currentUser.role === 'admin' || this.currentUser.permissions?.includes('all'));
     }
 
     // Translations (basic implementation)

@@ -109,14 +109,16 @@
                 <div class="header-right">
                     <!-- Language Toggle -->
                     <div class="lang-toggle">
-                        <button class="lang-btn" data-lang="vi">
+                        <button class="lang-btn active" data-lang="vi" id="currentLangBtn">
                             <span class="flag-emoji">🇻🇳</span>
                             VI
                         </button>
-                        <button class="lang-btn" data-lang="en">
-                            <span class="flag-emoji">🇺🇸</span>
-                            EN
-                        </button>
+                        <div class="lang-dropdown" id="langDropdown" style="display: none;">
+                            <button class="lang-btn" data-lang="en">
+                                <span class="flag-emoji">🇺🇸</span>
+                                EN
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Notifications -->

@@ -32,13 +32,34 @@ class AuthManager {
 
     // Event Listeners
     setupEventListeners() {
-        // Language toggle
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const lang = e.currentTarget.dataset.lang;
-                this.changeLanguage(lang);
+        // Language toggle with dropdown
+        const currentLangBtn = document.getElementById('currentLangBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        
+        if (currentLangBtn && langDropdown) {
+            // Toggle dropdown visibility
+            currentLangBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = langDropdown.style.display !== 'none';
+                langDropdown.style.display = isVisible ? 'none' : 'block';
             });
-        });
+            
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', () => {
+                langDropdown.style.display = 'none';
+            });
+            
+            // Handle language selection from dropdown
+            this.setupLanguageDropdownEvents();
+        } else {
+            // Fallback for old language toggle
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const lang = e.currentTarget.dataset.lang;
+                    this.changeLanguage(lang);
+                });
+            });
+        }
 
         // Password toggles
         document.querySelectorAll('.password-toggle').forEach(toggle => {
@@ -531,10 +552,61 @@ class AuthManager {
         });
     }
 
+    setupLanguageDropdownEvents() {
+        const langDropdown = document.getElementById('langDropdown');
+        if (langDropdown) {
+            const dropdownBtn = langDropdown.querySelector('.lang-btn');
+            if (dropdownBtn) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const lang = dropdownBtn.dataset.lang;
+                    this.changeLanguage(lang);
+                    langDropdown.style.display = 'none';
+                });
+            }
+        }
+    }
+
     updateLanguageButtons() {
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === this.currentLanguage);
-        });
+        const currentLangBtn = document.getElementById('currentLangBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        
+        if (currentLangBtn && langDropdown) {
+            // Update current language button
+            const flagImg = this.currentLanguage === 'vi' 
+                ? '../../public/images/flag-vn.png' 
+                : '../../public/images/flag-us.png';
+            const flagAlt = this.currentLanguage === 'vi' ? 'Vietnamese' : 'English';
+            const langText = this.currentLanguage.toUpperCase();
+            
+            currentLangBtn.innerHTML = `
+                <img src="${flagImg}" alt="${flagAlt}" class="flag-icon">
+                ${langText}
+            `;
+            
+            // Update dropdown to show other language
+            const otherLang = this.currentLanguage === 'vi' ? 'en' : 'vi';
+            const otherFlag = otherLang === 'vi' 
+                ? '../../public/images/flag-vn.png' 
+                : '../../public/images/flag-us.png';
+            const otherAlt = otherLang === 'vi' ? 'Vietnamese' : 'English';
+            const otherText = otherLang.toUpperCase();
+            
+            langDropdown.innerHTML = `
+                <button class="lang-btn" data-lang="${otherLang}">
+                    <img src="${otherFlag}" alt="${otherAlt}" class="flag-icon">
+                    ${otherText}
+                </button>
+            `;
+            
+            // Re-setup dropdown events
+            this.setupLanguageDropdownEvents();
+        } else {
+            // Fallback for old language toggle
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === this.currentLanguage);
+            });
+        }
     }
 
     getStoredLanguage() {
