@@ -1,6 +1,6 @@
 /**
  * Professional HR Dashboard JavaScript
- * Handles all dashboard functionality with modern ES6+ features
+ * Fixed version addressing all reported issues
  */
 
 // TEST ACCOUNTS - Remove when deploying to production
@@ -8,7 +8,7 @@ const TEST_ACCOUNTS = {
     ADMIN: {
         id: 1,
         email: 'admin@hrms.com',
-        firstName: 'Admin',
+        firstName: 'Admin', 
         lastName: 'User',
         role: 'admin',
         department: 'administration',
@@ -305,24 +305,37 @@ class HRDashboard {
         const mainContent = document.querySelector('.main-content');
         const contentArea = document.getElementById('contentArea');
 
-        // Desktop sidebar toggle
+        // Desktop sidebar toggle - Fixed to prevent content area issues
         if (sidebarToggle) {
-            sidebarToggle.addEventListener('click', () => {
+            sidebarToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sidebar.classList.toggle('collapsed');
-                // No need to manually adjust margins since we removed them from CSS
+                
+                // Force layout recalculation to prevent content issues
+                if (contentArea) {
+                    contentArea.style.display = 'none';
+                    contentArea.offsetHeight; // Force reflow
+                    contentArea.style.display = 'block';
+                }
             });
         }
 
-        // Mobile menu toggle
+        // Mobile menu toggle - Fixed functionality
         if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('open');
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Mobile menu button clicked'); // Debug log
                 
-                // Add overlay for mobile
-                if (sidebar.classList.contains('open')) {
-                    this.addMobileOverlay();
-                } else {
+                const isOpen = sidebar.classList.contains('open');
+                
+                if (isOpen) {
+                    sidebar.classList.remove('open');
                     this.removeMobileOverlay();
+                } else {
+                    sidebar.classList.add('open');
+                    this.addMobileOverlay();
                 }
             });
         }
@@ -353,15 +366,28 @@ class HRDashboard {
     }
 
     addMobileOverlay() {
-        if (!document.querySelector('.mobile-overlay')) {
-            const overlay = document.createElement('div');
-            overlay.className = 'mobile-overlay';
-            overlay.addEventListener('click', () => {
-                document.getElementById('sidebar').classList.remove('open');
-                this.removeMobileOverlay();
-            });
-            document.body.appendChild(overlay);
-        }
+        // Remove existing overlay first
+        this.removeMobileOverlay();
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'mobile-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: block;
+        `;
+        
+        overlay.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            this.removeMobileOverlay();
+        });
+        
+        document.body.appendChild(overlay);
     }
 
     removeMobileOverlay() {
@@ -391,38 +417,25 @@ class HRDashboard {
         this.currentLanguage = savedLanguage;
         this.updateLanguage();
         
-        // Handle new single button language toggle with dropdown
+        // Fixed single button language toggle with dropdown
         const currentLangBtn = document.getElementById('currentLangBtn');
         const langDropdown = document.getElementById('langDropdown');
-        const langButtons = document.querySelectorAll('.lang-btn');
         
         if (currentLangBtn && langDropdown) {
             // Toggle dropdown visibility
             currentLangBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                const isVisible = langDropdown.style.display !== 'none';
+                
+                const isVisible = langDropdown.style.display === 'block';
                 langDropdown.style.display = isVisible ? 'none' : 'block';
             });
             
             // Hide dropdown when clicking outside
-            document.addEventListener('click', () => {
-                langDropdown.style.display = 'none';
-            });
-            
-            // Handle language selection from dropdown
-            langButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const selectedLang = btn.getAttribute('data-lang');
-                    
-                    if (selectedLang && selectedLang !== this.currentLanguage) {
-                        this.currentLanguage = selectedLang;
-                        localStorage.setItem('language', this.currentLanguage);
-                        this.updateLanguage();
-                        this.updateLanguageUI();
-                        langDropdown.style.display = 'none';
-                    }
-                });
+            document.addEventListener('click', (e) => {
+                if (!currentLangBtn.contains(e.target) && !langDropdown.contains(e.target)) {
+                    langDropdown.style.display = 'none';
+                }
             });
         }
         
@@ -457,10 +470,11 @@ class HRDashboard {
                     </button>
                 `;
                 
-                // Re-attach event listener to new button
+                // Attach event listener to new button
                 const newBtn = langDropdown.querySelector('.lang-btn');
                 if (newBtn) {
                     newBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         const selectedLang = newBtn.getAttribute('data-lang');
                         
