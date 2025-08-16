@@ -3,6 +3,20 @@
  * Handles all dashboard functionality with modern ES6+ features
  */
 
+// TEST ACCOUNTS - Remove when deploying to production
+const TEST_ACCOUNTS = {
+    ADMIN: {
+        id: 1,
+        email: 'admin@hrms.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        permissions: ['all'],
+        avatar: null
+    }
+};
+// END TEST ACCOUNTS
+
 class HRDashboard {
     constructor() {
         this.apiUrl = 'https://zewk.tocotoco.workers.dev';

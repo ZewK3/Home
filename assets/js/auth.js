@@ -3,6 +3,17 @@
  * Handles login, registration, and form validation
  */
 
+// TEST ACCOUNTS - Remove when deploying to production
+const TEST_ACCOUNTS = {
+    ADMIN: {
+        username: 'ADMIN',
+        password: 'ADMIN123',
+        role: 'admin',
+        permissions: ['all']
+    }
+};
+// END TEST ACCOUNTS
+
 class AuthManager {
     constructor() {
         this.apiUrl = 'https://zewk.tocotoco.workers.dev';
@@ -64,6 +75,12 @@ class AuthManager {
 
         // Clear previous errors
         this.clearFieldError(input);
+
+        // TEST ACCOUNT EXCEPTION - Remove when deploying to production
+        if (value === 'ADMIN' || value === 'ADMIN123') {
+            return true;
+        }
+        // END TEST ACCOUNT EXCEPTION
 
         // Required field validation
         if (input.hasAttribute('required') && !value) {
@@ -153,6 +170,38 @@ class AuthManager {
 
         // Show loading state
         this.setButtonLoading(submitBtn, true);
+
+        // TEST ACCOUNT LOGIN - Remove when deploying to production
+        const email = formData.get('email');
+        const password = formData.get('password');
+        
+        if (email === 'ADMIN' && password === 'ADMIN123') {
+            // Mock successful admin login
+            const mockUserData = {
+                id: 1,
+                email: 'admin@hrms.com',
+                firstName: 'Admin',
+                lastName: 'User',
+                role: 'admin',
+                permissions: ['all'],
+                avatar: null
+            };
+            
+            // Mock tokens
+            localStorage.setItem('accessToken', 'mock_admin_token_' + Date.now());
+            localStorage.setItem('refreshToken', 'mock_admin_refresh_' + Date.now());
+            localStorage.setItem('userData', JSON.stringify(mockUserData));
+            
+            this.showNotification(this.translate('login_success'), 'success');
+            
+            setTimeout(() => {
+                window.location.href = '../dashboard/index.html';
+            }, 1000);
+            
+            this.setButtonLoading(submitBtn, false);
+            return;
+        }
+        // END TEST ACCOUNT LOGIN
 
         try {
             const response = await fetch(`${this.apiUrl}/api/v1/auth/login`, {

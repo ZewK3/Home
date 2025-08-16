@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional HR Management System</title>
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp với công nghệ hiện đại">
-    <link rel="icon" type="image/x-icon" href="frontend/public/favicon.ico">
-    <link rel="stylesheet" href="frontend/assets/css/base.css">
-    <link rel="stylesheet" href="frontend/assets/css/landing.css">
+    <link rel="icon" type="image/x-icon" href="public/favicon.ico">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
 </head>
 <body>
     <!-- Header -->
@@ -15,14 +15,14 @@
         <nav class="nav">
             <div class="nav-container">
                 <div class="nav-brand">
-                    <img src="frontend/public/images/logo.png" alt="HR Logo" class="nav-logo">
+                    <img src="public/images/logo.png" alt="HR Logo" class="nav-logo">
                     <span class="nav-title">Professional HR</span>
                 </div>
                 <div class="nav-menu" id="nav-menu">
                     <a href="#features" class="nav-link">Tính năng</a>
                     <a href="#benefits" class="nav-link">Lợi ích</a>
                     <a href="#contact" class="nav-link">Liên hệ</a>
-                    <a href="frontend/pages/auth/login.html" class="nav-link nav-cta">Đăng nhập</a>
+                    <a href="pages/auth/login.html" class="nav-link nav-cta">Đăng nhập</a>
                 </div>
                 <div class="nav-toggle" id="nav-toggle">
                     <span class="nav-toggle-line"></span>
@@ -46,18 +46,40 @@
                     và báo cáo với công nghệ cloud hiện đại
                 </p>
                 <div class="hero-actions">
-                    <a href="frontend/pages/auth/register.html" class="btn btn-primary">
+                    <a href="pages/auth/register.html" class="btn btn-primary">
                         Bắt đầu ngay
                     </a>
                     <a href="#features" class="btn btn-secondary">
                         Tìm hiểu thêm
                     </a>
                 </div>
+                <!-- Test Account Info -->
+                <div class="test-account-info">
+                    <div class="demo-card">
+                        <h3>🎯 Tài khoản Demo</h3>
+                        <p>Dùng thông tin sau để trải nghiệm hệ thống:</p>
+                        <div class="demo-credentials">
+                            <div class="credential-item">
+                                <span class="label">Tài khoản:</span>
+                                <span class="value">ADMIN</span>
+                            </div>
+                            <div class="credential-item">
+                                <span class="label">Mật khẩu:</span>
+                                <span class="value">ADMIN123</span>
+                            </div>
+                        </div>
+                        <a href="pages/auth/login.html" class="btn btn-demo">
+                            Trải nghiệm ngay
+                        </a>
+                    </div>
+                </div>
             </div>
             <div class="hero-visual">
                 <div class="hero-image">
-                    <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 600;">
-                        HR Dashboard Preview
+                    <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 600; box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">📊</div>
+                        <div>HR Dashboard Preview</div>
+                        <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">Giao diện quản lý hiện đại</div>
                     </div>
                 </div>
             </div>
@@ -112,6 +134,30 @@
                     <p class="feature-description">
                         Phân tích dữ liệu và tạo báo cáo chuyên nghiệp cho quản lý
                     </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Nhân viên được quản lý</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Hỗ trợ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5 ⭐</div>
+                    <div class="stat-label">Đánh giá người dùng</div>
                 </div>
             </div>
         </div>
@@ -203,6 +249,6 @@
         </defs>
     </svg>
 
-    <script src="frontend/assets/js/landing.js"></script>
+    <script src="assets/js/landing.js"></script>
 </body>
 </html>

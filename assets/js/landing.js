@@ -12,6 +12,8 @@ class LandingPage {
         this.setupScrollEffects();
         this.setupAnimations();
         this.setupMobileMenu();
+        this.setupStatsAnimation();
+        this.setupDemoFeatures();
     }
 
     setupNavigation() {
@@ -134,6 +136,109 @@ class LandingPage {
                     navMenu.classList.remove('active');
                     navToggle.classList.remove('active');
                 }
+            });
+        }
+    }
+
+    setupStatsAnimation() {
+        const stats = document.querySelectorAll('.stat-number');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.animateNumber(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        stats.forEach(stat => {
+            observer.observe(stat);
+        });
+    }
+
+    animateNumber(element) {
+        const text = element.textContent;
+        const hasPercent = text.includes('%');
+        const hasPlus = text.includes('+');
+        const hasStar = text.includes('⭐');
+        const hasSlash = text.includes('/');
+        
+        if (hasStar || hasSlash) {
+            // Special cases for ratings and fractions
+            element.style.opacity = '0';
+            element.style.transform = 'scale(0.5)';
+            element.style.transition = 'all 0.6s ease-out';
+            
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'scale(1)';
+            }, 100);
+            return;
+        }
+        
+        const numericValue = parseFloat(text.replace(/[^\d.]/g, ''));
+        if (isNaN(numericValue)) return;
+        
+        const duration = 2000;
+        const steps = 60;
+        const increment = numericValue / steps;
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= numericValue) {
+                current = numericValue;
+                clearInterval(timer);
+            }
+            
+            let displayValue = current.toFixed(numericValue % 1 === 0 ? 0 : 1);
+            if (hasPercent) displayValue += '%';
+            if (hasPlus) displayValue += '+';
+            
+            element.textContent = displayValue;
+        }, duration / steps);
+    }
+
+    setupDemoFeatures() {
+        // Add click animation to demo credentials
+        const credentialValues = document.querySelectorAll('.credential-item .value');
+        credentialValues.forEach(value => {
+            value.addEventListener('click', () => {
+                // Copy to clipboard
+                navigator.clipboard.writeText(value.textContent).then(() => {
+                    // Show copied feedback
+                    const originalText = value.textContent;
+                    value.textContent = 'Đã sao chép!';
+                    value.style.background = 'var(--success-color)';
+                    value.style.color = 'var(--white)';
+                    
+                    setTimeout(() => {
+                        value.textContent = originalText;
+                        value.style.background = 'rgba(255, 255, 255, 0.8)';
+                        value.style.color = 'var(--primary-color)';
+                    }, 1500);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    value.style.animation = 'pulse 0.3s ease-in-out';
+                    setTimeout(() => {
+                        value.style.animation = '';
+                    }, 300);
+                });
+            });
+            
+            value.style.cursor = 'pointer';
+            value.title = 'Click để sao chép';
+        });
+
+        // Add demo button enhancement
+        const demoBtn = document.querySelector('.btn-demo');
+        if (demoBtn) {
+            demoBtn.addEventListener('mouseenter', () => {
+                demoBtn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+            });
+            
+            demoBtn.addEventListener('mouseleave', () => {
+                demoBtn.style.background = 'linear-gradient(135deg, var(--success-color), #10b981)';
             });
         }
     }
