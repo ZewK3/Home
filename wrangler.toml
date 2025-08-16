@@ -1,0 +1,28 @@
+name = "hr-management-system"
+main = "dist/backend/worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "hr-management-prod"
+
+[env.staging]
+name = "hr-management-staging"
+
+[[d2_databases]]
+binding = "DB"
+database_name = "hr-database"
+database_id = "your-d2-database-id"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "hr-files"
+
+[vars]
+ENVIRONMENT = "production"
+JWT_SECRET = "your-jwt-secret-key"
+SENDGRID_API_KEY = "your-sendgrid-api-key"
+FRONTEND_URL = "https://your-domain.com"
+
+[triggers]
+crons = ["0 0 * * *"]  # Daily cleanup
