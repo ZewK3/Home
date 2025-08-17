@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp">
     <meta name="theme-color" content="#2563eb">
-    <link rel="icon" href="favicon-32x32.png" sizes="32x32">
+    <link rel="icon" href="../../assets/icons/favicon-32x32.png" sizes="32x32">
     <title>HR Management System - Dashboard</title>
-    <link rel="stylesheet" href="dash.css">
+    
+    <!-- Modular CSS Files -->
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <link rel="stylesheet" href="../../assets/css/navigation.css">
+    <link rel="stylesheet" href="../../assets/css/modals.css">
+    <link rel="stylesheet" href="../../assets/css/containers.css">
+    <link rel="stylesheet" href="../../assets/css/dash.css">
+    
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
 </head>
@@ -137,19 +145,19 @@
     </dialog>
 
     <!-- Mobile Sidebar Overlay -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-    <!-- Mobile Menu Toggle - positioned independently -->
-    <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
-        <span class="menu-icon">
-            <span class="menu-line"></span>
-            <span class="menu-line"></span>
-            <span class="menu-line"></span>
-        </span>
-    </button>
+    <div id="sidebarOverlay" class="app-sidebar-overlay"></div>
 
     <!-- User Info Header - GitHub AppHeader Style -->
-    <div class="show-user AppHeader-globalBar pb-2 js-global-bar">
+    <div class="app-header">
+        <!-- Mobile Menu Toggle - positioned within AppHeader -->
+        <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
+            <span class="menu-icon">
+                <span class="menu-line"></span>
+                <span class="menu-line"></span>
+                <span class="menu-line"></span>
+            </span>
+        </button>
+        
         <div class="AppHeader-context">
             <div class="company-logo">
                 <h1><a href="#" id="companyLogoLink" class="AppHeader-logo" style="text-decoration: none; color: inherit; cursor: pointer;">
@@ -170,7 +178,7 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="app-sidebar">
         <ul id="menuList" class="menu-list">
             <li class="menu-item" data-role="AD,QL,NV">
                 <a href="#" id="openWorkManagement" class="menu-link">
@@ -514,17 +522,17 @@
         </div>
     </main>
 
+
     <!-- Load JavaScript modules in correct order -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/api-cache.js"></script>
-    <script src="js/auth-manager.js"></script>
-    <script src="js/theme-manager.js"></script>
-    <script src="js/menu-manager.js"></script>
-    <script src="js/content-manager.js"></script>
-    <script src="js/dashboard-handler.js"></script>
-    <script src="js/script.js"></script>
-    <script src="js/main-init.js"></script>
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/utils.js"></script>
+    <script src="../../assets/js/auth-manager.js"></script>
+    <script src="../../assets/js/theme-manager.js"></script>
+    <script src="../../assets/js/menu-manager.js"></script>
+    <script src="../../assets/js/content-manager.js"></script>
+    <script src="../../assets/js/dashboard-handler.js"></script>
+    <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/main-init.js"></script>
     </div> <!-- End dashboardContent -->
 </body>
 </html>

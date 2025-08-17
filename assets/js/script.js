@@ -445,7 +445,7 @@ async function handleLogin(event) {
                 elements.loginContainer.style.display = "none";
             }
             
-            setTimeout(() => window.location.href = "dashboard.html", 1500);
+            setTimeout(() => window.location.href = "../dashboard/dashboard.html", 1500);
         } else {
             const errorData = await response.json().catch(() => ({}));
             

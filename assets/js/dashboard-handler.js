@@ -91,7 +91,19 @@ async function initializeDashboard() {
         ThemeManager.initialize();
 
         // Initialize features with proper user data
+        if (typeof ContentManager === 'undefined') {
+            console.error('ContentManager class is not defined. Check if content-manager.js is loaded properly.');
+            throw new Error('ContentManager class is not defined');
+        }
         window.contentManager = new ContentManager(userData);
+
+        // Initialize enhanced navigation manager
+        if (typeof NavigationManager !== 'undefined') {
+            window.navigationManager = new NavigationManager(window.contentManager);
+            console.log('✅ NavigationManager initialized');
+        } else {
+            console.warn('NavigationManager not available, using fallback navigation');
+        }
 
         // Apply role-based section visibility FIRST
         await applyRoleBasedSectionVisibility();
@@ -106,13 +118,10 @@ async function initializeDashboard() {
             console.log('✅ User info populated in header:', userData.fullName, userData.employeeId);
         }
 
-        // Load dashboard stats immediately when page loads
-        await getDashboardStats();
-        
-        // Ensure stats-grid is visible and updated
+        // Ensure stats-grid is visible and updated (stats will be loaded in initializeEnhancedDashboard)
         await updateStatsGrid();
 
-        // Initialize enhanced dashboard
+        // Initialize enhanced dashboard with cached user data
         await initializeEnhancedDashboard();
 
         // Hide dashboard loader and show content after initialization is complete
@@ -153,7 +162,140 @@ setTimeout(() => {
     setupMobileMenu();
 }, 3000);
 
-// Enhanced Dashboard Stats Initialization - Using unified dashboard API
+// Update dashboard stats UI using cached data - no API calls
+async function updateDashboardStatsUI() {
+    console.log('📊 Updating dashboard stats UI with cached data...');
+    
+    // First, ensure the welcome section and stats-grid are visible
+    const welcomeSection = document.querySelector('.welcome-section');
+    const statsGrid = document.querySelector('.stats-grid');
+    const content = document.getElementById('content');
+    
+    if (welcomeSection) {
+        welcomeSection.style.display = 'block';
+    } else {
+        console.warn('⚠️ Welcome section not found in DOM');
+    }
+    
+    if (statsGrid) {
+        statsGrid.style.display = 'grid';
+    } else {
+        console.warn('⚠️ Stats grid not found in DOM');
+    }
+    
+    if (content) {
+        content.style.display = 'block';
+    }
+    
+    // Wait a moment for DOM to be ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const elements = {
+        totalEmployees: document.getElementById('totalEmployees'),
+        todaySchedule: document.getElementById('todaySchedule'), 
+        pendingRequests: document.getElementById('pendingRequests'),
+        recentMessages: document.getElementById('recentMessages'),
+        todayScheduleDay: document.getElementById('todayScheduleDay')
+    };
+
+    console.log('📊 Stats elements found:', {
+        totalEmployees: !!elements.totalEmployees,
+        todaySchedule: !!elements.todaySchedule,
+        pendingRequests: !!elements.pendingRequests,
+        recentMessages: !!elements.recentMessages,
+        todayScheduleDay: !!elements.todayScheduleDay
+    });
+
+    try {
+        // Get cached stats from AuthManager - no API call
+        const stats = await window.authManager.getDashboardStats();
+        
+        console.log('📈 Using cached dashboard stats:', stats);
+        
+        if (stats && typeof stats === 'object') {
+            
+            // Update dashboard statistics
+            if (elements.totalEmployees) {
+                const value = stats.totalEmployees?.toString() || '0';
+                elements.totalEmployees.textContent = value;
+                console.log(`Updated totalEmployees: ${value}`);
+            }
+            
+            if (elements.todaySchedule) {
+                const value = stats.todaySchedules?.toString() || '0';
+                elements.todaySchedule.textContent = value;
+                console.log(`Updated todaySchedule: ${value}`);
+            }
+            
+            if (elements.pendingRequests) {
+                const value = stats.pendingRequests?.toString() || '0';
+                elements.pendingRequests.textContent = value;
+                console.log(`Updated pendingRequests: ${value}`);
+            }
+
+            if (elements.recentMessages) {
+                const value = stats.recentMessages?.toString() || '0';
+                elements.recentMessages.textContent = value;
+                console.log(`Updated recentMessages: ${value}`);
+            }
+            
+            // Update day info
+            if (elements.todayScheduleDay) {
+                const dayNames = {
+                    'T2': 'Thứ 2', 'T3': 'Thứ 3', 'T4': 'Thứ 4', 
+                    'T5': 'Thứ 5', 'T6': 'Thứ 6', 'T7': 'Thứ 7', 'CN': 'Chủ Nhật'
+                };
+                const value = dayNames[stats.currentDay] || 'Hôm nay';
+                elements.todayScheduleDay.textContent = value;
+                console.log(`Updated todayScheduleDay: ${value}`);
+            }
+            
+        } else {
+            console.warn('⚠️ Invalid or empty cached stats, setting defaults');
+            // Set loading state
+            Object.keys(elements).forEach(key => {
+                if (elements[key] && key !== 'todayScheduleDay') {
+                    elements[key].textContent = '-';
+                }
+            });
+        }
+        
+        // Always run role checking after stats are loaded to ensure proper permissions
+        // Skip during initialization to prevent duplicate calls
+        if (!window.dashboardInitializing) {
+            await refreshUserRoleAndPermissions();
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to load cached dashboard stats:', error);
+        // Set default values on error
+        if (elements.totalEmployees) {
+            elements.totalEmployees.textContent = '0';
+            console.log('Set totalEmployees default: 0');
+        }
+        if (elements.todaySchedule) {
+            elements.todaySchedule.textContent = '0';
+            console.log('Set todaySchedule default: 0');
+        }
+        if (elements.pendingRequests) {
+            elements.pendingRequests.textContent = '0';
+            console.log('Set pendingRequests default: 0');
+        }
+        if (elements.recentMessages) {
+            elements.recentMessages.textContent = '0';
+            console.log('Set recentMessages default: 0');
+        }
+        if (elements.todayScheduleDay) {
+            elements.todayScheduleDay.textContent = 'Hôm nay';
+            console.log('Set todayScheduleDay default: Hôm nay');
+        }
+        
+        // Show error notification
+        utils.showNotification('Không thể tải thống kê dashboard', 'warning');
+    }
+}
+
+// Enhanced Dashboard Stats Initialization - Using unified dashboard API (LEGACY - kept for manual refresh only)
 async function getDashboardStats() {
     
     // First, ensure the welcome section and stats-grid are visible
@@ -321,7 +463,7 @@ async function updateWelcomeStats() {
         console.log('📊 Updating welcome section statistics...');
         
         // Get current user data
-        const userData = await API_CACHE.getUserData();
+        const userData = await window.authManager.getUserData();
         if (!userData) {
             console.warn('No user data available for stats update');
             return;
@@ -384,17 +526,24 @@ async function updateWelcomeStats() {
 async function initializeRoleBasedUI() {
     let userPosition = 'NV'; // Default fallback
     
-    // Use cached user data instead of making fresh API calls
+    // Use cached user data instead of making fresh API calls during initialization
     try {
-        const freshUserData = await API_CACHE.getUserData();
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+        } else {
+            // Fallback to localStorage data if cache is not available  
+            freshUserData = window.authManager.userData;
+        }
+        
         if (freshUserData && freshUserData.position) {
             userPosition = freshUserData.position;
             console.log('🔐 Using cached role for UI initialization:', userPosition);
         } else {
-            console.warn('⚠️ No cached user data found, using default role NV');
+            console.warn('⚠️ No user data found, using default role NV');
         }
     } catch (error) {
-        console.warn('⚠️ Using default role due to cache error:', error);
+        console.warn('⚠️ Using default role due to error:', error);
     }
     
     console.log('🔐 Initializing role-based UI for position:', userPosition);
@@ -493,17 +642,24 @@ async function initializeRoleBasedUI() {
 async function applyRoleBasedSectionVisibility() {
     let userRole = 'NV'; // Default fallback
     
-    // Use cached user data instead of making fresh API calls
+    // Use cached user data instead of making fresh API calls during initialization
     try {
-        const freshUserData = await API_CACHE.getUserData();
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+        } else {
+            // Fallback to localStorage data if cache is not available  
+            freshUserData = window.authManager.userData;
+        }
+        
         if (freshUserData && freshUserData.position) {
             userRole = freshUserData.position;
             console.log('🔐 Using cached role for section visibility:', userRole);
         } else {
-            console.warn('⚠️ No cached user data found, using default role NV');
+            console.warn('⚠️ No user data found, using default role NV');
         }
     } catch (error) {
-        console.warn('⚠️ Using default role due to cache error:', error);
+        console.warn('⚠️ Using default role due to error:', error);
     }
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
@@ -719,7 +875,17 @@ function generateReports() {
 async function refreshDashboardStats() {
     try {
         utils.showNotification('Đang làm mới dữ liệu...', 'info');
-        await getDashboardStats();
+        
+        // Clear dashboard stats cache to force fresh API call
+        window.authManager.clearSpecificCache('dashboardStats');
+        
+        // Load fresh stats (will call API since cache is cleared)
+        await window.authManager.getDashboardStats();
+        
+        // Update UI with fresh data
+        await updateDashboardStatsUI();
+        
+        // Load fresh report data
         await loadReportData();
         
         // Ensure role permissions are refreshed after stats update
@@ -732,10 +898,11 @@ async function refreshDashboardStats() {
     }
 }
 
-// Load report data
+// Load report data using cached stats to avoid duplicate API calls
 async function loadReportData() {
     try {
-        const stats = await utils.fetchAPI('?action=getDashboardStats');
+        // Use cached dashboard stats from AuthManager instead of making fresh API call
+        const stats = await window.authManager.getDashboardStats();
         if (stats) {
             document.getElementById('reportTotalEmployees').textContent = stats.totalEmployees || '0';
             document.getElementById('reportTodayActive').textContent = stats.todaySchedules || '0';
@@ -752,31 +919,46 @@ function exportReports() {
     utils.showNotification('Tính năng xuất báo cáo đang được phát triển', 'warning');
 }
 
-// Refresh user role and permissions using fresh API data
+// Refresh user role and permissions using cached data during initialization
 async function refreshUserRoleAndPermissions() {
     try {
-        // Use cached user data instead of making fresh API calls
-        const freshUserData = await API_CACHE.getUserData();
+        // Use cached user data instead of making fresh API calls during initialization
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+            console.log('🔐 Using cached user data for role permissions');
+        } else {
+            // Fallback to localStorage data if cache is not available  
+            freshUserData = window.authManager.userData;
+            console.log('🔐 Using localStorage user data for role permissions');
+        }
+        
         if (freshUserData && freshUserData.position) {
             
-            // Update role-based UI with cached data
-            await initializeRoleBasedUI();
-            MenuManager.updateMenuByRole(freshUserData.position);
-            
-            // Verify AD functions are visible if user is AD
-            if (freshUserData.position === 'AD') {
-                setTimeout(async () => {
-                    const adElements = document.querySelectorAll('[data-role*="AD"]');
-                    const visibleADElements = Array.from(adElements).filter(el => 
-                        el.style.display !== 'none' && !el.classList.contains('role-hidden')
-                    );
-                    
-                    if (visibleADElements.length < adElements.length) {
-                        console.warn('⚠️ Re-applying AD permissions...');
-                        await initializeRoleBasedUI();
-                        MenuManager.updateMenuByRole(freshUserData.position);
-                    }
-                }, 500);
+            // Update role-based UI with cached data (only if not during initialization)
+            if (!window.dashboardInitializing && !window.roleUIInitialized) {
+                await initializeRoleBasedUI();
+                MenuManager.updateMenuByRole(freshUserData.position);
+                window.roleUIInitialized = true;
+                
+                // Verify AD functions are visible if user is AD (only once)
+                if (freshUserData.position === 'AD' && !window.adRoleVerified) {
+                    setTimeout(async () => {
+                        const adElements = document.querySelectorAll('[data-role*="AD"]');
+                        const visibleADElements = Array.from(adElements).filter(el => 
+                            el.style.display !== 'none' && !el.classList.contains('role-hidden')
+                        );
+                        
+                        if (visibleADElements.length < adElements.length) {
+                            console.warn('⚠️ Re-applying AD permissions...');
+                            await initializeRoleBasedUI();
+                            MenuManager.updateMenuByRole(freshUserData.position);
+                        }
+                        window.adRoleVerified = true;
+                    }, 500);
+                }
+            } else {
+                console.log('🔐 Skipping role UI update (during initialization or already initialized)');
             }
         }
     } catch (error) {
@@ -1191,8 +1373,13 @@ function showDashboardLoader() {
     if (dashboardLoader) {
         dashboardLoader.classList.remove('hidden');
         dashboardLoader.style.display = 'flex';
+        dashboardLoader.style.pointerEvents = 'all'; // Block all pointer events on underlying elements
+        dashboardLoader.style.zIndex = '999999'; // Ensure highest z-index
         
-        console.log('✅ Dashboard loader shown');
+        // Also disable all interactive elements behind the loader
+        document.body.style.overflow = 'hidden';
+        
+        console.log('✅ Dashboard loader shown with complete interaction blocking');
     }
 }
 
@@ -1210,6 +1397,11 @@ async function hideDashboardLoader() {
         setTimeout(() => {
             dashboardLoader.style.display = 'none';
             dashboardLoader.classList.remove('fade-out');
+            dashboardLoader.classList.add('hidden'); // Ensure hidden class is added
+            dashboardLoader.style.pointerEvents = 'none'; // Disable pointer events completely
+            
+            // Re-enable body scroll
+            document.body.style.overflow = '';
         }, 400);
         
         console.log('✅ Dashboard loader hidden (optimized for LCP)');
@@ -1330,19 +1522,30 @@ function restoreOriginalDashboardContent() {
 // Enhanced Dashboard Initialization
 async function initializeEnhancedDashboard() {
     try {
+        // Set initialization flag to prevent duplicate role-based UI calls
+        window.dashboardInitializing = true;
         
         // First ensure content is visible
         showDashboardContent();
         
-        // Use cached user data instead of making fresh API calls
-        const freshUserData = await API_CACHE.getUserData();
+        // Use cached user data - don't make fresh API calls during initialization
+        let freshUserData = null;
+        if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+            freshUserData = window.authManager.cachedUser;
+            console.log('📊 Using cached user data for dashboard initialization');
+        } else {
+            // Fallback to localStorage data if cache is not available
+            freshUserData = window.authManager.userData;
+            console.log('📊 Using localStorage user data for dashboard initialization');
+        }
+        
         if (!freshUserData || !freshUserData.position) {
-            console.error('Failed to fetch user data from cache');
+            console.error('Failed to get user data for dashboard initialization');
             return;
         }
 
         const userPosition = freshUserData.position;
-        console.log('📊 Cached user data:', { 
+        console.log('📊 Dashboard user data:', { 
             employeeId: freshUserData.employeeId, 
             fullName: freshUserData.fullName, 
             position: userPosition,
@@ -1355,13 +1558,30 @@ async function initializeEnhancedDashboard() {
             userInfoElement.textContent = `Chào ${freshUserData.fullName} - ${freshUserData.employeeId}`;
         }
         
-        // Initialize all dashboard components
-        console.log('📊 Initializing dashboard stats and role checking...');
-        await getDashboardStats(); // This will also call refreshUserRoleAndPermissions
+        // Initialize all dashboard components using cached data to prevent duplicate API calls
+        console.log('📊 Initializing dashboard with cached stats and role checking...');
+        
+        // Load stats ONCE using AuthManager cache system
+        await window.authManager.getDashboardStats();
+        
+        // Load personal stats and pending registrations during initialization
+        if (freshUserData.employeeId) {
+            await window.authManager.getPersonalStatsData(freshUserData.employeeId);
+            console.log('📊 Personal stats loaded and cached');
+        }
+        
+        if (userPosition === 'AD' || userPosition === 'Manager') {
+            await window.authManager.getPendingRegistrationsData();
+            console.log('📊 Pending registrations loaded and cached');
+        }
+        
+        // Update the UI with cached stats
+        await updateDashboardStatsUI();
         
         // Initialize role-based UI and menu visibility with cached data
         await initializeRoleBasedUI();
         MenuManager.updateMenuByRole(userPosition);
+        window.roleUIInitialized = true; // Mark as initialized to prevent duplicates
         
         // Comprehensive AD functions verification
         if (userPosition === 'AD') {
@@ -1420,9 +1640,14 @@ async function initializeEnhancedDashboard() {
         // Save the original dashboard content after initialization
         saveOriginalDashboardContent();
         
+        // Clear initialization flag
+        window.dashboardInitializing = false;
+        
     } catch (error) {
         console.error('Failed to initialize enhanced dashboard:', error);
         utils.showNotification('Có lỗi khi tải dashboard', 'error');
+        // Clear initialization flag even on error
+        window.dashboardInitializing = false;
     }
 }
 
@@ -1513,17 +1738,24 @@ async function showWelcomeSection() {
         // Get user role first before building content using cached data
         let userRole = 'NV'; // Default fallback
         
-        // Use cached user data instead of making fresh API calls
+        // Use cached user data instead of making fresh API calls during initialization
         try {
-            const freshUserData = await API_CACHE.getUserData();
+            let freshUserData = null;
+            if (window.authManager.cachedUser && window.authManager.isCacheValid('user')) {
+                freshUserData = window.authManager.cachedUser;
+            } else {
+                // Fallback to localStorage data if cache is not available  
+                freshUserData = window.authManager.userData;
+            }
+            
             if (freshUserData && freshUserData.position) {
                 userRole = freshUserData.position;
                 console.log('🔐 Using cached role for welcome section:', userRole);
             } else {
-                console.warn('⚠️ No cached user data found, using default role NV');
+                console.warn('⚠️ No user data found, using default role NV');
             }
         } catch (error) {
-            console.warn('⚠️ Using default role due to cache error:', error);
+            console.warn('⚠️ Using default role due to error:', error);
         }
         
         console.log('🏗️ Building content for role:', userRole);
@@ -1541,8 +1773,8 @@ async function showWelcomeSection() {
         // Make sure content is visible first
         showDashboardContent();
         
-        // Run getDashboardStats to update the stats numbers
-        await getDashboardStats();
+        // Use cached stats to update the stats numbers (no fresh API call)
+        await updateDashboardStatsUI();
         
         
     } catch (error) {

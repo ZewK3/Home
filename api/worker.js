@@ -2278,6 +2278,9 @@ async function handleCreateTaskAssignment(body, db, origin) {
 async function handleGetWorkTasks(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
+    const page = parseInt(url.searchParams.get("page")) || 1;
+    const limit = parseInt(url.searchParams.get("limit")) || 15;
+    const offset = (page - 1) * limit;
     
     if (!employeeId) {
       return jsonResponse({ message: "employeeId là bắt buộc!" }, 400, origin);
@@ -2296,12 +2299,22 @@ async function handleGetWorkTasks(url, db, origin) {
         WHERE ta.employeeId = ?
         GROUP BY t.taskId
         ORDER BY t.createdAt DESC
+        LIMIT ? OFFSET ?
       `)
-      .bind(employeeId)
+      .bind(employeeId, limit, offset)
       .all();
 
     const tasks = tasksQuery.results || [];
-    return jsonResponse(tasks, 200, origin);
+    
+    // Return with pagination metadata
+    return jsonResponse({
+      data: tasks,
+      pagination: {
+        page,
+        limit,
+        hasMore: tasks.length === limit
+      }
+    }, 200, origin);
 
   } catch (error) {
     console.error("Error getting work tasks:", error);
@@ -2356,7 +2369,21 @@ async function handleGetTaskDetail(url, db, origin) {
     const task = taskQuery;
     task.comments = commentsQuery.results || [];
 
-    return jsonResponse(task, 200, origin);
+    // Add timestamp without overriding task status
+    const responseData = {
+      ...task,
+      timestamp: new Date().toISOString()
+    };
+
+    return new Response(JSON.stringify(responseData), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    });
 
   } catch (error) {
     console.error("Error getting task detail:", error);
@@ -2526,11 +2553,17 @@ async function handleSaveShiftAssignments(body, db, origin) {
 
     // Insert new assignments
     for (const shift of shifts) {
+      // Validate shift data for undefined values
+      if (!shift.employeeId || !shift.storeId || !shift.date || !shift.shiftType) {
+        console.error("Invalid shift data:", shift);
+        continue; // Skip invalid shifts
+      }
+
       await db
         .prepare(`
-          INSERT INTO shift_assignments (
-            employeeId, storeId, date, shiftType, assignedBy, assignedAt
-          ) VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO shift_requests (
+            employeeId, storeId, requestDate, shiftType, requestedBy, requestedAt, status
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)
         `)
         .bind(
           shift.employeeId,
@@ -2538,7 +2571,8 @@ async function handleSaveShiftAssignments(body, db, origin) {
           shift.date,
           shift.shiftType,
           session.employeeId,
-          new Date().toISOString()
+          new Date().toISOString(),
+          'pending'
         )
         .run();
     }
@@ -2562,17 +2596,30 @@ async function handleSaveShiftAssignments(body, db, origin) {
 // Handle getting shift requests
 async function handleGetShiftRequests(url, db, origin) {
   try {
+    const page = parseInt(url.searchParams.get("page")) || 1;
+    const limit = parseInt(url.searchParams.get("limit")) || 15;
+    const offset = (page - 1) * limit;
+
     const shiftRequestsQuery = await db
       .prepare(`
         SELECT sr.*, e.fullName as employeeName
         FROM shift_requests sr
         LEFT JOIN employees e ON sr.employeeId = e.employeeId
         ORDER BY sr.createdAt DESC
+        LIMIT ? OFFSET ?
       `)
+      .bind(limit, offset)
       .all();
 
     const requests = shiftRequestsQuery.results || [];
-    return jsonResponse(requests, 200, origin);
+    return jsonResponse({
+      data: requests,
+      pagination: {
+        page,
+        limit,
+        hasMore: requests.length === limit
+      }
+    }, 200, origin);
 
   } catch (error) {
     console.error("Error getting shift requests:", error);
@@ -2668,6 +2715,10 @@ async function handleRejectShiftRequest(body, db, origin) {
 // Handle getting attendance requests
 async function handleGetAttendanceRequests(url, db, origin) {
   try {
+    const page = parseInt(url.searchParams.get("page")) || 1;
+    const limit = parseInt(url.searchParams.get("limit")) || 15;
+    const offset = (page - 1) * limit;
+
     const attendanceRequestsQuery = await db
       .prepare(`
         SELECT ar.*, e.fullName as employeeName, e.storeName,
@@ -2676,11 +2727,20 @@ async function handleGetAttendanceRequests(url, db, origin) {
         LEFT JOIN employees e ON ar.employeeId = e.employeeId
         LEFT JOIN employees approver ON ar.approvedBy = approver.employeeId
         ORDER BY ar.createdAt DESC
+        LIMIT ? OFFSET ?
       `)
+      .bind(limit, offset)
       .all();
 
     const requests = attendanceRequestsQuery.results || [];
-    return jsonResponse(requests, 200, origin);
+    return jsonResponse({
+      data: requests,
+      pagination: {
+        page,
+        limit,
+        hasMore: requests.length === limit
+      }
+    }, 200, origin);
 
   } catch (error) {
     console.error("Error getting attendance requests:", error);
