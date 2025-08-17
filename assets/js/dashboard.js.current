@@ -1,7 +1,6 @@
 /**
  * Professional HR Dashboard JavaScript
- * Completely rebuilt to eliminate all syntax errors
- * Version 2.0.0 - Clean, syntax-error-free implementation
+ * Clean rebuild to fix syntax errors
  */
 
 // TEST ACCOUNTS - Remove when deploying to production
@@ -736,14 +735,6 @@ class DashboardManager {
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Dashboard script v2.0.0 loaded, initializing...');
-    try {
-        window.dashboardManager = new DashboardManager();
-        console.log('✅ Dashboard Manager initialized successfully');
-    } catch (error) {
-        console.error('❌ Failed to initialize Dashboard Manager:', error);
-    }
+    console.log('Dashboard script loaded, initializing...');
+    window.dashboardManager = new DashboardManager();
 });
-
-// Prevent any potential syntax errors - this line confirms the file loaded completely
-console.log('✅ Dashboard JavaScript v2.0.0 loaded without syntax errors');
