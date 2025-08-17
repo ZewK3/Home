@@ -1,14 +1,7 @@
 /**
  * Professional HR Dashboard JavaScript
  * Fixed version addressing all reported issues
- * Version: 1.0.0 - Fixed syntax error and improved error handling
  */
-
-// Ensure this is treated as JavaScript
-'use strict';
-
-// Debug log to verify file loading
-console.log('Dashboard.js loaded successfully - Version 1.0.0');
 
 // TEST ACCOUNTS - Remove when deploying to production
 const TEST_ACCOUNTS = {
@@ -247,20 +240,6 @@ class HRDashboard {
         } catch (error) {
             console.error('Token refresh failed:', error);
             return false;
-        }
-    }
-
-    // Helper method to safely update content area
-    updateContentArea(content) {
-        try {
-            const contentArea = document.getElementById('contentArea');
-            if (contentArea) {
-                contentArea.innerHTML = content;
-            } else {
-                console.error('Content area element not found');
-            }
-        } catch (error) {
-            console.error('Error updating content area:', error);
         }
     }
 
@@ -1104,7 +1083,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadDashboardStats();
         this.animateStatsCounters();
     }
@@ -1381,7 +1360,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadEmployees();
     }
 
@@ -1403,7 +1382,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadAttendanceData();
     }
 
@@ -1891,7 +1870,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadPayrollData();
     }
 
@@ -1960,7 +1939,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadReportsData();
     }
 
@@ -2048,7 +2027,7 @@ class HRDashboard {
             </div>
         `;
 
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
         await this.loadAdminData();
     }
 
@@ -2165,7 +2144,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 
     async loadTasksView() {
@@ -2184,7 +2163,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 
     async loadBudgetsView() {
@@ -2203,7 +2182,7 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 
     async loadSettingsView() {
@@ -2217,19 +2196,13 @@ class HRDashboard {
                 </div>
             </div>
         `;
-        this.updateContentArea(content);
+        document.getElementById('contentArea').innerHTML = content;
     }
 }
 
-// Initialize dashboard when DOM is loaded with error handling
+// Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    try {
-        console.log('Initializing HR Dashboard...');
-        window.hrDashboard = new HRDashboard();
-        console.log('HR Dashboard initialized successfully');
-    } catch (error) {
-        console.error('Error initializing HR Dashboard:', error);
-    }
+    window.hrDashboard = new HRDashboard();
 });
 
 // Export for global access
