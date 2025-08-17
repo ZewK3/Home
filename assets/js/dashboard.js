@@ -1,11 +1,7 @@
 /**
  * Professional HR Dashboard JavaScript
  * Fixed version addressing all reported issues
- * Version: 1.0.3 - Restored clean backup to resolve syntax error
  */
-
-// Debug log to verify file loading
-console.log('Dashboard.js loaded successfully - Version 1.0.3 (Clean Backup)');
 
 // TEST ACCOUNTS - Remove when deploying to production
 const TEST_ACCOUNTS = {
