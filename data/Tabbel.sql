@@ -83,35 +83,46 @@ CREATE TABLE sessions (
     lastAccess TEXT NOT NULL
 );
 
--- Table for employees (staff members)
+-- Table for employees (staff members) - Enhanced with hierarchical ranks
 CREATE TABLE employees (
     employeeId TEXT PRIMARY KEY,
     fullName TEXT NOT NULL,
     storeName TEXT NOT NULL,
+    storeId TEXT, -- Reference to assigned store
     position TEXT DEFAULT 'NV',
+    positionLevel TEXT DEFAULT 'LV1', -- Hierarchical level: LV1, LV2, LV3, etc.
+    rank TEXT DEFAULT 'Đồng', -- Overall rank system: Đồng, Bạc, Vàng, Kim Cương
+    experience INTEGER DEFAULT 0, -- Experience points
     joinDate TEXT,
     phone TEXT,
     email TEXT,
     password TEXT NOT NULL,
-    salt TEXT NOT NULL
+    salt TEXT NOT NULL,
+    isActive INTEGER DEFAULT 1, -- Active status
+    lastPromotionDate TEXT, -- Track promotion history
+    FOREIGN KEY (storeId) REFERENCES stores(storeId)
 );
 
--- Table for employee registration queue (pending approvals)
+-- Table for employee registration queue (pending approvals) - Enhanced with hierarchical ranks
 CREATE TABLE queue (
     employeeId TEXT PRIMARY KEY,
     password TEXT NOT NULL,
     salt TEXT NOT NULL,
     fullName TEXT NOT NULL,
     storeName TEXT NOT NULL,
+    storeId TEXT, -- Reference to assigned store
     position TEXT DEFAULT 'NV',
+    positionLevel TEXT DEFAULT 'LV1', -- Hierarchical level
+    rank TEXT DEFAULT 'Đồng', -- Overall rank system
     joinDate TEXT,
     phone TEXT,
     email TEXT,
     createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'Wait'
+    status TEXT DEFAULT 'Wait',
+    FOREIGN KEY (storeId) REFERENCES stores(storeId)
 );
 
--- Table for email verification during registration
+-- Table for email verification during registration - Enhanced with hierarchical ranks
 CREATE TABLE email_verification (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
@@ -119,13 +130,17 @@ CREATE TABLE email_verification (
     verificationCode TEXT NOT NULL,
     fullName TEXT NOT NULL,
     storeName TEXT NOT NULL,
+    storeId TEXT, -- Reference to assigned store
     position TEXT DEFAULT 'NV',
+    positionLevel TEXT DEFAULT 'LV1', -- Hierarchical level
+    rank TEXT DEFAULT 'Đồng', -- Overall rank system
     joinDate TEXT,
     phone TEXT,
     passwordHash TEXT NOT NULL,
     passwordSalt TEXT NOT NULL,
     createdAt TEXT NOT NULL,
-    expiresAt TEXT NOT NULL
+    expiresAt TEXT NOT NULL,
+    FOREIGN KEY (storeId) REFERENCES stores(storeId)
 );
 
 -- =====================================================
@@ -158,9 +173,40 @@ CREATE TABLE orders (
     FOREIGN KEY (userId) REFERENCES users(id)
 );
 
--- =====================================================
--- HR MANAGEMENT
--- =====================================================
+-- Table for employee rank progression and hierarchy
+CREATE TABLE employee_ranks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    position TEXT NOT NULL, -- NV, QL, AM, AD
+    positionLevel TEXT NOT NULL, -- LV1, LV2, LV3, LV4, LV5
+    rank TEXT NOT NULL, -- Đồng, Bạc, Vàng, Kim Cương
+    experienceRequired INTEGER NOT NULL, -- Experience points needed for this level
+    permissions TEXT, -- JSON string of permissions for this rank
+    salaryMultiplier REAL DEFAULT 1.0, -- Salary multiplier for this rank
+    benefits TEXT, -- JSON string of benefits
+    promotionCriteria TEXT, -- Criteria for promotion to next level
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    isActive INTEGER DEFAULT 1,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- Table for rank progression history
+CREATE TABLE rank_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    oldPosition TEXT,
+    oldPositionLevel TEXT,
+    oldRank TEXT,
+    newPosition TEXT NOT NULL,
+    newPositionLevel TEXT NOT NULL,
+    newRank TEXT NOT NULL,
+    promotedBy TEXT, -- Who promoted them
+    reason TEXT, -- Reason for promotion/demotion
+    experienceGained INTEGER DEFAULT 0,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId),
+    FOREIGN KEY (promotedBy) REFERENCES employees(employeeId)
+);
 
 -- Table for work schedules
 CREATE TABLE workSchedules (
@@ -190,12 +236,14 @@ CREATE TABLE workSchedules (
 --     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 -- );
 
--- Enhanced table for task/request management (legacy format)
+-- Enhanced table for task/request management (legacy format) - Enhanced with hierarchical ranks
 CREATE TABLE tasks (
     id TEXT PRIMARY KEY,
     employeeId TEXT NOT NULL,
     employeeName TEXT NOT NULL,
     position TEXT DEFAULT 'NV',
+    positionLevel TEXT DEFAULT 'LV1', -- Hierarchical level
+    rank TEXT DEFAULT 'Đồng', -- Overall rank system
     type TEXT NOT NULL,
     content TEXT NOT NULL,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'active')),
@@ -586,8 +634,8 @@ INSERT OR IGNORE INTO stores (storeId, storeName, region, address) VALUES
 ('MC019', 'MayCha Đồng Tháp', '4', '735 Đường Nguyễn Huệ, Cao Lãnh, Đồng Tháp'),
 ('MC020', 'MayCha Tiền Giang', '4', '148 Đường Đinh Bộ Lĩnh, Mỹ Tho, Tiền Giang');
 
--- Sample employee positions and default permissions
--- Admin permissions
+-- Sample employee positions and default permissions with hierarchical ranks
+-- Admin permissions with enhanced rank system
 INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
 SELECT 'ADMIN001', 'schedule', 1, datetime('now') WHERE NOT EXISTS (
     SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'schedule'
@@ -608,6 +656,25 @@ INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt)
 SELECT 'ADMIN001', 'finance', 1, datetime('now') WHERE NOT EXISTS (
     SELECT 1 FROM permissions WHERE employeeId = 'ADMIN001' AND permission = 'finance'
 );
+
+-- Sample rank definitions for the new hierarchical system
+INSERT OR IGNORE INTO employee_ranks (employeeId, position, positionLevel, rank, experienceRequired, permissions, salaryMultiplier, benefits, promotionCriteria) VALUES 
+-- Employee levels (NV - Nhân Viên)
+('SYSTEM', 'NV', 'LV1', 'Đồng', 0, '["basic_access", "attendance", "view_schedule"]', 1.0, '["basic_benefits"]', 'Complete 500 hours, no major violations'),
+('SYSTEM', 'NV', 'LV2', 'Đồng', 500, '["basic_access", "attendance", "view_schedule", "submit_requests"]', 1.1, '["basic_benefits", "overtime_bonus"]', 'Complete 1200 hours, demonstrate leadership'),
+('SYSTEM', 'NV', 'LV3', 'Bạc', 1200, '["basic_access", "attendance", "view_schedule", "submit_requests", "mentor_new"]', 1.2, '["basic_benefits", "overtime_bonus", "health_insurance"]', 'Complete 2000 hours, train new employees'),
+
+-- Manager levels (QL - Quản Lý)  
+('SYSTEM', 'QL', 'LV1', 'Bạc', 2000, '["basic_access", "attendance", "manage_schedule", "approve_requests", "view_reports"]', 1.5, '["manager_benefits", "health_insurance", "performance_bonus"]', 'Complete 3000 hours, successful team management'),
+('SYSTEM', 'QL', 'LV2', 'Vàng', 3000, '["basic_access", "attendance", "manage_schedule", "approve_requests", "view_reports", "manage_staff"]', 1.7, '["manager_benefits", "health_insurance", "performance_bonus", "training_budget"]', 'Complete 4500 hours, exceed targets'),
+('SYSTEM', 'QL', 'LV3', 'Vàng', 4500, '["basic_access", "attendance", "manage_schedule", "approve_requests", "view_reports", "manage_staff", "budget_control"]', 2.0, '["manager_benefits", "health_insurance", "performance_bonus", "training_budget", "car_allowance"]', 'Complete 6000 hours, regional excellence'),
+
+-- Assistant Manager levels (AM - Assistant Manager)
+('SYSTEM', 'AM', 'LV1', 'Vàng', 6000, '["basic_access", "attendance", "manage_schedule", "approve_requests", "view_reports", "manage_staff", "budget_control", "regional_oversight"]', 2.2, '["senior_benefits", "full_insurance", "performance_bonus", "training_budget", "car_allowance"]', 'Complete 8000 hours, multi-store management'),
+('SYSTEM', 'AM', 'LV2', 'Kim Cương', 8000, '["basic_access", "attendance", "manage_schedule", "approve_requests", "view_reports", "manage_staff", "budget_control", "regional_oversight", "strategic_planning"]', 2.5, '["senior_benefits", "full_insurance", "performance_bonus", "training_budget", "car_allowance", "profit_sharing"]', 'Complete 10000 hours, strategic impact'),
+
+-- Admin levels (AD - Administrator)
+('SYSTEM', 'AD', 'LV1', 'Kim Cương', 10000, '["full_access", "system_admin", "user_management", "data_access", "financial_control"]', 3.0, '["executive_benefits", "full_insurance", "profit_sharing", "stock_options"]', 'System administration excellence');
 
 -- Default HR system settings
 INSERT OR IGNORE INTO hr_settings (settingKey, settingValue, description, category) VALUES 
@@ -666,11 +733,34 @@ INSERT OR IGNORE INTO notifications (employeeId, title, message, type, relatedTy
 -- NOTES & DOCUMENTATION
 -- =====================================================
 
--- ROLE CODES:
+-- ROLE CODES WITH HIERARCHICAL LEVELS:
 -- AD = Admin (Administrator) - Full system access
--- QL = Quản lý (Manager) - Store management, employee oversight  
+--   - LV1: System Administrator - Kim Cương rank
+-- AM = Assistant Manager - Regional management capabilities  
+--   - LV1: Regional Assistant Manager - Vàng rank
+--   - LV2: Senior Assistant Manager - Kim Cương rank
+-- QL = Quản lý (Manager) - Store management, employee oversight
+--   - LV1: Store Manager - Bạc rank
+--   - LV2: Senior Manager - Vàng rank  
+--   - LV3: Regional Manager - Vàng rank
 -- NV = Nhân viên (Employee) - Basic employee access
--- AM = Assistant Manager - Regional management capabilities
+--   - LV1: Junior Employee - Đồng rank
+--   - LV2: Employee - Đồng rank
+--   - LV3: Senior Employee - Bạc rank
+
+-- RANK SYSTEM:
+-- Đồng (Bronze): Entry level employees, basic access
+-- Bạc (Silver): Experienced employees, some management duties
+-- Vàng (Gold): Management level, significant responsibilities
+-- Kim Cương (Diamond): Executive level, strategic oversight
+
+-- EXPERIENCE POINT SYSTEM:
+-- Experience points are earned through:
+-- - Working hours (1 point per hour)
+-- - Task completion bonuses
+-- - Performance reviews
+-- - Training completion
+-- - Leadership activities
 
 -- PERMISSION TYPES:
 -- schedule = Manage work schedules and shift assignments
@@ -750,10 +840,10 @@ INSERT INTO stores (storeId, storeName, region, address, latitude, longitude, ma
 ('MC004', 'TOCOToco Aeon Mall', '2', '30 Bờ Bao Tân Thắng, Sơn Kỳ, Tân Phú, TP.HCM', 10.819252, 106.618639, 'ADMIN'),
 ('MC005', 'TOCOToco Vincom Center', '2', '70-72 Le Thanh Ton, Ben Nghe Ward, District 1, Ho Chi Minh City', 10.779738, 106.700554, 'ADMIN');
 
--- Sample employees for testing GPS attendance
-INSERT INTO employees (employeeId, fullName, storeName, position, joinDate, phone, email, password, salt) VALUES
-('EMP001', 'Nguyễn Văn Test', 'TOCOToco Nguyễn Huệ', 'NV', '2024-01-01', '0901234567', 'test@tocotoco.com', 'hashed_password', 'salt123'),
-('EMP002', 'Trần Thị Demo', 'TOCOToco Bitexco', 'NV', '2024-01-01', '0902345678', 'demo@tocotoco.com', 'hashed_password', 'salt456');
+-- Sample employees for testing GPS attendance - Enhanced with hierarchical ranks
+INSERT INTO employees (employeeId, fullName, storeName, storeId, position, positionLevel, rank, experience, joinDate, phone, email, password, salt) VALUES
+('EMP001', 'Nguyễn Văn Test', 'TOCOToco Nguyễn Huệ', 'MC001', 'NV', 'LV1', 'Đồng', 150, '2024-01-01', '0901234567', 'test@tocotoco.com', 'hashed_password', 'salt123'),
+('EMP002', 'Trần Thị Demo', 'TOCOToco Bitexco', 'MC002', 'NV', 'LV2', 'Đồng', 650, '2024-01-01', '0902345678', 'demo@tocotoco.com', 'hashed_password', 'salt456');
 
 -- Sample attendance data for testing timesheet
 INSERT INTO attendance (employeeId, checkIn, checkOut, location, status) VALUES

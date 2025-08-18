@@ -183,6 +183,11 @@ class ContentManager {
         window.insertLink = () => this.insertLink();
         window.insertTable = () => this.insertTable();
         window.insertHorizontalRule = () => this.insertHorizontalRule();
+        window.insertImage = () => this.insertImage();
+        window.insertEmoji = () => this.insertEmoji();
+        window.insertCodeBlock = () => this.insertCodeBlock();
+        window.insertQuote = () => this.insertQuote();
+        window.toggleWordWrap = () => this.toggleWordWrap();
         window.undoEditor = () => this.undoEditor();
         window.redoEditor = () => this.redoEditor();
         window.clearFormatting = () => this.clearFormatting();
@@ -191,6 +196,10 @@ class ContentManager {
         window.refreshEmployees = () => this.refreshEmployees();
         window.clearAllShifts = () => this.clearAllShifts();
         window.showSystemTesting = () => this.showSystemTesting();
+        
+        // Attendance request functions - ADD MISSING FUNCTION
+        window.toggleForgotTimeFields = (selectedType) => this.toggleForgotTimeFields(selectedType);
+        window.submitAttendanceRequest = () => this.submitAttendanceRequest();
         
         // New modular functions
         window.changeAnalysisType = (type) => this.changeAnalysisType(type);
@@ -7110,8 +7119,13 @@ class ContentManager {
     async initializeGPSAttendance(employeeId) {
         this.userLocation = null;
         this.stores = [];
+        this.userStore = null; // Store the user's assigned store
         
         try {
+            // Get user data to find their assigned store
+            const userData = await window.authManager.getUserData();
+            console.log('GPS Attendance - User data:', userData);
+            
             // Use cached stores data instead of making new API call
             const storesResponse = await window.authManager.getStoresData();
             
@@ -7134,7 +7148,18 @@ class ContentManager {
                 this.stores = [];
             }
             
+            // Find user's assigned store
+            if (userData && userData.storeName) {
+                this.userStore = this.stores.find(store => 
+                    store.storeName === userData.storeName || 
+                    store.storeId === userData.storeId ||
+                    store.storeId === userData.storeName.replace(/\s+/g, '')
+                );
+                console.log('GPS Attendance - User assigned store:', this.userStore);
+            }
+            
             console.log('GPS Attendance - Loaded stores:', this.stores.length, this.stores);
+            console.log('GPS Attendance - User store filter:', this.userStore);
             
             // Load today's attendance history
             await this.loadAttendanceHistoryToday(employeeId);
@@ -7179,39 +7204,41 @@ class ContentManager {
     }
 
     checkStoreProximity() {
-        if (!this.userLocation || !this.stores.length) {
-            this.updateLocationStatus('error', 'Không có dữ liệu vị trí hoặc cửa hàng');
+        if (!this.userLocation) {
+            this.updateLocationStatus('error', 'Không có dữ liệu vị trí');
             return;
         }
 
-        let nearestStore = null;
-        let minDistance = Infinity;
+        // Check only user's assigned store instead of all stores
+        if (!this.userStore) {
+            this.updateLocationStatus('error', 'Không tìm thấy cửa hàng được phân công');
+            return;
+        }
 
-        this.stores.forEach(store => {
-            if (store.latitude && store.longitude) {
-                const distance = this.calculateDistance(
-                    this.userLocation.lat,
-                    this.userLocation.lng,
-                    parseFloat(store.latitude),
-                    parseFloat(store.longitude)
-                );
+        // Check if the user's assigned store has GPS coordinates
+        if (!this.userStore.latitude || !this.userStore.longitude) {
+            this.updateLocationStatus('warning', `${this.userStore.storeName} chưa có tọa độ GPS`);
+            this.disableAttendanceButton();
+            return;
+        }
 
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestStore = { ...store, distance };
-                }
-            }
-        });
+        // Calculate distance to user's assigned store only
+        const distance = this.calculateDistance(
+            this.userLocation.lat,
+            this.userLocation.lng,
+            parseFloat(this.userStore.latitude),
+            parseFloat(this.userStore.longitude)
+        );
 
-        if (nearestStore && minDistance <= 50) { // Within 50 meters
-            this.updateLocationStatus('success', `Trong phạm vi ${nearestStore.storeName}`);
-            this.showStoreInfo(nearestStore);
+        const storeWithDistance = { ...this.userStore, distance };
+
+        if (distance <= 50) { // Within 50 meters of assigned store
+            this.updateLocationStatus('success', `Trong phạm vi ${this.userStore.storeName}`);
+            this.showStoreInfo(storeWithDistance);
             this.enableAttendanceButton();
         } else {
             this.updateLocationStatus('warning', 
-                nearestStore 
-                    ? `Cách ${nearestStore.storeName} ${Math.round(minDistance)}m`
-                    : 'Không ở gần cửa hàng nào'
+                `Cách ${this.userStore.storeName} ${Math.round(distance)}m - Cần ở gần hơn để chấm công`
             );
             this.disableAttendanceButton();
         }
@@ -7482,7 +7509,7 @@ class ContentManager {
                     </div>
                     <div class="form-group">
                         <label for="forgotType">Loại:</label>
-                        <select id="forgotType" class="form-control" required onchange="contentManager.toggleForgotTimeFields(this.value)">
+                        <select id="forgotType" class="form-control" required onchange="toggleForgotTimeFields(this.value)">
                             <option value="">Chọn loại</option>
                             <option value="check-in">Quên chấm vào</option>
                             <option value="check-out">Quên chấm ra</option>
@@ -7831,6 +7858,12 @@ class ContentManager {
                                                 <button type="button" class="toolbar-btn" onclick="contentManager.insertHorizontalRule()" title="Chèn đường kẻ">
                                                     <span class="material-icons-round">horizontal_rule</span>
                                                 </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertImage()" title="Chèn hình ảnh">
+                                                    <span class="material-icons-round">image</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertEmoji()" title="Chèn emoji">
+                                                    <span class="material-icons-round">emoji_emotions</span>
+                                                </button>
                                             </div>
                                             
                                             <div class="toolbar-separator"></div>
@@ -7845,6 +7878,21 @@ class ContentManager {
                                                 </button>
                                                 <button type="button" class="toolbar-btn" onclick="contentManager.clearFormatting()" title="Xóa định dạng">
                                                     <span class="material-icons-round">format_clear</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="toolbar-separator"></div>
+                                            
+                                            <!-- Advanced Content Group -->
+                                            <div class="toolbar-group">
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertCodeBlock()" title="Chèn khối code">
+                                                    <span class="material-icons-round">code</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.insertQuote()" title="Chèn trích dẫn">
+                                                    <span class="material-icons-round">format_quote</span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn" onclick="contentManager.toggleWordWrap()" title="Bật/tắt tự xuống dòng">
+                                                    <span class="material-icons-round">wrap_text</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -8489,6 +8537,87 @@ class ContentManager {
 
     insertHorizontalRule() {
         this.formatText('insertHorizontalRule');
+    }
+
+    // Enhanced editor functions
+    insertImage() {
+        const url = prompt('Nhập URL hình ảnh:');
+        if (url) {
+            this.formatText('insertImage', url);
+        }
+    }
+
+    insertEmoji() {
+        // Common emoji selector
+        const emojis = ['😀', '😂', '😍', '🤔', '👍', '👎', '❤️', '🔥', '💯', '🎉', '✅', '❌', '⚠️', '💡', '📝', '📊', '📈', '📉', '🎯', '⭐'];
+        const emojiGrid = emojis.map(emoji => `<button onclick="insertEmojiText('${emoji}')" class="emoji-btn">${emoji}</button>`).join('');
+        
+        utils.showModal('Chọn Emoji', `
+            <div class="emoji-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 16px;">
+                ${emojiGrid}
+            </div>
+            <script>
+                function insertEmojiText(emoji) {
+                    const editor = document.getElementById('taskDescription') || document.querySelector('.rich-text-editor');
+                    if (editor) {
+                        editor.focus();
+                        document.execCommand('insertText', false, emoji);
+                    }
+                    closeModal();
+                }
+            </script>
+        `);
+    }
+
+    // Advanced text formatting
+    insertCodeBlock() {
+        const activeEditor = this.getActiveEditor();
+        if (activeEditor) {
+            activeEditor.focus();
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const codeElement = document.createElement('pre');
+            codeElement.style.cssText = 'background: #f5f5f5; padding: 12px; border-radius: 4px; border-left: 4px solid #007bff; font-family: monospace; margin: 8px 0;';
+            codeElement.innerHTML = '<code>// Nhập code tại đây</code>';
+            range.insertNode(codeElement);
+            selection.selectAllChildren(codeElement.querySelector('code'));
+        }
+    }
+
+    insertQuote() {
+        const activeEditor = this.getActiveEditor();
+        if (activeEditor) {
+            activeEditor.focus();
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            const quoteElement = document.createElement('blockquote');
+            quoteElement.style.cssText = 'border-left: 4px solid #ccc; margin: 8px 0; padding-left: 16px; font-style: italic; color: #666;';
+            quoteElement.textContent = 'Nhập trích dẫn tại đây...';
+            range.insertNode(quoteElement);
+            selection.selectAllChildren(quoteElement);
+        }
+    }
+
+    getActiveEditor() {
+        return document.querySelector('.enhanced-editor:focus') ||
+               document.querySelector('.editor-workspace:focus') || 
+               document.querySelector('.rich-text-editor:focus') ||
+               document.getElementById('taskDescription') ||
+               document.querySelector('.enhanced-editor') ||
+               document.querySelector('.editor-workspace') ||
+               document.querySelector('.rich-text-editor');
+    }
+
+    toggleWordWrap() {
+        const activeEditor = this.getActiveEditor();
+        if (activeEditor) {
+            const currentWrap = activeEditor.style.whiteSpace;
+            activeEditor.style.whiteSpace = currentWrap === 'nowrap' ? 'pre-wrap' : 'nowrap';
+            utils.showNotification(
+                currentWrap === 'nowrap' ? 'Đã bật tự xuống dòng' : 'Đã tắt tự xuống dòng', 
+                'info'
+            );
+        }
     }
 
     undoEditor() {
