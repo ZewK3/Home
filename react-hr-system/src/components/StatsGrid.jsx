@@ -1,20 +1,32 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../lib/auth'
+import { dashboardService } from '../lib/services/dashboard.service'
 
 const StatsGrid = () => {
-  const { getDashboardStats } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
-      const data = await getDashboardStats()
-      setStats(data)
-      setLoading(false)
+      try {
+        const data = await dashboardService.getStats()
+        setStats(data)
+      } catch (error) {
+        console.error('Failed to fetch dashboard stats:', error)
+        // Set default stats on error
+        setStats({
+          totalEmployees: 0,
+          todayShifts: 0,
+          recentMessages: 0,
+          pendingRequests: 0,
+          currentDay: 'T2'
+        })
+      } finally {
+        setLoading(false)
+      }
     }
     
     fetchStats()
-  }, [getDashboardStats])
+  }, [])
 
   if (loading) {
     return (
@@ -45,9 +57,29 @@ const StatsGrid = () => {
       <div className="stat-card">
         <div className="stat-icon">✅</div>
         <div className="stat-content">
-          <h3>Có mặt hôm nay</h3>
-          <p className="stat-number">{stats.todayAttendance}</p>
+          <h3>Ca làm hôm nay</h3>
+          <p className="stat-number">{stats.todayShifts}</p>
         </div>
+      </div>
+      
+      <div className="stat-card">
+        <div className="stat-icon">📝</div>
+        <div className="stat-content">
+          <h3>Yêu cầu chờ duyệt</h3>
+          <p className="stat-number">{stats.pendingRequests}</p>
+        </div>
+      </div>
+      
+      <div className="stat-card">
+        <div className="stat-icon">📊</div>
+        <div className="stat-content">
+          <h3>Hoạt động gần đây</h3>
+          <p className="stat-number">{stats.recentMessages}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
       </div>
       
       <div className="stat-card">

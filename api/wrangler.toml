@@ -1,0 +1,26 @@
+name = "hr-management-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Environment variables
+[env.development]
+vars = { ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:3000" }
+
+[env.production]
+vars = { ALLOWED_ORIGINS = "https://yourdomain.com,https://hr.yourdomain.com" }
+
+# KV namespace for storing SendGrid API key
+[[kv_namespaces]]
+binding = "KV_STORE"
+id = "your-kv-namespace-id-here"
+preview_id = "your-preview-kv-namespace-id-here"
+
+# D1 Database
+[[d1_databases]]
+binding = "D1_BINDING"
+database_name = "hr-management-db"
+database_id = "your-d1-database-id-here"
+
+# Rate limiting (optional)
+[limits]
+cpu_ms = 50000

@@ -5,7 +5,7 @@ import Notification from '../components/Notification'
 
 const AuthPage = () => {
   const navigate = useNavigate()
-  const { login, register, forgotPassword, resetPassword, loading } = useAuth()
+  const { login, register, verifyEmail, forgotPassword, resetPassword, loading } = useAuth()
   const { notification, showNotification } = useNotification()
   
   const [activeForm, setActiveForm] = useState('login') // login, register, forgot, reset
@@ -64,7 +64,13 @@ const AuthPage = () => {
           result = await register(formData)
           if (result.success) {
             showNotification(result.message, 'success')
-            setActiveForm('login')
+            if (result.requiresVerification) {
+              // Show verification form or redirect to verification page
+              // For now, show instructions to check email
+              showNotification('Vui lòng kiểm tra email và nhập mã xác nhận để hoàn tất đăng ký', 'info')
+            } else {
+              setActiveForm('login')
+            }
           } else {
             showNotification(result.message, 'error')
           }

@@ -1,34 +1,33 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CONFIG } from './config.js'
-import { fetchAPI } from './utils.js'
+import { authService } from './services/auth.service.js'
 
 // Auth Hook for React
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState(null)
-  const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
   // Initialize auth state from localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN)
-    const storedUser = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA)
-
-    if (storedToken) {
-      setToken(storedToken)
-      setIsAuthenticated(true)
-    }
-
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch (error) {
-        console.warn('Failed to parse user data from storage:', error)
-        localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA)
+    const initializeAuth = async () => {
+      if (authService.isAuthenticated()) {
+        try {
+          // Verify token by getting user info
+          const userData = await authService.me()
+          setUser(userData)
+          setIsAuthenticated(true)
+        } catch (error) {
+          console.warn('Token verification failed:', error)
+          // Clear invalid token
+          authService.logout()
+          setIsAuthenticated(false)
+          setUser(null)
+        }
       }
+      setLoading(false)
     }
 
-    setLoading(false)
+    initializeAuth()
   }, [])
 
   // Login function
@@ -36,18 +35,151 @@ export const useAuth = () => {
     try {
       setLoading(true)
       
-      // Mock API call - replace with actual API
-      const response = await new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            success: true,
-            token: 'mock-jwt-token-' + Date.now(),
-            user: {
-              id: employeeId,
-              name: 'Test User',
-              role: 'AD',
-              email: 'test@example.com'
-            }
+      const sessionData = await authService.login({ employeeId, password })
+      
+      // Get user data after successful login
+      const userData = await authService.me()
+      
+      setUser(userData)
+      setIsAuthenticated(true)
+      
+      return {
+        success: true,
+        message: 'Đăng nhập thành công!',
+        user: userData,
+        token: sessionData.token
+      }
+    } catch (error) {
+      console.error('Login failed:', error)
+      return {
+        success: false,
+        message: error.message || 'Đăng nhập thất bại'
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Register function
+  const register = useCallback(async (formData) => {
+    try {
+      setLoading(true)
+      
+      const result = await authService.register({
+        employeeId: formData.employeeId || formData.loginEmployeeId,
+        fullName: formData.fullName,
+        storeName: formData.storeName,
+        position: formData.position || 'NV',
+        password: formData.password,
+        phone: formData.phone,
+        email: formData.email,
+        joinDate: formData.joinDate
+      })
+      
+      return {
+        success: true,
+        message: result.message || 'Đã gửi mã xác nhận tới email của bạn',
+        requiresVerification: result.requiresVerification
+      }
+    } catch (error) {
+      console.error('Registration failed:', error)
+      return {
+        success: false,
+        message: error.message || 'Đăng ký thất bại'
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Verify email function
+  const verifyEmail = useCallback(async (employeeId, verificationCode) => {
+    try {
+      setLoading(true)
+      
+      const result = await authService.verifyEmail({ employeeId, verificationCode })
+      
+      return {
+        success: true,
+        message: result.message || 'Xác nhận email thành công!'
+      }
+    } catch (error) {
+      console.error('Email verification failed:', error)
+      return {
+        success: false,
+        message: error.message || 'Xác nhận email thất bại'
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Forgot password function (placeholder - not implemented in backend yet)
+  const forgotPassword = useCallback(async (email) => {
+    return {
+      success: false,
+      message: 'Tính năng quên mật khẩu sẽ được phát triển trong tương lai'
+    }
+  }, [])
+
+  // Reset password function (placeholder - not implemented in backend yet)
+  const resetPassword = useCallback(async (code, newPassword) => {
+    return {
+      success: false,
+      message: 'Tính năng đặt lại mật khẩu sẽ được phát triển trong tương lai'
+    }
+  }, [])
+
+  // Logout function
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      setIsAuthenticated(false)
+      setUser(null)
+    }
+  }, [])
+
+  return {
+    isAuthenticated,
+    user,
+    loading,
+    login,
+    register,
+    verifyEmail,
+    forgotPassword,
+    resetPassword,
+    logout
+  }
+}
+
+// Notification Hook for React
+export const useNotification = () => {
+  const [notification, setNotification] = useState(null)
+
+  const showNotification = useCallback((message, type = 'info', duration = 5000) => {
+    const id = Date.now()
+    setNotification({ id, message, type })
+
+    if (duration > 0) {
+      setTimeout(() => {
+        setNotification(prev => prev?.id === id ? null : prev)
+      }, duration)
+    }
+  }, [])
+
+  const hideNotification = useCallback(() => {
+    setNotification(null)
+  }, [])
+
+  return {
+    notification,
+    showNotification,
+    hideNotification
+  }
+}
           })
         }, 1000)
       })
