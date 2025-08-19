@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Sidebar from '../components/Sidebar'
 
 const DashboardLayout = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -27,9 +28,9 @@ const DashboardLayout = ({ children }) => {
                 <span className="material-icons-round">close</span>
               </button>
             </div>
-            <nav className="mobile-nav-menu">
-              <p>Mobile menu content will go here</p>
-            </nav>
+            <div className="mobile-nav-menu">
+              <Sidebar />
+            </div>
           </div>
         </dialog>
       )}
@@ -58,10 +59,8 @@ const DashboardLayout = ({ children }) => {
       {/* Main Content Area */}
       <div className="main-layout">
         {/* Sidebar */}
-        <aside className="sidebar">
-          <nav className="sidebar-menu">
-            <p>Sidebar menu will go here</p>
-          </nav>
+        <aside className="sidebar-wrapper">
+          <Sidebar />
         </aside>
 
         {/* Content */}

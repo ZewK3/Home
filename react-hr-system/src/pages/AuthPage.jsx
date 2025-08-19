@@ -1,9 +1,14 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth, useNotification } from '../lib/auth'
 import Notification from '../components/Notification'
 
 const AuthPage = () => {
+  const navigate = useNavigate()
+  const { login, register, forgotPassword, resetPassword, loading } = useAuth()
+  const { notification, showNotification } = useNotification()
+  
   const [activeForm, setActiveForm] = useState('login') // login, register, forgot, reset
-  const [notification, setNotification] = useState({ message: '', type: '', show: false })
   const [formData, setFormData] = useState({
     loginEmployeeId: '',
     loginPassword: '',
@@ -22,14 +27,6 @@ const AuthPage = () => {
     confirmNewPassword: ''
   })
   const [passwordVisibility, setPasswordVisibility] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
-
-  const showNotification = (message, type = 'success', duration = 3000) => {
-    setNotification({ message, type, show: true })
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, show: false }))
-    }, duration)
-  }
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -48,47 +45,56 @@ const AuthPage = () => {
 
   const handleSubmit = async (e, formType) => {
     e.preventDefault()
-    setIsLoading(true)
 
     try {
-      // Mock form submission - replace with actual API calls
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      let result
       
       switch (formType) {
         case 'login':
-          console.log('Login submitted:', { 
-            employeeId: formData.loginEmployeeId, 
-            password: formData.loginPassword,
-            rememberMe: formData.rememberMe 
-          })
-          showNotification('Đăng nhập thành công!', 'success')
-          // TODO: Navigate to dashboard after successful login
+          result = await login(formData.loginEmployeeId, formData.loginPassword, formData.rememberMe)
+          if (result.success) {
+            showNotification(result.message, 'success')
+            setTimeout(() => navigate('/dashboard'), 1000)
+          } else {
+            showNotification(result.message, 'error')
+          }
           break
+          
         case 'register':
-          console.log('Register submitted:', formData)
-          showNotification('Đăng ký thành công! Vui lòng xác thực email.', 'success')
-          setActiveForm('login')
+          result = await register(formData)
+          if (result.success) {
+            showNotification(result.message, 'success')
+            setActiveForm('login')
+          } else {
+            showNotification(result.message, 'error')
+          }
           break
+          
         case 'forgot':
-          console.log('Forgot password submitted:', { email: formData.forgotEmail })
-          showNotification('Mã xác thực đã được gửi đến email của bạn.', 'success')
-          setActiveForm('reset')
+          result = await forgotPassword(formData.forgotEmail)
+          if (result.success) {
+            showNotification(result.message, 'success')
+            setActiveForm('reset')
+          } else {
+            showNotification(result.message, 'error')
+          }
           break
+          
         case 'reset':
-          console.log('Reset password submitted:', { 
-            code: formData.verificationCode,
-            newPassword: formData.newPassword 
-          })
-          showNotification('Mật khẩu đã được đặt lại thành công!', 'success')
-          setActiveForm('login')
+          result = await resetPassword(formData.verificationCode, formData.newPassword)
+          if (result.success) {
+            showNotification(result.message, 'success')
+            setActiveForm('login')
+          } else {
+            showNotification(result.message, 'error')
+          }
           break
+          
         default:
           break
       }
     } catch (error) {
       showNotification('Có lỗi xảy ra. Vui lòng thử lại.', 'error')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -183,10 +189,10 @@ const AuthPage = () => {
                 </label>
               </div>
 
-              <button type="submit" className="btn btn-primary" disabled={isLoading}>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
                 <span className="material-icons-round btn-icon">login</span>
                 <span className="btn-text">Đăng nhập</span>
-                {isLoading && <span className="btn-loader"></span>}
+                {loading && <span className="btn-loader"></span>}
               </button>
 
               <div className="form-footer">
@@ -366,10 +372,10 @@ const AuthPage = () => {
                 </label>
               </div>
 
-              <button type="submit" className="btn btn-primary" disabled={isLoading}>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
                 <span className="material-icons-round btn-icon">person_add</span>
                 <span className="btn-text">Đăng ký</span>
-                {isLoading && <span className="btn-loader"></span>}
+                {loading && <span className="btn-loader"></span>}
               </button>
 
               <div className="form-footer">
@@ -410,10 +416,10 @@ const AuthPage = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary" disabled={isLoading}>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
                 <span className="material-icons-round btn-icon">send</span>
                 <span className="btn-text">Gửi mã xác thực</span>
-                {isLoading && <span className="btn-loader"></span>}
+                {loading && <span className="btn-loader"></span>}
               </button>
 
               <div className="form-footer">
@@ -506,10 +512,10 @@ const AuthPage = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary" disabled={isLoading}>
+              <button type="submit" className="btn btn-primary" disabled={loading}>
                 <span className="material-icons-round btn-icon">lock_reset</span>
                 <span className="btn-text">Đặt lại mật khẩu</span>
-                {isLoading && <span className="btn-loader"></span>}
+                {loading && <span className="btn-loader"></span>}
               </button>
 
               <div className="form-footer">
