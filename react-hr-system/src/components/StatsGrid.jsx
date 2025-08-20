@@ -1,32 +1,31 @@
-import { useState, useEffect } from 'react'
-import { dashboardService } from '../lib/services/dashboard.service'
+import { useState, useEffect } from 'react';
+import { dashboardService } from '../lib/services/dashboard.service.js';
 
 const StatsGrid = () => {
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await dashboardService.getStats()
-        setStats(data)
+        const data = await dashboardService.getStats();
+        setStats(data);
       } catch (error) {
-        console.error('Failed to fetch dashboard stats:', error)
-        // Set default stats on error
+        console.error('Failed to fetch dashboard stats:', error);
         setStats({
           totalEmployees: 0,
           todayShifts: 0,
           recentMessages: 0,
           pendingRequests: 0,
           currentDay: 'T2'
-        })
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    fetchStats()
-  }, [])
+    };
+
+    fetchStats();
+  }, []);
 
   if (loading) {
     return (
@@ -39,10 +38,10 @@ const StatsGrid = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  if (!stats) return null
+  if (!stats) return null;
 
   return (
     <div className="stats-grid">
@@ -53,7 +52,7 @@ const StatsGrid = () => {
           <p className="stat-number">{stats.totalEmployees}</p>
         </div>
       </div>
-      
+
       <div className="stat-card">
         <div className="stat-icon">✅</div>
         <div className="stat-content">
@@ -61,7 +60,7 @@ const StatsGrid = () => {
           <p className="stat-number">{stats.todayShifts}</p>
         </div>
       </div>
-      
+
       <div className="stat-card">
         <div className="stat-icon">📝</div>
         <div className="stat-content">
@@ -69,7 +68,7 @@ const StatsGrid = () => {
           <p className="stat-number">{stats.pendingRequests}</p>
         </div>
       </div>
-      
+
       <div className="stat-card">
         <div className="stat-icon">📊</div>
         <div className="stat-content">
@@ -78,7 +77,7 @@ const StatsGrid = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default StatsGrid
+export default StatsGrid;

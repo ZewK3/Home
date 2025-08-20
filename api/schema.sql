@@ -24,6 +24,22 @@ CREATE TABLE IF NOT EXISTS sessions (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
+-- Roles and user role mapping
+CREATE TABLE IF NOT EXISTS roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    employeeId TEXT NOT NULL,
+    role_id INTEGER NOT NULL,
+    PRIMARY KEY (employeeId, role_id),
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
+);
+
+INSERT OR IGNORE INTO roles (name) VALUES ('AD'),('QL'),('AM'),('NV');
+
 -- Registration queue for pending approvals
 CREATE TABLE IF NOT EXISTS queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -234,3 +250,4 @@ CREATE INDEX IF NOT EXISTS idx_tasks_employee ON tasks(employeeId);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
 CREATE INDEX IF NOT EXISTS idx_attendance_employee_date ON attendance(employeeId, checkIn);
 CREATE INDEX IF NOT EXISTS idx_shift_assignments_employee_date ON shift_assignments(employeeId, date);
+CREATE INDEX IF NOT EXISTS idx_user_roles_employee ON user_roles(employeeId);

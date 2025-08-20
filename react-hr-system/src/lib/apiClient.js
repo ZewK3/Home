@@ -2,6 +2,7 @@
 // Base configuration for all API calls
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/Home/api';
+const ENABLE_DEBUG = import.meta.env.VITE_ENABLE_DEBUG === 'true';
 
 class ApiClient {
   constructor() {
@@ -29,7 +30,7 @@ class ApiClient {
   getHeaders(additionalHeaders = {}) {
     const headers = { ...this.defaultHeaders, ...additionalHeaders };
     const token = this.getAuthToken();
-    
+
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
@@ -53,7 +54,7 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      
+
       // Handle non-JSON responses
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
@@ -73,13 +74,14 @@ class ApiClient {
 
       return data;
     } catch (error) {
-      // Log error for debugging
-      console.error('API Request failed:', {
-        url,
-        method: config.method,
-        error: error.message,
-        status: error.status
-      });
+      if (ENABLE_DEBUG) {
+        console.error('API Request failed:', {
+          url,
+          method: config.method,
+          error: error.message,
+          status: error.status
+        });
+      }
 
       // Re-throw for handling by the caller
       throw error;

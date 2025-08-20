@@ -67,6 +67,19 @@ function jsonResponse(responseData, status = 200, allowedOrigin = '*') {
   });
 }
 
+const loginAttempts = new Map();
+function isRateLimited(ip, limit = 5, windowMs = 60000) {
+  const now = Date.now();
+  const entry = loginAttempts.get(ip) || { count: 0, first: now };
+  if (now - entry.first > windowMs) {
+    entry.count = 0;
+    entry.first = now;
+  }
+  entry.count++;
+  loginAttempts.set(ip, entry);
+  return entry.count > limit;
+}
+
 // ===== CORS HANDLING =====
 function handleCors(request, env) {
   const allowedOrigins = getAllowedOrigins(env);
@@ -379,26 +392,31 @@ async function handleAuthLogin(request, env) {
   const allowedOrigin = handleCors(request, env);
   if (allowedOrigin instanceof Response) return allowedOrigin;
 
+  const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('x-forwarded-for') || 'unknown';
+  if (isRateLimited(ip)) {
+    return jsonResponse(fail('RATE_LIMIT', 'Too many login attempts', 429), 429, allowedOrigin);
+  }
+
   try {
     const body = await request.json();
     const { loginEmployeeId: employeeId, loginPassword: password } = body;
-    
+
     if (!employeeId || !password) {
       return jsonResponse(fail('MISSING_FIELDS', 'Missing employee ID or password'), 400, allowedOrigin);
     }
 
     // Check if user is in the queue (pending approval)
     const queueUser = await env.D1_BINDING
-      .prepare("SELECT * FROM queue WHERE employeeId = ?")
+      .prepare('SELECT * FROM queue WHERE employeeId = ?')
       .bind(employeeId)
       .first();
 
-    if (queueUser && queueUser.status === "Wait") {
+    if (queueUser && queueUser.status === 'Wait') {
       return jsonResponse(fail('PENDING_APPROVAL', 'Your account is pending approval from store management'), 403, allowedOrigin);
     }
 
     const user = await env.D1_BINDING
-      .prepare("SELECT password, salt FROM employees WHERE employeeId = ?")
+      .prepare('SELECT password, salt FROM employees WHERE employeeId = ?')
       .bind(employeeId)
       .first();
 
@@ -406,20 +424,19 @@ async function handleAuthLogin(request, env) {
       return jsonResponse(fail('USER_NOT_FOUND', 'Employee ID not found'), 404, allowedOrigin);
     }
 
-    const storedHash = Uint8Array.from(user.password.split(",").map(Number));
-    const storedSalt = Uint8Array.from(user.salt.split(",").map(Number));
+    const storedHash = Uint8Array.from(user.password.split(',').map(Number));
+    const storedSalt = Uint8Array.from(user.salt.split(',').map(Number));
     const isPasswordCorrect = await verifyPassword(storedHash, storedSalt, password);
 
     if (!isPasswordCorrect) {
       return jsonResponse(fail('INVALID_PASSWORD', 'Incorrect password'), 401, allowedOrigin);
     }
 
-    // Create session
     const sessionData = await createSession(employeeId, env);
     return jsonResponse(ok(sessionData), 200, allowedOrigin);
 
   } catch (error) {
-    console.error("Login error:", error);
+    console.error('Login error:', error);
     return jsonResponse(fail('LOGIN_ERROR', 'Login system error', 500), 500, allowedOrigin);
   }
 }
