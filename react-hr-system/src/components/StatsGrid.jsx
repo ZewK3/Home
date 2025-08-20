@@ -80,25 +80,5 @@ const StatsGrid = () => {
     </div>
   )
 }
-      </div>
-      
-      <div className="stat-card">
-        <div className="stat-icon">⏰</div>
-        <div className="stat-content">
-          <h3>Giờ làm tháng</h3>
-          <p className="stat-number">{stats.monthlyHours}h</p>
-        </div>
-      </div>
-      
-      <div className="stat-card">
-        <div className="stat-icon">📋</div>
-        <div className="stat-content">
-          <h3>Yêu cầu chờ</h3>
-          <p className="stat-number">{stats.pendingRequests}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default StatsGrid

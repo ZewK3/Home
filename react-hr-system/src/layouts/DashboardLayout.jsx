@@ -8,33 +8,12 @@ const DashboardLayout = ({ children }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
-  return (
-    <div className="dashboard-content">
-      {/* Mobile Navigation Dialog */}
-      {isMobileMenuOpen && (
-        <dialog 
-          open
-          className="mobile-nav"
-          onClick={(e) => e.target === e.currentTarget && setIsMobileMenuOpen(false)}
-        >
-          <div className="mobile-nav-content">
-            <div className="mobile-nav-header">
-              <h3>Menu</h3>
-              <button 
-                className="close-mobile-nav"
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-label="Đóng menu"
-              >
-                <span className="material-icons-round">close</span>
-              </button>
-            </div>
-            <div className="mobile-nav-menu">
-              <Sidebar />
-            </div>
-          </div>
-        </dialog>
-      )}
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false)
+  }
 
+  return (
+    <div className="dashboard-layout">
       {/* App Header */}
       <header className="app-header">
         <div className="header-left">
@@ -51,25 +30,40 @@ const DashboardLayout = ({ children }) => {
         </div>
         <div className="header-right">
           <div className="user-info">
-            <span>Admin User</span>
+            <span>Welcome</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
+      {/* Main Layout Container */}
       <div className="main-layout">
-        {/* Sidebar */}
-        <aside className="sidebar-wrapper">
-          <Sidebar />
+        {/* Fixed Sidebar (Desktop) */}
+        <aside className={`sidebar-wrapper ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+          <div className="sidebar-container">
+            <Sidebar />
+          </div>
+          {/* Mobile overlay */}
+          {isMobileMenuOpen && (
+            <div 
+              className="mobile-overlay"
+              onClick={closeMobileMenu}
+              aria-label="Đóng menu"
+            />
+          )}
         </aside>
 
-        {/* Content */}
-        <main className="main-content">
-          {children}
+        {/* Content Area */}
+        <main className="content-wrapper">
+          <div className="main-content">
+            {children}
+          </div>
         </main>
       </div>
     </div>
   )
+}
+
+export default DashboardLayout
 }
 
 export default DashboardLayout

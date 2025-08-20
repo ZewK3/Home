@@ -1,0 +1,358 @@
+/* Fixed Sidebar Layout Styles */
+
+/* CSS Variables for easy customization */
+:root {
+  --sidebar-width: 280px;
+  --header-height: 64px;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e5e7eb;
+  --sidebar-text: #374151;
+  --sidebar-hover: #f3f4f6;
+  --sidebar-active: #3b82f6;
+  --mobile-breakpoint: 1024px;
+}
+
+/* Dashboard Layout Container */
+.dashboard-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fixed Header */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: var(--sidebar-bg);
+  border-bottom: 1px solid var(--sidebar-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 1000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  color: var(--sidebar-text);
+}
+
+.mobile-menu-toggle:hover {
+  background: var(--sidebar-hover);
+}
+
+/* Main Layout Container */
+.main-layout {
+  display: flex;
+  margin-top: var(--header-height);
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* Fixed Sidebar */
+.sidebar-wrapper {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  z-index: 900;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Content Area */
+.content-wrapper {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: calc(100vh - var(--header-height));
+  transition: margin-left 0.3s ease;
+}
+
+.main-content {
+  padding: 1.5rem;
+  max-width: 100%;
+}
+
+/* Sidebar Component Styles */
+.sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--sidebar-bg);
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.menu-item {
+  margin: 0.25rem 1rem;
+}
+
+.menu-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--sidebar-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.menu-link:hover {
+  background: var(--sidebar-hover);
+}
+
+.menu-link.active {
+  background: var(--sidebar-active);
+  color: white;
+}
+
+.menu-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.menu-text {
+  flex: 1;
+}
+
+.submenu-arrow {
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.submenu-arrow.open {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  margin-top: 0.25rem;
+  padding-left: 2.5rem;
+}
+
+.submenu-link {
+  width: 100%;
+  display: block;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  color: var(--sidebar-text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 0.375rem;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.submenu-link:hover {
+  background: var(--sidebar-hover);
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+}
+
+.user-avatar {
+  color: var(--sidebar-active);
+  font-size: 2rem;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin: 0;
+  color: var(--sidebar-text);
+}
+
+.user-role {
+  font-size: 0.75rem;
+  margin: 0;
+  color: #6b7280;
+}
+
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: none;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 0.5rem;
+  color: var(--sidebar-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+/* Loading and Error States */
+.loading-spinner,
+.error-state,
+.no-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.loading-spinner .material-icons-round {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--sidebar-active);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.2s ease;
+}
+
+.retry-btn:hover {
+  background: #2563eb;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+
+  .sidebar-wrapper {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-wrapper.mobile-open {
+    transform: translateX(0);
+  }
+
+  .content-wrapper {
+    margin-left: 0;
+  }
+
+  .mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 850;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .sidebar-wrapper {
+    width: 100%;
+  }
+
+  .app-header {
+    padding: 0 0.75rem;
+  }
+
+  .logo h1 {
+    font-size: 1.25rem;
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+}
+
+/* Dark mode support */
+[data-theme="dark"] {
+  --sidebar-bg: #1f2937;
+  --sidebar-border: #374151;
+  --sidebar-text: #f9fafb;
+  --sidebar-hover: #374151;
+  --sidebar-active: #3b82f6;
+}
+
+[data-theme="dark"] .app-header {
+  background: var(--sidebar-bg);
+  border-color: var(--sidebar-border);
+}
+
+[data-theme="dark"] .user-role {
+  color: #9ca3af;
+}
