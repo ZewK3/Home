@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import AuthPage from '../pages/AuthPage.jsx'
 import DashboardPage from '../pages/DashboardPage.jsx'
 import ExamplesPage from '../pages/ExamplesPage.jsx'
+import LandingPage from '../pages/LandingPage.jsx'
 import DashboardLayout from '../layouts/DashboardLayout.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import React from 'react'
@@ -13,6 +14,10 @@ const ProtectedRoute = ({ element }) => {
 }
 
 const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <LandingPage />
+  },
   {
     path: '/auth',
     element: <AuthPage />
@@ -26,10 +31,6 @@ const router = createBrowserRouter([
   {
     path: '/examples',
     element: <ExamplesPage />
-  },
-  {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />
   }
 ])
 

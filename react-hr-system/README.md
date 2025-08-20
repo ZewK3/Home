@@ -19,3 +19,14 @@ npm run preview
 ```
 
 The app expects a Cloudflare Worker API running at `VITE_API_BASE_URL`.
+
+### Capturing screenshots with Playwright
+
+Install browsers once and run the script:
+
+```bash
+npx playwright install
+npm run screenshot
+```
+
+Screenshots are written to the `screenshots/` directory.
