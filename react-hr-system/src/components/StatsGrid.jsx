@@ -6,32 +6,36 @@ const StatsGrid = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let mounted = true
     const fetchStats = async () => {
       try {
         const data = await dashboardService.getStats()
-        setStats(data)
+        if (mounted) setStats(data)
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error)
-        // Set default stats on error
-        setStats({
-          totalEmployees: 0,
-          todayShifts: 0,
-          recentMessages: 0,
-          pendingRequests: 0,
-          currentDay: 'T2'
-        })
+        if (mounted) {
+          // Set default stats on error
+          setStats({
+            totalEmployees: 0,
+            todayShifts: 0,
+            recentMessages: 0,
+            pendingRequests: 0,
+            currentDay: 'T2'
+          })
+        }
       } finally {
-        setLoading(false)
+        if (mounted) setLoading(false)
       }
     }
-    
+
     fetchStats()
+    return () => { mounted = false }
   }, [])
 
   if (loading) {
     return (
       <div className="stats-grid">
-        <div className="stat-card loading">
+        <div className="stat-card loading" aria-busy="true">
           <div className="stat-icon">📊</div>
           <div className="stat-content">
             <h3>Đang tải...</h3>
@@ -53,7 +57,7 @@ const StatsGrid = () => {
           <p className="stat-number">{stats.totalEmployees}</p>
         </div>
       </div>
-      
+
       <div className="stat-card">
         <div className="stat-icon">✅</div>
         <div className="stat-content">
@@ -61,7 +65,7 @@ const StatsGrid = () => {
           <p className="stat-number">{stats.todayShifts}</p>
         </div>
       </div>
-      
+
       <div className="stat-card">
         <div className="stat-icon">📝</div>
         <div className="stat-content">
@@ -69,7 +73,7 @@ const StatsGrid = () => {
           <p className="stat-number">{stats.pendingRequests}</p>
         </div>
       </div>
-      
+
       <div className="stat-card">
         <div className="stat-icon">📊</div>
         <div className="stat-content">
