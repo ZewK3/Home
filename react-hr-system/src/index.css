@@ -1,3 +1,5 @@
+@import './styles/variables.css';
+
 /* Global Reset and Base Styles */
 *, *::before, *::after {
   box-sizing: border-box;

@@ -5,7 +5,7 @@ import Notification from '../components/Notification'
 
 const AuthPage = () => {
   const navigate = useNavigate()
-  const { login, register, verifyEmail, forgotPassword, resetPassword, loading } = useAuth()
+  const { login, register, forgotPassword, resetPassword, loading } = useAuth()
   const { notification, showNotification } = useNotification()
   
   const [activeForm, setActiveForm] = useState('login') // login, register, forgot, reset
@@ -50,23 +50,23 @@ const AuthPage = () => {
       let result
       
       switch (formType) {
-        case 'login':
+        case 'login': {
           // Validate and trim inputs
           const employeeId = formData.loginEmployeeId?.trim()
           const password = formData.loginPassword?.trim()
-          
+
           if (!employeeId || !password) {
             showNotification('Vui lòng nhập đầy đủ mã nhân viên và mật khẩu', 'error')
             return
           }
-          
+
           // Call login with credentials object
-          result = await login({ 
-            employeeId, 
-            password, 
-            rememberMe: formData.rememberMe 
+          result = await login({
+            employeeId,
+            password,
+            rememberMe: formData.rememberMe
           })
-          
+
           if (result.success) {
             showNotification(result.message, 'success')
             setTimeout(() => navigate('/dashboard'), 1000)
@@ -74,7 +74,8 @@ const AuthPage = () => {
             showNotification(result.message, 'error')
           }
           break
-          
+        }
+
         case 'register':
           result = await register(formData)
           if (result.success) {
@@ -136,10 +137,10 @@ const AuthPage = () => {
       <div className="light-streaks"></div>
 
       {/* Notification */}
-      <Notification 
-        message={notification.message}
-        type={notification.type}
-        show={notification.show}
+      <Notification
+        message={notification?.message}
+        type={notification?.type}
+        show={!!notification}
       />
 
       {/* Auth Container */}

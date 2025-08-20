@@ -1,0 +1,18 @@
+:root {
+  --color-bg: #ffffff;
+  --color-text: #111827;
+  --color-primary: #3b82f6;
+  --color-secondary: #6b7280;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1f2937;
+    --color-text: #f3f4f6;
+    --color-primary: #60a5fa;
+    --color-secondary: #9ca3af;
+  }
+}

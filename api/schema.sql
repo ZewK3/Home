@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS sessions (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
+-- Index to speed up session lookups by token
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+
 -- Registration queue for pending approvals
 CREATE TABLE IF NOT EXISTS queue (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
