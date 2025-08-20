@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global process */
 import { test } from '@playwright/test'
 import fs from 'fs'
 

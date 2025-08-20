@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 // Fallback menu when API fails or user has no role
@@ -101,19 +101,18 @@ export const useSidebarMenu = () => {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [lastFetch, setLastFetch] = useState(null);
 
   // Determine if user has access to a menu item
-  const hasRole = (roles) => {
+  const hasRole = useCallback((roles) => {
     if (!user?.role && !user?.position) return false;
     const userRole = user.role || user.position;
     return roles.includes(userRole);
-  };
+  }, [user]);
 
   // Filter menu items based on user role
   const filteredMenu = useMemo(() => {
     if (!user) return FALLBACK_MENU;
-    
+
     try {
       return FULL_MENU
         .filter(item => hasRole(item.roles))
@@ -125,7 +124,7 @@ export const useSidebarMenu = () => {
       console.error('Error filtering menu:', err);
       return FALLBACK_MENU;
     }
-  }, [user]);
+  }, [user, hasRole]);
 
   // Retry function for manual refresh
   const refetch = async () => {
@@ -135,7 +134,8 @@ export const useSidebarMenu = () => {
     try {
       // Since we rely on auth context, we just need to refresh the timestamp
       // The actual user data refresh is handled by AuthContext
-      setLastFetch(Date.now());
+      // placeholder to simulate refresh
+      Date.now();
     } catch (err) {
       console.error('Menu refetch failed:', err);
       setError(err.message || 'Không thể tải menu');

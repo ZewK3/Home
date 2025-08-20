@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../context/AuthContext.jsx'
 import { CONFIG } from './config.js'
 
 // Re-export useAuth from context for backwards compatibility

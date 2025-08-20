@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../lib/auth'
 
 const QuickActions = () => {
-  const { user } = useAuth()
   const [actionLoading, setActionLoading] = useState(null)
 
   const handleAction = async (actionName) => {
