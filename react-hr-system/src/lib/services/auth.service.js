@@ -5,12 +5,19 @@ export const authService = {
   // Login user
   async login(credentials) {
     try {
-      const response = await apiClient.post('/auth/login', {
+      const requestBody = {
         loginEmployeeId: credentials.employeeId,
         loginPassword: credentials.password
-      });
+      };
+      
+      // Include rememberMe if provided
+      if (credentials.rememberMe !== undefined) {
+        requestBody.rememberMe = !!credentials.rememberMe;
+      }
 
-      if (response.ok && response.data.token) {
+      const response = await apiClient.post('/auth/login', requestBody);
+
+      if (response.ok && response.data?.token) {
         // Store token in localStorage
         apiClient.setAuthToken(response.data.token);
         return response.data;

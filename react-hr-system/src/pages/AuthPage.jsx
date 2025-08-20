@@ -51,7 +51,22 @@ const AuthPage = () => {
       
       switch (formType) {
         case 'login':
-          result = await login(formData.loginEmployeeId, formData.loginPassword, formData.rememberMe)
+          // Validate and trim inputs
+          const employeeId = formData.loginEmployeeId?.trim()
+          const password = formData.loginPassword?.trim()
+          
+          if (!employeeId || !password) {
+            showNotification('Vui lòng nhập đầy đủ mã nhân viên và mật khẩu', 'error')
+            return
+          }
+          
+          // Call login with credentials object
+          result = await login({ 
+            employeeId, 
+            password, 
+            rememberMe: formData.rememberMe 
+          })
+          
           if (result.success) {
             showNotification(result.message, 'success')
             setTimeout(() => navigate('/dashboard'), 1000)
@@ -100,7 +115,10 @@ const AuthPage = () => {
           break
       }
     } catch (error) {
-      showNotification('Có lỗi xảy ra. Vui lòng thử lại.', 'error')
+      console.error('Form submit error:', error)
+      // Handle error safely - check if error has a message
+      const errorMessage = error?.message || error?.error?.message || 'Có lỗi xảy ra. Vui lòng thử lại.'
+      showNotification(errorMessage, 'error')
     }
   }
 
