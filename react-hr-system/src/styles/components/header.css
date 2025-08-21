@@ -1,0 +1,28 @@
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.logo h1 {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.mobile-menu-toggle {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  display: none;
+}
+
+.mobile-menu-toggle:hover {
+  color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+}

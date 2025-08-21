@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authService } from '../lib/services/auth.service.js';
 import { getUserFromCache, setUserToCache, clearUserCache } from '../lib/cache/userCache.js';

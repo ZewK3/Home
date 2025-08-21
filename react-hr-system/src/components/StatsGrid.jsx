@@ -46,7 +46,7 @@ const StatsGrid = () => {
   return (
     <div className="stats-grid">
       <div className="stat-card">
-        <div className="stat-icon">👥</div>
+        <span className="material-icons-round stat-icon">group</span>
         <div className="stat-content">
           <h3>Tổng nhân viên</h3>
           <p className="stat-number">{stats.totalEmployees}</p>
@@ -54,7 +54,7 @@ const StatsGrid = () => {
       </div>
 
       <div className="stat-card">
-        <div className="stat-icon">✅</div>
+        <span className="material-icons-round stat-icon">schedule</span>
         <div className="stat-content">
           <h3>Ca làm hôm nay</h3>
           <p className="stat-number">{stats.todayShifts}</p>
@@ -62,7 +62,7 @@ const StatsGrid = () => {
       </div>
 
       <div className="stat-card">
-        <div className="stat-icon">📝</div>
+        <span className="material-icons-round stat-icon">assignment</span>
         <div className="stat-content">
           <h3>Yêu cầu chờ duyệt</h3>
           <p className="stat-number">{stats.pendingRequests}</p>
@@ -70,7 +70,7 @@ const StatsGrid = () => {
       </div>
 
       <div className="stat-card">
-        <div className="stat-icon">📊</div>
+        <span className="material-icons-round stat-icon">notifications</span>
         <div className="stat-content">
           <h3>Hoạt động gần đây</h3>
           <p className="stat-number">{stats.recentMessages}</p>

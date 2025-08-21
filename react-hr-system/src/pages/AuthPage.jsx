@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useNotification } from '../lib/auth'
 import Notification from '../components/Notification'
+/* eslint-disable no-case-declarations */
 
 const AuthPage = () => {
   const navigate = useNavigate()
-  const { login, register, verifyEmail, forgotPassword, resetPassword, loading } = useAuth()
+  const { login, register, forgotPassword, resetPassword, loading } = useAuth()
   const { notification, showNotification } = useNotification()
   
   const [activeForm, setActiveForm] = useState('login') // login, register, forgot, reset

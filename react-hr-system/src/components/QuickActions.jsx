@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { useAuth } from '../lib/auth'
 
 const QuickActions = () => {
-  const { user } = useAuth()
   const [actionLoading, setActionLoading] = useState(null)
 
   const handleAction = async (actionName) => {
@@ -18,31 +16,27 @@ const QuickActions = () => {
   const actions = [
     {
       id: 'checkin',
-      icon: '🕐',
+      icon: 'schedule',
       title: 'Check-in',
-      description: 'Ghi nhận giờ vào làm',
-      color: 'green'
+      description: 'Ghi nhận giờ vào làm'
     },
     {
       id: 'request',
-      icon: '📝',
+      icon: 'assignment',
       title: 'Gửi yêu cầu',
-      description: 'Tạo yêu cầu nghỉ phép',
-      color: 'blue'
+      description: 'Tạo yêu cầu nghỉ phép'
     },
     {
       id: 'timesheet',
-      icon: '📊',
+      icon: 'calendar_month',
       title: 'Bảng công',
-      description: 'Xem bảng công tháng',
-      color: 'purple'
+      description: 'Xem bảng công tháng'
     },
     {
       id: 'profile',
-      icon: '👤',
+      icon: 'person',
       title: 'Hồ sơ',
-      description: 'Cập nhật thông tin',
-      color: 'orange'
+      description: 'Cập nhật thông tin'
     }
   ]
 
@@ -53,11 +47,13 @@ const QuickActions = () => {
         {actions.map(action => (
           <button
             key={action.id}
-            className={`action-card ${action.color}`}
+            className="action-card"
             onClick={() => handleAction(action.title)}
             disabled={actionLoading === action.title}
           >
-            <div className="action-icon">{action.icon}</div>
+            <div className="action-icon">
+              <span className="material-icons-round">{action.icon}</span>
+            </div>
             <div className="action-content">
               <h3>{action.title}</h3>
               <p>{action.description}</p>
