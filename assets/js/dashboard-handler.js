@@ -823,48 +823,78 @@ function generateReports() {
     const content = document.getElementById('content');
     if (!content) return;
     
-    content.innerHTML = `
-        <div class="card">
-            <div class="card-header">
-                <h2>📈 Báo Cáo Hệ Thống</h2>
-                <button onclick="location.reload()" class="btn btn-secondary">Quay lại Dashboard</button>
-            </div>
-            <div class="card-body">
-                <div class="reports-grid">
-                    <div class="report-section">
-                        <h3>Báo Cáo Nhân Viên</h3>
-                        <div class="report-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Tổng nhân viên:</span>
-                                <span class="stat-value" id="reportTotalEmployees">-</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Hoạt động hôm nay:</span>
-                                <span class="stat-value" id="reportTodayActive">-</span>
-                            </div>
-                        </div>
+    // Use DOM utilities for better performance
+    const reportsCard = DOMUtils.createCard('📈 Báo Cáo Hệ Thống');
+    
+    // Add back button to header
+    const cardHeader = reportsCard.querySelector('.card-header');
+    const backButton = DOMUtils.createElement('button', {
+        className: 'btn btn-secondary',
+        textContent: 'Quay lại Dashboard',
+        onclick: 'location.reload()'
+    });
+    cardHeader.appendChild(backButton);
+    
+    // Create reports content
+    const reportsContent = DOMUtils.createElement('div', {
+        className: 'reports-grid',
+        innerHTML: `
+            <div class="report-section">
+                <h3>Báo Cáo Nhân Viên</h3>
+                <div class="report-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Tổng nhân viên:</span>
+                        <span class="stat-value" id="reportTotalEmployees">-</span>
                     </div>
-                    <div class="report-section">
-                        <h3>Báo Cáo Yêu Cầu</h3>
-                        <div class="report-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Yêu cầu chờ xử lý:</span>
-                                <span class="stat-value" id="reportPendingRequests">-</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Đã xử lý tuần này:</span>
-                                <span class="stat-value" id="reportWeeklyProcessed">-</span>
-                            </div>
-                        </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Hoạt động hôm nay:</span>
+                        <span class="stat-value" id="reportTodayActive">-</span>
                     </div>
                 </div>
-                <div class="report-actions">
-                    <button onclick="refreshDashboardStats()" class="btn btn-primary">🔄 Làm mới dữ liệu</button>
-                    <button onclick="exportReports()" class="btn btn-success">📊 Xuất báo cáo</button>
+            </div>
+            <div class="report-section">
+                <h3>Báo Cáo Yêu Cầu</h3>
+                <div class="report-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Yêu cầu chờ xử lý:</span>
+                        <span class="stat-value" id="reportPendingRequests">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Đã xử lý tuần này:</span>
+                        <span class="stat-value" id="reportWeeklyProcessed">-</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
+        `
+    });
+    
+    // Create action buttons
+    const reportActions = DOMUtils.createElement('div', {
+        className: 'report-actions'
+    });
+    
+    const refreshBtn = DOMUtils.createElement('button', {
+        className: 'btn btn-primary',
+        textContent: '🔄 Làm mới dữ liệu',
+        onclick: 'refreshDashboardStats()'
+    });
+    
+    const exportBtn = DOMUtils.createElement('button', {
+        className: 'btn btn-success',
+        textContent: '📊 Xuất báo cáo',
+        onclick: 'exportReports()'
+    });
+    
+    reportActions.appendChild(refreshBtn);
+    reportActions.appendChild(exportBtn);
+    
+    // Add content to card body
+    const cardBody = reportsCard.querySelector('.card-body');
+    cardBody.appendChild(reportsContent);
+    cardBody.appendChild(reportActions);
+    
+    // Replace content efficiently
+    DOMUtils.replaceContent(content, reportsCard);
     
     // Load report data
     loadReportData();
@@ -995,13 +1025,13 @@ async function loadPersonalSchedule() {
                     <span class="day-time">${shift.time}</span>
                 </div>
             `).join('');
-            container.innerHTML = scheduleHTML;
+            DOMUtils.updateHTMLContent(container, scheduleHTML);
         } else {
-            container.innerHTML = '<p>Chưa đăng ký lịch làm</p>';
+            DOMUtils.replaceContent(container, DOMUtils.createEmptyElement('Chưa đăng ký lịch làm'));
         }
     } catch (error) {
         console.error('Failed to load personal schedule:', error);
-        container.innerHTML = '<p>Không thể tải lịch làm</p>';
+        DOMUtils.replaceContent(container, DOMUtils.createErrorElement('Không thể tải lịch làm'));
     }
 }
 
@@ -1024,13 +1054,13 @@ async function loadPersonalTasks() {
                     <span class="task-date">${utils.formatDate(task.createdAt)}</span>
                 </div>
             `).join('');
-            container.innerHTML = tasksHTML;
+            DOMUtils.updateHTMLContent(container, tasksHTML);
         } else {
-            container.innerHTML = '<p>Không có yêu cầu nào</p>';
+            DOMUtils.replaceContent(container, DOMUtils.createEmptyElement('Không có yêu cầu nào'));
         }
     } catch (error) {
         console.error('Failed to load personal tasks:', error);
-        container.innerHTML = '<p>Không thể tải yêu cầu</p>';
+        DOMUtils.replaceContent(container, DOMUtils.createErrorElement('Không thể tải yêu cầu'));
     }
 }
 
