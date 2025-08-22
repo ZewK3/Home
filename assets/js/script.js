@@ -193,7 +193,7 @@ function showNotification(message, type = "success", duration = 3000) {
     };
 
     elements.notification.innerHTML = `
-        <span class="notification-icon">${icons[type]}</span>
+        <span class="notification-icon">${icons[type] || "ℹ"}</span>
         <span class="notification-message">${message}</span>
     `;
     
@@ -291,33 +291,23 @@ async function loadStores() {
     }
     
     // Show loading state
-    storeSelect.innerHTML = '<option value="">Đang tải danh sách cửa hàng...</option>';
+    DOMUtils.populateSelect(storeSelect, [], { value: '', text: 'Đang tải danh sách cửa hàng...' });
     storeSelect.disabled = true;
     
     try {
-        // Loading stores from API silently
-        const response = await fetch(`${API_URL}?action=getStores`, {
-            method: "GET",
-            headers: { 
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
-        });
+        // Loading stores from API silently using new API client
+        const data = await apiClient.getStores();
         
-        // Store API response received
+        // Stores data processed successfully
         
-        if (response.ok) {
-            const data = await response.json();
-            // Stores data processed successfully
-            
-            // Check multiple possible data formats
-            let stores = [];
-            if (Array.isArray(data)) {
-                stores = data;
-            } else if (data.results && Array.isArray(data.results)) {
-                stores = data.results;
-            } else if (data.stores && Array.isArray(data.stores)) {
-                stores = data.stores;
+        // Check multiple possible data formats
+        let stores = [];
+        if (Array.isArray(data)) {
+            stores = data;
+        } else if (data.results && Array.isArray(data.results)) {
+            stores = data.results;
+        } else if (data.stores && Array.isArray(data.stores)) {
+            stores = data.stores;
             } else if (data.data && Array.isArray(data.data)) {
                 stores = data.data;
             } else if (typeof data === 'object' && data !== null) {
@@ -330,25 +320,17 @@ async function loadStores() {
             }
             
             if (stores && stores.length > 0) {
-                storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
-                
-                stores.forEach((store, index) => {
-                    const option = document.createElement("option");
-                    // Try multiple possible property names
-                    const storeId = store.storeId || store.id || `ST${index + 1}`;
-                    const storeName = store.storeName || store.name || storeId;
-                    option.value = storeId;
-                    option.textContent = storeName;
-                    storeSelect.appendChild(option);
-                    // Store added to dropdown
-                });
+                DOMUtils.populateSelect(storeSelect, stores.map(store => ({
+                    value: store.storeId || store.id || store.storeName || store,
+                    text: store.storeName || store.name || store
+                })), { value: '', text: 'Chọn cửa hàng' });
                 
                 storeSelect.disabled = false;
                 // All stores loaded successfully
                 // Stores loaded successfully - silent completion for better UX
             } else {
                 // No stores found in response
-                storeSelect.innerHTML = '<option value="">Không có cửa hàng nào</option>';
+                DOMUtils.populateSelect(storeSelect, [], { value: '', text: 'Không có cửa hàng nào' });
                 showNotification("Không tìm thấy cửa hàng nào", "warning", 3000);
             }
         } else {
@@ -368,14 +350,7 @@ async function loadStores() {
         ];
         
         // Using fallback stores data for testing
-        storeSelect.innerHTML = '<option value="">Chọn cửa hàng</option>';
-        
-        fallbackStores.forEach(store => {
-            const option = document.createElement("option");
-            option.value = store.storeId;
-            option.textContent = store.storeName;
-            storeSelect.appendChild(option);
-        });
+        DOMUtils.populateSelect(storeSelect, fallbackStores, { value: '', text: 'Chọn cửa hàng' });
         
         storeSelect.disabled = false;
         showNotification("Đang sử dụng dữ liệu mẫu cho cửa hàng", "warning", 5000);
@@ -420,46 +395,26 @@ async function handleLogin(event) {
     }
 
     try {
-        // Production API call
-        const response = await fetch(`${API_URL}?action=login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            localStorage.setItem(TOKEN_KEY, result.token);
-            
-            const rememberMe = elements.loginForm.rememberMe;
-            if (rememberMe && rememberMe.checked) {
-                localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
-            }
-            localStorage.setItem("loggedInUser", JSON.stringify(formData));
-            
-            showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
-            if (buttonText) buttonText.textContent = "Thành công!";
-            
-            // Hide loginFormContainer to prevent user interaction during redirect
-            if (elements.loginContainer) {
-                elements.loginContainer.style.display = "none";
-            }
-            
-            setTimeout(() => window.location.href = "../dashboard/dashboard.html", 1500);
-        } else {
-            const errorData = await response.json().catch(() => ({}));
-            
-            // Handle pending approval case
-            if (response.status === 403) {
-                throw new Error("Tài khoản của bạn đang chờ phê duyệt từ quản lý cửa hàng. Vui lòng đợi thông báo.");
-            }
-            
-            throw new Error(
-                response.status === 401 ? "Mật khẩu không chính xác" : 
-                response.status === 404 ? "Mã nhân viên không tồn tại" :
-                errorData.message || "Đăng nhập thất bại"
-            );
+        // Production API call using new API client
+        const result = await apiClient.login(formData);
+        
+        localStorage.setItem(TOKEN_KEY, result.token);
+        
+        const rememberMe = elements.loginForm.rememberMe;
+        if (rememberMe && rememberMe.checked) {
+            localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
         }
+        localStorage.setItem("loggedInUser", JSON.stringify(formData));
+        
+        showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
+        if (buttonText) buttonText.textContent = "Thành công!";
+        
+        // Hide loginFormContainer to prevent user interaction during redirect
+        if (elements.loginContainer) {
+            elements.loginContainer.style.display = "none";
+        }
+        
+        setTimeout(() => window.location.href = "../dashboard/dashboard.html", 1500);
     } catch (error) {
         showNotification(error.message, "error");
     } finally {
