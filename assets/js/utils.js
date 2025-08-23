@@ -87,26 +87,120 @@ const utils = {
         }
 
         const token = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
-        console.log(`API Call: ${endpoint}`); // Debug logging for API tracking
+        const requestId = crypto.randomUUID().substring(0, 8);
+        const startTime = performance.now();
+        
+        console.log(`[${requestId}] API Call: ${endpoint}`); // Debug logging for API tracking
+        
         try {
             const response = await fetch(`${CONFIG.API_URL}${endpoint}`, {
                 ...options,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
+                    'X-Request-ID': requestId,
+                    'X-Client-Version': '3.0.0',
                     ...options.headers
                 }
             });
 
+            const responseTime = performance.now() - startTime;
+            
             if (!response.ok) {
-                throw new Error('API request failed');
+                console.error(`[${requestId}] API request failed: ${response.status} ${response.statusText}`);
+                throw new Error(`API request failed: ${response.status} ${response.statusText}`);
             }
 
-            return await response.json();
+            const result = await response.json();
+            
+            // Log performance metrics
+            console.log(`[${requestId}] API response: ${response.status} (${responseTime.toFixed(2)}ms)`);
+            
+            // Update performance tracking
+            this.updatePerformanceMetrics(apiAction, responseTime, response.status === 200);
+            
+            return result;
         } catch (error) {
-            console.error('API Error:', error);
+            const responseTime = performance.now() - startTime;
+            console.error(`[${requestId}] API Error (${responseTime.toFixed(2)}ms):`, error);
+            
+            // Update performance tracking for errors
+            this.updatePerformanceMetrics(apiAction, responseTime, false);
+            
             throw error;
         }
+    },
+
+    // Performance metrics tracking
+    performanceMetrics: {
+        totalCalls: 0,
+        totalResponseTime: 0,
+        errorCount: 0,
+        actionMetrics: {}
+    },
+
+    updatePerformanceMetrics(action, responseTime, success) {
+        this.performanceMetrics.totalCalls++;
+        this.performanceMetrics.totalResponseTime += responseTime;
+        
+        if (!success) {
+            this.performanceMetrics.errorCount++;
+        }
+
+        // Track per-action metrics
+        if (action) {
+            if (!this.performanceMetrics.actionMetrics[action]) {
+                this.performanceMetrics.actionMetrics[action] = {
+                    calls: 0,
+                    totalTime: 0,
+                    errors: 0,
+                    avgTime: 0
+                };
+            }
+
+            const actionStats = this.performanceMetrics.actionMetrics[action];
+            actionStats.calls++;
+            actionStats.totalTime += responseTime;
+            actionStats.avgTime = actionStats.totalTime / actionStats.calls;
+            
+            if (!success) {
+                actionStats.errors++;
+            }
+        }
+    },
+
+    getPerformanceReport() {
+        const total = this.performanceMetrics.totalCalls;
+        return {
+            ...this.performanceMetrics,
+            averageResponseTime: total > 0 ? (this.performanceMetrics.totalResponseTime / total).toFixed(2) : 0,
+            errorRate: total > 0 ? ((this.performanceMetrics.errorCount / total) * 100).toFixed(2) + '%' : '0%'
+        };
+    },
+
+    // Enhanced API retry mechanism
+    async fetchAPIWithRetry(endpoint, options = {}, maxRetries = 3) {
+        let lastError;
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                return await this.fetchAPI(endpoint, options);
+            } catch (error) {
+                lastError = error;
+                console.warn(`API call attempt ${attempt} failed:`, error);
+                
+                if (attempt < maxRetries) {
+                    // Exponential backoff
+                    const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+                    console.log(`Retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                } else {
+                    console.error(`All ${maxRetries} attempts failed for ${endpoint}`);
+                }
+            }
+        }
+        
+        throw lastError;
     }
 };
 
