@@ -391,20 +391,31 @@ class EnhancedAuthManager {
                 cacheable: false
             });
 
-            if (response.success && response.data) {
-                this.token = response.data.session.token;
-                this.user = response.data.user;
-                this.sessionExpiry = response.data.session.expiresAt;
-                this.isAuthenticated = true;
+            // Support both old and new response formats for compatibility
+            if (response.success && (response.data || response.token)) {
+                // New format (Enhanced schema v3.0)
+                if (response.token) {
+                    this.token = response.token;
+                    this.user = response.user;
+                    this.sessionExpiry = new Date(Date.now() + 8 * 60 * 60 * 1000);
+                    this.isAuthenticated = true;
+                } 
+                // Old format 
+                else if (response.data) {
+                    this.token = response.data.session.token;
+                    this.user = response.data.user;
+                    this.sessionExpiry = response.data.session.expiresAt;
+                    this.isAuthenticated = true;
+                }
 
                 // Store in secure storage
                 this.setToStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN, this.token);
                 this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, this.user);
 
-                console.log('✅ Login successful:', this.user.name);
-                return response.data;
+                console.log('✅ Login successful (Enhanced schema v3.0):', this.user.name);
+                return response.data || response;
             } else {
-                throw new Error(response.error?.message || 'Login failed');
+                throw new Error(response.error?.message || response.message || 'Login failed');
             }
         } catch (error) {
             console.error('❌ Login error:', error);

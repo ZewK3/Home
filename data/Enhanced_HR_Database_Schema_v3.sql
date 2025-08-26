@@ -776,6 +776,80 @@ DELETE FROM api_request_logs WHERE created_at < datetime('now', '-180 days');
 */
 
 -- =====================================================
+-- ADDITIONAL TABLES FOR WORKER COMPATIBILITY
+-- =====================================================
+
+-- Pending user registrations
+CREATE TABLE IF NOT EXISTS pending_registrations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    salt VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    phone VARCHAR(20),
+    department VARCHAR(100),
+    position VARCHAR(100),
+    storeId VARCHAR(50),
+    verification_code VARCHAR(20),
+    status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected, expired
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    approved_at DATETIME,
+    approved_by INTEGER,
+    
+    FOREIGN KEY (approved_by) REFERENCES employees(id),
+    CHECK (status IN ('pending', 'approved', 'rejected', 'expired'))
+);
+
+-- User change history for audit trail
+CREATE TABLE IF NOT EXISTS user_change_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId VARCHAR(50) NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_by VARCHAR(50),
+    change_reason TEXT,
+    changedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
+);
+
+-- Shift assignments table  
+CREATE TABLE IF NOT EXISTS shift_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    shiftName VARCHAR(100) NOT NULL,
+    startTime TIME,
+    endTime TIME,
+    status VARCHAR(20) DEFAULT 'scheduled', -- scheduled, completed, cancelled, no_show
+    notes TEXT,
+    created_by VARCHAR(50),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
+    UNIQUE(employeeId, date)
+);
+
+-- Add salt column to employees table if it doesn't exist
+-- This is for backward compatibility with PBKDF2 password hashing
+ALTER TABLE employees ADD COLUMN salt VARCHAR(255);
+
+-- Add indexes for better performance on new tables
+CREATE INDEX IF NOT EXISTS idx_pending_registrations_status ON pending_registrations(status);
+CREATE INDEX IF NOT EXISTS idx_pending_registrations_employeeId ON pending_registrations(employeeId);
+CREATE INDEX IF NOT EXISTS idx_user_change_history_employeeId ON user_change_history(employeeId);
+CREATE INDEX IF NOT EXISTS idx_user_change_history_changedAt ON user_change_history(changedAt);
+CREATE INDEX IF NOT EXISTS idx_shift_assignments_employeeId ON shift_assignments(employeeId);
+CREATE INDEX IF NOT EXISTS idx_shift_assignments_date ON shift_assignments(date);
+CREATE INDEX IF NOT EXISTS idx_employees_salt ON employees(salt);
+
+-- =====================================================
 -- COMPLETION MESSAGE
 -- =====================================================
 
