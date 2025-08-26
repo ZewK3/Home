@@ -582,11 +582,11 @@ async function handleVerification(event) {
     }
 
     try {
-        const response = await fetch(`${API_URL}?action=register`, {
+        const response = await fetch(`${API_URL}?action=verifyEmail`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                ...registrationData,
+                employeeId: registrationData.employeeId,
                 verificationCode: verificationCode
             })
         });

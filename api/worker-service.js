@@ -65,33 +65,80 @@ async function sendVerificationEmail(email, employeeId, fullName, env) {
   const emailData = {
     personalizations: [{
       to: [{ email: email }],
-      dynamic_template_data: {
-        name: fullName,
-        employeeId: employeeId,
-        verificationCode: verificationCode
-      }
+      subject: "Xác nhận đăng ký tài khoản HR Management System"
     }],
-    from: { email: "noreply@hrmanagement.com" },
-    template_id: "d-template-id-here"
+    from: { 
+      email: "noreply@zewk.fun",
+      name: "HR Management System"
+    },
+    content: [{
+      type: "text/html",
+      value: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 10px;">
+          <div style="background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%); color: white; padding: 30px; border-radius: 8px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px;">HR Management System</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Xác nhận đăng ký tài khoản</p>
+          </div>
+          
+          <div style="background: white; padding: 30px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="color: #1f2937; margin-bottom: 20px;">Xin chào ${fullName}!</h2>
+            
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">
+              Cảm ơn bạn đã đăng ký tài khoản với HR Management System. Để hoàn tất quá trình đăng ký, vui lòng sử dụng mã xác nhận dưới đây:
+            </p>
+            
+            <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0;">
+              <p style="color: #6b7280; margin-bottom: 10px; font-size: 14px;">Mã xác nhận của bạn:</p>
+              <div style="font-size: 32px; font-weight: bold; color: #1e40af; letter-spacing: 4px; font-family: monospace;">
+                ${verificationCode}
+              </div>
+            </div>
+            
+            <div style="background: #fef3cd; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="color: #92400e; margin: 0; font-size: 14px;">
+                <strong>Lưu ý quan trọng:</strong> Sau khi nhập mã xác nhận, tài khoản của bạn sẽ được gửi tới quản lý cửa hàng để phê duyệt. Bạn sẽ nhận được thông báo khi tài khoản được kích hoạt.
+              </p>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                <strong>Thông tin đăng ký:</strong><br>
+                Mã nhân viên: ${employeeId}<br>
+                Email: ${email}<br>
+                Thời gian đăng ký: ${new Date().toLocaleString()}
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 20px;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              Nếu bạn không yêu cầu đăng ký này, vui lòng bỏ qua email này.
+            </p>
+          </div>
+        </div>
+      `
+    }]
   };
 
-  const emailResponse = await fetch("https://api.sendgrid.com/v3/mail/send", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${SENDGRID_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(emailData)
-  });
+  try {
+    const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${SENDGRID_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(emailData)
+    });
 
-  if (!emailResponse.ok) {
-    throw new Error("Failed to send verification email");
+    if (!response.ok) {
+      throw new Error(`SendGrid API error: ${response.status}`);
+    }
+
+    return verificationCode;
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw error;
   }
-
-  // Store verification code with expiry
-  await env.KV_STORE.put(`verification_${employeeId}`, verificationCode, { expirationTtl: 3600 });
-  
-  return verificationCode;
 }
 
 // Enhanced utility function for JSON responses with better error handling
@@ -165,6 +212,157 @@ async function verifyPassword(storedHash, storedSalt, password) {
   const saltArray = new Uint8Array(storedSalt.match(/.{2}/g).map(byte => parseInt(byte, 16)));
   const { hash } = await hashPassword(password, saltArray);
   return hash === storedHash;
+}
+
+// Enhanced PBKDF2 password hashing (100,000 iterations)
+async function hashPasswordPBKDF2(password, salt = crypto.getRandomValues(new Uint8Array(16))) {
+  const encoder = new TextEncoder();
+  const passwordBuffer = encoder.encode(password);
+
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    passwordBuffer,
+    "PBKDF2",
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+
+  const hashBuffer = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    keyMaterial,
+    256
+  );
+
+  return { hash: new Uint8Array(hashBuffer), salt };
+}
+
+// Vietnamese time parsing utility function
+function parseVietnameseTime(targetTime) {
+  const timeData = { checkIn: null, checkOut: null };
+  
+  if (!targetTime) return timeData;
+  
+  // Parse formats like "Giờ vào: 02:03" or "Giờ vào: 01:43, Giờ ra: 09:43"
+  const checkInMatch = targetTime.match(/Giờ vào:\s*(\d{2}:\d{2})/);
+  const checkOutMatch = targetTime.match(/Giờ ra:\s*(\d{2}:\d{2})/);
+  
+  if (checkInMatch) {
+    timeData.checkIn = checkInMatch[1];
+  }
+  
+  if (checkOutMatch) {
+    timeData.checkOut = checkOutMatch[1];
+  }
+  
+  return timeData;
+}
+
+// Get user information
+async function getUser(url, db, origin) {
+  const token = url.searchParams.get("token");
+  const session = await checkSessionMiddleware(token, db, origin);
+  if (session instanceof Response) return session;
+
+  const user = await db
+    .prepare("SELECT employeeId, name, storeId, position, phone, email, hire_date FROM employees WHERE employeeId = ?")
+    .bind(session.employeeId)
+    .first();
+
+  if (!user) return jsonResponse({ message: "Người dùng không tồn tại!" }, 404, origin);
+
+  return jsonResponse({ 
+    employeeId: user.employeeId,
+    fullName: user.name, // Map name to fullName for compatibility
+    storeName: user.storeId, // Map storeId to storeName for compatibility
+    position: user.position,
+    phone: user.phone,
+    email: user.email,
+    joinDate: user.hire_date, // Map hire_date to joinDate for compatibility
+    status: 'active' // Default status for compatibility
+  }, 200, origin);
+}
+
+// Handle email verification
+async function handleVerifyEmail(body, db, origin, env) {
+  const { employeeId, verificationCode } = body;
+  
+  if (!employeeId || !verificationCode) {
+    return jsonResponse({ message: "Thiếu mã nhân viên hoặc mã xác nhận!" }, 400, origin);
+  }
+
+  // Get verification data from pending_registrations table (Enhanced schema v3.0)
+  const verification = await db
+    .prepare("SELECT * FROM pending_registrations WHERE employeeId = ? AND verification_code = ? AND status = 'pending'")
+    .bind(employeeId, verificationCode)
+    .first();
+
+  if (!verification) {
+    return jsonResponse({ message: "Mã xác nhận không hợp lệ hoặc đã hết hạn!" }, 400, origin);
+  }
+
+  // Update status to verified
+  await db
+    .prepare("UPDATE pending_registrations SET status = 'verified' WHERE employeeId = ?")
+    .bind(employeeId)
+    .run();
+
+  return jsonResponse({ 
+    message: "Xác nhận email thành công! Yêu cầu đăng ký của bạn đã được gửi và đang chờ phê duyệt từ quản lý cửa hàng." 
+  }, 200, origin);
+}
+
+// Handle registration approval with history tracking
+async function handleApproveRegistrationWithHistory(body, db, origin) {
+  const { employeeId, approved, reason, actionBy } = body;
+  
+  if (!employeeId || approved === undefined || !actionBy) {
+    return jsonResponse({ message: "Dữ liệu không hợp lệ!" }, 400, origin);
+  }
+
+  try {
+    // Get action by user info
+    const actionByUser = await db
+      .prepare("SELECT name FROM employees WHERE employeeId = ?")
+      .bind(actionBy)
+      .first();
+    
+    if (!actionByUser) {
+      return jsonResponse({ message: "Người thực hiện không hợp lệ!" }, 400, origin);
+    }
+
+    // Update approval status in pending_registrations
+    const updateStatus = approved ? 'approved' : 'rejected';
+    await db
+      .prepare("UPDATE pending_registrations SET status = ? WHERE employeeId = ?")
+      .bind(updateStatus, employeeId)
+      .run();
+
+    // Log approval action to user_change_history table (Enhanced schema v3.0)
+    const timestamp = TimezoneUtils.toHanoiISOString();
+    
+    await db
+      .prepare(
+        "INSERT INTO user_change_history (employeeId, field_name, old_value, new_value, changed_by, changed_at, reason) VALUES (?, ?, ?, ?, ?, ?, ?)"
+      )
+      .bind(
+        employeeId,
+        'registration_status',
+        'pending',
+        updateStatus,
+        actionBy,
+        timestamp,
+        reason || ''
+      )
+      .run();
+
+    return jsonResponse({ 
+      message: approved ? "Đã phê duyệt đăng ký!" : "Đã từ chối đăng ký!" 
+    }, 200, origin);
+    
+  } catch (error) {
+    console.error('Error processing approval with history:', error);
+    return jsonResponse({ message: "Lỗi hệ thống khi xử lý!" }, 500, origin);
+  }
 }
 
 // Session middleware
@@ -439,19 +637,38 @@ async function handleGetUser(url, db, origin) {
 // Handle user registration
 async function handleRegister(body, db, origin, env) {
   try {
-    const { employeeId, email, password, name, department, position, storeId } = body;
+    // Map client field names to database field names
+    const { 
+      employeeId, 
+      email, 
+      password, 
+      fullName, // Client sends fullName
+      name, // Direct name field
+      department, 
+      position, 
+      storeName, // Client sends storeName
+      storeId, // Direct storeId field
+      phone
+    } = body;
 
-    if (!employeeId || !email || !password || !name) {
+    // Use mapped values, prioritizing client-sent field names
+    const userName = name || fullName;
+    const userStoreId = storeId || storeName;
+
+    if (!email || !password || !userName) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu thông tin bắt buộc!" 
       }, 400, origin);
     }
 
+    // Generate employeeId if not provided
+    const finalEmployeeId = employeeId || `EMP${Date.now().toString().slice(-6)}`;
+
     // Check if user already exists
     const existingUser = await db
       .prepare("SELECT employeeId FROM employees WHERE employeeId = ? OR email = ?")
-      .bind(employeeId, email)
+      .bind(finalEmployeeId, email)
       .first();
 
     if (existingUser) {
@@ -465,7 +682,7 @@ async function handleRegister(body, db, origin, env) {
     const { hash, salt } = await hashPassword(password);
 
     // Send verification email
-    const verificationCode = await sendVerificationEmail(email, employeeId, name, env);
+    const verificationCode = await sendVerificationEmail(email, finalEmployeeId, userName, env);
 
     // Create pending registration
     await db
@@ -475,13 +692,15 @@ async function handleRegister(body, db, origin, env) {
          verification_code, status, created_at) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
-      .bind(employeeId, email, hash, salt, name, department, position, storeId, 
+      .bind(finalEmployeeId, email, hash, salt, userName, department, position, userStoreId, 
             verificationCode, new Date().toISOString())
       .run();
 
     return jsonResponse({
       success: true,
-      message: "Đăng ký thành công! Vui lòng kiểm tra email để xác thực."
+      message: "Đăng ký thành công! Vui lòng kiểm tra email để xác thực.",
+      requiresVerification: true,
+      employeeId: finalEmployeeId
     }, 200, origin);
 
   } catch (error) {
@@ -1373,6 +1592,10 @@ export default {
             return await handleApproveAttendanceRequest(body, db, ALLOWED_ORIGIN, token);
           case "rejectAttendanceRequest":
             return await handleRejectAttendanceRequest(body, db, ALLOWED_ORIGIN, token);
+          case "verifyEmail":
+            return await handleVerifyEmail(body, db, ALLOWED_ORIGIN, env);
+          case "approveRegistrationWithHistory":
+            return await handleApproveRegistrationWithHistory(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
