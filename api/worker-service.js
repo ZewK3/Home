@@ -1355,128 +1355,1210 @@ async function updateUser(body, userId, db, origin) {
 }
 
 async function handleApproveTask(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Approve task function not yet implemented" }, 501, origin);
+  try {
+    const { taskId, approvedBy } = body;
+    
+    if (!taskId || !approvedBy) {
+      return jsonResponse({ message: "Task ID and approver are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE tasks 
+      SET status = 'approved', approved_by = ?, approved_at = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    
+    const result = await stmt.bind(approvedBy, currentTime, currentTime, taskId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Task not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Task approved successfully",
+      taskId: taskId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error approving task:", error);
+    return jsonResponse({ message: "Failed to approve task", error: error.message }, 500, origin);
+  }
 }
 
 async function handleRejectTask(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Reject task function not yet implemented" }, 501, origin);
+  try {
+    const { taskId, rejectedBy, reason } = body;
+    
+    if (!taskId || !rejectedBy) {
+      return jsonResponse({ message: "Task ID and rejector are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE tasks 
+      SET status = 'rejected', rejected_by = ?, rejection_reason = ?, rejected_at = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    
+    const result = await stmt.bind(rejectedBy, reason || '', currentTime, currentTime, taskId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Task not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Task rejected successfully",
+      taskId: taskId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error rejecting task:", error);
+    return jsonResponse({ message: "Failed to reject task", error: error.message }, 500, origin);
+  }
 }
 
-async function handleCreateTaskFromMessage(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Create task function not yet implemented" }, 501, origin);
-}
+// Function removed - not used by client
+// handleCreateTaskFromMessage was not called by any client code
 
-async function handleUpdatePermissions(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Update permissions function not yet implemented" }, 501, origin);
-}
+// Function removed - not used by client  
+// handleUpdatePermissions was not called by any client code
 
 async function handleUpdatePersonalInfo(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Update personal info function not yet implemented" }, 501, origin);
+  try {
+    const { employeeId, name, phone, position, department, email } = body;
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    const stmt = await db.prepare(`
+      UPDATE employees 
+      SET name = ?, phone = ?, position = ?, department = ?, email = ?, updated_at = ?
+      WHERE employeeId = ?
+    `);
+    
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const result = await stmt.bind(name, phone, position, department, email, currentTime, employeeId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Employee not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Personal information updated successfully",
+      employeeId: employeeId
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error updating personal info:", error);
+    return jsonResponse({ message: "Failed to update personal information", error: error.message }, 500, origin);
+  }
 }
 
 async function handleUpdateUserWithHistory(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Update user with history function not yet implemented" }, 501, origin);
+  try {
+    const { employeeId, field, oldValue, newValue, changedBy } = body;
+    
+    if (!employeeId || !field || !changedBy) {
+      return jsonResponse({ message: "Employee ID, field, and changedBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    // Start transaction
+    await db.exec("BEGIN TRANSACTION");
+    
+    try {
+      // Update the employee record
+      const updateStmt = await db.prepare(`UPDATE employees SET ${field} = ?, updated_at = ? WHERE employeeId = ?`);
+      const updateResult = await updateStmt.bind(newValue, currentTime, employeeId).run();
+      
+      if (updateResult.changes === 0) {
+        await db.exec("ROLLBACK");
+        return jsonResponse({ message: "Employee not found" }, 404, origin);
+      }
+
+      // Log the change in history
+      const historyStmt = await db.prepare(`
+        INSERT INTO user_change_history (employeeId, field_name, old_value, new_value, changed_by, change_date)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      await historyStmt.bind(employeeId, field, oldValue || '', newValue, changedBy, currentTime).run();
+      
+      await db.exec("COMMIT");
+      
+      return jsonResponse({ 
+        message: "User updated with history logged",
+        employeeId: employeeId,
+        field: field
+      }, 200, origin);
+    } catch (innerError) {
+      await db.exec("ROLLBACK");
+      throw innerError;
+    }
+  } catch (error) {
+    console.error("Error updating user with history:", error);
+    return jsonResponse({ message: "Failed to update user with history", error: error.message }, 500, origin);
+  }
 }
 
 async function handleApproveRegistration(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Approve registration function not yet implemented" }, 501, origin);
+  try {
+    const { employeeId, approvedBy } = body;
+    
+    if (!employeeId || !approvedBy) {
+      return jsonResponse({ message: "Employee ID and approver are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    // Start transaction
+    await db.exec("BEGIN TRANSACTION");
+    
+    try {
+      // Update pending registration status
+      const updateStmt = await db.prepare(`
+        UPDATE pending_registrations 
+        SET status = 'approved', approved_by = ?, approved_at = ?, updated_at = ?
+        WHERE employeeId = ?
+      `);
+      const result = await updateStmt.bind(approvedBy, currentTime, currentTime, employeeId).run();
+      
+      if (result.changes === 0) {
+        await db.exec("ROLLBACK");
+        return jsonResponse({ message: "Pending registration not found" }, 404, origin);
+      }
+
+      // Activate the employee account
+      const activateStmt = await db.prepare(`
+        UPDATE employees 
+        SET is_active = 1, employment_status = 'active', updated_at = ?
+        WHERE employeeId = ?
+      `);
+      await activateStmt.bind(currentTime, employeeId).run();
+      
+      await db.exec("COMMIT");
+      
+      return jsonResponse({ 
+        message: "Registration approved successfully",
+        employeeId: employeeId
+      }, 200, origin);
+    } catch (innerError) {
+      await db.exec("ROLLBACK");
+      throw innerError;
+    }
+  } catch (error) {
+    console.error("Error approving registration:", error);
+    return jsonResponse({ message: "Failed to approve registration", error: error.message }, 500, origin);
+  }
 }
 
 async function handleProcessAttendance(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Process attendance function not yet implemented" }, 501, origin);
+  try {
+    const { employeeId, date, checkInTime, checkOutTime, status, notes } = body;
+    
+    if (!employeeId || !date) {
+      return jsonResponse({ message: "Employee ID and date are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    // Calculate total hours if both check in and check out times are provided
+    let totalHours = 0;
+    if (checkInTime && checkOutTime) {
+      const checkIn = new Date(`${date}T${checkInTime}`);
+      const checkOut = new Date(`${date}T${checkOutTime}`);
+      totalHours = (checkOut - checkIn) / (1000 * 60 * 60); // Convert to hours
+    }
+
+    // Check if attendance record already exists
+    const existingStmt = await db.prepare("SELECT id FROM attendance WHERE employeeId = ? AND date = ?");
+    const existingRecord = await existingStmt.bind(employeeId, date).first();
+
+    if (existingRecord) {
+      // Update existing record
+      const updateStmt = await db.prepare(`
+        UPDATE attendance 
+        SET check_in_time = ?, check_out_time = ?, status = ?, total_hours = ?, notes = ?, updated_at = ?
+        WHERE employeeId = ? AND date = ?
+      `);
+      await updateStmt.bind(checkInTime, checkOutTime, status, totalHours.toFixed(2), notes || '', currentTime, employeeId, date).run();
+    } else {
+      // Insert new record
+      const insertStmt = await db.prepare(`
+        INSERT INTO attendance (employeeId, date, check_in_time, check_out_time, status, total_hours, notes, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      await insertStmt.bind(employeeId, date, checkInTime, checkOutTime, status, totalHours.toFixed(2), notes || '', currentTime, currentTime).run();
+    }
+
+    return jsonResponse({ 
+      message: "Attendance processed successfully",
+      employeeId: employeeId,
+      date: date,
+      totalHours: totalHours.toFixed(2)
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error processing attendance:", error);
+    return jsonResponse({ message: "Failed to process attendance", error: error.message }, 500, origin);
+  }
 }
 
 async function handleCreateAttendanceRequest(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Create attendance request function not yet implemented" }, 501, origin);
+  try {
+    const { employeeId, requestType, date, reason, startTime, endTime, requestedBy } = body;
+    
+    if (!employeeId || !requestType || !date || !requestedBy) {
+      return jsonResponse({ message: "Employee ID, request type, date, and requestedBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const requestId = `ATR_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    const stmt = await db.prepare(`
+      INSERT INTO attendance_requests 
+      (request_id, employeeId, request_type, date, start_time, end_time, reason, status, requested_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
+    `);
+    
+    await stmt.bind(requestId, employeeId, requestType, date, startTime || null, endTime || null, reason || '', requestedBy, currentTime, currentTime).run();
+
+    return jsonResponse({ 
+      message: "Attendance request created successfully",
+      requestId: requestId,
+      employeeId: employeeId
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error creating attendance request:", error);
+    return jsonResponse({ message: "Failed to create attendance request", error: error.message }, 500, origin);
+  }
 }
 
 async function handleCreateTaskAssignment(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Create task assignment function not yet implemented" }, 501, origin);
+  try {
+    const { title, description, assignee, priority, dueDate, createdBy, projectId } = body;
+    
+    if (!title || !assignee || !createdBy) {
+      return jsonResponse({ message: "Title, assignee, and createdBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const taskId = `TASK_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    const stmt = await db.prepare(`
+      INSERT INTO tasks 
+      (task_id, title, description, assignee, priority, due_date, status, created_by, project_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+    `);
+    
+    await stmt.bind(taskId, title, description || '', assignee, priority || 'medium', dueDate || null, createdBy, projectId || null, currentTime, currentTime).run();
+
+    return jsonResponse({ 
+      message: "Task assigned successfully",
+      taskId: taskId,
+      assignee: assignee
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error creating task assignment:", error);
+    return jsonResponse({ message: "Failed to create task assignment", error: error.message }, 500, origin);
+  }
 }
 
 async function handleAddTaskComment(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Add task comment function not yet implemented" }, 501, origin);
+  try {
+    const { taskId, comment, commentedBy } = body;
+    
+    if (!taskId || !comment || !commentedBy) {
+      return jsonResponse({ message: "Task ID, comment, and commentedBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const commentId = `COMMENT_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    const stmt = await db.prepare(`
+      INSERT INTO task_comments 
+      (comment_id, task_id, comment_text, commented_by, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    
+    await stmt.bind(commentId, taskId, comment, commentedBy, currentTime, currentTime).run();
+
+    return jsonResponse({ 
+      message: "Comment added successfully",
+      commentId: commentId,
+      taskId: taskId
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error adding task comment:", error);
+    return jsonResponse({ message: "Failed to add task comment", error: error.message }, 500, origin);
+  }
 }
 
 async function handleReplyToComment(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Reply to comment function not yet implemented" }, 501, origin);
+  try {
+    const { commentId, replyText, repliedBy } = body;
+    
+    if (!commentId || !replyText || !repliedBy) {
+      return jsonResponse({ message: "Comment ID, reply text, and repliedBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const replyId = `REPLY_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+    // Get the original comment to find the task ID
+    const originalCommentStmt = await db.prepare("SELECT task_id FROM task_comments WHERE comment_id = ?");
+    const originalComment = await originalCommentStmt.bind(commentId).first();
+    
+    if (!originalComment) {
+      return jsonResponse({ message: "Original comment not found" }, 404, origin);
+    }
+
+    const stmt = await db.prepare(`
+      INSERT INTO task_comments 
+      (comment_id, task_id, comment_text, commented_by, parent_comment_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    await stmt.bind(replyId, originalComment.task_id, replyText, repliedBy, commentId, currentTime, currentTime).run();
+
+    return jsonResponse({ 
+      message: "Reply added successfully",
+      replyId: replyId,
+      parentCommentId: commentId
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error replying to comment:", error);
+    return jsonResponse({ message: "Failed to reply to comment", error: error.message }, 500, origin);
+  }
 }
 
 async function handleSaveShiftAssignments(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Save shift assignments function not yet implemented" }, 501, origin);
+  try {
+    const { assignments, assignedBy } = body;
+    
+    if (!assignments || !Array.isArray(assignments) || !assignedBy) {
+      return jsonResponse({ message: "Assignments array and assignedBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    // Start transaction
+    await db.exec("BEGIN TRANSACTION");
+    
+    try {
+      for (const assignment of assignments) {
+        const { employeeId, shiftDate, shiftType, startTime, endTime, storeId } = assignment;
+        
+        if (!employeeId || !shiftDate || !shiftType) {
+          await db.exec("ROLLBACK");
+          return jsonResponse({ message: "Employee ID, shift date, and shift type are required for all assignments" }, 400, origin);
+        }
+
+        // Check if assignment already exists
+        const existingStmt = await db.prepare("SELECT id FROM shift_assignments WHERE employeeId = ? AND shift_date = ?");
+        const existing = await existingStmt.bind(employeeId, shiftDate).first();
+
+        if (existing) {
+          // Update existing assignment
+          const updateStmt = await db.prepare(`
+            UPDATE shift_assignments 
+            SET shift_type = ?, start_time = ?, end_time = ?, storeId = ?, assigned_by = ?, updated_at = ?
+            WHERE employeeId = ? AND shift_date = ?
+          `);
+          await updateStmt.bind(shiftType, startTime, endTime, storeId, assignedBy, currentTime, employeeId, shiftDate).run();
+        } else {
+          // Insert new assignment
+          const insertStmt = await db.prepare(`
+            INSERT INTO shift_assignments 
+            (employeeId, shift_date, shift_type, start_time, end_time, storeId, assigned_by, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+          await insertStmt.bind(employeeId, shiftDate, shiftType, startTime, endTime, storeId, assignedBy, currentTime, currentTime).run();
+        }
+      }
+      
+      await db.exec("COMMIT");
+      
+      return jsonResponse({ 
+        message: "Shift assignments saved successfully",
+        assignmentsCount: assignments.length
+      }, 200, origin);
+    } catch (innerError) {
+      await db.exec("ROLLBACK");
+      throw innerError;
+    }
+  } catch (error) {
+    console.error("Error saving shift assignments:", error);
+    return jsonResponse({ message: "Failed to save shift assignments", error: error.message }, 500, origin);
+  }
 }
 
 async function handleApproveShiftRequest(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Approve shift request function not yet implemented" }, 501, origin);
+  try {
+    const { requestId, approvedBy, approvalNotes } = body;
+    
+    if (!requestId || !approvedBy) {
+      return jsonResponse({ message: "Request ID and approver are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE shift_requests 
+      SET status = 'approved', approved_by = ?, approved_at = ?, approval_notes = ?, updated_at = ?
+      WHERE request_id = ?
+    `);
+    
+    const result = await stmt.bind(approvedBy, currentTime, approvalNotes || '', currentTime, requestId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Shift request not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Shift request approved successfully",
+      requestId: requestId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error approving shift request:", error);
+    return jsonResponse({ message: "Failed to approve shift request", error: error.message }, 500, origin);
+  }
 }
 
 async function handleRejectShiftRequest(body, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Reject shift request function not yet implemented" }, 501, origin);
+  try {
+    const { requestId, rejectedBy, rejectionReason } = body;
+    
+    if (!requestId || !rejectedBy) {
+      return jsonResponse({ message: "Request ID and rejector are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE shift_requests 
+      SET status = 'rejected', rejected_by = ?, rejected_at = ?, rejection_reason = ?, updated_at = ?
+      WHERE request_id = ?
+    `);
+    
+    const result = await stmt.bind(rejectedBy, currentTime, rejectionReason || '', currentTime, requestId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Shift request not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Shift request rejected successfully",
+      requestId: requestId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error rejecting shift request:", error);
+    return jsonResponse({ message: "Failed to reject shift request", error: error.message }, 500, origin);
+  }
 }
 
 async function handleApproveAttendanceRequest(body, db, origin, token) {
-  // Implementation here
-  return jsonResponse({ message: "Approve attendance request function not yet implemented" }, 501, origin);
+  try {
+    const { requestId, approvedBy, approvalNotes } = body;
+    
+    if (!requestId || !approvedBy) {
+      return jsonResponse({ message: "Request ID and approver are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE attendance_requests 
+      SET status = 'approved', approved_by = ?, approved_at = ?, approval_notes = ?, updated_at = ?
+      WHERE request_id = ?
+    `);
+    
+    const result = await stmt.bind(approvedBy, currentTime, approvalNotes || '', currentTime, requestId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Attendance request not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Attendance request approved successfully",
+      requestId: requestId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error approving attendance request:", error);
+    return jsonResponse({ message: "Failed to approve attendance request", error: error.message }, 500, origin);
+  }
 }
 
 async function handleRejectAttendanceRequest(body, db, origin, token) {
-  // Implementation here
-  return jsonResponse({ message: "Reject attendance request function not yet implemented" }, 501, origin);
+  try {
+    const { requestId, rejectedBy, rejectionReason } = body;
+    
+    if (!requestId || !rejectedBy) {
+      return jsonResponse({ message: "Request ID and rejector are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE attendance_requests 
+      SET status = 'rejected', rejected_by = ?, rejected_at = ?, rejection_reason = ?, updated_at = ?
+      WHERE request_id = ?
+    `);
+    
+    const result = await stmt.bind(rejectedBy, currentTime, rejectionReason || '', currentTime, requestId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Attendance request not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Attendance request rejected successfully",
+      requestId: requestId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error rejecting attendance request:", error);
+    return jsonResponse({ message: "Failed to reject attendance request", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetTimesheet(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get timesheet function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    const month = urlParams.get("month");
+    const startDate = urlParams.get("startDate");
+    const endDate = urlParams.get("endDate");
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    let whereClause = "WHERE employeeId = ?";
+    let params = [employeeId];
+    
+    if (month) {
+      whereClause += " AND strftime('%Y-%m', date) = ?";
+      params.push(month);
+    } else if (startDate && endDate) {
+      whereClause += " AND date BETWEEN ? AND ?";
+      params.push(startDate, endDate);
+    }
+
+    // Get attendance records
+    const attendanceStmt = await db.prepare(`
+      SELECT 
+        date, check_in_time, check_out_time, status, total_hours,
+        location_check_in, location_check_out, notes
+      FROM attendance 
+      ${whereClause}
+      ORDER BY date ASC
+    `);
+    const attendanceRecords = await attendanceStmt.bind(...params).all();
+
+    // Calculate summary statistics
+    const totalHours = attendanceRecords.reduce((sum, record) => {
+      return sum + (parseFloat(record.total_hours) || 0);
+    }, 0);
+
+    const presentDays = attendanceRecords.filter(r => r.status === 'present').length;
+    const lateDays = attendanceRecords.filter(r => r.status === 'late').length;
+    const absentDays = attendanceRecords.filter(r => r.status === 'absent').length;
+
+    return jsonResponse({
+      employeeId: employeeId,
+      period: month ? `${month}` : `${startDate} to ${endDate}`,
+      records: attendanceRecords,
+      summary: {
+        totalHours: totalHours.toFixed(2),
+        totalDays: attendanceRecords.length,
+        presentDays: presentDays,
+        lateDays: lateDays,
+        absentDays: absentDays,
+        attendanceRate: attendanceRecords.length > 0 ? 
+          ((presentDays + lateDays) / attendanceRecords.length * 100).toFixed(1) : 0
+      }
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting timesheet:", error);
+    return jsonResponse({ message: "Failed to get timesheet", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetAttendanceHistory(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get attendance history function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    const startDate = urlParams.get("startDate");
+    const endDate = urlParams.get("endDate");
+    const date = urlParams.get("date"); // For specific date query
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    let whereClause = "WHERE employeeId = ?";
+    let params = [employeeId];
+    
+    if (date) {
+      whereClause += " AND date = ?";
+      params.push(date);
+    } else if (startDate && endDate) {
+      whereClause += " AND date BETWEEN ? AND ?";
+      params.push(startDate, endDate);
+    }
+
+    const stmt = await db.prepare(`
+      SELECT 
+        date, check_in_time, check_out_time, status, total_hours,
+        location_check_in, location_check_out, notes,
+        created_at, updated_at
+      FROM attendance 
+      ${whereClause}
+      ORDER BY date DESC
+    `);
+    
+    const attendanceRecords = await stmt.bind(...params).all();
+
+    return jsonResponse({
+      employeeId: employeeId,
+      records: attendanceRecords
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting attendance history:", error);
+    return jsonResponse({ message: "Failed to get attendance history", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetPersonalStats(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get personal stats function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    // Get basic employee info
+    const employeeStmt = await db.prepare("SELECT * FROM employees WHERE employeeId = ?");
+    const employee = await employeeStmt.bind(employeeId).first();
+    
+    if (!employee) {
+      return jsonResponse({ message: "Employee not found" }, 404, origin);
+    }
+
+    // Get attendance stats for current month
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+    const attendanceStmt = await db.prepare(`
+      SELECT 
+        COUNT(*) as total_days,
+        SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) as present_days,
+        SUM(CASE WHEN status = 'late' THEN 1 ELSE 0 END) as late_days,
+        SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) as absent_days
+      FROM attendance 
+      WHERE employeeId = ? AND strftime('%Y-%m', date) = ?
+    `);
+    const attendanceStats = await attendanceStmt.bind(employeeId, currentMonth).first();
+
+    // Get task stats
+    const taskStmt = await db.prepare(`
+      SELECT 
+        COUNT(*) as total_tasks,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_tasks,
+        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks
+      FROM tasks 
+      WHERE assignee = ?
+    `);
+    const taskStats = await taskStmt.bind(employeeId).first();
+
+    // Calculate performance metrics
+    const attendanceRate = attendanceStats.total_days > 0 ? 
+      (attendanceStats.present_days / attendanceStats.total_days * 100).toFixed(1) : 0;
+    const taskCompletionRate = taskStats.total_tasks > 0 ? 
+      (taskStats.completed_tasks / taskStats.total_tasks * 100).toFixed(1) : 0;
+
+    return jsonResponse({
+      employeeId: employeeId,
+      name: employee.name,
+      position: employee.position,
+      department: employee.department,
+      attendance: {
+        totalDays: attendanceStats.total_days || 0,
+        presentDays: attendanceStats.present_days || 0,
+        lateDays: attendanceStats.late_days || 0,
+        absentDays: attendanceStats.absent_days || 0,
+        attendanceRate: parseFloat(attendanceRate)
+      },
+      tasks: {
+        totalTasks: taskStats.total_tasks || 0,
+        completedTasks: taskStats.completed_tasks || 0,
+        pendingTasks: taskStats.pending_tasks || 0,
+        inProgressTasks: taskStats.in_progress_tasks || 0,
+        completionRate: parseFloat(taskCompletionRate)
+      }
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting personal stats:", error);
+    return jsonResponse({ message: "Failed to get personal stats", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetWorkTasks(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get work tasks function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    const page = parseInt(urlParams.get("page")) || 1;
+    const limit = parseInt(urlParams.get("limit")) || 15;
+    const status = urlParams.get("status") || "";
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    const offset = (page - 1) * limit;
+    
+    let whereClause = "WHERE assignee = ?";
+    let params = [employeeId];
+    
+    if (status) {
+      whereClause += " AND status = ?";
+      params.push(status);
+    }
+
+    // Get total count
+    const countStmt = await db.prepare(`SELECT COUNT(*) as total FROM tasks ${whereClause}`);
+    const countResult = await countStmt.bind(...params).first();
+    const totalTasks = countResult.total;
+
+    // Get tasks with pagination
+    const tasksStmt = await db.prepare(`
+      SELECT 
+        id, title, description, status, priority, assignee, created_by, 
+        due_date, created_at, updated_at
+      FROM tasks 
+      ${whereClause}
+      ORDER BY created_at DESC 
+      LIMIT ? OFFSET ?
+    `);
+    
+    const tasks = await tasksStmt.bind(...params, limit, offset).all();
+
+    const totalPages = Math.ceil(totalTasks / limit);
+
+    return jsonResponse({
+      tasks: tasks,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalTasks: totalTasks,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting work tasks:", error);
+    return jsonResponse({ message: "Failed to get work tasks", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetTaskDetail(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get task detail function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const taskId = urlParams.get("taskId");
+    
+    if (!taskId) {
+      return jsonResponse({ message: "Task ID is required" }, 400, origin);
+    }
+
+    // Get task details
+    const taskStmt = await db.prepare(`
+      SELECT 
+        t.*, 
+        e1.name as assignee_name,
+        e2.name as creator_name
+      FROM tasks t
+      LEFT JOIN employees e1 ON t.assignee = e1.employeeId
+      LEFT JOIN employees e2 ON t.created_by = e2.employeeId
+      WHERE t.id = ?
+    `);
+    const task = await taskStmt.bind(taskId).first();
+    
+    if (!task) {
+      return jsonResponse({ message: "Task not found" }, 404, origin);
+    }
+
+    // Get task comments
+    const commentsStmt = await db.prepare(`
+      SELECT 
+        tc.*,
+        e.name as commenter_name
+      FROM task_comments tc
+      LEFT JOIN employees e ON tc.commented_by = e.employeeId
+      WHERE tc.task_id = ?
+      ORDER BY tc.created_at ASC
+    `);
+    const comments = await commentsStmt.bind(taskId).all();
+
+    return jsonResponse({
+      task: task,
+      comments: comments
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting task detail:", error);
+    return jsonResponse({ message: "Failed to get task detail", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetEmployeesByStore(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get employees by store function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const storeId = urlParams.get("storeId");
+    
+    if (!storeId) {
+      return jsonResponse({ message: "Store ID is required" }, 400, origin);
+    }
+
+    const stmt = await db.prepare(`
+      SELECT 
+        employeeId, name, email, phone, position, department, 
+        employment_status, is_active, hire_date, last_login_at
+      FROM employees 
+      WHERE storeId = ? AND employment_status != 'terminated'
+      ORDER BY name ASC
+    `);
+    
+    const employees = await stmt.bind(storeId).all();
+
+    return jsonResponse({
+      storeId: storeId,
+      employees: employees,
+      totalEmployees: employees.length
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting employees by store:", error);
+    return jsonResponse({ message: "Failed to get employees by store", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetShiftRequests(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get shift requests function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    const status = urlParams.get("status");
+    
+    let whereClause = "WHERE 1=1";
+    let params = [];
+    
+    if (employeeId) {
+      whereClause += " AND sr.employeeId = ?";
+      params.push(employeeId);
+    }
+    
+    if (status) {
+      whereClause += " AND sr.status = ?";
+      params.push(status);
+    }
+
+    const stmt = await db.prepare(`
+      SELECT 
+        sr.*,
+        e.name as employee_name,
+        e.department,
+        e.position
+      FROM shift_requests sr
+      LEFT JOIN employees e ON sr.employeeId = e.employeeId
+      ${whereClause}
+      ORDER BY sr.created_at DESC
+    `);
+    
+    const requests = await stmt.bind(...params).all();
+
+    return jsonResponse({
+      requests: requests
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting shift requests:", error);
+    return jsonResponse({ message: "Failed to get shift requests", error: error.message }, 500, origin);
+  }
 }
 
 async function handleGetAttendanceRequests(url, db, origin) {
-  // Implementation here
-  return jsonResponse({ message: "Get attendance requests function not yet implemented" }, 501, origin);
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    const status = urlParams.get("status");
+    const month = urlParams.get("month");
+    
+    let whereClause = "WHERE 1=1";
+    let params = [];
+    
+    if (employeeId) {
+      whereClause += " AND employeeId = ?";
+      params.push(employeeId);
+    }
+    
+    if (status) {
+      whereClause += " AND status = ?";
+      params.push(status);
+    }
+    
+    if (month) {
+      whereClause += " AND strftime('%Y-%m', date) = ?";
+      params.push(month);
+    }
+
+    const stmt = await db.prepare(`
+      SELECT 
+        ar.*,
+        e.name as employee_name,
+        e.department,
+        e.position
+      FROM attendance_requests ar
+      LEFT JOIN employees e ON ar.employeeId = e.employeeId
+      ${whereClause}
+      ORDER BY ar.created_at DESC
+    `);
+    
+    const requests = await stmt.bind(...params).all();
+
+    return jsonResponse({
+      requests: requests
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting attendance requests:", error);
+    return jsonResponse({ message: "Failed to get attendance requests", error: error.message }, 500, origin);
+  }
+}
+
+// =====================================================
+// MISSING FUNCTIONS CALLED BY CLIENT
+// =====================================================
+
+async function handleGetAllUsers(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const includeInactive = urlParams.get("includeInactive") === "true";
+    
+    let whereClause = includeInactive ? "WHERE 1=1" : "WHERE is_active = 1 AND employment_status = 'active'";
+
+    const stmt = await db.prepare(`
+      SELECT 
+        employeeId, name, email, phone, position, department, storeId,
+        employment_status, is_active, hire_date, last_login_at
+      FROM employees 
+      ${whereClause}
+      ORDER BY name ASC
+    `);
+    
+    const users = await stmt.all();
+
+    return jsonResponse({
+      users: users,
+      totalUsers: users.length
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting all users:", error);
+    return jsonResponse({ message: "Failed to get all users", error: error.message }, 500, origin);
+  }
+}
+
+async function handleGetApprovalTasks(url, db, origin) {
+  try {
+    const stmt = await db.prepare(`
+      SELECT 
+        t.*,
+        e1.name as assignee_name,
+        e2.name as creator_name
+      FROM tasks t
+      LEFT JOIN employees e1 ON t.assignee = e1.employeeId
+      LEFT JOIN employees e2 ON t.created_by = e2.employeeId
+      WHERE t.status = 'pending' OR t.status = 'submitted'
+      ORDER BY t.created_at DESC
+    `);
+    
+    const tasks = await stmt.all();
+
+    return jsonResponse({
+      tasks: tasks
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting approval tasks:", error);
+    return jsonResponse({ message: "Failed to get approval tasks", error: error.message }, 500, origin);
+  }
+}
+
+async function handleFinalApproveTask(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const taskId = urlParams.get("taskId");
+    
+    if (!taskId) {
+      return jsonResponse({ message: "Task ID is required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE tasks 
+      SET status = 'completed', final_approved_at = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    
+    const result = await stmt.bind(currentTime, currentTime, taskId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Task not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Task finally approved",
+      taskId: taskId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error final approving task:", error);
+    return jsonResponse({ message: "Failed to final approve task", error: error.message }, 500, origin);
+  }
+}
+
+async function handleFinalRejectTask(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const taskId = urlParams.get("taskId");
+    const reason = urlParams.get("reason");
+    
+    if (!taskId) {
+      return jsonResponse({ message: "Task ID is required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    const stmt = await db.prepare(`
+      UPDATE tasks 
+      SET status = 'final_rejected', final_rejection_reason = ?, final_rejected_at = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    
+    const result = await stmt.bind(reason || '', currentTime, currentTime, taskId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Task not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Task finally rejected",
+      taskId: taskId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error final rejecting task:", error);
+    return jsonResponse({ message: "Failed to final reject task", error: error.message }, 500, origin);
+  }
+}
+
+async function handleCompleteRequest(body, db, origin) {
+  try {
+    const { requestId, requestType, completedBy } = body;
+    
+    if (!requestId || !requestType || !completedBy) {
+      return jsonResponse({ message: "Request ID, type, and completedBy are required" }, 400, origin);
+    }
+
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    let tableName;
+    switch (requestType) {
+      case 'attendance':
+        tableName = 'attendance_requests';
+        break;
+      case 'shift':
+        tableName = 'shift_requests';
+        break;
+      default:
+        return jsonResponse({ message: "Invalid request type" }, 400, origin);
+    }
+    
+    const stmt = await db.prepare(`
+      UPDATE ${tableName} 
+      SET status = 'completed', completed_by = ?, completed_at = ?, updated_at = ?
+      WHERE request_id = ?
+    `);
+    
+    const result = await stmt.bind(completedBy, currentTime, currentTime, requestId).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Request not found" }, 404, origin);
+    }
+
+    return jsonResponse({ 
+      message: "Request completed successfully",
+      requestId: requestId 
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error completing request:", error);
+    return jsonResponse({ message: "Failed to complete request", error: error.message }, 500, origin);
+  }
+}
+
+async function handleCheckDk(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    // Check if employee ID already exists
+    const stmt = await db.prepare("SELECT COUNT(*) as count FROM employees WHERE employeeId = ?");
+    const result = await stmt.bind(employeeId).first();
+    
+    const exists = result.count > 0;
+
+    return jsonResponse({
+      employeeId: employeeId,
+      exists: exists
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error checking duplicate employee ID:", error);
+    return jsonResponse({ message: "Failed to check employee ID", error: error.message }, 500, origin);
+  }
+}
+
+async function handleGetPendingRequestsCount(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    
+    if (!employeeId) {
+      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
+    }
+
+    // Count pending attendance requests
+    const attendanceStmt = await db.prepare("SELECT COUNT(*) as count FROM attendance_requests WHERE employeeId = ? AND status = 'pending'");
+    const attendanceResult = await attendanceStmt.bind(employeeId).first();
+    
+    // Count pending shift requests
+    const shiftStmt = await db.prepare("SELECT COUNT(*) as count FROM shift_requests WHERE employeeId = ? AND status = 'pending'");
+    const shiftResult = await shiftStmt.bind(employeeId).first();
+    
+    // Count pending tasks
+    const taskStmt = await db.prepare("SELECT COUNT(*) as count FROM tasks WHERE assignee = ? AND status = 'pending'");
+    const taskResult = await taskStmt.bind(employeeId).first();
+
+    const totalPending = (attendanceResult.count || 0) + (shiftResult.count || 0) + (taskResult.count || 0);
+
+    return jsonResponse({
+      employeeId: employeeId,
+      pendingRequests: {
+        attendance: attendanceResult.count || 0,
+        shift: shiftResult.count || 0,
+        tasks: taskResult.count || 0,
+        total: totalPending
+      }
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting pending requests count:", error);
+    return jsonResponse({ message: "Failed to get pending requests count", error: error.message }, 500, origin);
+  }
 }
 
 // =====================================================
@@ -1562,10 +2644,6 @@ export default {
             return await handleApproveTask(body, db, ALLOWED_ORIGIN);
           case "rejectTask":
             return await handleRejectTask(body, db, ALLOWED_ORIGIN);
-          case "createTask":
-            return await handleCreateTaskFromMessage(body, db, ALLOWED_ORIGIN);
-          case "updatePermissions":
-            return await handleUpdatePermissions(body, db, ALLOWED_ORIGIN);
           case "updatePersonalInfo":
             return await handleUpdatePersonalInfo(body, db, ALLOWED_ORIGIN);
           case "updateUserWithHistory":
@@ -1596,6 +2674,8 @@ export default {
             return await handleVerifyEmail(body, db, ALLOWED_ORIGIN, env);
           case "approveRegistrationWithHistory":
             return await handleApproveRegistrationWithHistory(body, db, ALLOWED_ORIGIN);
+          case "completeRequest":
+            return await handleCompleteRequest(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -1647,6 +2727,18 @@ export default {
             return await handleGetShiftRequests(url, db, ALLOWED_ORIGIN);
           case "getAttendanceRequests":
             return await handleGetAttendanceRequests(url, db, ALLOWED_ORIGIN);
+          case "getAllUsers":
+            return await handleGetAllUsers(url, db, ALLOWED_ORIGIN);
+          case "getApprovalTasks":
+            return await handleGetApprovalTasks(url, db, ALLOWED_ORIGIN);
+          case "finalApproveTask":
+            return await handleFinalApproveTask(url, db, ALLOWED_ORIGIN);
+          case "finalRejectTask":
+            return await handleFinalRejectTask(url, db, ALLOWED_ORIGIN);
+          case "checkdk":
+            return await handleCheckDk(url, db, ALLOWED_ORIGIN);
+          case "getPendingRequestsCount":
+            return await handleGetPendingRequestsCount(url, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
