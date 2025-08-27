@@ -174,66 +174,13 @@ function handleOptionsRequest() {
   });
 }
 
-// PBKDF2 password hashing functions
-async function hashPassword(password, salt = crypto.getRandomValues(new Uint8Array(16))) {
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(password),
-    { name: 'PBKDF2' },
-    false,
-    ['deriveBits', 'deriveKey']
-  );
-
-  const key = await crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt: salt,
-      iterations: 100000,
-      hash: 'SHA-256',
-    },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    true,
-    ['encrypt', 'decrypt']
-  );
-
-  const exported = await crypto.subtle.exportKey('raw', key);
-  const hashArray = Array.from(new Uint8Array(exported));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  return { hash: hashHex, salt: saltHex };
-}
-
-async function verifyPassword(storedHash, storedSalt, password) {
-  if (!storedSalt) return storedHash === password; // Fallback for old passwords
-  
-  const saltArray = new Uint8Array(storedSalt.match(/.{2}/g).map(byte => parseInt(byte, 16)));
-  const { hash } = await hashPassword(password, saltArray);
-  return hash === storedHash;
-}
-
-// Enhanced PBKDF2 password hashing (100,000 iterations)
-async function hashPasswordPBKDF2(password, salt = crypto.getRandomValues(new Uint8Array(16))) {
+// SHA-256 password hashing function (from worker.js)
+async function hashPassword(password) {
   const encoder = new TextEncoder();
-  const passwordBuffer = encoder.encode(password);
-
-  const keyMaterial = await crypto.subtle.importKey(
-    "raw",
-    passwordBuffer,
-    "PBKDF2",
-    false,
-    ["deriveBits", "deriveKey"]
-  );
-
-  const hashBuffer = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
-    keyMaterial,
-    256
-  );
-
-  return { hash: new Uint8Array(hashBuffer), salt };
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 // Vietnamese time parsing utility function
@@ -460,7 +407,7 @@ async function handleLogin(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get user with salt for password verification
+    // Get user for password verification
     const user = await db
       .prepare("SELECT * FROM employees WHERE employeeId = ? AND is_active = 1")
       .bind(employeeId)
@@ -473,9 +420,9 @@ async function handleLogin(body, db, origin) {
       }, 401, origin);
     }
 
-    // Verify password
-    const isValidPassword = await verifyPassword(user.password, user.salt || '', password);
-    if (!isValidPassword) {
+    // Verify password using SHA-256
+    const hashedPassword = await hashPassword(password);
+    if (user.password !== hashedPassword) {
       return jsonResponse({ 
         success: false, 
         message: "Mã nhân viên hoặc mật khẩu không đúng!" 
@@ -678,8 +625,8 @@ async function handleRegister(body, db, origin, env) {
       }, 409, origin);
     }
 
-    // Hash password
-    const { hash, salt } = await hashPassword(password);
+    // Hash password using SHA-256
+    const hashedPassword = await hashPassword(password);
 
     // Send verification email
     const verificationCode = await sendVerificationEmail(email, finalEmployeeId, userName, env);
@@ -688,11 +635,11 @@ async function handleRegister(body, db, origin, env) {
     await db
       .prepare(`
         INSERT INTO pending_registrations 
-        (employeeId, email, password, salt, name, department, position, storeId, 
+        (employeeId, email, password, name, department, position, storeId, 
          verification_code, status, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
-      .bind(finalEmployeeId, email, hash, salt, userName, department, position, userStoreId, 
+      .bind(finalEmployeeId, email, hashedPassword, userName, department, position, userStoreId, 
             verificationCode, new Date().toISOString())
       .run();
 
