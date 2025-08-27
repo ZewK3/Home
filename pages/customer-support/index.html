@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Customer Support Dashboard - HR Management System">
+    <meta name="theme-color" content="#2563eb">
+    <title>Customer Support Dashboard - HR Management System</title>
+    
+    <link rel="stylesheet" href="../../assets/css/base.css">
+    <link rel="stylesheet" href="../../assets/css/components.css">
+    <link rel="icon" href="../../assets/icons/favicon-32x32.png" sizes="32x32">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1a202c;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: calc(100vh - 64px);
+        }
+
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .conversation-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .conversation-item:hover {
+            background: #f8fafc;
+        }
+
+        .conversation-item.active {
+            background: #eff6ff;
+            border-right: 3px solid #2563eb;
+        }
+
+        .conversation-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+        }
+
+        .conversation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .conversation-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .conversation-preview {
+            font-size: 14px;
+            color: #6b7280;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .conversation-status {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .status-open {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-in-progress {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-resolved {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background: #e0f2fe;
+            color: #0891b2;
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            color: #d1d5db;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .sidebar.mobile-open {
+                display: flex;
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 200;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">Professional HR</div>
+            <h1 class="header-title">Customer Support Dashboard</h1>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <div class="user-avatar">CS</div>
+                <div>
+                    <div style="font-weight: 600;">Support Agent</div>
+                    <div style="font-size: 12px; color: #6b7280;">Online</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Conversations Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">Conversations</h2>
+                
+                <div class="conversation-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="open">Open</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
+                </div>
+                
+                <input type="text" class="search-box" placeholder="Search conversations..." id="searchBox">
+            </div>
+            
+            <div class="conversations-list" id="conversationsList">
+                <!-- Sample Conversations -->
+                <div class="conversation-item unread" data-conversation="CONV001">
+                    <div class="conversation-header">
+                        <div class="customer-name">Nguyễn Văn Khách</div>
+                        <div class="conversation-time">5 phút trước</div>
+                    </div>
+                    <div class="conversation-preview">
+                        Tôi muốn tìm hiểu về hệ thống HR của công ty các bạn...
+                    </div>
+                    <div class="conversation-status">
+                        <span class="status-badge status-open">Open</span>
+                        <span class="status-badge priority-medium">Medium</span>
+                    </div>
+                </div>
+
+                <div class="conversation-item" data-conversation="CONV002">
+                    <div class="conversation-header">
+                        <div class="customer-name">Trần Thị Mua</div>
+                        <div class="conversation-time">15 phút trước</div>
+                    </div>
+                    <div class="conversation-preview">
+                        Làm thế nào để đăng ký tài khoản demo?
+                    </div>
+                    <div class="conversation-status">
+                        <span class="status-badge status-in-progress">In Progress</span>
+                        <span class="status-badge priority-low">Low</span>
+                    </div>
+                </div>
+
+                <div class="conversation-item" data-conversation="CONV003">
+                    <div class="conversation-header">
+                        <div class="customer-name">Lê Văn Hỏi</div>
+                        <div class="conversation-time">1 giờ trước</div>
+                    </div>
+                    <div class="conversation-preview">
+                        Tôi cần hỗ trợ kỹ thuật về việc tích hợp API
+                    </div>
+                    <div class="conversation-status">
+                        <span class="status-badge status-resolved">Resolved</span>
+                        <span class="status-badge priority-high">High</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chatArea">
+            <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+                <h3>Select a conversation</h3>
+                <p>Choose a conversation from the sidebar to start helping customers</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple customer support dashboard functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const conversationItems = document.querySelectorAll('.conversation-item');
+            const chatArea = document.getElementById('chatArea');
+            const emptyState = document.getElementById('emptyState');
+
+            conversationItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all items
+                    conversationItems.forEach(i => i.classList.remove('active'));
+                    
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    this.classList.remove('unread');
+
+                    // Load conversation (placeholder)
+                    loadConversation(this.getAttribute('data-conversation'));
+                });
+            });
+
+            function loadConversation(conversationId) {
+                // Hide empty state
+                emptyState.style.display = 'none';
+                
+                // Create chat interface (simplified)
+                chatArea.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #6b7280;">
+                        <h3>Conversation ${conversationId}</h3>
+                        <p>Chat interface would be loaded here</p>
+                        <p style="margin-top: 20px; font-size: 14px;">
+                            This is a demo of the customer support dashboard.<br>
+                            In a real implementation, this would connect to the chat API<br>
+                            and display the actual conversation with real-time messaging.
+                        </p>
+                    </div>
+                `;
+            }
+
+            // Filter functionality
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter conversations based on status
+                    const filter = this.getAttribute('data-filter');
+                    console.log('Filtering by:', filter);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
