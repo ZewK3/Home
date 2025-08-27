@@ -2509,6 +2509,283 @@ async function handleGetPendingRequestsCount(url, db, origin) {
 }
 
 // =====================================================
+// CUSTOMER SUPPORT FUNCTIONS
+// =====================================================
+
+async function handleGetSupportConversations(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const status = urlParams.get("status");
+    const assignedTo = urlParams.get("assignedTo");
+    
+    let query = `
+      SELECT 
+        conversation_id,
+        customer_name,
+        customer_email,
+        customer_phone,
+        subject,
+        category,
+        priority,
+        status,
+        assigned_to,
+        assigned_at,
+        first_response_at,
+        resolved_at,
+        response_time_minutes,
+        resolution_time_hours,
+        customer_satisfaction_rating,
+        created_at,
+        updated_at
+      FROM support_conversations 
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    if (status) {
+      query += " AND status = ?";
+      params.push(status);
+    }
+    
+    if (assignedTo) {
+      query += " AND assigned_to = ?";
+      params.push(assignedTo);
+    }
+    
+    query += " ORDER BY created_at DESC LIMIT 50";
+    
+    const stmt = await db.prepare(query);
+    const conversations = await stmt.bind(...params).all();
+    
+    return jsonResponse({
+      conversations: conversations.results || []
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting support conversations:", error);
+    return jsonResponse({ message: "Failed to get support conversations", error: error.message }, 500, origin);
+  }
+}
+
+async function handleGetSupportMessages(url, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const conversationId = urlParams.get("conversationId");
+    
+    if (!conversationId) {
+      return jsonResponse({ message: "Conversation ID is required" }, 400, origin);
+    }
+    
+    // Get conversation details
+    const conversationStmt = await db.prepare(`
+      SELECT * FROM support_conversations WHERE conversation_id = ?
+    `);
+    const conversation = await conversationStmt.bind(conversationId).first();
+    
+    if (!conversation) {
+      return jsonResponse({ message: "Conversation not found" }, 404, origin);
+    }
+    
+    // Get messages for this conversation
+    const messagesStmt = await db.prepare(`
+      SELECT 
+        cm.*,
+        e.fullName as sender_name
+      FROM chat_messages cm
+      LEFT JOIN employees e ON cm.sender_id = e.id
+      WHERE cm.conversation_id = ?
+      ORDER BY cm.created_at ASC
+    `);
+    const messages = await messagesStmt.bind(conversationId).all();
+    
+    return jsonResponse({
+      conversation: conversation,
+      messages: messages.results || []
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting support messages:", error);
+    return jsonResponse({ message: "Failed to get support messages", error: error.message }, 500, origin);
+  }
+}
+
+async function handleSendSupportMessage(body, db, origin) {
+  try {
+    const { conversation_id, message_text, sender_type, sender_id } = body;
+    
+    if (!conversation_id || !message_text || !sender_type) {
+      return jsonResponse({ message: "Conversation ID, message text, and sender type are required" }, 400, origin);
+    }
+    
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const messageId = `MSG_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Insert the message
+    const stmt = await db.prepare(`
+      INSERT INTO chat_messages (
+        message_id, conversation_id, sender_id, sender_type,
+        message_text, message_type, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, 'text', 'sent', ?, ?)
+    `);
+    
+    const result = await stmt.bind(
+      messageId,
+      conversation_id,
+      sender_id || null,
+      sender_type,
+      message_text,
+      currentTime,
+      currentTime
+    ).run();
+    
+    if (result.success) {
+      // Update conversation's updated_at timestamp
+      const updateConvStmt = await db.prepare(`
+        UPDATE support_conversations 
+        SET updated_at = ?, first_response_at = CASE 
+          WHEN first_response_at IS NULL AND ? = 'employee' THEN ? 
+          ELSE first_response_at 
+        END
+        WHERE conversation_id = ?
+      `);
+      
+      await updateConvStmt.bind(currentTime, sender_type, currentTime, conversation_id).run();
+      
+      return jsonResponse({
+        message: "Message sent successfully",
+        messageId: messageId
+      }, 200, origin);
+    } else {
+      return jsonResponse({ message: "Failed to send message" }, 500, origin);
+    }
+  } catch (error) {
+    console.error("Error sending support message:", error);
+    return jsonResponse({ message: "Failed to send message", error: error.message }, 500, origin);
+  }
+}
+
+async function handleUpdateSupportStatus(body, db, origin) {
+  try {
+    const { conversation_id, status, assigned_to } = body;
+    
+    if (!conversation_id || !status) {
+      return jsonResponse({ message: "Conversation ID and status are required" }, 400, origin);
+    }
+    
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    
+    let query = `
+      UPDATE support_conversations 
+      SET status = ?, updated_at = ?
+    `;
+    const params = [status, currentTime];
+    
+    if (assigned_to) {
+      query += `, assigned_to = ?, assigned_at = ?`;
+      params.push(assigned_to, currentTime);
+    }
+    
+    if (status === 'resolved' || status === 'closed') {
+      query += `, resolved_at = ?`;
+      params.push(currentTime);
+    }
+    
+    query += ` WHERE conversation_id = ?`;
+    params.push(conversation_id);
+    
+    const stmt = await db.prepare(query);
+    const result = await stmt.bind(...params).run();
+    
+    if (result.changes === 0) {
+      return jsonResponse({ message: "Conversation not found" }, 404, origin);
+    }
+    
+    return jsonResponse({
+      message: "Conversation status updated successfully",
+      conversation_id: conversation_id,
+      status: status
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error updating support status:", error);
+    return jsonResponse({ message: "Failed to update status", error: error.message }, 500, origin);
+  }
+}
+
+async function handleCreateSupportConversation(body, db, origin) {
+  try {
+    const { 
+      customer_name, 
+      customer_email, 
+      customer_phone, 
+      subject, 
+      category = 'general', 
+      priority = 'medium',
+      initial_message 
+    } = body;
+    
+    if (!customer_name || !customer_email || !subject) {
+      return jsonResponse({ message: "Customer name, email, and subject are required" }, 400, origin);
+    }
+    
+    const currentTime = TimezoneUtils.toHanoiISOString();
+    const conversationId = `CONV_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Create the conversation
+    const conversationStmt = await db.prepare(`
+      INSERT INTO support_conversations (
+        conversation_id, customer_name, customer_email, customer_phone,
+        subject, category, priority, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?, ?)
+    `);
+    
+    const result = await conversationStmt.bind(
+      conversationId,
+      customer_name,
+      customer_email,
+      customer_phone || null,
+      subject,
+      category,
+      priority,
+      currentTime,
+      currentTime
+    ).run();
+    
+    if (result.success) {
+      // Add initial message if provided
+      if (initial_message) {
+        const messageId = `MSG_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const messageStmt = await db.prepare(`
+          INSERT INTO chat_messages (
+            message_id, conversation_id, sender_type,
+            message_text, message_type, status, customer_name, customer_email,
+            created_at, updated_at
+          ) VALUES (?, ?, 'customer', ?, 'text', 'sent', ?, ?, ?, ?)
+        `);
+        
+        await messageStmt.bind(
+          messageId,
+          conversationId,
+          initial_message,
+          customer_name,
+          customer_email,
+          currentTime,
+          currentTime
+        ).run();
+      }
+      
+      return jsonResponse({
+        message: "Support conversation created successfully",
+        conversation_id: conversationId
+      }, 200, origin);
+    } else {
+      return jsonResponse({ message: "Failed to create conversation" }, 500, origin);
+    }
+  } catch (error) {
+    console.error("Error creating support conversation:", error);
+    return jsonResponse({ message: "Failed to create conversation", error: error.message }, 500, origin);
+  }
+}
+
+// =====================================================
 // MAIN EXPORT WITH ALL ROUTES
 // =====================================================
 
@@ -2533,13 +2810,33 @@ export default {
 
     try {
       const url = new URL(request.url);
-      const action = url.searchParams.get("action");
+      let action = url.searchParams.get("action");
       let token = url.searchParams.get("token");
 
       // Check token from Authorization header if not in query
       const authHeader = request.headers.get("Authorization");
       if (!token && authHeader && authHeader.startsWith("Bearer ")) {
         token = authHeader.split(" ")[1];
+      }
+
+      // Handle REST-style paths for customer support
+      if (!action && url.pathname.includes('/support/')) {
+        const pathParts = url.pathname.split('/');
+        
+        if (pathParts.includes('conversations') && request.method === 'GET') {
+          action = 'getSupportConversations';
+        } else if (pathParts.includes('send-message') && request.method === 'POST') {
+          action = 'sendSupportMessage';
+        } else if (pathParts.includes('update-status') && request.method === 'POST') {
+          action = 'updateSupportStatus';
+        } else if (url.pathname.includes('/conversation/') && url.pathname.includes('/messages') && request.method === 'GET') {
+          action = 'getSupportMessages';
+          // Extract conversation ID from path and add to URL params
+          const match = url.pathname.match(/\/conversation\/([^\/]+)\/messages/);
+          if (match) {
+            url.searchParams.set('conversationId', match[1]);
+          }
+        }
       }
 
       if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400);
@@ -2554,7 +2851,8 @@ export default {
         "getWorkTasks", "getTaskDetail", "addTaskComment", "replyToComment",
         "getEmployeesByStore", "saveShiftAssignments", "getShiftRequests",
         "approveShiftRequest", "rejectShiftRequest", "getAttendanceRequests",
-        "approveAttendanceRequest", "rejectAttendanceRequest"
+        "approveAttendanceRequest", "rejectAttendanceRequest",
+        "getSupportConversations", "getSupportMessages", "sendSupportMessage", "updateSupportStatus"
       ];
 
       if (protectedActions.includes(action)) {
@@ -2623,6 +2921,16 @@ export default {
             return await handleApproveRegistrationWithHistory(body, db, ALLOWED_ORIGIN);
           case "completeRequest":
             return await handleCompleteRequest(body, db, ALLOWED_ORIGIN);
+          case "sendSupportMessage":
+            return await handleSendSupportMessage(body, db, ALLOWED_ORIGIN);
+          case "updateSupportStatus":
+            return await handleUpdateSupportStatus(body, db, ALLOWED_ORIGIN);
+          case "sendSupportMessage":
+            return await handleSendSupportMessage(body, db, ALLOWED_ORIGIN);
+          case "updateSupportStatus":
+            return await handleUpdateSupportStatus(body, db, ALLOWED_ORIGIN);
+          case "createSupportConversation":
+            return await handleCreateSupportConversation(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
@@ -2686,6 +2994,10 @@ export default {
             return await handleCheckDk(url, db, ALLOWED_ORIGIN);
           case "getPendingRequestsCount":
             return await handleGetPendingRequestsCount(url, db, ALLOWED_ORIGIN);
+          case "getSupportConversations":
+            return await handleGetSupportConversations(url, db, ALLOWED_ORIGIN);
+          case "getSupportMessages":
+            return await handleGetSupportMessages(url, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }

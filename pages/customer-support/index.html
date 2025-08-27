@@ -12,6 +12,10 @@
     <link rel="icon" href="../../assets/icons/favicon-32x32.png" sizes="32x32">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
+    <!-- Include authentication and configuration scripts -->
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/auth-manager.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -378,43 +382,154 @@
     </div>
 
     <script>
-        // Simple customer support dashboard functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const conversationItems = document.querySelectorAll('.conversation-item');
-            const chatArea = document.getElementById('chatArea');
-            const emptyState = document.getElementById('emptyState');
+        // Authentication check and initialization
+        let authManager;
+        let currentUser = null;
+        let conversations = [];
+        let currentConversationId = null;
 
-            conversationItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // Remove active class from all items
-                    conversationItems.forEach(i => i.classList.remove('active'));
-                    
-                    // Add active class to clicked item
-                    this.classList.add('active');
-                    this.classList.remove('unread');
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize authentication
+            authManager = new AuthManager();
+            
+            // Check authentication - redirect if not logged in
+            currentUser = await authManager.checkAuthentication();
+            if (!currentUser) {
+                alert('Bạn cần đăng nhập để truy cập trang hỗ trợ khách hàng.');
+                window.location.href = '../auth/index.html';
+                return;
+            }
 
-                    // Load conversation (placeholder)
-                    loadConversation(this.getAttribute('data-conversation'));
+            // Update header with user info
+            updateUserInfo();
+            
+            // Load conversations from API
+            await loadConversations();
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        function updateUserInfo() {
+            const userNameElement = document.querySelector('.user-name');
+            const userEmailElement = document.querySelector('.user-email');
+            
+            if (userNameElement && currentUser.fullName) {
+                userNameElement.textContent = currentUser.fullName;
+            }
+            if (userEmailElement && currentUser.email) {
+                userEmailElement.textContent = currentUser.email;
+            }
+        }
+
+        async function loadConversations() {
+            try {
+                const response = await fetch('/api/support/conversations', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authManager.token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
-            });
 
-            function loadConversation(conversationId) {
-                // Hide empty state
-                emptyState.style.display = 'none';
+                if (response.ok) {
+                    const data = await response.json();
+                    conversations = data.conversations || [];
+                    renderConversations(conversations);
+                } else {
+                    console.error('Failed to load conversations:', response.statusText);
+                    // Fallback to demo data if API fails
+                    loadDemoConversations();
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+                loadDemoConversations();
+            }
+        }
+
+        function loadDemoConversations() {
+            conversations = [
+                {
+                    conversation_id: 'CONV001',
+                    customer_name: 'Nguyễn Văn Khách',
+                    customer_email: 'khach@example.com',
+                    subject: 'Tôi muốn tìm hiểu về hệ thống HR của công ty các bạn...',
+                    status: 'open',
+                    priority: 'medium',
+                    created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+                    assigned_to: currentUser.id
+                },
+                {
+                    conversation_id: 'CONV002',
+                    customer_name: 'Trần Thị Mua',
+                    customer_email: 'mua@example.com',
+                    subject: 'Làm thế nào để đăng ký tài khoản demo?',
+                    status: 'in_progress',
+                    priority: 'low',
+                    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+                    assigned_to: currentUser.id
+                },
+                {
+                    conversation_id: 'CONV003',
+                    customer_name: 'Lê Văn Hỏi',
+                    customer_email: 'hoi@example.com',
+                    subject: 'Tôi gặp lỗi khi đăng nhập vào hệ thống, làm sao khắc phục?',
+                    status: 'resolved',
+                    priority: 'high',
+                    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+                    assigned_to: currentUser.id
+                }
+            ];
+            renderConversations(conversations);
+        }
+
+        function renderConversations(convList) {
+            const conversationsList = document.getElementById('conversationsList');
+            
+            conversationsList.innerHTML = convList.map(conv => {
+                const timeAgo = getTimeAgo(conv.created_at);
+                const isUnread = conv.status === 'open';
                 
-                // Create chat interface (simplified)
-                chatArea.innerHTML = `
-                    <div style="padding: 20px; text-align: center; color: #6b7280;">
-                        <h3>Conversation ${conversationId}</h3>
-                        <p>Chat interface would be loaded here</p>
-                        <p style="margin-top: 20px; font-size: 14px;">
-                            This is a demo of the customer support dashboard.<br>
-                            In a real implementation, this would connect to the chat API<br>
-                            and display the actual conversation with real-time messaging.
-                        </p>
+                return `
+                    <div class="conversation-item ${isUnread ? 'unread' : ''}" data-conversation="${conv.conversation_id}">
+                        <div class="conversation-header">
+                            <div class="customer-name">${conv.customer_name}</div>
+                            <div class="conversation-time">${timeAgo}</div>
+                        </div>
+                        <div class="conversation-preview">
+                            ${conv.subject || 'Không có tiêu đề'}
+                        </div>
+                        <div class="conversation-status">
+                            <span class="status-badge status-${conv.status}">${getStatusText(conv.status)}</span>
+                            <span class="status-badge priority-${conv.priority}">${getPriorityText(conv.priority)}</span>
+                        </div>
                     </div>
                 `;
-            }
+            }).join('');
+        }
+
+        function setupEventListeners() {
+            const conversationsList = document.getElementById('conversationsList');
+            const chatArea = document.querySelector('.chat-area');
+            const emptyState = document.querySelector('.empty-state');
+
+            // Conversation click handler
+            conversationsList.addEventListener('click', function(e) {
+                const conversationItem = e.target.closest('.conversation-item');
+                if (conversationItem) {
+                    // Remove active class from all conversations
+                    document.querySelectorAll('.conversation-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked conversation
+                    conversationItem.classList.add('active');
+                    
+                    // Load conversation
+                    const conversationId = conversationItem.getAttribute('data-conversation');
+                    loadConversation(conversationId);
+                }
+            });
 
             // Filter functionality
             const filterBtns = document.querySelectorAll('.filter-btn');
@@ -425,10 +540,285 @@
                     
                     // Filter conversations based on status
                     const filter = this.getAttribute('data-filter');
-                    console.log('Filtering by:', filter);
+                    filterConversations(filter);
                 });
             });
-        });
+
+            // Search functionality
+            const searchBox = document.getElementById('searchBox');
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                searchConversations(searchTerm);
+            });
+        }
+
+        async function loadConversation(conversationId) {
+            currentConversationId = conversationId;
+            const emptyState = document.querySelector('.empty-state');
+            const chatArea = document.querySelector('.chat-area');
+            
+            // Hide empty state
+            emptyState.style.display = 'none';
+            
+            try {
+                // Load conversation details and messages
+                const response = await fetch(`/api/support/conversation/${conversationId}/messages`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authManager.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    renderChatInterface(data.conversation, data.messages || []);
+                } else {
+                    console.error('Failed to load conversation:', response.statusText);
+                    renderDemoChat(conversationId);
+                }
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+                renderDemoChat(conversationId);
+            }
+        }
+
+        function renderChatInterface(conversation, messages) {
+            const chatArea = document.querySelector('.chat-area');
+            const conv = conversation || conversations.find(c => c.conversation_id === currentConversationId);
+            
+            chatArea.innerHTML = `
+                <div class="chat-header" style="padding: 16px; border-bottom: 1px solid #e2e8f0; background: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin: 0; color: #1a202c;">${conv?.customer_name || 'Khách hàng'}</h3>
+                            <p style="margin: 4px 0 0 0; color: #6b7280; font-size: 14px;">${conv?.customer_email || ''}</p>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="status-badge status-${conv?.status || 'open'}">${getStatusText(conv?.status || 'open')}</span>
+                            <select id="statusSelect" style="padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                                <option value="open" ${conv?.status === 'open' ? 'selected' : ''}>Mở</option>
+                                <option value="in_progress" ${conv?.status === 'in_progress' ? 'selected' : ''}>Đang xử lý</option>
+                                <option value="waiting_customer" ${conv?.status === 'waiting_customer' ? 'selected' : ''}>Chờ khách hàng</option>
+                                <option value="resolved" ${conv?.status === 'resolved' ? 'selected' : ''}>Đã giải quyết</option>
+                                <option value="closed" ${conv?.status === 'closed' ? 'selected' : ''}>Đã đóng</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="messages-container" style="flex: 1; overflow-y: auto; padding: 16px;" id="messagesContainer">
+                    ${renderMessages(messages)}
+                </div>
+                
+                <div class="message-input-area" style="padding: 16px; border-top: 1px solid #e2e8f0; background: white;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." 
+                               style="flex: 1; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;">
+                        <button id="sendButton" style="padding: 8px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Gửi
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Set up message sending
+            setupMessageInput();
+            setupStatusUpdate();
+            
+            // Scroll to bottom
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function renderDemoChat(conversationId) {
+            const conv = conversations.find(c => c.conversation_id === conversationId);
+            const demoMessages = [
+                {
+                    id: 1,
+                    sender_type: 'customer',
+                    message_text: conv?.subject || 'Xin chào, tôi cần hỗ trợ',
+                    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                    customer_name: conv?.customer_name
+                },
+                {
+                    id: 2,
+                    sender_type: 'employee',
+                    message_text: 'Xin chào! Tôi có thể giúp gì cho bạn?',
+                    created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+                    sender_name: currentUser.fullName
+                }
+            ];
+            
+            renderChatInterface(conv, demoMessages);
+        }
+
+        function renderMessages(messages) {
+            if (!messages || messages.length === 0) {
+                return '<div style="text-align: center; color: #6b7280; padding: 20px;">Chưa có tin nhắn nào</div>';
+            }
+
+            return messages.map(msg => {
+                const isCustomer = msg.sender_type === 'customer';
+                const time = new Date(msg.created_at).toLocaleTimeString('vi-VN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div style="margin-bottom: 16px; display: flex; ${isCustomer ? 'justify-content: flex-start' : 'justify-content: flex-end'};">
+                        <div style="max-width: 70%; ${isCustomer ? 'background: #f3f4f6; margin-right: auto;' : 'background: #2563eb; color: white; margin-left: auto;'} padding: 8px 12px; border-radius: 12px;">
+                            <div style="font-weight: 500; font-size: 12px; margin-bottom: 4px; opacity: 0.8;">
+                                ${isCustomer ? (msg.customer_name || 'Khách hàng') : (msg.sender_name || currentUser.fullName)}
+                            </div>
+                            <div style="word-wrap: break-word;">${msg.message_text}</div>
+                            <div style="font-size: 11px; opacity: 0.7; margin-top: 4px; text-align: right;">${time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setupMessageInput() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+
+            const sendMessage = async () => {
+                const messageText = messageInput.value.trim();
+                if (!messageText || !currentConversationId) return;
+
+                try {
+                    const response = await fetch('/api/support/send-message', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authManager.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            conversation_id: currentConversationId,
+                            message_text: messageText,
+                            sender_type: 'employee'
+                        })
+                    });
+
+                    if (response.ok) {
+                        messageInput.value = '';
+                        // Reload conversation to show new message
+                        await loadConversation(currentConversationId);
+                    } else {
+                        console.error('Failed to send message:', response.statusText);
+                        alert('Không thể gửi tin nhắn. Vui lòng thử lại.');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('Có lỗi xảy ra khi gửi tin nhắn.');
+                }
+            };
+
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        function setupStatusUpdate() {
+            const statusSelect = document.getElementById('statusSelect');
+            
+            statusSelect.addEventListener('change', async (e) => {
+                const newStatus = e.target.value;
+                
+                try {
+                    const response = await fetch('/api/support/update-status', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authManager.token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            conversation_id: currentConversationId,
+                            status: newStatus
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Update local data and refresh conversations list
+                        const conv = conversations.find(c => c.conversation_id === currentConversationId);
+                        if (conv) {
+                            conv.status = newStatus;
+                        }
+                        renderConversations(conversations);
+                    } else {
+                        console.error('Failed to update status:', response.statusText);
+                        alert('Không thể cập nhật trạng thái. Vui lòng thử lại.');
+                    }
+                } catch (error) {
+                    console.error('Error updating status:', error);
+                    alert('Có lỗi xảy ra khi cập nhật trạng thái.');
+                }
+            });
+        }
+
+        function filterConversations(filter) {
+            let filteredConversations = conversations;
+            
+            if (filter !== 'all') {
+                filteredConversations = conversations.filter(conv => {
+                    if (filter === 'open') return conv.status === 'open';
+                    if (filter === 'pending') return conv.status === 'in_progress' || conv.status === 'waiting_customer';
+                    return conv.status === filter;
+                });
+            }
+            
+            renderConversations(filteredConversations);
+        }
+
+        function searchConversations(searchTerm) {
+            const filteredConversations = conversations.filter(conv => 
+                conv.customer_name.toLowerCase().includes(searchTerm) ||
+                conv.customer_email.toLowerCase().includes(searchTerm) ||
+                (conv.subject && conv.subject.toLowerCase().includes(searchTerm))
+            );
+            
+            renderConversations(filteredConversations);
+        }
+
+        // Utility functions
+        function getTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+            
+            if (diffInMinutes < 1) return 'Vừa xong';
+            if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+            
+            const diffInHours = Math.floor(diffInMinutes / 60);
+            if (diffInHours < 24) return `${diffInHours} giờ trước`;
+            
+            const diffInDays = Math.floor(diffInHours / 24);
+            return `${diffInDays} ngày trước`;
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'open': 'Mở',
+                'in_progress': 'Đang xử lý',
+                'waiting_customer': 'Chờ khách hàng',
+                'resolved': 'Đã giải quyết',
+                'closed': 'Đã đóng'
+            };
+            return statusMap[status] || status;
+        }
+
+        function getPriorityText(priority) {
+            const priorityMap = {
+                'low': 'Thấp',
+                'medium': 'Trung bình',
+                'high': 'Cao'
+            };
+            return priorityMap[priority] || priority;
+        }
     </script>
 </body>
 </html>
