@@ -83,3 +83,8 @@ jspm_packages/
 
 # Local test files
 test-output/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
