@@ -149,13 +149,14 @@
 
     <!-- User Info Header - GitHub AppHeader Style -->
     <div class="app-header">
-        <!-- Mobile Menu Toggle - positioned within AppHeader -->
-        <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
-            <span class="menu-icon">
-                <span class="menu-line"></span>
-                <span class="menu-line"></span>
-                <span class="menu-line"></span>
-            </span>
+        <!-- Professional Mobile Menu Toggle -->
+        <button id="menuToggle" class="menu-toggle professional-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
+            <div class="toggle-icon">
+                <span class="toggle-line line-1"></span>
+                <span class="toggle-line line-2"></span>
+                <span class="toggle-line line-3"></span>
+            </div>
+            <span class="toggle-text">Menu</span>
         </button>
         
         <div class="AppHeader-context">
@@ -167,6 +168,28 @@
             </div>
         </div>
         <div class="AppHeader-actions">
+            <!-- Notifications -->
+            <div class="AppHeader-notifications">
+                <button id="notificationToggle" class="notification-toggle" aria-label="Thông báo">
+                    <span class="material-icons-round">notifications</span>
+                    <span id="notificationBadge" class="notification-badge">3</span>
+                </button>
+                
+                <!-- Notification Dropdown -->
+                <div id="notificationDropdown" class="notification-dropdown">
+                    <div class="notification-header">
+                        <h3>Thông báo</h3>
+                        <button id="markAllRead" class="mark-all-read">Đánh dấu đã đọc</button>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <!-- Notifications will be populated here -->
+                    </div>
+                    <div class="notification-footer">
+                        <a href="#" id="viewAllNotifications">Xem tất cả thông báo</a>
+                    </div>
+                </div>
+            </div>
+            
             <div class="AppHeader-user">
                 <div id="userInfo" class="user-info"></div>
                 <div id="currentTime" class="current-time">
@@ -522,6 +545,176 @@
         </div>
     </main>
 
+    <!-- Chat System -->
+    <div id="chatSystem" class="chat-system">
+        <!-- Chat Toggle Button -->
+        <button id="chatToggle" class="chat-toggle" aria-label="Mở chat">
+            <span class="material-icons-round">chat</span>
+            <span id="chatNotificationBadge" class="chat-notification-badge">2</span>
+        </button>
+        
+        <!-- Chat Panel -->
+        <div id="chatPanel" class="chat-panel">
+            <div class="chat-header">
+                <div class="chat-title">
+                    <h3>Hệ thống Chat</h3>
+                </div>
+                <div class="chat-controls">
+                    <button id="minimizeChat" class="chat-control" aria-label="Thu nhỏ">
+                        <span class="material-icons-round">minimize</span>
+                    </button>
+                    <button id="closeChat" class="chat-control" aria-label="Đóng">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat Tabs -->
+            <div class="chat-tabs">
+                <button class="chat-tab active" data-chat-type="general">
+                    <span class="material-icons-round">public</span>
+                    Tổng
+                </button>
+                <button class="chat-tab" data-chat-type="department">
+                    <span class="material-icons-round">domain</span>
+                    Phòng ban
+                </button>
+                <button class="chat-tab" data-chat-type="private">
+                    <span class="material-icons-round">person</span>
+                    Riêng tư
+                </button>
+                <button class="chat-tab" data-chat-type="group">
+                    <span class="material-icons-round">group</span>
+                    Nhóm
+                </button>
+            </div>
+            
+            <!-- Chat Content -->
+            <div class="chat-content">
+                <!-- General Chat -->
+                <div class="chat-room active" data-room="general">
+                    <div class="chat-messages" id="generalMessages">
+                        <div class="message-day">Hôm nay</div>
+                        <!-- Messages will be populated here -->
+                    </div>
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn..." data-room="general">
+                            <button class="chat-send" data-room="general">
+                                <span class="material-icons-round">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Department Chat -->
+                <div class="chat-room" data-room="department">
+                    <div class="department-selector">
+                        <select id="departmentSelect" class="department-select">
+                            <option value="">Chọn phòng ban</option>
+                            <!-- Will be populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="chat-messages" id="departmentMessages">
+                        <div class="empty-chat">Chọn phòng ban để bắt đầu trò chuyện</div>
+                    </div>
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn..." data-room="department" disabled>
+                            <button class="chat-send" data-room="department" disabled>
+                                <span class="material-icons-round">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Private Chat -->
+                <div class="chat-room" data-room="private">
+                    <div class="private-chat-sidebar">
+                        <div class="private-chat-search">
+                            <input type="text" id="userSearch" placeholder="Tìm nhân viên..." class="user-search">
+                        </div>
+                        <div class="private-chat-list" id="privateChatList">
+                            <!-- Will be populated with user conversations -->
+                        </div>
+                    </div>
+                    <div class="private-chat-main">
+                        <div class="private-chat-header" id="privateChatHeader">
+                            <div class="empty-chat">Chọn người để bắt đầu trò chuyện</div>
+                        </div>
+                        <div class="chat-messages" id="privateMessages">
+                            <div class="empty-chat">Chọn cuộc trò chuyện từ danh sách bên trái</div>
+                        </div>
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn..." data-room="private" disabled>
+                                <button class="chat-send" data-room="private" disabled>
+                                    <span class="material-icons-round">send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Group Chat -->
+                <div class="chat-room" data-room="group">
+                    <div class="group-chat-header">
+                        <button id="createGroupBtn" class="create-group-btn">
+                            <span class="material-icons-round">add</span>
+                            Tạo nhóm mới
+                        </button>
+                    </div>
+                    <div class="group-list" id="groupList">
+                        <!-- Will be populated with groups -->
+                    </div>
+                    <div class="chat-messages" id="groupMessages">
+                        <div class="empty-chat">Chọn nhóm để bắt đầu trò chuyện</div>
+                    </div>
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn..." data-room="group" disabled>
+                            <button class="chat-send" data-room="group" disabled>
+                                <span class="material-icons-round">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tạo nhóm chat mới</h3>
+                <button class="modal-close" data-modal="createGroupModal">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="groupName">Tên nhóm</label>
+                    <input type="text" id="groupName" class="form-input" placeholder="Nhập tên nhóm">
+                </div>
+                <div class="form-group">
+                    <label for="groupDescription">Mô tả (tùy chọn)</label>
+                    <textarea id="groupDescription" class="form-textarea" placeholder="Mô tả về nhóm"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Thành viên</label>
+                    <div class="member-selection" id="memberSelection">
+                        <!-- Will be populated with employee list -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal="createGroupModal">Hủy</button>
+                <button type="button" id="createGroupConfirm" class="btn btn-primary">Tạo nhóm</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Load JavaScript modules in correct order -->
     <script src="../../assets/js/config.js"></script>
@@ -531,6 +724,7 @@
     <script src="../../assets/js/menu-manager.js"></script>
     <script src="../../assets/js/content-manager.js"></script>
     <script src="../../assets/js/dashboard-handler.js"></script>
+    <script src="../../assets/js/notification-chat-manager.js"></script>
     <script src="../../assets/js/script.js"></script>
     <script src="../../assets/js/main-init.js"></script>
     </div> <!-- End dashboardContent -->

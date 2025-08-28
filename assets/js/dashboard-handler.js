@@ -1070,6 +1070,9 @@ function setupMobileMenu() {
     // Open dialog function
     function openMobileMenu() {
         if (!isMenuOpen) {
+            // Add professional toggle animation
+            menuToggle.classList.add('active');
+            
             mobileDialog.showModal();
             document.body.style.overflow = 'hidden';
             isMenuOpen = true;
@@ -1085,6 +1088,9 @@ function setupMobileMenu() {
     // Close dialog function
     function closeMobileMenu() {
         if (isMenuOpen) {
+            // Remove professional toggle animation
+            menuToggle.classList.remove('active');
+            
             mobileDialog.style.opacity = '0';
             mobileDialog.style.transform = 'translateX(-100%)';
             
