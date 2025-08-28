@@ -105,12 +105,6 @@ class MenuManager {
                 mobileMenuItem.style.display = parentShouldShow ? 'block' : 'none';
             }
         });
-    }
-                    const parentShouldShow = parentAllowedRoles.some(role => roles.includes(role.trim()));
-                    menuItem.style.display = parentShouldShow ? "block" : "none";
-                }
-            }
-        });
         
         console.log('Role-based submenu visibility updated for roles:', roles);
     }
