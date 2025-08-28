@@ -299,35 +299,25 @@ CREATE TABLE IF NOT EXISTS roles (
     FOREIGN KEY (parent_role_id) REFERENCES roles(id)
 );
 
--- Granular permissions system
-CREATE TABLE IF NOT EXISTS permissions (
+-- Simplified role system - keeping only essential tables
+-- Removed complex permissions system as requested
+
+-- Main roles table
+CREATE TABLE IF NOT EXISTS roles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    permission_name VARCHAR(100) NOT NULL UNIQUE,
-    permission_code VARCHAR(50) NOT NULL UNIQUE,
+    role_name VARCHAR(100) NOT NULL UNIQUE,
+    role_code VARCHAR(20) NOT NULL UNIQUE,
     description TEXT,
-    category VARCHAR(50), -- user, attendance, task, admin, finance, hr
-    resource VARCHAR(100), -- What resource this permission applies to
-    action VARCHAR(50), -- create, read, update, delete, approve, etc.
-    is_system_permission BOOLEAN DEFAULT FALSE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Role-permission mapping with conditions
-CREATE TABLE IF NOT EXISTS role_permissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    role_id INTEGER NOT NULL,
-    permission_id INTEGER NOT NULL,
-    conditions JSON, -- Additional conditions for permission
-    granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    granted_by INTEGER,
+    is_system_role BOOLEAN DEFAULT FALSE,
+    is_management_role BOOLEAN DEFAULT FALSE,
+    role_level INTEGER DEFAULT 1, -- Higher number = higher authority
+    parent_role_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
-    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
-    FOREIGN KEY (granted_by) REFERENCES employees(id),
-    UNIQUE(role_id, permission_id)
+    FOREIGN KEY (parent_role_id) REFERENCES roles(id)
 );
 
--- User role assignments with time-based controls
+-- User role assignments - simplified
 CREATE TABLE IF NOT EXISTS user_roles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employee_id INTEGER NOT NULL,
@@ -344,22 +334,9 @@ CREATE TABLE IF NOT EXISTS user_roles (
     UNIQUE(employee_id, role_id)
 );
 
--- Direct user permissions (overrides role permissions)
-CREATE TABLE IF NOT EXISTS user_permissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
-    permission_id INTEGER NOT NULL,
-    granted BOOLEAN DEFAULT TRUE, -- TRUE = grant, FALSE = deny
-    granted_by INTEGER,
-    granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    expires_at DATETIME,
-    reason TEXT,
-    
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
-    FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE,
-    FOREIGN KEY (granted_by) REFERENCES employees(id),
-    UNIQUE(employee_id, permission_id)
-);
+-- Note: Removed complex permission tables (permissions, role_permissions, user_permissions) 
+-- to simplify role management as requested. Role-based access control is now handled
+-- directly by role_code in the application logic.
 
 -- =====================================================
 -- SESSION AND SECURITY MANAGEMENT
@@ -1044,70 +1021,8 @@ INSERT OR IGNORE INTO roles (role_name, role_code, description, is_system_role, 
 ('Intern', 'INTERN', 'Intern or trainee access', FALSE, 2),
 ('Customer Support', 'CUST_SUPPORT', 'Customer service and support functions', FALSE, 4);
 
--- Insert comprehensive permissions
-INSERT OR IGNORE INTO permissions (permission_name, permission_code, description, category, resource, action) VALUES
--- User management permissions
-('user.create', 'USER_CREATE', 'Create new users', 'user', 'employees', 'create'),
-('user.read', 'USER_READ', 'View user information', 'user', 'employees', 'read'),
-('user.update', 'USER_UPDATE', 'Update user information', 'user', 'employees', 'update'),
-('user.delete', 'USER_DELETE', 'Delete users', 'user', 'employees', 'delete'),
-('user.manage_roles', 'USER_MANAGE_ROLES', 'Manage user roles and permissions', 'user', 'user_roles', 'manage'),
-
--- Attendance management permissions
-('attendance.check_in', 'ATT_CHECK_IN', 'Check in to work', 'attendance', 'attendance', 'create'),
-('attendance.check_out', 'ATT_CHECK_OUT', 'Check out from work', 'attendance', 'attendance', 'update'),
-('attendance.view_own', 'ATT_VIEW_OWN', 'View own attendance records', 'attendance', 'attendance', 'read'),
-('attendance.view_all', 'ATT_VIEW_ALL', 'View all attendance records', 'attendance', 'attendance', 'read'),
-('attendance.approve', 'ATT_APPROVE', 'Approve attendance records', 'attendance', 'attendance', 'approve'),
-('attendance.modify', 'ATT_MODIFY', 'Modify attendance records', 'attendance', 'attendance', 'update'),
-
--- Task management permissions
-('task.create', 'TASK_CREATE', 'Create new tasks', 'task', 'tasks', 'create'),
-('task.read', 'TASK_READ', 'View tasks', 'task', 'tasks', 'read'),
-('task.update', 'TASK_UPDATE', 'Update tasks', 'task', 'tasks', 'update'),
-('task.delete', 'TASK_DELETE', 'Delete tasks', 'task', 'tasks', 'delete'),
-('task.assign', 'TASK_ASSIGN', 'Assign tasks to others', 'task', 'task_assignments', 'create'),
-('task.manage_all', 'TASK_MANAGE_ALL', 'Manage all tasks in system', 'task', 'tasks', 'manage'),
-
--- HR management permissions
-('hr.view_reports', 'HR_VIEW_REPORTS', 'View HR reports and analytics', 'hr', 'business_analytics', 'read'),
-('hr.manage_leave', 'HR_MANAGE_LEAVE', 'Manage leave requests', 'hr', 'leave_requests', 'manage'),
-('hr.performance_review', 'HR_PERF_REVIEW', 'Conduct performance reviews', 'hr', 'performance_reviews', 'manage'),
-('hr.onboarding', 'HR_ONBOARDING', 'Manage employee onboarding', 'hr', 'onboarding_checklist', 'manage'),
-
--- Customer support permissions
-('support.chat', 'SUPPORT_CHAT', 'Handle customer chat support', 'support', 'chat_messages', 'manage'),
-('support.view_conversations', 'SUPPORT_VIEW_CONV', 'View support conversations', 'support', 'support_conversations', 'read'),
-('support.assign_tickets', 'SUPPORT_ASSIGN', 'Assign support tickets', 'support', 'support_conversations', 'assign'),
-
--- System administration permissions
-('admin.system_config', 'ADMIN_CONFIG', 'Manage system configuration', 'admin', 'system_config', 'manage'),
-('admin.view_logs', 'ADMIN_LOGS', 'View system logs', 'admin', 'audit_logs', 'read'),
-('admin.manage_permissions', 'ADMIN_PERMS', 'Manage roles and permissions', 'admin', 'roles', 'manage'),
-('admin.performance_monitoring', 'ADMIN_PERF_MON', 'Access performance monitoring', 'admin', 'performance_metrics', 'read');
-
--- Assign permissions to roles (Super Admin gets all permissions)
-INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p 
-WHERE r.role_code = 'SUPER_ADMIN';
-
--- Admin role permissions (most permissions except super admin functions)
-INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p 
-WHERE r.role_code = 'ADMIN' AND p.category IN ('user', 'attendance', 'task', 'hr', 'admin');
-
--- Employee role basic permissions
-INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p 
-WHERE r.role_code = 'EMPLOYEE' AND p.permission_code IN (
-    'ATT_CHECK_IN', 'ATT_CHECK_OUT', 'ATT_VIEW_OWN',
-    'TASK_READ', 'TASK_UPDATE', 'USER_READ'
-);
-
--- Customer Support role permissions
-INSERT OR IGNORE INTO role_permissions (role_id, permission_id)
-SELECT r.id, p.id FROM roles r, permissions p 
-WHERE r.role_code = 'CUST_SUPPORT' AND p.category = 'support';
+-- Simplified role system - no complex permissions needed
+-- Role-based access control handled in application logic by role_code
 
 -- Insert default work shifts
 INSERT OR IGNORE INTO work_shifts (shift_name, shift_code, start_time, end_time, break_duration_minutes, description) VALUES

@@ -211,7 +211,14 @@ async function getUser(url, db, origin) {
   if (session instanceof Response) return session;
 
   const user = await db
-    .prepare("SELECT employeeId, name, storeId, position, phone, email, hire_date FROM employees WHERE employeeId = ?")
+    .prepare(`
+      SELECT e.employeeId, e.name, e.storeId, e.position, e.phone, e.email, e.hire_date, 
+             r.role_code, r.role_name
+      FROM employees e
+      LEFT JOIN user_roles ur ON e.id = ur.employee_id AND ur.is_primary_role = 1
+      LEFT JOIN roles r ON ur.role_id = r.id
+      WHERE e.employeeId = ?
+    `)
     .bind(session.employeeId)
     .first();
 
@@ -221,7 +228,7 @@ async function getUser(url, db, origin) {
     employeeId: user.employeeId,
     fullName: user.name, // Map name to fullName for compatibility
     storeName: user.storeId, // Map storeId to storeName for compatibility
-    position: user.position,
+    position: user.role_code || user.position, // Return role_code if available, fallback to position
     phone: user.phone,
     email: user.email,
     joinDate: user.hire_date, // Map hire_date to joinDate for compatibility
@@ -517,24 +524,27 @@ async function handleGetUsers(url, db, origin) {
     const storeId = url.searchParams.get("storeId");
 
     let query = `
-      SELECT employeeId, name, email, department_id, position, storeId, 
-             employment_status, is_active, created_at, last_login_at
-      FROM employees 
+      SELECT e.employeeId, e.name, e.email, e.department_id, e.position, e.storeId, 
+             e.employment_status, e.is_active, e.created_at, e.last_login_at,
+             r.role_code, r.role_name
+      FROM employees e
+      LEFT JOIN user_roles ur ON e.id = ur.employee_id AND ur.is_primary_role = 1
+      LEFT JOIN roles r ON ur.role_id = r.id
       WHERE 1=1
     `;
     const params = [];
 
     if (department) {
-      query += " AND department_id = ?";
+      query += " AND e.department_id = ?";
       params.push(department);
     }
 
     if (storeId) {
-      query += " AND storeId = ?";
+      query += " AND e.storeId = ?";
       params.push(storeId);
     }
 
-    query += " ORDER BY name LIMIT ? OFFSET ?";
+    query += " ORDER BY e.name LIMIT ? OFFSET ?";
     params.push(limit, offset);
 
     const users = await db
@@ -1258,7 +1268,7 @@ async function handleGetTasks(url, db, origin) {
   }
 }
 
-// Handle getting permissions
+// Handle getting permissions (simplified role-based approach)
 async function handleGetPermissions(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
@@ -1269,28 +1279,22 @@ async function handleGetPermissions(url, db, origin) {
       }, 400, origin);
     }
 
-    // Get user roles and permissions
-    const permissions = await db
+    // Get user roles (simplified approach)
+    const userRoles = await db
       .prepare(`
-        SELECT DISTINCT p.permission_name, p.description, p.category
-        FROM permissions p
-        JOIN role_permissions rp ON p.id = rp.permission_id
-        JOIN user_roles ur ON rp.role_id = ur.role_id
+        SELECT r.role_code, r.role_name, r.description, r.role_level
+        FROM roles r
+        JOIN user_roles ur ON r.id = ur.role_id
         JOIN employees e ON ur.employee_id = e.id
-        WHERE e.employeeId = ?
-        UNION
-        SELECT DISTINCT p.permission_name, p.description, p.category
-        FROM permissions p
-        JOIN user_permissions up ON p.id = up.permission_id
-        JOIN employees e ON up.employee_id = e.id
-        WHERE e.employeeId = ? AND up.granted = 1
+        WHERE e.employeeId = ? AND ur.is_primary_role = 1
       `)
-      .bind(employeeId, employeeId)
+      .bind(employeeId)
       .all();
 
+    // Return roles instead of complex permissions
     return jsonResponse({
       success: true,
-      data: permissions.results || []
+      data: userRoles.results || []
     }, 200, origin);
 
   } catch (error) {
