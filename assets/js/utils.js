@@ -201,6 +201,438 @@ const utils = {
         }
         
         throw lastError;
+    },
+
+    // =====================================================
+    // ENHANCED DATABASE SCHEMA V3.0 API HELPERS
+    // =====================================================
+
+    // Customer Support API Functions
+    async getSupportConversations() {
+        try {
+            return await this.fetchAPI('?action=getSupportConversations');
+        } catch (error) {
+            console.error('Error fetching support conversations:', error);
+            throw error;
+        }
+    },
+
+    async getSupportMessages(conversationId) {
+        try {
+            return await this.fetchAPI(`?action=getSupportMessages&conversationId=${conversationId}`);
+        } catch (error) {
+            console.error('Error fetching support messages:', error);
+            throw error;
+        }
+    },
+
+    async sendSupportMessage(conversationId, message, isEmployee = true) {
+        try {
+            return await this.fetchAPI('?action=sendSupportMessage', {
+                method: 'POST',
+                body: JSON.stringify({
+                    conversationId,
+                    message,
+                    isEmployee
+                })
+            });
+        } catch (error) {
+            console.error('Error sending support message:', error);
+            throw error;
+        }
+    },
+
+    async updateSupportStatus(conversationId, status) {
+        try {
+            return await this.fetchAPI('?action=updateSupportStatus', {
+                method: 'POST',
+                body: JSON.stringify({
+                    conversationId,
+                    status
+                })
+            });
+        } catch (error) {
+            console.error('Error updating support status:', error);
+            throw error;
+        }
+    },
+
+    async createSupportConversation(customerName, customerEmail, message) {
+        try {
+            return await this.fetchAPI('?action=createSupportConversation', {
+                method: 'POST',
+                body: JSON.stringify({
+                    customerName,
+                    customerEmail,
+                    message
+                })
+            });
+        } catch (error) {
+            console.error('Error creating support conversation:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Database Schema v3.0 User Management Functions
+    async updatePersonalInfo(userData) {
+        try {
+            return await this.fetchAPI('?action=updatePersonalInfo', {
+                method: 'POST',
+                body: JSON.stringify(userData)
+            });
+        } catch (error) {
+            console.error('Error updating personal info:', error);
+            throw error;
+        }
+    },
+
+    async updateUserWithHistory(userData) {
+        try {
+            return await this.fetchAPI('?action=updateUserWithHistory', {
+                method: 'POST',
+                body: JSON.stringify(userData)
+            });
+        } catch (error) {
+            console.error('Error updating user with history:', error);
+            throw error;
+        }
+    },
+
+    async getPersonalStats(employeeId) {
+        try {
+            return await this.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
+        } catch (error) {
+            console.error('Error fetching personal stats:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Task Management Functions
+    async getWorkTasks(employeeId, page = 1, limit = 15) {
+        try {
+            return await this.fetchAPI(`?action=getWorkTasks&employeeId=${employeeId}&page=${page}&limit=${limit}`);
+        } catch (error) {
+            console.error('Error fetching work tasks:', error);
+            throw error;
+        }
+    },
+
+    async getTaskDetail(taskId) {
+        try {
+            return await this.fetchAPI(`?action=getTaskDetail&taskId=${taskId}`);
+        } catch (error) {
+            console.error('Error fetching task detail:', error);
+            throw error;
+        }
+    },
+
+    async addTaskComment(taskId, comment) {
+        try {
+            return await this.fetchAPI('?action=addTaskComment', {
+                method: 'POST',
+                body: JSON.stringify({ taskId, comment })
+            });
+        } catch (error) {
+            console.error('Error adding task comment:', error);
+            throw error;
+        }
+    },
+
+    async replyToComment(commentId, reply) {
+        try {
+            return await this.fetchAPI('?action=replyToComment', {
+                method: 'POST',
+                body: JSON.stringify({ commentId, reply })
+            });
+        } catch (error) {
+            console.error('Error replying to comment:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Attendance Management Functions
+    async processAttendance(attendanceData) {
+        try {
+            return await this.fetchAPI('?action=processAttendance', {
+                method: 'POST',
+                body: JSON.stringify(attendanceData)
+            });
+        } catch (error) {
+            console.error('Error processing attendance:', error);
+            throw error;
+        }
+    },
+
+    async createAttendanceRequest(requestData) {
+        try {
+            return await this.fetchAPI('?action=createAttendanceRequest', {
+                method: 'POST',
+                body: JSON.stringify(requestData)
+            });
+        } catch (error) {
+            console.error('Error creating attendance request:', error);
+            throw error;
+        }
+    },
+
+    async getAttendanceRequests() {
+        try {
+            return await this.fetchAPI('?action=getAttendanceRequests');
+        } catch (error) {
+            console.error('Error fetching attendance requests:', error);
+            throw error;
+        }
+    },
+
+    async approveAttendanceRequest(requestId) {
+        try {
+            return await this.fetchAPI('?action=approveAttendanceRequest', {
+                method: 'POST',
+                body: JSON.stringify({ requestId })
+            });
+        } catch (error) {
+            console.error('Error approving attendance request:', error);
+            throw error;
+        }
+    },
+
+    async rejectAttendanceRequest(requestId, reason) {
+        try {
+            return await this.fetchAPI('?action=rejectAttendanceRequest', {
+                method: 'POST',
+                body: JSON.stringify({ requestId, reason })
+            });
+        } catch (error) {
+            console.error('Error rejecting attendance request:', error);
+            throw error;
+        }
+    },
+
+    async getAttendanceHistory(employeeId, startDate, endDate) {
+        try {
+            return await this.fetchAPI(`?action=getAttendanceHistory&employeeId=${employeeId}&startDate=${startDate}&endDate=${endDate}`);
+        } catch (error) {
+            console.error('Error fetching attendance history:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Shift Management Functions
+    async saveShiftAssignments(shiftData) {
+        try {
+            return await this.fetchAPI('?action=saveShiftAssignments', {
+                method: 'POST',
+                body: JSON.stringify(shiftData)
+            });
+        } catch (error) {
+            console.error('Error saving shift assignments:', error);
+            throw error;
+        }
+    },
+
+    async getShiftRequests() {
+        try {
+            return await this.fetchAPI('?action=getShiftRequests');
+        } catch (error) {
+            console.error('Error fetching shift requests:', error);
+            throw error;
+        }
+    },
+
+    async approveShiftRequest(requestId) {
+        try {
+            return await this.fetchAPI('?action=approveShiftRequest', {
+                method: 'POST',
+                body: JSON.stringify({ requestId })
+            });
+        } catch (error) {
+            console.error('Error approving shift request:', error);
+            throw error;
+        }
+    },
+
+    async rejectShiftRequest(requestId, reason) {
+        try {
+            return await this.fetchAPI('?action=rejectShiftRequest', {
+                method: 'POST',
+                body: JSON.stringify({ requestId, reason })
+            });
+        } catch (error) {
+            console.error('Error rejecting shift request:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Registration and User Management Functions
+    async getAllUsers() {
+        try {
+            return await this.fetchAPI('?action=getAllUsers');
+        } catch (error) {
+            console.error('Error fetching all users:', error);
+            throw error;
+        }
+    },
+
+    async getApprovalTasks() {
+        try {
+            return await this.fetchAPI('?action=getApprovalTasks');
+        } catch (error) {
+            console.error('Error fetching approval tasks:', error);
+            throw error;
+        }
+    },
+
+    async finalApproveTask(taskId) {
+        try {
+            return await this.fetchAPI('?action=finalApproveTask', {
+                method: 'POST',
+                body: JSON.stringify({ taskId })
+            });
+        } catch (error) {
+            console.error('Error final approving task:', error);
+            throw error;
+        }
+    },
+
+    async finalRejectTask(taskId, reason) {
+        try {
+            return await this.fetchAPI('?action=finalRejectTask', {
+                method: 'POST',
+                body: JSON.stringify({ taskId, reason })
+            });
+        } catch (error) {
+            console.error('Error final rejecting task:', error);
+            throw error;
+        }
+    },
+
+    async completeRequest(requestId) {
+        try {
+            return await this.fetchAPI('?action=completeRequest', {
+                method: 'POST',
+                body: JSON.stringify({ requestId })
+            });
+        } catch (error) {
+            console.error('Error completing request:', error);
+            throw error;
+        }
+    },
+
+    async checkdk(employeeId) {
+        try {
+            return await this.fetchAPI(`?action=checkdk&employeeId=${employeeId}`);
+        } catch (error) {
+            console.error('Error checking DK:', error);
+            throw error;
+        }
+    },
+
+    async getPendingRequestsCount() {
+        try {
+            return await this.fetchAPI('?action=getPendingRequestsCount');
+        } catch (error) {
+            console.error('Error fetching pending requests count:', error);
+            throw error;
+        }
+    },
+
+    async getEmployeesByStore(storeId) {
+        try {
+            return await this.fetchAPI(`?action=getEmployeesByStore&storeId=${storeId}`);
+        } catch (error) {
+            console.error('Error fetching employees by store:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Email Verification Functions
+    async verifyEmail(token) {
+        try {
+            return await this.fetchAPI('?action=verifyEmail', {
+                method: 'POST',
+                body: JSON.stringify({ token })
+            });
+        } catch (error) {
+            console.error('Error verifying email:', error);
+            throw error;
+        }
+    },
+
+    async approveRegistrationWithHistory(registrationData) {
+        try {
+            return await this.fetchAPI('?action=approveRegistrationWithHistory', {
+                method: 'POST',
+                body: JSON.stringify(registrationData)
+            });
+        } catch (error) {
+            console.error('Error approving registration with history:', error);
+            throw error;
+        }
+    },
+
+    // Enhanced Database Schema v3.0 Field Mapping Utilities
+    mapUserDataFromEnhancedSchema(userData) {
+        if (!userData) return null;
+        
+        // Map Enhanced Database Schema v3.0 fields to frontend expected format
+        return {
+            employeeId: userData.employee_id || userData.employeeId,
+            fullName: userData.full_name || userData.name || userData.fullName,
+            email: userData.email,
+            position: userData.position || userData.role,
+            storeId: userData.store_id || userData.storeId,
+            storeName: userData.store_name || userData.storeName,
+            phone: userData.phone,
+            address: userData.address,
+            avatar: userData.avatar,
+            isActive: userData.is_active !== undefined ? userData.is_active : userData.isActive,
+            createdAt: userData.created_at || userData.createdAt,
+            updatedAt: userData.updated_at || userData.updatedAt,
+            department: userData.department,
+            salary: userData.salary,
+            hireDate: userData.hire_date || userData.hireDate,
+            birthDate: userData.birth_date || userData.birthDate,
+            gender: userData.gender,
+            emergencyContact: userData.emergency_contact || userData.emergencyContact,
+            permissions: userData.permissions
+        };
+    },
+
+    mapTaskDataFromEnhancedSchema(taskData) {
+        if (!taskData) return null;
+        
+        return {
+            taskId: taskData.task_id || taskData.taskId,
+            title: taskData.title,
+            description: taskData.description,
+            assignedTo: taskData.assigned_to || taskData.assignedTo,
+            assignedBy: taskData.assigned_by || taskData.assignedBy,
+            status: taskData.status,
+            priority: taskData.priority,
+            dueDate: taskData.due_date || taskData.dueDate,
+            createdAt: taskData.created_at || taskData.createdAt,
+            updatedAt: taskData.updated_at || taskData.updatedAt,
+            completedAt: taskData.completed_at || taskData.completedAt,
+            comments: taskData.comments || []
+        };
+    },
+
+    mapAttendanceDataFromEnhancedSchema(attendanceData) {
+        if (!attendanceData) return null;
+        
+        return {
+            attendanceId: attendanceData.attendance_id || attendanceData.attendanceId,
+            employeeId: attendanceData.employee_id || attendanceData.employeeId,
+            checkInTime: attendanceData.check_in_time || attendanceData.checkInTime,
+            checkOutTime: attendanceData.check_out_time || attendanceData.checkOutTime,
+            workDate: attendanceData.work_date || attendanceData.workDate,
+            status: attendanceData.status,
+            totalHours: attendanceData.total_hours || attendanceData.totalHours,
+            overtimeHours: attendanceData.overtime_hours || attendanceData.overtimeHours,
+            notes: attendanceData.notes,
+            location: attendanceData.location,
+            createdAt: attendanceData.created_at || attendanceData.createdAt
+        };
     }
 };
 

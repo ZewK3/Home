@@ -197,12 +197,14 @@ class AuthManager {
                 console.log('Fetching fresh user data from API');
                 const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
                 if (user && user.employeeId) {
-                    this.cachedUser = user;
+                    // Map Enhanced Database Schema v3.0 fields
+                    const mappedUser = utils.mapUserDataFromEnhancedSchema(user);
+                    this.cachedUser = mappedUser;
                     this.cacheTimestamp.user = Date.now();
                     // Update storage
-                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, user);
-                    this.userData = user;
-                    return user;
+                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, mappedUser);
+                    this.userData = mappedUser;
+                    return mappedUser;
                 }
                 throw new Error("Invalid user data received from API");
             } catch (error) {
@@ -295,9 +297,14 @@ class AuthManager {
             try {
                 console.log('Fetching fresh work tasks data');
                 const workTasks = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${employeeId}&token=${this.token}&page=1&limit=15`);
-                this.cachedWorkTasks = workTasks;
+                
+                // Map Enhanced Database Schema v3.0 fields for each task
+                const mappedTasks = Array.isArray(workTasks) ? 
+                    workTasks.map(task => utils.mapTaskDataFromEnhancedSchema(task)) : [];
+                
+                this.cachedWorkTasks = mappedTasks;
                 this.cacheTimestamp.workTasks = Date.now();
-                return workTasks;
+                return mappedTasks;
             } catch (error) {
                 console.error('Error fetching work tasks:', error);
                 return this.cachedWorkTasks || [];
@@ -339,15 +346,31 @@ class AuthManager {
             try {
                 console.log('Fetching fresh personal stats data');
                 const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
-                this.cachedPersonalStats = personalStats;
+                
+                // Enhanced Database Schema v3.0 personal stats mapping
+                const mappedStats = {
+                    workDaysThisMonth: personalStats.work_days_this_month || personalStats.workDaysThisMonth || 0,
+                    totalHoursThisMonth: personalStats.total_hours_this_month || personalStats.totalHoursThisMonth || 0,
+                    attendanceRate: personalStats.attendance_rate || personalStats.attendanceRate || 0,
+                    overtimeHours: personalStats.overtime_hours || personalStats.overtimeHours || 0,
+                    tasksCompleted: personalStats.tasks_completed || personalStats.tasksCompleted || 0,
+                    pendingTasks: personalStats.pending_tasks || personalStats.pendingTasks || 0,
+                    averageRating: personalStats.average_rating || personalStats.averageRating || 0
+                };
+                
+                this.cachedPersonalStats = mappedStats;
                 this.cacheTimestamp.personalStats = Date.now();
-                return personalStats;
+                return mappedStats;
             } catch (error) {
                 console.error('Error fetching personal stats:', error);
                 return this.cachedPersonalStats || {
                     workDaysThisMonth: 0,
                     totalHoursThisMonth: 0,
-                    attendanceRate: 0
+                    attendanceRate: 0,
+                    overtimeHours: 0,
+                    tasksCompleted: 0,
+                    pendingTasks: 0,
+                    averageRating: 0
                 };
             }
         });

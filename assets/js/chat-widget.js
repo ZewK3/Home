@@ -118,7 +118,7 @@ class ChatWidget {
         }
     }
 
-    sendMessage(messageText = null) {
+    async sendMessage(messageText = null) {
         const input = document.getElementById('chatInput');
         const text = messageText || input.value.trim();
         
@@ -134,11 +134,56 @@ class ChatWidget {
         // Hide suggestions after first message
         this.hideSuggestions();
         
-        // Save to conversation
-        this.saveMessageToBackend(text, 'customer');
-        
-        // Simulate agent response
-        this.simulateAgentResponse(text);
+        try {
+            // If this is the first message and no conversation exists, create one
+            if (!this.conversationId) {
+                // Collect customer info if not available
+                if (!this.customerInfo.name || !this.customerInfo.email) {
+                    await this.collectCustomerInfo();
+                    if (!this.customerInfo.name || !this.customerInfo.email) {
+                        return; // User cancelled info collection
+                    }
+                }
+                
+                console.log('Creating new support conversation...');
+                const conversation = await utils.createSupportConversation(
+                    this.customerInfo.name,
+                    this.customerInfo.email,
+                    text
+                );
+                
+                this.conversationId = conversation.id || conversation.conversationId;
+                console.log('New conversation created:', this.conversationId);
+                
+                // Save conversation info
+                this.saveConversationData();
+                
+                // Show confirmation message
+                setTimeout(() => {
+                    this.addMessage('Cảm ơn bạn đã liên hệ! Chúng tôi đã ghi nhận yêu cầu của bạn và sẽ phản hồi sớm nhất có thể.', 'agent');
+                }, 1000);
+                
+            } else {
+                // Send message to existing conversation
+                console.log('Sending message to conversation:', this.conversationId);
+                await utils.sendSupportMessage(this.conversationId, text, false);
+                
+                // Show typing indicator and simulate response
+                this.showTypingIndicator();
+                setTimeout(() => {
+                    this.hideTypingIndicator();
+                    this.addMessage('Tin nhắn của bạn đã được ghi nhận. Nhân viên hỗ trợ sẽ phản hồi sớm.', 'agent');
+                }, 2000);
+            }
+            
+            // Save to conversation
+            this.saveMessageToBackend(text, 'customer');
+            
+        } catch (error) {
+            console.error('Error sending message to support system:', error);
+            // Fallback to simulation if API fails
+            this.simulateAgentResponse(text);
+        }
     }
 
     addMessage(text, sender, timestamp = null) {
@@ -384,6 +429,72 @@ class ChatWidget {
         };
         
         localStorage.setItem('chat_conversation', JSON.stringify(conversation));
+    }
+
+    saveConversationData() {
+        // Save conversation data including Enhanced Database Schema v3.0 support
+        const conversation = {
+            id: this.conversationId,
+            customerInfo: this.customerInfo,
+            createdAt: new Date().toISOString(),
+            lastUpdate: new Date().toISOString()
+        };
+        
+        localStorage.setItem('chat_conversation', JSON.stringify(conversation));
+    }
+
+    async collectCustomerInfo() {
+        return new Promise((resolve) => {
+            // Create modal for customer info collection
+            const modal = document.createElement('div');
+            modal.className = 'chat-info-modal';
+            modal.innerHTML = `
+                <div class="chat-info-content">
+                    <h3>Thông tin liên hệ</h3>
+                    <p>Vui lòng cung cấp thông tin để chúng tôi hỗ trợ bạn tốt hơn:</p>
+                    <form id="customerInfoForm">
+                        <div class="form-group">
+                            <label for="customerName">Họ và tên *</label>
+                            <input type="text" id="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerEmail">Email *</label>
+                            <input type="email" id="customerEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerPhone">Số điện thoại</label>
+                            <input type="tel" id="customerPhone">
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="cancelInfo">Hủy</button>
+                            <button type="submit" id="submitInfo">Tiếp tục</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Handle form submission
+            document.getElementById('customerInfoForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                this.customerInfo.name = document.getElementById('customerName').value.trim();
+                this.customerInfo.email = document.getElementById('customerEmail').value.trim();
+                this.customerInfo.phone = document.getElementById('customerPhone').value.trim();
+                
+                if (this.customerInfo.name && this.customerInfo.email) {
+                    document.body.removeChild(modal);
+                    resolve(true);
+                }
+            });
+            
+            // Handle cancel
+            document.getElementById('cancelInfo').addEventListener('click', () => {
+                document.body.removeChild(modal);
+                resolve(false);
+            });
+        });
     }
 
     showWelcomeMessage() {
