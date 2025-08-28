@@ -147,7 +147,7 @@ function jsonResponse(body, status = 200, origin = ALLOWED_ORIGIN) {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-Request-ID, X-Client-Version",
     "Access-Control-Max-Age": "86400"
   };
 
@@ -168,7 +168,7 @@ function handleOptionsRequest() {
     headers: {
       "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, X-Request-ID, X-Client-Version",
       "Access-Control-Max-Age": "86400"
     }
   });

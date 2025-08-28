@@ -195,7 +195,7 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh user data from API');
-                const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
+                const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${this.token}`);
                 if (user && user.employeeId) {
                     // Map Enhanced Database Schema v3.0 fields
                     const mappedUser = utils.mapUserDataFromEnhancedSchema(user);
@@ -345,7 +345,7 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh personal stats data');
-                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
+                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}&token=${this.token}`);
                 
                 // Enhanced Database Schema v3.0 personal stats mapping
                 const mappedStats = {
