@@ -224,6 +224,52 @@ INSERT OR IGNORE INTO employees (
  'satisfactory', 'bachelor');
 
 -- =====================================================
+-- COMPANIES DATA
+-- =====================================================
+
+INSERT OR IGNORE INTO companies (
+    company_code, company_name, legal_name, tax_id, address, 
+    phone, email, website, is_active
+) VALUES
+('MAYCHA', 'MayCha Corporation', 'Công Ty TNHH MayCha', '0123456789',
+ '123 Nguyễn Huệ, District 1, Ho Chi Minh City', '+84-28-1234-5678',
+ 'info@maycha.com', 'https://maycha.com', TRUE);
+
+-- =====================================================
+-- ROLES DEFINITION
+-- =====================================================
+
+INSERT OR IGNORE INTO roles (
+    id, role_name, role_code, description, is_system_role, 
+    is_management_role, role_level, parent_role_id
+) VALUES
+(1, 'Super Administrator', 'SUPER_ADMIN', 'System super administrator with full access', TRUE, TRUE, 10, NULL),
+(2, 'Administrator', 'ADMIN', 'System administrator with administrative privileges', TRUE, TRUE, 9, 1),
+(3, 'HR Manager', 'HR_MANAGER', 'Human resources manager', FALSE, TRUE, 8, 2),
+(4, 'Store Manager', 'STORE_MANAGER', 'Store manager with store-level authority', FALSE, TRUE, 7, 3),
+(5, 'Area Manager', 'AREA_MANAGER', 'Area manager overseeing multiple stores', FALSE, TRUE, 7, 3),
+(6, 'Department Head', 'DEPT_HEAD', 'Department head with departmental authority', FALSE, TRUE, 6, 4),
+(7, 'Team Lead', 'TEAM_LEAD', 'Team leader with team management responsibilities', FALSE, TRUE, 5, 6),
+(8, 'Supervisor', 'SUPERVISOR', 'Supervisor with limited management authority', FALSE, TRUE, 4, 7),
+(9, 'Employee', 'EMPLOYEE', 'Regular employee', FALSE, FALSE, 1, NULL),
+(10, 'Intern', 'INTERN', 'Intern or trainee', FALSE, FALSE, 1, NULL),
+(11, 'Customer Support', 'CUSTOMER_SUPPORT', 'Customer support specialist', FALSE, FALSE, 3, NULL);
+
+-- =====================================================
+-- WORK SHIFTS DEFINITION
+-- =====================================================
+
+INSERT OR IGNORE INTO work_shifts (
+    shift_name, shift_code, start_time, end_time, 
+    break_duration_minutes, is_overnight, description
+) VALUES
+('Morning Shift', 'MORNING', '08:00:00', '17:00:00', 60, FALSE, 'Standard morning shift'),
+('Afternoon Shift', 'AFTERNOON', '13:00:00', '22:00:00', 60, FALSE, 'Afternoon and evening shift'),
+('Part-time Flexible', 'PT_FLEX', '10:00:00', '15:00:00', 30, FALSE, 'Flexible part-time shift'),
+('Customer Support Day', 'CS_DAY', '09:00:00', '18:00:00', 60, FALSE, 'Customer support day shift'),
+('Customer Support Night', 'CS_NIGHT', '18:00:00', '03:00:00', 60, TRUE, 'Customer support night shift');
+
+-- =====================================================
 -- USER ROLES ASSIGNMENT
 -- =====================================================
 
@@ -487,6 +533,40 @@ INSERT OR IGNORE INTO business_analytics (
 ('2024-01-15', NULL, 23, 18, 5, 1, 78.26, 2, 1, 0, 0);
 
 -- =====================================================
+-- ADDITIONAL MISSING TABLES DATA
+-- =====================================================
+
+-- Leave requests sample data
+INSERT OR IGNORE INTO leave_requests (
+    employee_id, leave_type, start_date, end_date, days_requested, 
+    reason, status, approved_by, created_at
+) VALUES
+(14, 'annual', '2024-01-20', '2024-01-22', 3, 'Nghỉ phép năm', 'pending', NULL, '2024-01-15 10:00:00'),
+(15, 'sick', '2024-01-18', '2024-01-18', 1, 'Nghỉ ốm', 'approved', 9, '2024-01-17 14:30:00'),
+(20, 'personal', '2024-01-25', '2024-01-26', 2, 'Việc cá nhân', 'pending', NULL, '2024-01-15 16:20:00');
+
+-- Performance reviews sample data
+INSERT OR IGNORE INTO performance_reviews (
+    employee_id, reviewer_id, review_period, overall_rating, 
+    goals_achievement, strengths, areas_for_improvement, 
+    comments, status, created_at
+) VALUES
+(14, 8, '2023Q4', 4.2, 85.5, 'Xuất sắc trong bán hàng, thái độ tích cực', 
+ 'Cần cải thiện kỹ năng giao tiếp với khách hàng khó tính', 
+ 'Nhân viên có tiềm năng phát triển cao', 'completed', '2024-01-10 09:00:00'),
+(15, 9, '2023Q4', 3.8, 78.0, 'Đáng tin cậy, đúng giờ', 
+ 'Cần chủ động hơn trong công việc', 
+ 'Nhân viên ổn định, phù hợp với vị trí hiện tại', 'completed', '2024-01-12 14:00:00');
+
+-- Employee change history
+INSERT OR IGNORE INTO employee_change_history (
+    employee_id, field_name, old_value, new_value, 
+    changed_by, change_reason, created_at
+) VALUES
+(14, 'salary', '11000000.00', '12000000.00', 8, 'Tăng lương định kỳ', '2024-01-01 08:00:00'),
+(15, 'position', 'Sales Associate Trainee', 'Sales Associate', 9, 'Kết thúc thời gian thử việc', '2023-12-15 10:00:00');
+
+-- =====================================================
 -- ACTIVE SESSIONS
 -- =====================================================
 
@@ -578,8 +658,9 @@ SELECT 'Attendance Records Today: ' || COUNT(*) as verification FROM attendance 
 -- =====================================================
 
 INSERT OR IGNORE INTO system_config (config_key, config_value, description, category)
-VALUES ('sample_data.version', '3.1.0', 'Professional sample data version', 'system');
+VALUES ('sample_data.version', '3.2.0', 'Professional sample data with comprehensive table coverage', 'system');
 
--- Professional HR Management System Sample Data v3.1 Successfully Loaded
+-- Professional HR Management System Sample Data v3.2 Successfully Loaded
 -- Total: 23 Active Employees, 7 Stores, 6 Tasks, 4 Support Conversations
+-- Enhanced with: Companies, Roles, Work Shifts, Leave Requests, Performance Reviews
 -- Ready for comprehensive testing of all system functionality

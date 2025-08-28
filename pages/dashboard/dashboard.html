@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="../../assets/css/modals.css">
     <link rel="stylesheet" href="../../assets/css/containers.css">
     <link rel="stylesheet" href="../../assets/css/dash.css">
+    <link rel="stylesheet" href="../../assets/css/modern-enhancements.css">
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
@@ -44,11 +45,11 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Content (initially hidden) -->
-    <div id="dashboardContent" class="dashboard-content">
+    <!-- Modern Dashboard Application Container -->
+    <div id="dashboardContent" class="dashboard-content modern-layout">
 
     <!-- Mobile Navigation Dialog - GitHub Style -->
-    <dialog id="mobile-nav-dialog" class="mobile-nav-dialog">
+    <dialog id="mobile-nav-dialog" class="mobile-nav-dialog modern-mobile-nav">
         <div class="mobile-nav-content">
             <div class="mobile-nav-header">
                 <h2>Menu</h2>
@@ -56,7 +57,7 @@
                     <span class="material-icons-round">close</span>
                 </button>
             </div>
-            <nav class="mobile-nav">
+            <nav class="mobile-nav" role="navigation" aria-label="Main mobile navigation">
                 <ul id="mobileMenuList" class="mobile-menu-list">
                     <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,EMPLOYEE,AD,QL,NV">
                         <a href="#" id="mobileWorkManagement" class="mobile-menu-link">
@@ -299,11 +300,19 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="main dashboard-main-fade-in">
-        <div id="notification" class="notification hidden"></div>
-        <div id="content" class="content">
-            <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+    <!-- Enhanced Main Content Area with Modern Layout -->
+    <main class="main dashboard-main-fade-in modern-main-layout" role="main" aria-label="Dashboard main content">
+        <!-- Global notification container -->
+        <div id="notification" class="notification hidden" role="alert" aria-live="polite"></div>
+        
+        <!-- Dynamic content area with modern grid layout -->
+        <div id="content" class="content modern-content-grid">
+            <header class="dashboard-header">
+                <h1 class="dashboard-title modern-title">Hệ Thống Quản Lý Nhân Sự</h1>
+                <div class="dashboard-breadcrumb" aria-label="Breadcrumb navigation">
+                    <span class="breadcrumb-item active">Dashboard</span>
+                </div>
+            </header>
             
             <!-- Enhanced Dashboard Overview -->
             <div class="welcome-section">
@@ -545,7 +554,20 @@
         </div>
     </main>
 
-    <!-- Chat System -->
+    <!-- Load JavaScript modules in correct order -->
+    <script src="../../assets/js/config.js"></script>
+    <script src="../../assets/js/utils.js"></script>
+    <script src="../../assets/js/auth-manager.js"></script>
+    <script src="../../assets/js/theme-manager.js"></script>
+    <script src="../../assets/js/menu-manager.js"></script>
+    <script src="../../assets/js/content-manager.js"></script>
+    <script src="../../assets/js/dashboard-handler.js"></script>
+    <script src="../../assets/js/notification-chat-manager.js"></script>
+    <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/main-init.js"></script>
+    </div> <!-- End dashboardContent -->
+
+    <!-- Chat System - Moved outside dashboardContent for better isolation -->
     <div id="chatSystem" class="chat-system">
         <!-- Chat Toggle Button -->
         <button id="chatToggle" class="chat-toggle" aria-label="Mở chat">
@@ -715,18 +737,5 @@
         </div>
     </div>
 
-
-    <!-- Load JavaScript modules in correct order -->
-    <script src="../../assets/js/config.js"></script>
-    <script src="../../assets/js/utils.js"></script>
-    <script src="../../assets/js/auth-manager.js"></script>
-    <script src="../../assets/js/theme-manager.js"></script>
-    <script src="../../assets/js/menu-manager.js"></script>
-    <script src="../../assets/js/content-manager.js"></script>
-    <script src="../../assets/js/dashboard-handler.js"></script>
-    <script src="../../assets/js/notification-chat-manager.js"></script>
-    <script src="../../assets/js/script.js"></script>
-    <script src="../../assets/js/main-init.js"></script>
-    </div> <!-- End dashboardContent -->
 </body>
 </html>

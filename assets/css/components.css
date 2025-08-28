@@ -448,7 +448,7 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: var(--transition);
-    z-index: 1000;
+    z-index: 10001; /* Increased z-index to ensure visibility above other elements */
 }
 
 .notification-dropdown.active {
