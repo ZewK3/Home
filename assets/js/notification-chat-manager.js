@@ -642,19 +642,6 @@ class ChatManager {
     }
 }
 
-// Initialize managers when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize with delay to ensure other managers are ready
-    setTimeout(() => {
-        if (typeof window.notificationManager === 'undefined') {
-            window.notificationManager = new NotificationManager();
-        }
-        if (typeof window.chatManager === 'undefined') {
-            window.chatManager = new ChatManager();
-        }
-    }, 1000);
-});
-
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { NotificationManager, ChatManager };

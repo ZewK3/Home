@@ -124,6 +124,9 @@ async function initializeDashboard() {
         // Initialize enhanced dashboard with cached user data
         await initializeEnhancedDashboard();
 
+        // Initialize notification and chat managers after dashboard is ready
+        initializeNotificationAndChatManagers();
+
         // Hide dashboard loader and show content after initialization is complete
         await hideDashboardLoader();
 
@@ -2067,7 +2070,54 @@ function buildRoleBasedDashboard(userRole) {
 // =============================================================================
 // CSS Animation System - Replaced GSAP with pure CSS animations for better performance
 
-
+/**
+ * Initialize Notification and Chat Managers for dashboard
+ * Ensures proper initialization after dashboard content is loaded
+ */
+function initializeNotificationAndChatManagers() {
+    try {
+        console.log('🔔 Initializing Notification and Chat Managers...');
+        
+        // Clear any existing instances to prevent duplicates
+        if (window.notificationManager) {
+            window.notificationManager = null;
+        }
+        if (window.chatManager) {
+            window.chatManager = null;
+        }
+        
+        // Initialize NotificationManager
+        if (typeof NotificationManager !== 'undefined') {
+            window.notificationManager = new NotificationManager();
+            console.log('✅ NotificationManager initialized successfully');
+        } else {
+            console.warn('⚠️ NotificationManager class not available');
+        }
+        
+        // Initialize ChatManager
+        if (typeof ChatManager !== 'undefined') {
+            window.chatManager = new ChatManager();
+            console.log('✅ ChatManager initialized successfully');
+        } else {
+            console.warn('⚠️ ChatManager class not available');
+        }
+        
+        // Add click outside handler for notification dropdown
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('notificationDropdown');
+            const toggle = document.getElementById('notificationToggle');
+            
+            if (dropdown && toggle && !dropdown.contains(e.target) && !toggle.contains(e.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+        
+        console.log('🔔 Notification and Chat Managers setup complete');
+        
+    } catch (error) {
+        console.error('❌ Error initializing Notification and Chat Managers:', error);
+    }
+}
 
 // Inject professional CSS styles for enhanced interfaces - will be handled by main-init.js
 const professionalStyles = `

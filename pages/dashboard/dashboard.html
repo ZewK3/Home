@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="../../assets/css/dash.css">
     <link rel="stylesheet" href="../../assets/css/modern-enhancements.css">
     <link rel="stylesheet" href="../../assets/css/professional-dashboard-v2.css">
+    <link rel="stylesheet" href="../../assets/css/modern-chat.css">
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
@@ -981,378 +982,256 @@
     <script src="../../assets/js/main-init.js"></script>
     </div> <!-- End dashboardContent -->
 
-    <!-- Enhanced Professional Chat System -->
-    <div id="chatSystem" class="chat-system professional-chat">
+    <!-- Modern Professional Chat System -->
+    <div id="chatSystem" class="modern-chat-system">
         <!-- Chat Toggle Button -->
-        <button id="chatToggle" class="chat-toggle professional-chat-toggle" aria-label="Mở chat">
-            <div class="chat-toggle-icon">
-                <span class="material-icons-round">chat_bubble</span>
-                <span id="chatNotificationBadge" class="chat-notification-badge">2</span>
+        <button id="chatToggle" class="modern-chat-toggle" aria-label="Mở chat">
+            <div class="chat-toggle-content">
+                <span class="material-icons-round">forum</span>
+                <span class="chat-toggle-text">Chat</span>
+                <span id="chatNotificationBadge" class="chat-notification-badge">3</span>
             </div>
-            <div class="chat-toggle-text">Chat</div>
         </button>
         
-        <!-- Enhanced Chat Panel -->
-        <div id="chatPanel" class="chat-panel professional-chat-panel">
-            <!-- Modern Chat Header -->
-            <div class="chat-header professional-chat-header">
-                <div class="chat-title-section">
-                    <div class="chat-logo">
-                        <span class="material-icons-round">forum</span>
-                    </div>
-                    <div class="chat-title-content">
-                        <h3 class="chat-title">Hệ Thống Chat</h3>
-                        <div class="chat-subtitle">Kết nối và giao tiếp</div>
+        <!-- Modern Chat Panel -->
+        <div id="chatPanel" class="modern-chat-panel">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="header-left">
+                    <span class="material-icons-round chat-icon">forum</span>
+                    <div class="header-text">
+                        <h3 class="chat-title">Tin nhắn</h3>
+                        <p class="chat-subtitle">3 cuộc trò chuyện đang hoạt động</p>
                     </div>
                 </div>
-                <div class="chat-controls">
-                    <button id="chatSettings" class="chat-control modern-chat-control" aria-label="Cài đặt" title="Cài đặt chat">
+                <div class="header-actions">
+                    <button id="chatSearch" class="header-btn" title="Tìm kiếm">
+                        <span class="material-icons-round">search</span>
+                    </button>
+                    <button id="chatSettings" class="header-btn" title="Cài đặt">
                         <span class="material-icons-round">settings</span>
                     </button>
-                    <button id="minimizeChat" class="chat-control modern-chat-control" aria-label="Thu nhỏ" title="Thu nhỏ">
-                        <span class="material-icons-round">minimize</span>
-                    </button>
-                    <button id="closeChat" class="chat-control modern-chat-control" aria-label="Đóng" title="Đóng chat">
+                    <button id="closeChat" class="header-btn" title="Đóng">
                         <span class="material-icons-round">close</span>
                     </button>
                 </div>
             </div>
             
-            <!-- Enhanced Chat Navigation Tabs -->
-            <div class="chat-navigation">
-                <div class="chat-tabs modern-chat-tabs">
-                    <button class="chat-tab active modern-chat-tab" data-chat-type="general">
-                        <div class="tab-icon">
-                            <span class="material-icons-round">public</span>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Tổng</span>
-                            <span class="tab-count">24</span>
-                        </div>
-                    </button>
-                    <button class="chat-tab modern-chat-tab" data-chat-type="department">
-                        <div class="tab-icon">
-                            <span class="material-icons-round">domain</span>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Phòng ban</span>
-                            <span class="tab-count">8</span>
-                        </div>
-                    </button>
-                    <button class="chat-tab modern-chat-tab" data-chat-type="private">
-                        <div class="tab-icon">
-                            <span class="material-icons-round">person</span>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Riêng tư</span>
-                            <span class="tab-count">3</span>
-                        </div>
-                        <span class="new-message-indicator"></span>
-                    </button>
-                    <button class="chat-tab modern-chat-tab" data-chat-type="group">
-                        <div class="tab-icon">
-                            <span class="material-icons-round">group</span>
-                        </div>
-                        <div class="tab-content">
-                            <span class="tab-title">Nhóm</span>
-                            <span class="tab-count">5</span>
-                        </div>
-                    </button>
-                </div>
+            <!-- Chat Navigation Tabs -->
+            <div class="chat-tabs">
+                <button class="chat-tab active" data-chat-type="general">
+                    <span class="material-icons-round">public</span>
+                    <span class="tab-text">Chung</span>
+                    <span class="tab-badge">12</span>
+                </button>
+                <button class="chat-tab" data-chat-type="department">
+                    <span class="material-icons-round">business</span>
+                    <span class="tab-text">Phòng ban</span>
+                    <span class="tab-badge">5</span>
+                </button>
+                <button class="chat-tab" data-chat-type="private">
+                    <span class="material-icons-round">person</span>
+                    <span class="tab-text">Cá nhân</span>
+                    <span class="tab-badge new">2</span>
+                </button>
+                <button class="chat-tab" data-chat-type="group">
+                    <span class="material-icons-round">group</span>
+                    <span class="tab-text">Nhóm</span>
+                    <span class="tab-badge">3</span>
+                </button>
             </div>
             
-            <!-- Enhanced Chat Content Area -->
-            <div class="chat-content professional-chat-content">
-                <!-- General Chat Room -->
-                <div class="chat-room active modern-chat-room" data-room="general">
-                    <div class="chat-room-header">
-                        <div class="room-info">
-                            <h4 class="room-title">Chat Tổng Công Ty</h4>
-                            <div class="room-status">
-                                <span class="online-count">24 người trực tuyến</span>
-                                <span class="status-dot online"></span>
+            <!-- Chat Content Area -->
+            <div class="chat-content">
+                <!-- General Chat -->
+                <div id="generalChat" class="chat-view active">
+                    <div class="chat-messages" id="generalMessages">
+                        <!-- Sample messages -->
+                        <div class="message-group">
+                            <div class="message-sender">
+                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                                <span class="sender-name">Nguyễn Văn A</span>
+                                <span class="message-time">10:30</span>
+                            </div>
+                            <div class="message-bubble">
+                                <p>Chào mọi người! Cuộc họp hôm nay có thay đổi gì không?</p>
+                            </div>
+                        </div>
+                        <div class="message-group own">
+                            <div class="message-sender">
+                                <span class="sender-name">Bạn</span>
+                                <span class="message-time">10:32</span>
+                            </div>
+                            <div class="message-bubble">
+                                <p>Cuộc họp vẫn diễn ra như kế hoạch lúc 2:00 PM</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="chat-messages professional-messages" id="generalMessages">
-                        <div class="message-day">
-                            <span class="day-text">Hôm nay</span>
-                        </div>
-                        
-                        <div class="message-item sent">
-                            <div class="message-avatar">
-                                <img src="../../assets/images/avatar-placeholder.png" alt="Avatar" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                <div class="avatar-fallback" style="display: none;">
-                                    <span>AD</span>
-                                </div>
-                            </div>
-                            <div class="message-content">
-                                <div class="message-header">
-                                    <span class="message-sender">Admin</span>
-                                    <span class="message-time">14:30</span>
-                                </div>
-                                <div class="message-text">Chào mọi người! Hôm nay có họp team lúc 15:00</div>
-                                <div class="message-actions">
-                                    <button class="message-action" title="Thả tim">
-                                        <span class="material-icons-round">favorite_border</span>
-                                    </button>
-                                    <button class="message-action" title="Trả lời">
-                                        <span class="material-icons-round">reply</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="message-item received">
-                            <div class="message-avatar">
-                                <div class="avatar-fallback">
-                                    <span>NV</span>
-                                </div>
-                            </div>
-                            <div class="message-content">
-                                <div class="message-header">
-                                    <span class="message-sender">Nguyễn Văn A</span>
-                                    <span class="message-time">14:32</span>
-                                </div>
-                                <div class="message-text">Cảm ơn thông báo, tôi sẽ tham gia đúng giờ!</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="chat-input-area professional-input">
-                        <div class="input-actions">
-                            <button class="input-action" title="Đính kèm file">
+                    <div class="chat-input-area">
+                        <div class="input-container">
+                            <button class="input-btn" title="Đính kèm file">
                                 <span class="material-icons-round">attach_file</span>
                             </button>
-                            <button class="input-action" title="Emoji">
-                                <span class="material-icons-round">sentiment_satisfied</span>
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn...">
+                            <button class="input-btn" title="Emoji">
+                                <span class="material-icons-round">emoji_emotions</span>
                             </button>
-                        </div>
-                        <div class="chat-input-wrapper">
-                            <textarea class="chat-input modern-chat-input" placeholder="Nhập tin nhắn..." data-room="general" rows="1"></textarea>
-                            <button class="chat-send modern-send-btn" data-room="general">
+                            <button class="send-btn" title="Gửi">
                                 <span class="material-icons-round">send</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Department Chat Room -->
-                <div class="chat-room modern-chat-room" data-room="department">
-                    <div class="department-selector-container">
-                        <div class="selector-header">
-                            <h4>Chọn Phòng Ban</h4>
-                        </div>
-                        <select id="departmentSelect" class="department-select modern-select">
-                            <option value="">Chọn phòng ban để trò chuyện</option>
-                            <option value="hr">Phòng Nhân Sự</option>
-                            <option value="sales">Phòng Kinh Doanh</option>
-                            <option value="marketing">Phòng Marketing</option>
-                            <option value="tech">Phòng Kỹ Thuật</option>
-                            <option value="finance">Phòng Tài Chính</option>
+                <!-- Department Chat -->
+                <div id="departmentChat" class="chat-view">
+                    <div class="department-selector">
+                        <select id="departmentSelect" class="modern-select">
+                            <option value="hr">Nhân sự</option>
+                            <option value="it">Công nghệ thông tin</option>
+                            <option value="sales">Kinh doanh</option>
+                            <option value="finance">Tài chính</option>
+                            <option value="operations">Vận hành</option>
                         </select>
                     </div>
-                    
-                    <div class="chat-messages professional-messages" id="departmentMessages">
-                        <div class="empty-chat-state">
-                            <div class="empty-icon">
-                                <span class="material-icons-round">domain</span>
-                            </div>
-                            <div class="empty-title">Chọn phòng ban</div>
-                            <div class="empty-subtitle">Chọn phòng ban từ danh sách trên để bắt đầu trò chuyện</div>
+                    <div class="chat-messages" id="departmentMessages">
+                        <div class="empty-state">
+                            <span class="material-icons-round">business</span>
+                            <p>Chọn phòng ban để bắt đầu trò chuyện</p>
                         </div>
                     </div>
-                    
-                    <div class="chat-input-area professional-input">
-                        <div class="chat-input-wrapper">
-                            <textarea class="chat-input modern-chat-input" placeholder="Chọn phòng ban để nhắn tin..." data-room="department" rows="1" disabled></textarea>
-                            <button class="chat-send modern-send-btn" data-room="department" disabled>
+                    <div class="chat-input-area">
+                        <div class="input-container">
+                            <button class="input-btn" title="Đính kèm file">
+                                <span class="material-icons-round">attach_file</span>
+                            </button>
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn cho phòng ban...">
+                            <button class="input-btn" title="Emoji">
+                                <span class="material-icons-round">emoji_emotions</span>
+                            </button>
+                            <button class="send-btn" title="Gửi">
                                 <span class="material-icons-round">send</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Private Chat Room -->
-                <div class="chat-room modern-chat-room" data-room="private">
-                    <div class="private-chat-layout">
-                        <div class="private-chat-sidebar">
-                            <div class="sidebar-header">
-                                <h4>Tin Nhắn Riêng</h4>
-                                <button class="new-chat-btn" title="Tin nhắn mới">
-                                    <span class="material-icons-round">add</span>
-                                </button>
+                <!-- Private Chat -->
+                <div id="privateChat" class="chat-view">
+                    <div class="conversations-list">
+                        <div class="conversation-item active">
+                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
+                            <div class="conv-content">
+                                <h4 class="conv-name">Trần Thị B</h4>
+                                <p class="conv-preview">Cảm ơn bạn về báo cáo...</p>
                             </div>
-                            
-                            <div class="private-chat-search">
-                                <div class="search-wrapper">
-                                    <span class="material-icons-round search-icon">search</span>
-                                    <input type="text" id="userSearch" placeholder="Tìm nhân viên..." class="user-search modern-search">
-                                </div>
-                            </div>
-                            
-                            <div class="private-chat-list modern-chat-list" id="privateChatList">
-                                <div class="chat-list-item active">
-                                    <div class="chat-avatar">
-                                        <div class="avatar-fallback">NV</div>
-                                        <div class="online-indicator"></div>
-                                    </div>
-                                    <div class="chat-info">
-                                        <div class="chat-name">Nguyễn Văn Nam</div>
-                                        <div class="chat-preview">Cảm ơn bạn...</div>
-                                    </div>
-                                    <div class="chat-meta">
-                                        <div class="chat-time">14:30</div>
-                                        <div class="unread-badge">2</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="chat-list-item">
-                                    <div class="chat-avatar">
-                                        <div class="avatar-fallback">TL</div>
-                                    </div>
-                                    <div class="chat-info">
-                                        <div class="chat-name">Trần Thị Lan</div>
-                                        <div class="chat-preview">Xin chào!</div>
-                                    </div>
-                                    <div class="chat-meta">
-                                        <div class="chat-time">Hôm qua</div>
-                                    </div>
-                                </div>
+                            <div class="conv-meta">
+                                <span class="conv-time">2m</span>
+                                <span class="conv-unread">2</span>
                             </div>
                         </div>
-                        
-                        <div class="private-chat-main">
-                            <div class="private-chat-header modern-chat-header" id="privateChatHeader">
-                                <div class="chat-user-info">
-                                    <div class="user-avatar">
-                                        <div class="avatar-fallback">NV</div>
-                                        <div class="online-indicator"></div>
-                                    </div>
-                                    <div class="user-details">
-                                        <div class="user-name">Nguyễn Văn Nam</div>
-                                        <div class="user-status">Đang hoạt động</div>
-                                    </div>
-                                </div>
-                                <div class="chat-actions">
-                                    <button class="chat-action-btn" title="Thông tin">
-                                        <span class="material-icons-round">info</span>
-                                    </button>
-                                </div>
+                        <div class="conversation-item">
+                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
+                            <div class="conv-content">
+                                <h4 class="conv-name">Lê Văn C</h4>
+                                <p class="conv-preview">Tôi sẽ gửi file cho bạn...</p>
                             </div>
-                            
-                            <div class="chat-messages professional-messages" id="privateMessages">
-                                <div class="message-item received">
-                                    <div class="message-content">
-                                        <div class="message-text">Chào bạn! Có cần hỗ trợ gì không?</div>
-                                        <div class="message-time">14:25</div>
-                                    </div>
-                                </div>
-                                <div class="message-item sent">
-                                    <div class="message-content">
-                                        <div class="message-text">Cảm ơn bạn! Mình cần hỗ trợ về quy trình làm việc</div>
-                                        <div class="message-time">14:30</div>
-                                    </div>
-                                </div>
+                            <div class="conv-meta">
+                                <span class="conv-time">1h</span>
                             </div>
-                            
-                            <div class="chat-input-area professional-input">
-                                <div class="chat-input-wrapper">
-                                    <textarea class="chat-input modern-chat-input" placeholder="Nhập tin nhắn..." data-room="private" rows="1"></textarea>
-                                    <button class="chat-send modern-send-btn" data-room="private">
-                                        <span class="material-icons-round">send</span>
-                                    </button>
-                                </div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="privateMessages">
+                        <div class="message-group">
+                            <div class="message-sender">
+                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                                <span class="sender-name">Trần Thị B</span>
+                                <span class="message-time">10:45</span>
                             </div>
+                            <div class="message-bubble">
+                                <p>Cảm ơn bạn về báo cáo tháng này!</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <div class="input-container">
+                            <button class="input-btn" title="Đính kèm file">
+                                <span class="material-icons-round">attach_file</span>
+                            </button>
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn riêng...">
+                            <button class="input-btn" title="Emoji">
+                                <span class="material-icons-round">emoji_emotions</span>
+                            </button>
+                            <button class="send-btn" title="Gửi">
+                                <span class="material-icons-round">send</span>
+                            </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Group Chat Room -->
-                <div class="chat-room modern-chat-room" data-room="group">
-                    <div class="group-chat-header">
-                        <div class="group-header-content">
-                            <h4>Nhóm Chat</h4>
-                            <button id="createGroupBtn" class="create-group-btn modern-create-btn">
-                                <span class="material-icons-round">add</span>
-                                Tạo nhóm mới
-                            </button>
+                <!-- Group Chat -->
+                <div id="groupChat" class="chat-view">
+                    <div class="groups-list">
+                        <div class="group-item active">
+                            <div class="group-avatar">
+                                <span class="material-icons-round">group</span>
+                            </div>
+                            <div class="group-content">
+                                <h4 class="group-name">Dự án Website</h4>
+                                <p class="group-members">8 thành viên</p>
+                            </div>
+                            <div class="group-meta">
+                                <span class="group-time">5m</span>
+                                <span class="group-unread">1</span>
+                            </div>
+                        </div>
+                        <div class="group-item">
+                            <div class="group-avatar">
+                                <span class="material-icons-round">group</span>
+                            </div>
+                            <div class="group-content">
+                                <h4 class="group-name">Team Marketing</h4>
+                                <p class="group-members">5 thành viên</p>
+                            </div>
+                            <div class="group-meta">
+                                <span class="group-time">2h</span>
+                            </div>
+                        </div>
+                        <button class="create-group-btn" id="createGroupBtn">
+                            <span class="material-icons-round">add</span>
+                            <span>Tạo nhóm mới</span>
+                        </button>
+                    </div>
+                    <div class="chat-messages" id="groupMessages">
+                        <div class="message-group">
+                            <div class="message-sender">
+                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                                <span class="sender-name">Phạm Văn D</span>
+                                <span class="message-time">11:00</span>
+                            </div>
+                            <div class="message-bubble">
+                                <p>Mọi người đã xem mockup mới chưa?</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="group-layout">
-                        <div class="group-list modern-group-list" id="groupList">
-                            <div class="group-item active">
-                                <div class="group-avatar">
-                                    <span class="material-icons-round">group</span>
-                                </div>
-                                <div class="group-info">
-                                    <div class="group-name">Team Marketing</div>
-                                    <div class="group-members">8 thành viên</div>
-                                </div>
-                                <div class="group-status">
-                                    <div class="new-messages">3</div>
-                                </div>
-                            </div>
-                            
-                            <div class="group-item">
-                                <div class="group-avatar">
-                                    <span class="material-icons-round">group</span>
-                                </div>
-                                <div class="group-info">
-                                    <div class="group-name">Phòng Kỹ Thuật</div>
-                                    <div class="group-members">12 thành viên</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="group-chat-main">
-                            <div class="group-chat-header">
-                                <div class="group-title-section">
-                                    <h4>Team Marketing</h4>
-                                    <div class="group-subtitle">8 thành viên • 3 trực tuyến</div>
-                                </div>
-                                <div class="group-actions">
-                                    <button class="group-action-btn" title="Thành viên">
-                                        <span class="material-icons-round">people</span>
-                                    </button>
-                                    <button class="group-action-btn" title="Cài đặt">
-                                        <span class="material-icons-round">settings</span>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="chat-messages professional-messages" id="groupMessages">
-                                <div class="message-item received">
-                                    <div class="message-avatar">
-                                        <div class="avatar-fallback">TM</div>
-                                    </div>
-                                    <div class="message-content">
-                                        <div class="message-header">
-                                            <span class="message-sender">Team Manager</span>
-                                            <span class="message-time">15:00</span>
-                                        </div>
-                                        <div class="message-text">Mọi người chuẩn bị tài liệu cho buổi họp chiều nay nhé!</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="chat-input-area professional-input">
-                                <div class="chat-input-wrapper">
-                                    <textarea class="chat-input modern-chat-input" placeholder="Nhập tin nhắn vào nhóm..." data-room="group" rows="1"></textarea>
-                                    <button class="chat-send modern-send-btn" data-room="group">
-                                        <span class="material-icons-round">send</span>
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="chat-input-area">
+                        <div class="input-container">
+                            <button class="input-btn" title="Đính kèm file">
+                                <span class="material-icons-round">attach_file</span>
+                            </button>
+                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn nhóm...">
+                            <button class="input-btn" title="Emoji">
+                                <span class="material-icons-round">emoji_emotions</span>
+                            </button>
+                            <button class="send-btn" title="Gửi">
+                                <span class="material-icons-round">send</span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Create Group Modal -->
     <div id="createGroupModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
