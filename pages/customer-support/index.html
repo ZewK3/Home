@@ -270,6 +270,148 @@
             color: #d1d5db;
         }
 
+        /* Login Modal Styles */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .login-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .login-modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .login-overlay.show .login-modal {
+            transform: translateY(0);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h2 {
+            color: #1a202c;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+        }
+
+        .login-header p {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-group input {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .login-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .login-button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .login-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .login-button.loading .login-spinner {
+            display: block;
+        }
+
+        .login-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .main-container {
                 grid-template-columns: 1fr;
@@ -292,6 +434,35 @@
     </style>
 </head>
 <body>
+    <!-- Login Modal -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-modal">
+            <div class="login-header">
+                <h2>Đăng nhập hệ thống</h2>
+                <p>Vui lòng đăng nhập để truy cập trang hỗ trợ khách hàng</p>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="login-error" id="loginError"></div>
+                
+                <div class="form-group">
+                    <label for="employeeId">Mã nhân viên</label>
+                    <input type="text" id="employeeId" name="employeeId" required autocomplete="username" placeholder="Nhập mã nhân viên">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu">
+                </div>
+                
+                <button type="submit" class="login-button" id="loginButton">
+                    <div class="login-spinner"></div>
+                    <span>Đăng nhập</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="header">
         <div class="header-left">
@@ -302,10 +473,13 @@
             <div class="user-info">
                 <div class="user-avatar">CS</div>
                 <div>
-                    <div style="font-weight: 600;">Support Agent</div>
-                    <div style="font-size: 12px; color: #6b7280;">Online</div>
+                    <div style="font-weight: 600;" id="userDisplayName">Support Agent</div>
+                    <div style="font-size: 12px; color: #6b7280;" id="userDisplayEmail">Online</div>
                 </div>
             </div>
+            <button id="logoutButton" style="padding: 8px 12px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; margin-left: 12px;">
+                Đăng xuất
+            </button>
         </div>
     </header>
 
@@ -394,34 +568,139 @@
             // Initialize authentication
             authManager = new AuthManager();
             
-            // Check authentication - redirect if not logged in
+            // Check authentication - show login modal if not logged in
             currentUser = await authManager.checkAuthentication();
             if (!currentUser) {
-                alert('Bạn cần đăng nhập để truy cập trang hỗ trợ khách hàng.');
-                window.location.href = '../auth/index.html';
+                showLoginModal();
                 return;
             }
 
+            // Initialize the dashboard
+            initializeDashboard();
+        });
+
+        function showLoginModal() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            loginOverlay.classList.add('show');
+            
+            // Set up login form handler
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', handleLogin);
+        }
+
+        function hideLoginModal() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            loginOverlay.classList.remove('show');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const loginButton = document.getElementById('loginButton');
+            const loginError = document.getElementById('loginError');
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const password = document.getElementById('password').value;
+            
+            // Reset error state
+            loginError.style.display = 'none';
+            loginButton.classList.add('loading');
+            loginButton.disabled = true;
+            
+            try {
+                const loginResult = await authManager.login(employeeId, password);
+                
+                if (loginResult.success) {
+                    currentUser = loginResult.user;
+                    hideLoginModal();
+                    initializeDashboard();
+                } else {
+                    showLoginError(loginResult.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showLoginError('Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại.');
+            } finally {
+                loginButton.classList.remove('loading');
+                loginButton.disabled = false;
+            }
+        }
+
+        function showLoginError(message) {
+            const loginError = document.getElementById('loginError');
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+        }
+
+        function initializeDashboard() {
             // Update header with user info
             updateUserInfo();
             
             // Load conversations from API
-            await loadConversations();
+            loadConversations();
             
             // Set up event listeners
             setupEventListeners();
-        });
+        }
 
         function updateUserInfo() {
-            const userNameElement = document.querySelector('.user-name');
-            const userEmailElement = document.querySelector('.user-email');
+            const userDisplayName = document.getElementById('userDisplayName');
+            const userDisplayEmail = document.getElementById('userDisplayEmail');
+            const userAvatar = document.querySelector('.user-avatar');
             
-            if (userNameElement && currentUser.fullName) {
-                userNameElement.textContent = currentUser.fullName;
+            if (userDisplayName && currentUser.fullName) {
+                userDisplayName.textContent = currentUser.fullName;
             }
-            if (userEmailElement && currentUser.email) {
-                userEmailElement.textContent = currentUser.email;
+            if (userDisplayEmail && currentUser.email) {
+                userDisplayEmail.textContent = currentUser.email;
             }
+            if (userAvatar && currentUser.fullName) {
+                const initials = currentUser.fullName
+                    .split(' ')
+                    .map(name => name[0])
+                    .join('')
+                    .toUpperCase()
+                    .substring(0, 2);
+                userAvatar.textContent = initials;
+            }
+            
+            // Set up logout button
+            const logoutButton = document.getElementById('logoutButton');
+            logoutButton.addEventListener('click', handleLogout);
+        }
+
+        async function handleLogout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                await authManager.logout();
+                currentUser = null;
+                conversations = [];
+                currentConversationId = null;
+                
+                // Reset the interface
+                resetInterface();
+                
+                // Show login modal again
+                showLoginModal();
+            }
+        }
+
+        function resetInterface() {
+            const conversationsList = document.getElementById('conversationsList');
+            const chatArea = document.querySelector('.chat-area');
+            const emptyState = document.querySelector('.empty-state');
+            
+            // Clear conversations list
+            conversationsList.innerHTML = '';
+            
+            // Reset chat area to empty state
+            chatArea.innerHTML = `
+                <div class="empty-state" id="emptyState">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <h3>Select a conversation</h3>
+                    <p>Choose a conversation from the sidebar to start helping customers</p>
+                </div>
+            `;
         }
 
         async function loadConversations() {
