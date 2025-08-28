@@ -423,7 +423,7 @@ async function handleLogin(body, db, origin) {
 
     // Get user for password verification
     const user = await db
-      .prepare("SELECT * FROM employees WHERE employeeId = ? AND is_active = 1")
+      .prepare("SELECT employeeId, password, name, email, department_id, position, storeId, employment_status, is_active FROM employees WHERE employeeId = ? AND is_active = 1")
       .bind(actualEmployeeId)
       .first();
 
@@ -2033,7 +2033,7 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
     }
 
     // Get basic employee info
-    const employeeStmt = await db.prepare("SELECT * FROM employees WHERE employeeId = ?");
+    const employeeStmt = await db.prepare("SELECT employeeId, name, email, department_id, position, storeId, employment_status, is_active, hire_date, phone FROM employees WHERE employeeId = ?");
     const employee = await employeeStmt.bind(employeeId).first();
     
     if (!employee) {
