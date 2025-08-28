@@ -321,7 +321,7 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
   try {
     const sessionQuery = await db
       .prepare(`
-        SELECT s.*, e.employeeId, e.name, e.email, e.department, e.position, e.storeId, e.roleDetails
+        SELECT s.*, e.employeeId, e.name, e.email, e.department_id, e.position, e.storeId
         FROM sessions s
         JOIN employees e ON s.employee_id = e.id
         WHERE s.session_token = ? AND s.expires_at > ? AND s.is_active = 1
@@ -461,10 +461,9 @@ async function handleLogin(body, db, origin) {
         employeeId: user.employeeId,
         name: user.name,
         email: user.email,
-        department: user.department,
+        department_id: user.department_id,
         position: user.position,
-        storeId: user.storeId,
-        roleDetails: user.roleDetails
+        storeId: user.storeId
       }
     }, 200, origin);
 
@@ -2076,7 +2075,7 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
         employeeId,
         name: employee.name,
         position: employee.position,
-        department: employee.department,
+        department_id: employee.department_id,
         attendance: {
           totalDays: attendanceStats.total_days || 0,
           presentDays: attendanceStats.present_days || 0,
@@ -2259,7 +2258,7 @@ async function handleGetShiftRequests(url, db, origin) {
       SELECT 
         sr.*,
         e.name as employee_name,
-        e.department,
+        e.department_id,
         e.position
       FROM shift_requests sr
       LEFT JOIN employees e ON sr.employeeId = e.employeeId
@@ -2307,7 +2306,7 @@ async function handleGetAttendanceRequests(url, db, origin) {
       SELECT 
         ar.*,
         e.name as employee_name,
-        e.department,
+        e.department_id,
         e.position
       FROM attendance_requests ar
       LEFT JOIN employees e ON ar.employeeId = e.employeeId
