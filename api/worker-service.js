@@ -719,7 +719,7 @@ async function handleCheckIn(body, db, origin) {
     const existingAttendance = await db
       .prepare(`
         SELECT id FROM attendance 
-        WHERE employeeId = ? AND DATE(checkIn) = ? AND checkOut IS NULL
+        WHERE employeeId = ? AND DATE(check_in_time) = ? AND check_out_time IS NULL
       `)
       .bind(employeeId, today)
       .first();
@@ -736,7 +736,7 @@ async function handleCheckIn(body, db, origin) {
     await db
       .prepare(`
         INSERT INTO attendance 
-        (employeeId, checkIn, location, gps_latitude, gps_longitude, status, created_at) 
+        (employeeId, check_in_time, check_in_location, gps_latitude, gps_longitude, status, created_at) 
         VALUES (?, ?, ?, ?, ?, 'active', ?)
       `)
       .bind(employeeId, now, location || '', latitude || null, longitude || null, now)
@@ -774,8 +774,8 @@ async function handleCheckOut(body, db, origin) {
     const today = new Date().toISOString().split('T')[0];
     const attendance = await db
       .prepare(`
-        SELECT id, checkIn FROM attendance 
-        WHERE employeeId = ? AND DATE(checkIn) = ? AND checkOut IS NULL
+        SELECT id, check_in_time FROM attendance 
+        WHERE employeeId = ? AND DATE(check_in_time) = ? AND check_out_time IS NULL
       `)
       .bind(employeeId, today)
       .first();
@@ -788,7 +788,7 @@ async function handleCheckOut(body, db, origin) {
     }
 
     // Calculate work hours
-    const checkIn = new Date(attendance.checkIn);
+    const checkIn = new Date(attendance.check_in_time);
     const checkOut = new Date(); // thời điểm hiện tại
     const workHours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60);
 
@@ -836,7 +836,7 @@ async function handleGetDashboardStats(db, origin) {
     const todayAttendance = await db
       .prepare(`
         SELECT COUNT(*) as count FROM attendance 
-        WHERE DATE(checkIn) = ?
+        WHERE DATE(check_in_time) = ?
       `)
       .bind(today)
       .first();
@@ -1628,10 +1628,11 @@ async function handleCreateAttendanceRequest(body, db, origin) {
 
 async function handleCreateTaskAssignment(body, db, origin) {
   try {
-    const { title, description, assignee, priority, dueDate, createdBy, projectId } = body;
-    
-    if (!title || !assignee || !createdBy) {
-      return jsonResponse({ message: "Title, assignee, and createdBy are required" }, 400, origin);
+    const { title, description, assignee, assigned_to, priority, dueDate, createdBy, projectId } = body;
+    const assignedTo = assignee || assigned_to; // Support both field names
+
+    if (!title || !assignedTo || !createdBy) {
+      return jsonResponse({ message: "Title, assigned_to, and createdBy are required" }, 400, origin);
     }
 
     const currentTime = TimezoneUtils.toHanoiISOString();
@@ -1639,16 +1640,17 @@ async function handleCreateTaskAssignment(body, db, origin) {
 
     const stmt = await db.prepare(`
       INSERT INTO tasks 
-      (task_id, title, description, assignee, priority, due_date, status, created_by, project_id, created_at, updated_at)
+      (task_id, title, description, assigned_to, priority, due_date, status, created_by, project_id, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
     `);
-    
-    await stmt.bind(taskId, title, description || '', assignee, priority || 'medium', dueDate || null, createdBy, projectId || null, currentTime, currentTime).run();
+
+    await stmt.bind(taskId, title, description || '', assignedTo, priority || 'medium', dueDate || null, createdBy, projectId || null, currentTime, currentTime).run();
 
     return jsonResponse({ 
       message: "Task assigned successfully",
       taskId: taskId,
-      assignee: assignee
+      assignee: assignedTo,
+      assigned_to: assignedTo
     }, 200, origin);
   } catch (error) {
     console.error("Error creating task assignment:", error);
@@ -2061,9 +2063,9 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
         SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_tasks,
         SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks
       FROM tasks 
-      WHERE assignee = ?
+      WHERE assigned_to = ? OR assignedTo = ?
     `);
-    const taskStats = await taskStmt.bind(employeeId).first();
+    const taskStats = await taskStmt.bind(employeeId, employeeId).first();
 
     // Calculate performance metrics
     const attendanceRate = attendanceStats.total_days > 0 ? 
@@ -2112,8 +2114,8 @@ async function handleGetWorkTasks(url, db, origin) {
 
     const offset = (page - 1) * limit;
     
-    let whereClause = "WHERE assignee = ?";
-    let params = [employeeId];
+    let whereClause = "WHERE (assigned_to = ? OR assignedTo = ?)";
+    let params = [employeeId, employeeId];
     
     if (status) {
       whereClause += " AND status = ?";
@@ -2128,7 +2130,7 @@ async function handleGetWorkTasks(url, db, origin) {
     // Get tasks with pagination
     const tasksStmt = await db.prepare(`
       SELECT 
-        id, title, description, status, priority, assignee, created_by, 
+        id, title, description, status, priority, assigned_to, assignedTo, created_by, 
         due_date, created_at, updated_at
       FROM tasks 
       ${whereClause}
@@ -2172,7 +2174,7 @@ async function handleGetTaskDetail(url, db, origin) {
         e1.name as assignee_name,
         e2.name as creator_name
       FROM tasks t
-      LEFT JOIN employees e1 ON t.assignee = e1.employeeId
+      LEFT JOIN employees e1 ON (t.assigned_to = e1.employeeId OR t.assignedTo = e1.employeeId)
       LEFT JOIN employees e2 ON t.created_by = e2.employeeId
       WHERE t.id = ?
     `);
@@ -2365,7 +2367,7 @@ async function handleGetApprovalTasks(url, db, origin) {
         e1.name as assignee_name,
         e2.name as creator_name
       FROM tasks t
-      LEFT JOIN employees e1 ON t.assignee = e1.employeeId
+      LEFT JOIN employees e1 ON (t.assigned_to = e1.employeeId OR t.assignedTo = e1.employeeId)
       LEFT JOIN employees e2 ON t.created_by = e2.employeeId
       WHERE t.status = 'pending' OR t.status = 'submitted'
       ORDER BY t.created_at DESC
@@ -2536,8 +2538,8 @@ async function handleGetPendingRequestsCount(url, db, origin) {
     const shiftResult = await shiftStmt.bind(employeeId).first();
     
     // Count pending tasks
-    const taskStmt = await db.prepare("SELECT COUNT(*) as count FROM tasks WHERE assignee = ? AND status = 'pending'");
-    const taskResult = await taskStmt.bind(employeeId).first();
+    const taskStmt = await db.prepare("SELECT COUNT(*) as count FROM tasks WHERE (assigned_to = ? OR assignedTo = ?) AND status = 'pending'");
+    const taskResult = await taskStmt.bind(employeeId, employeeId).first();
 
     const totalPending = (attendanceResult.count || 0) + (shiftResult.count || 0) + (taskResult.count || 0);
 

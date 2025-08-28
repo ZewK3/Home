@@ -507,6 +507,36 @@ CREATE TABLE IF NOT EXISTS attendance_adjustments (
     FOREIGN KEY (reviewed_by) REFERENCES employees(id)
 );
 
+-- Attendance requests for corrections, leave additions, etc.
+CREATE TABLE IF NOT EXISTS attendance_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_id VARCHAR(50) NOT NULL UNIQUE,
+    employeeId VARCHAR(50) NOT NULL,
+    employee_id INTEGER NOT NULL,
+    request_type VARCHAR(50) NOT NULL, -- correction, addition, deletion, status_change
+    date DATE NOT NULL,
+    
+    -- Request details  
+    check_in_time TIME,
+    check_out_time TIME,
+    status VARCHAR(20), -- present, absent, late, sick_leave, vacation
+    reason TEXT NOT NULL,
+    notes TEXT,
+    
+    -- Approval workflow
+    status VARCHAR(20) DEFAULT 'pending', -- pending, approved, rejected
+    approved_by INTEGER,
+    approved_at DATETIME,
+    rejection_reason TEXT,
+    
+    -- System fields
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES employees(id)
+);
+
 -- Leave management system
 CREATE TABLE IF NOT EXISTS leave_requests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
