@@ -1,25 +1,33 @@
 // Menu Manager
 class MenuManager {
-    static updateMenuByRole(userRole) {
-        console.log('Updating menu visibility for role:', userRole);
+    static updateMenuByRole(userRoles) {
+        // Handle both single role (string) and multiple roles (array)
+        const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+        console.log('Updating menu visibility for roles:', roles);
+        
         document.querySelectorAll("#menuList .menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-            const shouldShow = allowedRoles.includes(userRole);
+            // Check if user has any of the allowed roles
+            const shouldShow = allowedRoles.some(role => roles.includes(role.trim()));
             item.style.display = shouldShow ? "block" : "none";
             if (shouldShow) {
                 console.log('Menu item visible:', item.querySelector('.menu-link')?.textContent?.trim());
             }
         });
-        this.updateSubmenusByRole(userRole);
+        this.updateSubmenusByRole(roles);
     }
 
-    static updateSubmenusByRole(userRole) {
+    static updateSubmenusByRole(userRoles) {
+        // Handle both single role (string) and multiple roles (array)
+        const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+        
         ['#openSchedule', '#openTaskProcessing', '#openSubmitRequest', '#openWorkManagement'].forEach(selector => {
             const menuItem = document.querySelector(selector)?.closest('.menu-item');
             if (menuItem) {
                 menuItem.querySelectorAll('.submenu-item').forEach(item => {
                     const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
-                    const shouldShow = allowedRoles.includes(userRole);
+                    // Check if user has any of the allowed roles
+                    const shouldShow = allowedRoles.some(role => roles.includes(role.trim()));
                     
                     // Enhanced visibility control for submenu items
                     if (shouldShow) {
@@ -40,12 +48,13 @@ class MenuManager {
                     menuItem.style.display = 'none';
                 } else {
                     const parentAllowedRoles = menuItem.getAttribute("data-role")?.split(",") || [];
-                    menuItem.style.display = parentAllowedRoles.includes(userRole) ? "block" : "none";
+                    const parentShouldShow = parentAllowedRoles.some(role => roles.includes(role.trim()));
+                    menuItem.style.display = parentShouldShow ? "block" : "none";
                 }
             }
         });
         
-        console.log('Role-based submenu visibility updated for role:', userRole);
+        console.log('Role-based submenu visibility updated for roles:', roles);
     }
 
     static setupMenuInteractions() {

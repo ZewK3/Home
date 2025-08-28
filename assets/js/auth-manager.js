@@ -495,7 +495,7 @@ class AuthManager {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
                 }
                 if (typeof MenuManager !== 'undefined') {
-                    MenuManager.updateMenuByRole(user.position);
+                    MenuManager.updateMenuByRole(user.roles || [user.position]);
                 }
                 return user;
             }
@@ -513,7 +513,7 @@ class AuthManager {
                     userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
                 }
                 if (typeof MenuManager !== 'undefined') {
-                    MenuManager.updateMenuByRole(userData.position);
+                    MenuManager.updateMenuByRole(userData.roles || [userData.position]);
                 }
                 return userData;
             }
@@ -533,7 +533,7 @@ class AuthManager {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
                 }
                 if (typeof MenuManager !== 'undefined') {
-                    MenuManager.updateMenuByRole(user.position);
+                    MenuManager.updateMenuByRole(user.roles || [user.position]);
                 }
                 return user;
             }

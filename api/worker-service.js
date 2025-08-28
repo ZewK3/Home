@@ -421,9 +421,16 @@ async function handleLogin(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get user for password verification
+    // Get user for password verification with role information
     const user = await db
-      .prepare("SELECT employeeId, password, name, email, department_id, position, storeId, employment_status, is_active FROM employees WHERE employeeId = ? AND is_active = 1")
+      .prepare(`
+        SELECT e.employeeId, e.password, e.name, e.email, e.department_id, e.position, e.storeId, 
+               e.employment_status, e.is_active, r.role_code, r.role_name
+        FROM employees e
+        LEFT JOIN user_roles ur ON e.id = ur.employee_id AND ur.is_primary_role = 1
+        LEFT JOIN roles r ON ur.role_id = r.id
+        WHERE e.employeeId = ? AND e.is_active = 1
+      `)
       .bind(actualEmployeeId)
       .first();
 
@@ -463,7 +470,9 @@ async function handleLogin(body, db, origin) {
         email: user.email,
         department_id: user.department_id,
         position: user.position,
-        storeId: user.storeId
+        storeId: user.storeId,
+        role_code: user.role_code,
+        role_name: user.role_name
       }
     }, 200, origin);
 
@@ -565,11 +574,13 @@ async function handleGetUser(url, db, origin) {
 
     const user = await db
       .prepare(`
-        SELECT employeeId, name, email, department_id, position, storeId, 
-               employment_status, is_active, created_at, last_login_at,
-               hire_date, phone, address, notes
-        FROM employees 
-        WHERE employeeId = ?
+        SELECT e.employeeId, e.name, e.email, e.department_id, e.position, e.storeId, 
+               e.employment_status, e.is_active, e.created_at, e.last_login_at,
+               e.hire_date, e.phone, e.address, e.notes, r.role_code, r.role_name
+        FROM employees e
+        LEFT JOIN user_roles ur ON e.id = ur.employee_id AND ur.is_primary_role = 1
+        LEFT JOIN roles r ON ur.role_id = r.id
+        WHERE e.employeeId = ?
       `)
       .bind(employeeId)
       .first();

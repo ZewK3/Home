@@ -938,7 +938,7 @@ async function refreshUserRoleAndPermissions() {
             // Update role-based UI with cached data (only if not during initialization)
             if (!window.dashboardInitializing && !window.roleUIInitialized) {
                 await initializeRoleBasedUI();
-                MenuManager.updateMenuByRole(freshUserData.position);
+                MenuManager.updateMenuByRole(freshUserData.roles || [freshUserData.position]);
                 window.roleUIInitialized = true;
                 
                 // Verify AD functions are visible if user is AD (only once)
@@ -952,7 +952,7 @@ async function refreshUserRoleAndPermissions() {
                         if (visibleADElements.length < adElements.length) {
                             console.warn('⚠️ Re-applying AD permissions...');
                             await initializeRoleBasedUI();
-                            MenuManager.updateMenuByRole(freshUserData.position);
+                            MenuManager.updateMenuByRole(freshUserData.roles || [freshUserData.position]);
                         }
                         window.adRoleVerified = true;
                     }, 500);
@@ -1580,7 +1580,7 @@ async function initializeEnhancedDashboard() {
         
         // Initialize role-based UI and menu visibility with cached data
         await initializeRoleBasedUI();
-        MenuManager.updateMenuByRole(userPosition);
+        MenuManager.updateMenuByRole(freshUserData.roles || [userPosition]);
         window.roleUIInitialized = true; // Mark as initialized to prevent duplicates
         
         // Comprehensive AD functions verification

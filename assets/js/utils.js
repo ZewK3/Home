@@ -598,8 +598,45 @@ const utils = {
             permissions: userData.permissions,
             employmentStatus: userData.employment_status,
             lastLoginAt: userData.last_login_at,
-            notes: userData.notes
+            notes: userData.notes,
+            // Role information from Enhanced Database Schema v3.0
+            roleCode: userData.role_code,
+            roleName: userData.role_name,
+            // Legacy compatibility: map position to equivalent role codes
+            roles: this.mapPositionToRoles(userData.position, userData.role_code)
         };
+    },
+
+    // Map position names to role codes for dashboard compatibility
+    mapPositionToRoles(position, roleCode) {
+        // Position to role code mapping based on Enhanced Database Schema v3.0
+        const positionRoleMap = {
+            'System Administrator': ['SUPER_ADMIN', 'ADMIN', 'AD'],
+            'Admin': ['ADMIN', 'AD'],
+            'HR Manager': ['HR_MANAGER', 'ADMIN', 'AD'],
+            'Store Manager': ['STORE_MANAGER', 'QL'],
+            'Area Manager': ['AREA_MANAGER', 'AM'],
+            'Department Head': ['DEPT_HEAD'],
+            'Team Leader': ['TEAM_LEADER'],
+            'Senior Employee': ['SENIOR_EMP', 'EMPLOYEE', 'NV'],
+            'Employee': ['EMPLOYEE', 'NV'],
+            'Intern': ['INTERN', 'NV'],
+            'Customer Support': ['CUST_SUPPORT', 'NV']
+        };
+
+        // Start with role codes from database if available
+        let roles = [];
+        if (roleCode) {
+            roles.push(roleCode);
+        }
+
+        // Add mapped roles based on position
+        if (position && positionRoleMap[position]) {
+            roles = roles.concat(positionRoleMap[position]);
+        }
+
+        // Remove duplicates and return
+        return [...new Set(roles)];
     },
 
     mapTaskDataFromEnhancedSchema(taskData) {
