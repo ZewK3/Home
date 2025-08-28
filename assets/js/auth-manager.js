@@ -195,10 +195,14 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh user data from API');
-                const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${this.token}`);
-                if (user && user.employeeId) {
+                const response = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${this.token}`);
+                
+                // Extract user data from API response structure
+                const userData = response.data || response;
+                
+                if (userData && userData.employeeId) {
                     // Map Enhanced Database Schema v3.0 fields
-                    const mappedUser = utils.mapUserDataFromEnhancedSchema(user);
+                    const mappedUser = utils.mapUserDataFromEnhancedSchema(userData);
                     this.cachedUser = mappedUser;
                     this.cacheTimestamp.user = Date.now();
                     // Update storage

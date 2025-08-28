@@ -576,12 +576,12 @@ const utils = {
         
         // Map Enhanced Database Schema v3.0 fields to frontend expected format
         return {
-            employeeId: userData.employee_id || userData.employeeId,
-            fullName: userData.full_name || userData.name || userData.fullName,
+            employeeId: userData.employeeId,
+            fullName: userData.name || userData.fullName,
             email: userData.email,
             position: userData.position || userData.role,
-            storeId: userData.store_id || userData.storeId,
-            storeName: userData.store_name || userData.storeName,
+            storeId: userData.storeId,
+            storeName: userData.storeName,
             phone: userData.phone,
             address: userData.address,
             avatar: userData.avatar,
@@ -589,12 +589,16 @@ const utils = {
             createdAt: userData.created_at || userData.createdAt,
             updatedAt: userData.updated_at || userData.updatedAt,
             department: userData.department,
+            departmentId: userData.department_id,
             salary: userData.salary,
             hireDate: userData.hire_date || userData.hireDate,
             birthDate: userData.birth_date || userData.birthDate,
             gender: userData.gender,
             emergencyContact: userData.emergency_contact || userData.emergencyContact,
-            permissions: userData.permissions
+            permissions: userData.permissions,
+            employmentStatus: userData.employment_status,
+            lastLoginAt: userData.last_login_at,
+            notes: userData.notes
         };
     },
 
