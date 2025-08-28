@@ -554,11 +554,9 @@ async function handleGetUsers(url, db, origin) {
 }
 
 // Handle getting user by ID
-async function handleGetUser(url, db, origin, authenticatedUserId = null) {
+async function handleGetUser(url, db, origin) {
   try {
-    // If we have an authenticated user from middleware, use that
-    // Otherwise, fall back to the employeeId parameter (for backward compatibility)
-    let employeeId = authenticatedUserId || url.searchParams.get("employeeId");
+    const employeeId = url.searchParams.get("employeeId");
     
     if (!employeeId) {
       return jsonResponse({ 
@@ -792,8 +790,9 @@ async function handleCheckOut(body, db, origin) {
 
     // Calculate work hours
     const checkIn = new Date(attendance.checkIn);
-    const checkOut = new Date();
-    const workHours = (checkOut - checkIn) / (1000 * 60 * 60); // hours
+    const checkOut = new Date(); // thời điểm hiện tại
+    const workHours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60);
+
 
     // Update attendance record
     await db
@@ -1560,9 +1559,10 @@ async function handleProcessAttendance(body, db, origin) {
     if (checkInTime && checkOutTime) {
       const checkIn = new Date(`${date}T${checkInTime}`);
       const checkOut = new Date(`${date}T${checkOutTime}`);
-      totalHours = (checkOut - checkIn) / (1000 * 60 * 60); // Convert to hours
+      
+      totalHours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60); // ✅ Convert to hours
     }
-
+    
     // Check if attendance record already exists
     const existingStmt = await db.prepare("SELECT id FROM attendance WHERE employeeId = ? AND date = ?");
     const existingRecord = await existingStmt.bind(employeeId, date).first();
@@ -2069,26 +2069,27 @@ async function handleGetPersonalStats(url, db, origin) {
     const taskCompletionRate = taskStats.total_tasks > 0 ? 
       (taskStats.completed_tasks / taskStats.total_tasks * 100).toFixed(1) : 0;
 
-    return jsonResponse({
-      employeeId: employeeId,
-      name: employee.name,
-      position: employee.position,
-      department: employee.department,
-      attendance: {
-        totalDays: attendanceStats.total_days || 0,
-        presentDays: attendanceStats.present_days || 0,
-        lateDays: attendanceStats.late_days || 0,
-        absentDays: attendanceStats.absent_days || 0,
-        attendanceRate: parseFloat(attendanceRate)
-      },
-      tasks: {
-        totalTasks: taskStats.total_tasks || 0,
-        completedTasks: taskStats.completed_tasks || 0,
-        pendingTasks: taskStats.pending_tasks || 0,
-        inProgressTasks: taskStats.in_progress_tasks || 0,
-        completionRate: parseFloat(taskCompletionRate)
-      }
-    }, 200, origin);
+      return jsonResponse({
+        employeeId,
+        name: employee.name,
+        position: employee.position,
+        department: employee.department,
+        attendance: {
+          totalDays: attendanceStats.total_days || 0,
+          presentDays: attendanceStats.present_days || 0,
+          lateDays: attendanceStats.late_days || 0,
+          absentDays: attendanceStats.absent_days || 0,
+          attendanceRate: Number(attendanceRate ?? 0),      // ✅ thay parseFloat
+        },
+        tasks: {
+          totalTasks: taskStats.total_tasks || 0,
+          completedTasks: taskStats.completed_tasks || 0,
+          pendingTasks: taskStats.pending_tasks || 0,
+          inProgressTasks: taskStats.in_progress_tasks || 0,
+          completionRate: Number(taskCompletionRate ?? 0),   // ✅ thay parseFloat
+        }
+      }, 200, origin);
+      
   } catch (error) {
     console.error("Error getting personal stats:", error);
     return jsonResponse({ message: "Failed to get personal stats", error: error.message }, 500, origin);
@@ -2988,7 +2989,7 @@ export default {
           case "getUsers":
             return await handleGetUsers(url, db, ALLOWED_ORIGIN);
           case "getUser":
-            return await handleGetUser(url, db, ALLOWED_ORIGIN, request.userId);
+            return await handleGetUser(url, db, ALLOWED_ORIGIN);
           case "getDashboardStats":
             return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
           case "checkId":
