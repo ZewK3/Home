@@ -554,9 +554,11 @@ async function handleGetUsers(url, db, origin) {
 }
 
 // Handle getting user by ID
-async function handleGetUser(url, db, origin) {
+async function handleGetUser(url, db, origin, authenticatedUserId = null) {
   try {
-    const employeeId = url.searchParams.get("employeeId");
+    // If we have an authenticated user from middleware, use that
+    // Otherwise, fall back to the employeeId parameter (for backward compatibility)
+    let employeeId = authenticatedUserId || url.searchParams.get("employeeId");
     
     if (!employeeId) {
       return jsonResponse({ 
@@ -2986,7 +2988,7 @@ export default {
           case "getUsers":
             return await handleGetUsers(url, db, ALLOWED_ORIGIN);
           case "getUser":
-            return await handleGetUser(url, db, ALLOWED_ORIGIN);
+            return await handleGetUser(url, db, ALLOWED_ORIGIN, request.userId);
           case "getDashboardStats":
             return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
           case "checkId":
