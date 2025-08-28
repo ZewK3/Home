@@ -519,7 +519,7 @@ CREATE TABLE IF NOT EXISTS attendance_requests (
     -- Request details  
     check_in_time TIME,
     check_out_time TIME,
-    status VARCHAR(20), -- present, absent, late, sick_leave, vacation
+    attendance_status VARCHAR(20), -- present, absent, late, sick_leave, vacation
     reason TEXT NOT NULL,
     notes TEXT,
     

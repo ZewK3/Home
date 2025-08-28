@@ -536,6 +536,32 @@ INSERT OR IGNORE INTO shift_assignments (
 (22, 3, '2024-01-16', 'scheduled', 8);  -- PT001 -> Part-time flexible
 
 -- =====================================================
+-- ATTENDANCE REQUESTS
+-- =====================================================
+
+INSERT OR IGNORE INTO attendance_requests (
+    request_id, employeeId, employee_id, request_type, date,
+    check_in_time, check_out_time, attendance_status, reason, notes,
+    status, created_at, updated_at
+) VALUES
+
+('REQ001', 'NV001', 14, 'correction', '2024-01-12',
+ '08:00:00', '17:00:00', 'present', 'Sửa lỗi thời gian chấm công do lỗi hệ thống', 'Hệ thống không ghi nhận check-out',
+ 'pending', '2024-01-13 09:00:00', '2024-01-13 09:00:00'),
+
+('REQ002', 'NV002', 15, 'addition', '2024-01-11', 
+ '08:30:00', '17:30:00', 'present', 'Bổ sung ngày công do quên check-in', 'Đã có mặt tại cửa hàng nhưng quên check-in trên hệ thống',
+ 'approved', '2024-01-12 10:30:00', '2024-01-12 15:45:00'),
+
+('REQ003', 'CS001', 20, 'status_change', '2024-01-10',
+ NULL, NULL, 'sick_leave', 'Xin nghỉ phép do bệnh', 'Có giấy chứng nhận y tế',
+ 'approved', '2024-01-09 14:20:00', '2024-01-09 16:30:00'),
+
+('REQ004', 'PT001', 22, 'correction', '2024-01-13',
+ '14:00:00', '18:00:00', 'present', 'Điều chỉnh giờ làm việc part-time', 'Thay đổi ca làm theo yêu cầu quản lý',
+ 'pending', '2024-01-14 11:15:00', '2024-01-14 11:15:00');
+
+-- =====================================================
 -- VALIDATION QUERIES
 -- =====================================================
 

@@ -797,8 +797,8 @@ async function handleCheckOut(body, db, origin) {
     await db
       .prepare(`
         UPDATE attendance 
-        SET checkOut = ?, checkOutLocation = ?, checkout_gps_latitude = ?, 
-            checkout_gps_longitude = ?, work_hours_calculated = ?, 
+        SET check_out_time = ?, check_out_location = ?, checkout_gps_latitude = ?, 
+            checkout_gps_longitude = ?, total_hours = ?, 
             status = 'completed', updated_at = ?
         WHERE id = ?
       `)
@@ -1130,16 +1130,16 @@ async function handleGetAttendanceData(url, db, origin) {
     }
 
     if (startDate) {
-      query += " AND DATE(a.checkIn) >= ?";
+      query += " AND DATE(a.check_in_time) >= ?";
       params.push(startDate);
     }
 
     if (endDate) {
-      query += " AND DATE(a.checkIn) <= ?";
+      query += " AND DATE(a.check_in_time) <= ?";
       params.push(endDate);
     }
 
-    query += " ORDER BY a.checkIn DESC";
+    query += " ORDER BY a.check_in_time DESC";
 
     const attendance = await db
       .prepare(query)
@@ -1943,7 +1943,7 @@ async function handleGetTimesheet(url, db, origin, authenticatedUserId = null) {
     const attendanceStmt = await db.prepare(`
       SELECT 
         date, check_in_time, check_out_time, status, total_hours,
-        location_check_in, location_check_out, notes
+        check_in_location, check_out_location, notes
       FROM attendance 
       ${whereClause}
       ORDER BY date ASC
@@ -2005,7 +2005,7 @@ async function handleGetAttendanceHistory(url, db, origin) {
     const stmt = await db.prepare(`
       SELECT 
         date, check_in_time, check_out_time, status, total_hours,
-        location_check_in, location_check_out, notes,
+        check_in_location, check_out_location, notes,
         created_at, updated_at
       FROM attendance 
       ${whereClause}
