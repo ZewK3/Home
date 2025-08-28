@@ -1036,9 +1036,10 @@ async function handleAssignShift(body, db, origin) {
 }
 
 // Handle getting current shift
-async function handleGetCurrentShift(url, db, origin) {
+async function handleGetCurrentShift(url, db, origin, authenticatedUserId = null) {
   try {
-    const employeeId = url.searchParams.get("employeeId");
+    // Use authenticated user ID if available, otherwise fall back to URL parameter
+    const employeeId = authenticatedUserId || url.searchParams.get("employeeId");
     const today = new Date().toISOString().split('T')[0];
 
     if (!employeeId) {
@@ -1913,10 +1914,11 @@ async function handleRejectAttendanceRequest(body, db, origin, token) {
   }
 }
 
-async function handleGetTimesheet(url, db, origin) {
+async function handleGetTimesheet(url, db, origin, authenticatedUserId = null) {
   try {
     const urlParams = new URLSearchParams(url.search);
-    const employeeId = urlParams.get("employeeId");
+    // Use authenticated user ID if available, otherwise fall back to URL parameter
+    const employeeId = authenticatedUserId || urlParams.get("employeeId");
     const month = urlParams.get("month");
     const startDate = urlParams.get("startDate");
     const endDate = urlParams.get("endDate");
@@ -2021,10 +2023,11 @@ async function handleGetAttendanceHistory(url, db, origin) {
   }
 }
 
-async function handleGetPersonalStats(url, db, origin) {
+async function handleGetPersonalStats(url, db, origin, authenticatedUserId = null) {
   try {
     const urlParams = new URLSearchParams(url.search);
-    const employeeId = urlParams.get("employeeId");
+    // Use authenticated user ID if available, otherwise fall back to URL parameter
+    const employeeId = authenticatedUserId || urlParams.get("employeeId");
     
     if (!employeeId) {
       return jsonResponse({ message: "Employee ID is required" }, 400, origin);
@@ -2997,7 +3000,7 @@ export default {
           case "getUserHistory":
             return await handleGetUserHistory(url, db, ALLOWED_ORIGIN);
           case "getCurrentShift":
-            return await handleGetCurrentShift(url, db, ALLOWED_ORIGIN);
+            return await handleGetCurrentShift(url, db, ALLOWED_ORIGIN, request.userId);
           case "getWeeklyShifts":
             return await handleGetWeeklyShifts(url, db, ALLOWED_ORIGIN);
           case "getAttendanceData":
@@ -3011,13 +3014,13 @@ export default {
           case "getPendingRegistrations":
             return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
           case "getTimesheet":
-            return await handleGetTimesheet(url, db, ALLOWED_ORIGIN);
+            return await handleGetTimesheet(url, db, ALLOWED_ORIGIN, request.userId);
           case "getAttendanceHistory":
             return await handleGetAttendanceHistory(url, db, ALLOWED_ORIGIN);
           case "getShiftAssignments":
             return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
           case "getPersonalStats":
-            return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN);
+            return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN, request.userId);
           case "getWorkTasks":
             return await handleGetWorkTasks(url, db, ALLOWED_ORIGIN);
           case "getTaskDetail":
