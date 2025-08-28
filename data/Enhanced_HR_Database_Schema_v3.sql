@@ -822,6 +822,7 @@ CREATE TABLE IF NOT EXISTS pending_registrations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     department VARCHAR(100),
     position VARCHAR(100),

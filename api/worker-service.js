@@ -614,13 +614,29 @@ async function handleRegister(body, db, origin, env) {
 
     // Use mapped values, prioritizing client-sent field names
     const userName = name || fullName;
-    const userStoreId = storeId || storeName;
 
-    if (!email || !password || !userName) {
+    if (!email || !password || !userName || !storeName) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu thông tin bắt buộc!" 
       }, 400, origin);
+    }
+
+    // Look up store by name to get storeId
+    let userStoreId = storeId;
+    if (!userStoreId && storeName) {
+      const storeRecord = await db
+        .prepare("SELECT storeId FROM stores WHERE storeName = ?")
+        .bind(storeName)
+        .first();
+      
+      if (!storeRecord) {
+        return jsonResponse({ 
+          success: false, 
+          message: "Cửa hàng không tồn tại!" 
+        }, 400, origin);
+      }
+      userStoreId = storeRecord.storeId;
     }
 
     // Generate employeeId if not provided
@@ -639,6 +655,19 @@ async function handleRegister(body, db, origin, env) {
       }, 409, origin);
     }
 
+    // Check if registration already exists
+    const existingRegistration = await db
+      .prepare("SELECT employeeId FROM pending_registrations WHERE employeeId = ? OR email = ?")
+      .bind(finalEmployeeId, email)
+      .first();
+
+    if (existingRegistration) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Đăng ký với mã nhân viên hoặc email này đã tồn tại!" 
+      }, 409, origin);
+    }
+
     // Hash password using SHA-256
     const hashedPassword = await hashPassword(password);
 
@@ -649,12 +678,12 @@ async function handleRegister(body, db, origin, env) {
     await db
       .prepare(`
         INSERT INTO pending_registrations 
-        (employeeId, email, password, name, department, position, storeId, 
-         verification_code, status, created_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        (employeeId, email, password, name, department, position, storeId, phone,
+         verification_code, status, submitted_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
-      .bind(finalEmployeeId, email, hashedPassword, userName, department, position, userStoreId, 
-            verificationCode, new Date().toISOString())
+      .bind(finalEmployeeId, email, hashedPassword, userName, department || 'General', 
+            position || 'NV', userStoreId, phone || null, verificationCode, new Date().toISOString())
       .run();
 
     return jsonResponse({

@@ -510,7 +510,7 @@ INSERT OR IGNORE INTO sessions (
 
 INSERT OR IGNORE INTO pending_registrations (
     employeeId, email, password, name, department, position, 
-    storeId, verification_code, status, created_at
+    storeId, verification_code, status, submitted_at
 ) VALUES
 
 ('TEST001', 'test1@hrms.com', 'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',
