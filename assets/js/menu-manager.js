@@ -5,6 +5,7 @@ class MenuManager {
         const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
         console.log('Updating menu visibility for roles:', roles);
         
+        // Update desktop menu
         document.querySelectorAll("#menuList .menu-item").forEach(item => {
             const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
             // Check if user has any of the allowed roles
@@ -14,13 +15,33 @@ class MenuManager {
                 console.log('Menu item visible:', item.querySelector('.menu-link')?.textContent?.trim());
             }
         });
+        
+        // Update mobile menu
+        this.updateMobileMenuByRole(roles);
         this.updateSubmenusByRole(roles);
+    }
+
+    static updateMobileMenuByRole(userRoles) {
+        // Handle both single role (string) and multiple roles (array)
+        const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
+        console.log('Updating mobile menu visibility for roles:', roles);
+        
+        document.querySelectorAll("#mobileMenuList .mobile-menu-item").forEach(item => {
+            const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+            // Check if user has any of the allowed roles
+            const shouldShow = allowedRoles.some(role => roles.includes(role.trim()));
+            item.style.display = shouldShow ? "block" : "none";
+            if (shouldShow) {
+                console.log('Mobile menu item visible:', item.querySelector('.mobile-menu-link')?.textContent?.trim());
+            }
+        });
     }
 
     static updateSubmenusByRole(userRoles) {
         // Handle both single role (string) and multiple roles (array)
         const roles = Array.isArray(userRoles) ? userRoles : [userRoles];
         
+        // Update desktop submenus
         ['#openSchedule', '#openTaskProcessing', '#openSubmitRequest', '#openWorkManagement'].forEach(selector => {
             const menuItem = document.querySelector(selector)?.closest('.menu-item');
             if (menuItem) {
@@ -48,6 +69,43 @@ class MenuManager {
                     menuItem.style.display = 'none';
                 } else {
                     const parentAllowedRoles = menuItem.getAttribute("data-role")?.split(",") || [];
+                    const parentShouldShow = parentAllowedRoles.some(role => roles.includes(role.trim()));
+                    menuItem.style.display = parentShouldShow ? 'block' : 'none';
+                }
+            }
+        });
+        
+        // Update mobile submenus 
+        document.querySelectorAll('#mobileMenuList .mobile-menu-item').forEach(mobileMenuItem => {
+            mobileMenuItem.querySelectorAll('.mobile-submenu-item').forEach(item => {
+                const allowedRoles = item.getAttribute("data-role")?.split(",") || [];
+                // Check if user has any of the allowed roles
+                const shouldShow = allowedRoles.some(role => roles.includes(role.trim()));
+                
+                // Enhanced visibility control for mobile submenu items
+                if (shouldShow) {
+                    item.style.display = 'block';
+                    item.style.visibility = 'visible';
+                    item.classList.add('role-visible');
+                    console.log('Mobile submenu item made visible:', item.querySelector('.mobile-submenu-link')?.textContent?.trim());
+                } else {
+                    item.style.display = 'none';
+                    item.style.visibility = 'hidden';
+                    item.classList.remove('role-visible');
+                }
+            });
+            
+            // Check if any mobile submenu items are visible, if not hide the parent menu
+            const visibleMobileSubItems = mobileMenuItem.querySelectorAll('.mobile-submenu-item.role-visible');
+            if (visibleMobileSubItems.length === 0 && mobileMenuItem.querySelector('.mobile-submenu')) {
+                mobileMenuItem.style.display = 'none';
+            } else {
+                const parentAllowedRoles = mobileMenuItem.getAttribute("data-role")?.split(",") || [];
+                const parentShouldShow = parentAllowedRoles.some(role => roles.includes(role.trim()));
+                mobileMenuItem.style.display = parentShouldShow ? 'block' : 'none';
+            }
+        });
+    }
                     const parentShouldShow = parentAllowedRoles.some(role => roles.includes(role.trim()));
                     menuItem.style.display = parentShouldShow ? "block" : "none";
                 }

@@ -630,9 +630,31 @@ const utils = {
             roles.push(roleCode);
         }
 
-        // Add mapped roles based on position
-        if (position && positionRoleMap[position]) {
-            roles = roles.concat(positionRoleMap[position]);
+        // Also handle cases where position is already a role code
+        const roleCodeMapping = {
+            'SUPER_ADMIN': ['SUPER_ADMIN', 'ADMIN', 'AD'],
+            'ADMIN': ['ADMIN', 'AD'],
+            'HR_MANAGER': ['HR_MANAGER', 'ADMIN', 'AD'],
+            'STORE_MANAGER': ['STORE_MANAGER', 'QL'],
+            'AREA_MANAGER': ['AREA_MANAGER', 'AM'],
+            'DEPT_HEAD': ['DEPT_HEAD'],
+            'TEAM_LEADER': ['TEAM_LEADER'],
+            'SENIOR_EMP': ['SENIOR_EMP', 'EMPLOYEE', 'NV'],
+            'EMPLOYEE': ['EMPLOYEE', 'NV'],
+            'INTERN': ['INTERN', 'NV'],
+            'CUST_SUPPORT': ['CUST_SUPPORT', 'NV']
+        };
+
+        // Add mapped roles based on position (could be position name or role code)
+        if (position) {
+            if (positionRoleMap[position]) {
+                roles = roles.concat(positionRoleMap[position]);
+            } else if (roleCodeMapping[position]) {
+                roles = roles.concat(roleCodeMapping[position]);
+            } else {
+                // If position is already a role code, just add it
+                roles.push(position);
+            }
         }
 
         // Remove duplicates and return

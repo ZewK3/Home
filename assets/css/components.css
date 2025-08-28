@@ -566,7 +566,8 @@
     position: fixed;
     bottom: var(--spacing-lg);
     right: var(--spacing-lg);
-    z-index: 1000;
+    z-index: 9999; /* Increased z-index to ensure visibility */
+    display: block !important; /* Force visibility */
 }
 
 .chat-toggle {
