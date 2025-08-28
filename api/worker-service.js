@@ -323,8 +323,8 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
       .prepare(`
         SELECT s.*, e.employeeId, e.name, e.email, e.department, e.position, e.storeId, e.roleDetails
         FROM sessions s
-        JOIN employees e ON s.employeeId = e.employeeId
-        WHERE s.token = ? AND s.expiresAt > ?
+        JOIN employees e ON s.employee_id = e.id
+        WHERE s.session_token = ? AND s.expires_at > ? AND s.is_active = 1
       `)
       .bind(token, new Date().toISOString())
       .first();
@@ -335,7 +335,7 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
 
     // Update last access time
     await db
-      .prepare("UPDATE sessions SET lastAccess = ? WHERE token = ?")
+      .prepare("UPDATE sessions SET last_activity = ? WHERE session_token = ?")
       .bind(new Date().toISOString(), token)
       .run();
 
@@ -354,16 +354,26 @@ async function createSession(employeeId, db, allowedOrigin) {
     expiresAt.setHours(expiresAt.getHours() + 8);
     const now = new Date().toISOString();
 
+    // First get the employee.id to use as foreign key
+    const employee = await db
+      .prepare("SELECT id FROM employees WHERE employeeId = ?")
+      .bind(employeeId)
+      .first();
+
+    if (!employee) {
+      return jsonResponse({ message: "Không tìm thấy nhân viên!" }, 404, allowedOrigin);
+    }
+
     // Delete existing sessions for this user
     await db
-      .prepare("DELETE FROM sessions WHERE employeeId = ?")
-      .bind(employeeId)
+      .prepare("DELETE FROM sessions WHERE employee_id = ?")
+      .bind(employee.id)
       .run();
 
-    // Create new session
+    // Create new session using Enhanced Database Schema v3.0 column names
     await db
-      .prepare("INSERT INTO sessions (employeeId, token, expiresAt, lastAccess) VALUES (?, ?, ?, ?)")
-      .bind(employeeId, token, expiresAt.toISOString(), now)
+      .prepare("INSERT INTO sessions (employee_id, session_token, expires_at, last_activity) VALUES (?, ?, ?, ?)")
+      .bind(employee.id, token, expiresAt.toISOString(), now)
       .run();
 
     return {
@@ -398,9 +408,13 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 // Handle login
 async function handleLogin(body, db, origin) {
   try {
-    const { employeeId, password } = body;
+    // Support both old and new field names for backward compatibility
+    const { employeeId, password, loginEmployeeId, loginPassword } = body;
     
-    if (!employeeId || !password) {
+    const actualEmployeeId = employeeId || loginEmployeeId;
+    const actualPassword = password || loginPassword;
+    
+    if (!actualEmployeeId || !actualPassword) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu mã nhân viên hoặc mật khẩu!" 
@@ -410,7 +424,7 @@ async function handleLogin(body, db, origin) {
     // Get user for password verification
     const user = await db
       .prepare("SELECT * FROM employees WHERE employeeId = ? AND is_active = 1")
-      .bind(employeeId)
+      .bind(actualEmployeeId)
       .first();
 
     if (!user) {
@@ -421,7 +435,7 @@ async function handleLogin(body, db, origin) {
     }
 
     // Verify password using SHA-256
-    const hashedPassword = await hashPassword(password);
+    const hashedPassword = await hashPassword(actualPassword);
     if (user.password !== hashedPassword) {
       return jsonResponse({ 
         success: false, 
@@ -430,13 +444,13 @@ async function handleLogin(body, db, origin) {
     }
 
     // Create session
-    const session = await createSession(employeeId, db, origin);
+    const session = await createSession(actualEmployeeId, db, origin);
     if (session instanceof Response) return session;
 
     // Update last login
     await db
       .prepare("UPDATE employees SET last_login_at = ? WHERE employeeId = ?")
-      .bind(new Date().toISOString(), employeeId)
+      .bind(new Date().toISOString(), actualEmployeeId)
       .run();
 
     return jsonResponse({
@@ -468,7 +482,7 @@ async function handleLogin(body, db, origin) {
 async function handleGetStores(db, origin) {
   try {
     const stores = await db
-      .prepare("SELECT * FROM stores ORDER BY name")
+      .prepare("SELECT * FROM stores ORDER BY storeName")
       .all();
 
     return jsonResponse({
