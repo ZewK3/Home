@@ -545,75 +545,7 @@ class AuthManager {
         }
     }
 
-    async login(employeeId, password) {
-        try {
-            console.log('Attempting login for:', employeeId);
-            
-            // Call login API with both possible field formats
-            const loginData = {
-                loginEmployeeId: employeeId,
-                loginPassword: password,
-                employeeId: employeeId,
-                password: password
-            };
-            
-            const response = await fetch(CONFIG.API_BASE_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'login',
-                    ...loginData
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success && result.token) {
-                // Store token and user data
-                this.token = result.token;
-                this.setToStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN, result.token);
-                
-                if (result.user) {
-                    // Map Enhanced Database Schema v3.0 fields if needed
-                    const mappedUser = result.user.full_name ? 
-                        utils.mapUserDataFromEnhancedSchema(result.user) : 
-                        result.user;
-                    
-                    this.userData = mappedUser;
-                    this.cachedUser = mappedUser;
-                    this.cacheTimestamp.user = Date.now();
-                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, mappedUser);
-                    
-                    console.log('Login successful for:', mappedUser.fullName);
-                    return {
-                        success: true,
-                        user: mappedUser,
-                        token: result.token
-                    };
-                }
-                
-                return {
-                    success: true,
-                    token: result.token,
-                    message: 'Đăng nhập thành công'
-                };
-            } else {
-                console.error('Login failed:', result.message);
-                return {
-                    success: false,
-                    message: result.message || 'Đăng nhập thất bại'
-                };
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            return {
-                success: false,
-                message: 'Có lỗi xảy ra trong quá trình đăng nhập'
-            };
-        }
-    }
+
 
     setupLogoutHandler() {
         document.getElementById("logout")?.addEventListener("click", () => this.logout());

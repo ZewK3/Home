@@ -16,6 +16,7 @@
     <script src="../../assets/js/config.js"></script>
     <script src="../../assets/js/utils.js"></script>
     <script src="../../assets/js/auth-manager.js"></script>
+    <script src="../../assets/js/script.js"></script>
     <script src="../../assets/js/customer-support.js"></script>
     
     <style>
@@ -446,13 +447,13 @@
                 <div class="login-error" id="loginError"></div>
                 
                 <div class="form-group">
-                    <label for="employeeId">Mã nhân viên</label>
-                    <input type="text" id="employeeId" name="employeeId" required autocomplete="username" placeholder="Nhập mã nhân viên">
+                    <label for="loginEmployeeId">Mã nhân viên</label>
+                    <input type="text" id="loginEmployeeId" name="loginEmployeeId" required autocomplete="username" placeholder="Nhập mã nhân viên">
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Mật khẩu</label>
-                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu">
+                    <label for="loginPassword">Mật khẩu</label>
+                    <input type="password" id="loginPassword" name="loginPassword" required autocomplete="current-password" placeholder="Nhập mật khẩu">
                 </div>
                 
                 <button type="submit" class="login-button" id="loginButton">
@@ -583,9 +584,62 @@
             const loginOverlay = document.getElementById('loginOverlay');
             loginOverlay.classList.add('show');
             
-            // Set up login form handler
+            // Set up login form handler using the standard handleLogin from script.js
             const loginForm = document.getElementById('loginForm');
-            loginForm.addEventListener('submit', handleLogin);
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Override the redirect behavior for customer support
+                const originalHandleLogin = window.handleLogin;
+                if (typeof originalHandleLogin === 'function') {
+                    try {
+                        // Temporarily store the original window.location redirect
+                        const originalLocation = window.location;
+                        let redirectPrevented = false;
+                        
+                        // Override window.location.href to prevent redirect
+                        Object.defineProperty(window, 'location', {
+                            value: {
+                                ...originalLocation,
+                                href: originalLocation.href,
+                                set href(url) {
+                                    if (url.includes('dashboard.html')) {
+                                        redirectPrevented = true;
+                                        // Instead of redirecting, initialize dashboard
+                                        hideLoginModal();
+                                        initializeDashboard();
+                                    } else {
+                                        originalLocation.href = url;
+                                    }
+                                }
+                            },
+                            configurable: true
+                        });
+                        
+                        // Call the standard handleLogin function
+                        await originalHandleLogin(e);
+                        
+                        // Restore original location object
+                        Object.defineProperty(window, 'location', {
+                            value: originalLocation,
+                            configurable: true
+                        });
+                        
+                        // If redirect wasn't prevented, manually handle success
+                        if (!redirectPrevented) {
+                            hideLoginModal();
+                            initializeDashboard();
+                        }
+                        
+                    } catch (error) {
+                        console.error('Login failed:', error);
+                        showLoginError(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+                    }
+                } else {
+                    // Fallback to local login handling if script.js is not loaded
+                    await handleLocalLogin(e);
+                }
+            });
         }
 
         function hideLoginModal() {
@@ -593,13 +647,14 @@
             loginOverlay.classList.remove('show');
         }
 
-        async function handleLogin(e) {
+        // Fallback login handler if script.js is not available
+        async function handleLocalLogin(e) {
             e.preventDefault();
             
             const loginButton = document.getElementById('loginButton');
             const loginError = document.getElementById('loginError');
-            const employeeId = document.getElementById('employeeId').value.trim();
-            const password = document.getElementById('password').value;
+            const loginEmployeeId = document.getElementById('loginEmployeeId').value.trim();
+            const loginPassword = document.getElementById('loginPassword').value;
             
             // Reset error state
             loginError.style.display = 'none';
@@ -607,18 +662,33 @@
             loginButton.disabled = true;
             
             try {
-                const loginResult = await authManager.login(employeeId, password);
-                
-                if (loginResult.success) {
-                    currentUser = loginResult.user;
+                // Use the same API call structure as script.js
+                const response = await fetch('https://zewk.tocotoco.workers.dev/?action=login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        loginEmployeeId: loginEmployeeId,
+                        loginPassword: loginPassword
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    localStorage.setItem('authToken', result.token);
+                    localStorage.setItem('loggedInUser', JSON.stringify({
+                        loginEmployeeId: loginEmployeeId,
+                        loginPassword: loginPassword
+                    }));
+                    
                     hideLoginModal();
                     initializeDashboard();
                 } else {
-                    showLoginError(loginResult.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Đăng nhập thất bại');
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showLoginError('Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại.');
+                showLoginError(error.message || 'Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại.');
             } finally {
                 loginButton.classList.remove('loading');
                 loginButton.disabled = false;
