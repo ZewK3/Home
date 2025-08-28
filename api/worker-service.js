@@ -2854,7 +2854,7 @@ export default {
   },
 
   async fetch(request, env) {
-    const db = env.D1_BINDING;
+    const db = env.DATABASE;
     if (request.method === "OPTIONS") return handleOptionsRequest();
 
     try {
