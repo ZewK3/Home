@@ -508,7 +508,7 @@ async function handleGetUsers(url, db, origin) {
     const storeId = url.searchParams.get("storeId");
 
     let query = `
-      SELECT employeeId, name, email, department, position, storeId, 
+      SELECT employeeId, name, email, department_id, position, storeId, 
              employment_status, is_active, created_at, last_login_at
       FROM employees 
       WHERE 1=1
@@ -516,7 +516,7 @@ async function handleGetUsers(url, db, origin) {
     const params = [];
 
     if (department) {
-      query += " AND department = ?";
+      query += " AND department_id = ?";
       params.push(department);
     }
 
@@ -565,7 +565,7 @@ async function handleGetUser(url, db, origin) {
 
     const user = await db
       .prepare(`
-        SELECT employeeId, name, email, department, position, storeId, 
+        SELECT employeeId, name, email, department_id, position, storeId, 
                employment_status, is_active, created_at, last_login_at,
                hire_date, phone, address, notes
         FROM employees 
@@ -1425,7 +1425,7 @@ async function handleUpdatePersonalInfo(body, db, origin) {
 
     const stmt = await db.prepare(`
       UPDATE employees 
-      SET name = ?, phone = ?, position = ?, department = ?, email = ?, updated_at = ?
+      SET name = ?, phone = ?, position = ?, department_id = ?, email = ?, updated_at = ?
       WHERE employeeId = ?
     `);
     
@@ -2215,7 +2215,7 @@ async function handleGetEmployeesByStore(url, db, origin) {
 
     const stmt = await db.prepare(`
       SELECT 
-        employeeId, name, email, phone, position, department, 
+        employeeId, name, email, phone, position, department_id, 
         employment_status, is_active, hire_date, last_login_at
       FROM employees 
       WHERE storeId = ? AND employment_status != 'terminated'
@@ -2338,7 +2338,7 @@ async function handleGetAllUsers(url, db, origin) {
 
     const stmt = await db.prepare(`
       SELECT 
-        employeeId, name, email, phone, position, department, storeId,
+        employeeId, name, email, phone, position, department_id, storeId,
         employment_status, is_active, hire_date, last_login_at
       FROM employees 
       ${whereClause}
