@@ -66,9 +66,13 @@ async function initializeDashboard() {
     // Setup modal close functionality
     setupModalCloseHandlers();
 
-    // Initialize managers
-    // Re-enable AuthManager with enhanced caching capabilities
-    const authManager = new AuthManager();
+    // Use the existing global AuthManager instance from main-init.js
+    const authManager = window.authManager;
+    
+    if (!authManager) {
+        console.error('AuthManager not found. Make sure main-init.js is loaded first.');
+        return;
+    }
     
     // Pre-load and cache essential data during initialization
     try {
@@ -79,13 +83,11 @@ async function initializeDashboard() {
         console.warn('Could not pre-cache stores data:', error);
     }
     
-    // Check authentication with cached user data
-    const userData = await authManager.checkAuthentication();
+    // Get the already-authenticated user data from the existing session
+    const userData = authManager.userData;
     
     if (userData) {
-        authManager.setupLogoutHandler();
-        // Make authManager globally accessible for other functions
-        window.authManager = authManager;
+        console.log('Using existing authenticated user data:', userData.fullName);
         
         // Additional authentication setup
         ThemeManager.initialize();
