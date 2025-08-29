@@ -373,6 +373,11 @@ class ContentManager {
     // Shift Management Functions
     async showShiftAssignment() {
         const content = document.getElementById('main');
+        if (!content) {
+            console.error('Main content element not found');
+            return;
+        }
+        
         try {
             // Get current user's role and stores to determine permissions using cache
             const userResponse = await window.authManager.getUserData();
@@ -582,6 +587,11 @@ class ContentManager {
 
     async showWorkShifts() {
         const content = document.getElementById('main');
+        if (!content) {
+            console.error('Main content element not found');
+            return;
+        }
+        
         try {
             const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
@@ -638,6 +648,11 @@ class ContentManager {
 
     async showAttendance() {
         const content = document.getElementById('main');
+        if (!content) {
+            console.error('Main content element not found');
+            return;
+        }
+        
         try {
             const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;

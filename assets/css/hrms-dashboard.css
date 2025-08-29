@@ -305,6 +305,230 @@ button {
     color: var(--brand);
 }
 
+/* Accordion Menu Styles */
+.nav-item-parent {
+    margin-bottom: 5px;
+}
+
+.nav-title.expandable {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.nav-title.expandable:hover {
+    background: rgba(148, 163, 184, 0.08);
+}
+
+.nav-title.expandable .material-icons-round:first-child {
+    font-size: 18px;
+    color: var(--muted);
+}
+
+.nav-title.expandable:hover .material-icons-round:first-child {
+    color: var(--brand);
+}
+
+.nav-chevron {
+    margin-left: auto !important;
+    font-size: 18px !important;
+    transition: transform 0.2s ease;
+}
+
+.nav-item-parent.expanded .nav-chevron {
+    transform: rotate(180deg);
+}
+
+.nav-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin-left: 15px;
+    border-left: 2px solid rgba(148, 163, 184, 0.1);
+    padding-left: 10px;
+}
+
+.nav-item-parent.expanded + .nav-submenu {
+    max-height: 500px;
+}
+
+.nav-submenu a {
+    padding: 8px 12px;
+    margin: 2px 0;
+    font-size: 14px;
+}
+
+.nav-submenu a .material-icons-round {
+    font-size: 18px;
+}
+
+/* Custom Scrollbars */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-soft);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--brand), rgba(59, 130, 246, 0.6));
+    border-radius: 4px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--brand-light), var(--brand));
+}
+
+::-webkit-scrollbar-corner {
+    background: var(--bg-soft);
+}
+
+/* Chat panel scrollbars */
+.chat-content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) var(--bg-soft);
+}
+
+.chat-messages {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) var(--bg-soft);
+}
+
+/* Sidebar scrollbars */
+.app-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) transparent;
+    overflow-y: auto;
+}
+
+/* Content area scrollbars */
+.content {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) var(--bg-soft);
+}
+
+/* Firefox scrollbar styles */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) var(--bg-soft);
+}
+
+/* Mobile Accordion Menu Styles */
+.mobile-nav-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.mobile-nav-group {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    padding-bottom: 10px;
+}
+
+.mobile-nav-item-parent {
+    margin-bottom: 5px;
+}
+
+.mobile-nav-title.expandable {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.mobile-nav-title.expandable:hover {
+    background: rgba(148, 163, 184, 0.08);
+}
+
+.mobile-nav-title.expandable .material-icons-round:first-child {
+    font-size: 20px;
+    color: var(--muted);
+}
+
+.mobile-nav-title.expandable:hover .material-icons-round:first-child {
+    color: var(--brand);
+}
+
+.mobile-nav-chevron {
+    margin-left: auto !important;
+    font-size: 20px !important;
+    transition: transform 0.2s ease;
+}
+
+.mobile-nav-item-parent.expanded .mobile-nav-chevron {
+    transform: rotate(180deg);
+}
+
+.mobile-nav-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    margin-left: 20px;
+    border-left: 2px solid rgba(148, 163, 184, 0.1);
+    padding-left: 15px;
+}
+
+.mobile-nav-item-parent.expanded + .mobile-nav-submenu {
+    max-height: 600px;
+}
+
+.mobile-nav-submenu .mobile-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 2px 0;
+    color: var(--text);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.mobile-nav-submenu .mobile-menu-link:hover {
+    background: rgba(148, 163, 184, 0.12);
+}
+
+.mobile-nav-submenu .mobile-menu-link .material-icons-round {
+    font-size: 18px;
+    color: var(--muted);
+}
+
+.mobile-nav-submenu .mobile-menu-link:hover .material-icons-round {
+    color: var(--brand);
+}
+
+/* Hide button sidebar on desktop */
+@media (min-width: 1024px) {
+    #btnSidebar {
+        display: none !important;
+    }
+}
+
 .sidebar-footer {
     margin-top: auto;
     padding-top: 20px;

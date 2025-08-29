@@ -98,8 +98,14 @@
             <!-- Sidebar (desktop permanent) -->
             <aside class="app-sidebar permanent" aria-label="Thanh điều hướng">
                 <div class="nav-group">
-                    <div class="nav-title">Quản lý công việc</div>
-                    <nav class="nav">
+                    <div class="nav-item-parent" data-menu-toggle="work-management">
+                        <div class="nav-title expandable">
+                            <span class="material-icons-round">work_outline</span>
+                            Quản lý công việc
+                            <span class="material-icons-round nav-chevron">expand_more</span>
+                        </div>
+                    </div>
+                    <nav class="nav nav-submenu" id="work-management">
                         <a href="#" id="openWorkManagement" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,EMPLOYEE,AD,QL,NV">
                             <span class="material-icons-round">schedule</span>
                             Quản Lý Công
@@ -120,8 +126,14 @@
                 </div>
                 
                 <div class="nav-group">
-                    <div class="nav-title">Yêu cầu</div>
-                    <nav class="nav">
+                    <div class="nav-item-parent" data-menu-toggle="requests">
+                        <div class="nav-title expandable">
+                            <span class="material-icons-round">request_page</span>
+                            Yêu cầu
+                            <span class="material-icons-round nav-chevron">expand_more</span>
+                        </div>
+                    </div>
+                    <nav class="nav nav-submenu" id="requests">
                         <a href="#" id="openSubmitRequest" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
                             <span class="material-icons-round">send</span>
                             Gửi Yêu Cầu
@@ -142,8 +154,14 @@
                 </div>
                 
                 <div class="nav-group">
-                    <div class="nav-title">Quản trị</div>
-                    <nav class="nav">
+                    <div class="nav-item-parent" data-menu-toggle="admin">
+                        <div class="nav-title expandable">
+                            <span class="material-icons-round">admin_panel_settings</span>
+                            Quản trị
+                            <span class="material-icons-round nav-chevron">expand_more</span>
+                        </div>
+                    </div>
+                    <nav class="nav nav-submenu" id="admin">
                         <a href="#" id="openTaskProcessing" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,AD,QL,AM">
                             <span class="material-icons-round">pending_actions</span>
                             Xử Lý Yêu Cầu
@@ -604,51 +622,116 @@
                         </button>
                     </div>
                     
-                    <!-- Mobile Navigation Menu -->
-                    <ul id="mobileMenuList" class="mobile-menu-list">
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,EMPLOYEE,AD,QL,NV">
-                            <a href="#" id="mobileWorkManagement" class="mobile-menu-link">
-                                <span class="material-icons-round">schedule</span>
-                                Quản Lý Công
-                            </a>
-                        </li>
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
-                            <a href="#" id="mobileWorkTasks" class="mobile-menu-link">
-                                <span class="material-icons-round">work</span>
-                                Công Việc
-                            </a>
-                        </li>
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
-                            <a href="#" id="mobileSubmitRequest" class="mobile-menu-link">
-                                <span class="material-icons-round">send</span>
-                                Gửi Yêu Cầu
-                            </a>
-                        </li>
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AD,QL">
-                            <a href="#" id="mobileTaskProcessing" class="mobile-menu-link">
-                                <span class="material-icons-round">pending_actions</span>
-                                Xử Lý Yêu Cầu
-                            </a>
-                        </li>
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AD,QL">
-                            <a href="#" id="mobileRegistrationApproval" class="mobile-menu-link">
-                                <span class="material-icons-round">how_to_reg</span>
-                                Duyệt Đăng Ký
-                            </a>
-                        </li>
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AD">
-                            <a href="#" id="mobileGrantAccess" class="mobile-menu-link">
-                                <span class="material-icons-round">admin_panel_settings</span>
-                                Phân Quyền
-                            </a>
-                        </li>
-                        <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,EMPLOYEE,AD,QL,AM,NV">
-                            <a href="#" id="mobilePersonalInformation" class="mobile-menu-link">
-                                <span class="material-icons-round">person</span>
-                                Thông Tin Cá Nhân
-                            </a>
-                        </li>
-                    </ul>
+                    <!-- Mobile Navigation Menu with Accordion Structure -->
+                    <div class="mobile-nav-groups">
+                        <div class="mobile-nav-group">
+                            <div class="mobile-nav-item-parent" data-mobile-menu-toggle="mobile-work-management">
+                                <div class="mobile-nav-title expandable">
+                                    <span class="material-icons-round">work_outline</span>
+                                    Quản lý công việc
+                                    <span class="material-icons-round mobile-nav-chevron">expand_more</span>
+                                </div>
+                            </div>
+                            <ul class="mobile-nav-submenu" id="mobile-work-management">
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,EMPLOYEE,AD,QL,NV">
+                                    <a href="#" id="mobileWorkManagement" class="mobile-menu-link">
+                                        <span class="material-icons-round">schedule</span>
+                                        Quản Lý Công
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                                    <a href="#" id="mobileTimesheet" class="mobile-menu-link">
+                                        <span class="material-icons-round">calendar_view_month</span>
+                                        Bảng Công
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                                    <a href="#" id="mobileAttendance" class="mobile-menu-link">
+                                        <span class="material-icons-round">location_on</span>
+                                        Chấm Công
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                                    <a href="#" id="mobileWorkTasks" class="mobile-menu-link">
+                                        <span class="material-icons-round">work</span>
+                                        Công Việc
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mobile-nav-group">
+                            <div class="mobile-nav-item-parent" data-mobile-menu-toggle="mobile-requests">
+                                <div class="mobile-nav-title expandable">
+                                    <span class="material-icons-round">request_page</span>
+                                    Yêu cầu
+                                    <span class="material-icons-round mobile-nav-chevron">expand_more</span>
+                                </div>
+                            </div>
+                            <ul class="mobile-nav-submenu" id="mobile-requests">
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                                    <a href="#" id="mobileSubmitRequest" class="mobile-menu-link">
+                                        <span class="material-icons-round">send</span>
+                                        Gửi Yêu Cầu
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                                    <a href="#" id="mobileAttendanceRequest" class="mobile-menu-link">
+                                        <span class="material-icons-round">assignment</span>
+                                        Đơn Từ
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                                    <a href="#" id="mobileTaskAssignment" class="mobile-menu-link">
+                                        <span class="material-icons-round">task_alt</span>
+                                        Nhiệm Vụ
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,AD,AM,QL">
+                                    <a href="#" id="mobileShiftAssignment" class="mobile-menu-link">
+                                        <span class="material-icons-round">schedule_send</span>
+                                        Phân Ca
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mobile-nav-group">
+                            <div class="mobile-nav-item-parent" data-mobile-menu-toggle="mobile-admin">
+                                <div class="mobile-nav-title expandable">
+                                    <span class="material-icons-round">admin_panel_settings</span>
+                                    Quản trị
+                                    <span class="material-icons-round mobile-nav-chevron">expand_more</span>
+                                </div>
+                            </div>
+                            <ul class="mobile-nav-submenu" id="mobile-admin">
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,AD,QL,AM">
+                                    <a href="#" id="mobileTaskProcessing" class="mobile-menu-link">
+                                        <span class="material-icons-round">pending_actions</span>
+                                        Xử Lý Yêu Cầu
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AD,QL">
+                                    <a href="#" id="mobileRegistrationApproval" class="mobile-menu-link">
+                                        <span class="material-icons-round">how_to_reg</span>
+                                        Duyệt Đăng Ký
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AD">
+                                    <a href="#" id="mobileGrantAccess" class="mobile-menu-link">
+                                        <span class="material-icons-round">admin_panel_settings</span>
+                                        Phân Quyền
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,EMPLOYEE,AD,QL,AM,NV">
+                                    <a href="#" id="mobilePersonalInformation" class="mobile-menu-link">
+                                        <span class="material-icons-round">person</span>
+                                        Thông Tin Cá Nhân
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                     
                     <div class="mobile-nav-footer">
                         <button id="mobileLogout" class="mobile-logout-btn">
@@ -929,7 +1012,7 @@
 <!-- End of chat-system -->
 
     <!-- Create Group Modal -->
-    <div id="createGroupModal" class="modal-overlay" style="display: none;">
+    <div id="createGroupModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Tạo nhóm chat mới</h3>

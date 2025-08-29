@@ -149,6 +149,9 @@ async function initializeDashboard() {
         // Mobile optimization and enhanced menu setup
         setupMobileMenu();
         
+        // Initialize accordion menu
+        initializeAccordionMenu();
+        
         // Additional failsafe - ensure mobile menu is setup after everything else
         setTimeout(() => {
             setupMobileMenu();
@@ -3678,3 +3681,97 @@ const professionalStyles = `
 
 // Apply professional styles
 document.head.insertAdjacentHTML('beforeend', professionalStyles);
+
+/**
+ * Initialize accordion menu functionality for sidebar navigation
+ */
+function initializeAccordionMenu() {
+    try {
+        console.log('🎛️ Initializing accordion menu functionality...');
+        
+        // Desktop sidebar accordion
+        const menuToggles = document.querySelectorAll('[data-menu-toggle]');
+        
+        menuToggles.forEach(toggle => {
+            const menuId = toggle.dataset.menuToggle;
+            const submenu = document.getElementById(menuId);
+            const navTitle = toggle.querySelector('.nav-title.expandable');
+            
+            if (!submenu || !navTitle) {
+                console.warn(`Submenu or nav-title not found for: ${menuId}`);
+                return;
+            }
+            
+            // Set initial state - collapse all submenus by default
+            toggle.classList.remove('expanded');
+            submenu.style.maxHeight = '0';
+            
+            // Add click handler
+            navTitle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isExpanded = toggle.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    // Collapse
+                    toggle.classList.remove('expanded');
+                    submenu.style.maxHeight = '0';
+                    console.log(`Collapsed menu: ${menuId}`);
+                } else {
+                    // Expand
+                    toggle.classList.add('expanded');
+                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    console.log(`Expanded menu: ${menuId}`);
+                }
+            });
+            
+            console.log(`✅ Desktop accordion menu setup for: ${menuId}`);
+        });
+        
+        // Mobile sidebar accordion
+        const mobileMenuToggles = document.querySelectorAll('[data-mobile-menu-toggle]');
+        
+        mobileMenuToggles.forEach(toggle => {
+            const menuId = toggle.dataset.mobileMenuToggle;
+            const submenu = document.getElementById(menuId);
+            const navTitle = toggle.querySelector('.mobile-nav-title.expandable');
+            
+            if (!submenu || !navTitle) {
+                console.warn(`Mobile submenu or nav-title not found for: ${menuId}`);
+                return;
+            }
+            
+            // Set initial state - collapse all mobile submenus by default
+            toggle.classList.remove('expanded');
+            submenu.style.maxHeight = '0';
+            
+            // Add click handler
+            navTitle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isExpanded = toggle.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    // Collapse
+                    toggle.classList.remove('expanded');
+                    submenu.style.maxHeight = '0';
+                    console.log(`Collapsed mobile menu: ${menuId}`);
+                } else {
+                    // Expand
+                    toggle.classList.add('expanded');
+                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    console.log(`Expanded mobile menu: ${menuId}`);
+                }
+            });
+            
+            console.log(`✅ Mobile accordion menu setup for: ${menuId}`);
+        });
+        
+        console.log('✅ Accordion menu initialization complete');
+        
+    } catch (error) {
+        console.error('❌ Error initializing accordion menu:', error);
+    }
+}
