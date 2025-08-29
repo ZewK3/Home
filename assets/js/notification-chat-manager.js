@@ -233,7 +233,7 @@ class ChatManager {
         // Chat tabs
         document.querySelectorAll('.chat-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                const chatType = tab.dataset.chatType;
+                const chatType = tab.dataset.tab; // Fix: use dataset.tab instead of dataset.chatType
                 this.switchChatRoom(chatType);
             });
         });

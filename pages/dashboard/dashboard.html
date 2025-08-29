@@ -696,32 +696,42 @@
                 </div>
             </div>
             
-            <!-- Chat Navigation Tabs -->
-            <div class="chat-tabs">
-                <button class="chat-tab active" data-tab="general">
-                    <span class="material-icons-round">public</span>
-                    <span class="tab-text">Chung</span>
-                    <span class="tab-badge">12</span>
-                </button>
-                <button class="chat-tab" data-tab="department">
-                    <span class="material-icons-round">business</span>
-                    <span class="tab-text">Phòng ban</span>
-                    <span class="tab-badge">5</span>
-                </button>
-                <button class="chat-tab" data-tab="private">
-                    <span class="material-icons-round">person</span>
-                    <span class="tab-text">Cá nhân</span>
-                    <span class="tab-badge new">2</span>
-                </button>
-                <button class="chat-tab" data-tab="group">
-                    <span class="material-icons-round">group</span>
-                    <span class="tab-text">Nhóm</span>
-                    <span class="tab-badge">3</span>
-                </button>
-            </div>
-            
-            <!-- Chat Content Area -->
-            <div class="chat-content">
+            <!-- Chat Body with Left Sidebar and Content -->
+            <div class="chat-body">
+                <!-- Left Side Navigation Tabs -->
+                <div class="chat-sidebar">
+                    <button class="chat-tab active" data-tab="general">
+                        <span class="material-icons-round">public</span>
+                        <div class="tab-content">
+                            <span class="tab-text">Chung</span>
+                            <span class="tab-badge">12</span>
+                        </div>
+                    </button>
+                    <button class="chat-tab" data-tab="department">
+                        <span class="material-icons-round">business</span>
+                        <div class="tab-content">
+                            <span class="tab-text">Phòng ban</span>
+                            <span class="tab-badge">5</span>
+                        </div>
+                    </button>
+                    <button class="chat-tab" data-tab="private">
+                        <span class="material-icons-round">person</span>
+                        <div class="tab-content">
+                            <span class="tab-text">Cá nhân</span>
+                            <span class="tab-badge new">2</span>
+                        </div>
+                    </button>
+                    <button class="chat-tab" data-tab="group">
+                        <span class="material-icons-round">group</span>
+                        <div class="tab-content">
+                            <span class="tab-text">Nhóm</span>
+                            <span class="tab-badge">3</span>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Right Side Content Area -->
+                <div class="chat-content">
                 <!-- General Chat -->
                 <div id="generalChat" class="chat-view active">
                     <div class="chat-messages" id="generalMessages">
@@ -909,6 +919,7 @@
                     </div>
                 </div>
             </div>
+            <!-- End of chat-body -->
         </div>
     </div>
 

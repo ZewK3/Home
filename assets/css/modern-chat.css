@@ -62,7 +62,7 @@
     position: absolute;
     bottom: 60px;
     right: 0;
-    width: 380px;
+    width: 420px;
     height: 520px;
     background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(11, 18, 36, 0.95));
     backdrop-filter: blur(20px);
@@ -152,12 +152,98 @@
     font-size: 18px;
 }
 
-/* Chat Navigation Tabs */
+/* Chat Body with Left Sidebar Layout */
+.chat-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Left Side Navigation (Chat Sidebar) */
+.chat-sidebar {
+    width: 120px;
+    background: rgba(30, 41, 59, 0.5);
+    border-right: 1px solid rgba(148, 163, 184, 0.12);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+}
+
+.chat-sidebar .chat-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    text-align: left;
+    width: 100%;
+    color: #cbd5e1;
+}
+
+.chat-sidebar .chat-tab:hover {
+    background: rgba(59, 130, 246, 0.1);
+    color: #e5e7eb;
+}
+
+.chat-sidebar .chat-tab.active {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+}
+
+.chat-sidebar .chat-tab .material-icons-round {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.tab-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.tab-text {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.tab-badge {
+    font-size: 10px;
+    background: #ef4444;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    align-self: flex-start;
+    min-width: 16px;
+    text-align: center;
+}
+
+.tab-badge.new {
+    background: #10b981;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Legacy Chat Navigation Tabs (for backwards compatibility) */
 .chat-tabs {
     display: flex;
     background: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
     padding: 0 8px;
+    /* Hide by default since we're using chat-sidebar now */
+    display: none;
 }
 
 .chat-tab {

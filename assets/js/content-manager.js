@@ -372,7 +372,7 @@ class ContentManager {
 
     // Shift Management Functions
     async showShiftAssignment() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             // Get current user's role and stores to determine permissions using cache
             const userResponse = await window.authManager.getUserData();
@@ -581,7 +581,7 @@ class ContentManager {
     }
 
     async showWorkShifts() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
@@ -637,7 +637,7 @@ class ContentManager {
     }
 
     async showAttendance() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
@@ -724,7 +724,12 @@ class ContentManager {
     }
 
     async showTimesheet() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main'); // Fix: use 'main' instead of 'content'
+        if (!content) {
+            console.error('Main content element not found');
+            return;
+        }
+        
         try {
             const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
@@ -969,7 +974,7 @@ class ContentManager {
     }
 
     async showAttendanceGPS() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             const userResponse = await window.authManager.getUserData();
             const employeeId = userResponse.employeeId;
@@ -1685,7 +1690,7 @@ class ContentManager {
 
     // Task Management Functions
     async showSubmitTask() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         content.innerHTML = `
             <div class="card">
                 <div class="card-header">
@@ -1747,7 +1752,7 @@ class ContentManager {
     }
 
     async showTaskPersonnel() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             // Get current user role for permission check
             const userResponse = await window.authManager.getUserData();
@@ -2328,7 +2333,7 @@ class ContentManager {
     }
 
     async showTaskStore() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             // Get current user role for permission check
             const userResponse = await window.authManager.getUserData();
@@ -2553,7 +2558,7 @@ class ContentManager {
     }
 
     async showTaskFinance() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             // Use a placeholder for finance tasks
             content.innerHTML = `
@@ -2602,7 +2607,7 @@ class ContentManager {
     }
 
     async showTaskApproval() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             const response = await utils.fetchAPI('?action=getApprovalTasks');
             
@@ -2637,7 +2642,7 @@ class ContentManager {
 
 
     async showGrantAccess() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             // Show loading state
             content.innerHTML = `
@@ -2949,7 +2954,12 @@ class ContentManager {
     }
 
     async showPersonalInfo() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main'); // Fix: use 'main' instead of 'content'
+        if (!content) {
+            console.error('Main content element not found');
+            return;
+        }
+        
         try {
             // Use cached user data instead of making fresh API calls
             const response = await window.authManager.getUserData();
@@ -3228,7 +3238,7 @@ class ContentManager {
     }
 
     async showAnalytics() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             const userResponse = await window.authManager.getUserData();
             
@@ -3812,7 +3822,7 @@ class ContentManager {
     }
 
     async showWorkTasks() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             // Get current user's information from cache
             const userResponse = await window.authManager.getUserData();
@@ -5968,7 +5978,7 @@ class ContentManager {
 
     // Registration Approval Management
     async showRegistrationApproval() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         
         try {
             content.innerHTML = `
@@ -7391,7 +7401,7 @@ class ContentManager {
 
     // Request Management Functions
     async showAttendanceRequest() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main');
         try {
             content.innerHTML = `
                 <div class="attendance-request-container">
@@ -7701,7 +7711,12 @@ class ContentManager {
     }
 
     async showTaskAssignment() {
-        const content = document.getElementById('content');
+        const content = document.getElementById('main'); // Fix: use 'main' instead of 'content'
+        if (!content) {
+            console.error('Main content element not found');
+            return;
+        }
+        
         try {
             content.innerHTML = `
                 <div class="task-assignment-container">
