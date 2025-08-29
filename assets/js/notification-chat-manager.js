@@ -318,13 +318,22 @@ class ChatManager {
         document.querySelectorAll('.chat-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.querySelector(`[data-chat-type="${roomType}"]`).classList.add('active');
+        
+        const targetTab = document.querySelector(`[data-tab="${roomType}"]`);
+        if (targetTab) {
+            targetTab.classList.add('active');
+        } else {
+            console.warn(`Chat tab with data-tab="${roomType}" not found`);
+        }
 
-        // Update rooms
-        document.querySelectorAll('.chat-room').forEach(room => {
-            room.classList.remove('active');
-        });
-        document.querySelector(`[data-room="${roomType}"]`).classList.add('active');
+        // Update rooms (for this simple implementation, we just hide/show content)
+        // Since the HRMS implementation uses a single chat-content area
+        const chatContent = document.querySelector('.chat-content');
+        if (chatContent) {
+            // For simple implementation, just update the content
+            // In a full implementation, you'd have separate room divs
+            console.log(`Switched to ${roomType} chat room`);
+        }
 
         this.currentRoom = roomType;
     }
