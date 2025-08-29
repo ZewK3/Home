@@ -17,13 +17,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border: none;
     border-radius: 24px;
     padding: 12px 20px;
     cursor: pointer;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -31,7 +31,7 @@
 
 .modern-chat-toggle:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
 }
 
 .chat-toggle-content {
@@ -64,15 +64,16 @@
     right: 0;
     width: 380px;
     height: 520px;
-    background: rgba(255, 255, 255, 0.95);
+    background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(11, 18, 36, 0.95));
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(148, 163, 184, 0.12);
     border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     display: none;
     flex-direction: column;
     overflow: hidden;
     animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #e5e7eb;
 }
 
 .modern-chat-panel.active {
@@ -96,7 +97,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     color: white;
     border-radius: 16px 16px 0 0;
 }
