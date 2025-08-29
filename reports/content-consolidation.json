@@ -1,0 +1,89 @@
+{
+  "analysis": {
+    "content_manager_size": "10859 lines",
+    "dashboard_handler_size": "3786 lines", 
+    "total_combined": "14645 lines",
+    "target_size": "~8000-10000 lines after consolidation"
+  },
+  "function_comparison": {
+    "content_manager_functions": [
+      "createUserListComponent", "renderUserListItems", "filterUserList", "handleUserSelect",
+      "makeGloballyAccessible", "setupMenuHandlers", "setupQuickActionHandlers", "handleQuickAction",
+      "showShiftAssignment", "showWorkShifts", "showAttendance", "showAttendanceGPS", 
+      "showPersonalInfo", "showTaskAssignment", "showUserManagement", "showSystemTesting",
+      "showAnalytics", "getCurrentWeek", "getCurrentMonth", "setupShiftAssignmentHandlers",
+      "updateSelectedEmployeesList", "showTimesheet", "showRequestDetail", "showTaskDetail"
+    ],
+    "dashboard_handler_functions": [
+      "setupModalCloseHandlers", "initializeDashboard", "updateDashboardStatsUI", 
+      "getDashboardStats", "updateStatsGrid", "showDashboardLoader", "initializeTimeDisplay",
+      "setupMobileMenu", "initializeNotificationAndChatManagers", "restoreOriginalDashboardContent",
+      "initializeAccordionMenu", "initializeEnhancedDashboard"
+    ],
+    "overlapping_concerns": [
+      "setup* functions - both files handle initialization",
+      "show* functions - content display responsibilities",
+      "update* functions - data refresh and UI updates",
+      "mobile menu setup - duplicated functionality"
+    ]
+  },
+  "consolidation_plan": {
+    "kept_from_content_manager": [
+      "Core ContentManager class", "User management functions", "Content rendering",
+      "Menu handlers", "Task/attendance/shift management", "Modal management",
+      "Text editor functionality", "Analytics and reporting"
+    ],
+    "merged_from_dashboard_handler": [
+      {
+        "function": "initializeDashboard",
+        "merge_to": "ContentManager.initialize",
+        "reason": "Main initialization should be in ContentManager"
+      },
+      {
+        "function": "updateDashboardStatsUI",
+        "merge_to": "ContentManager.updateDashboardStats", 
+        "reason": "Stats updates are content management"
+      },
+      {
+        "function": "setupMobileMenu",
+        "merge_to": "ContentManager.setupMobileMenu",
+        "reason": "Menu setup belongs in ContentManager"
+      },
+      {
+        "function": "initializeTimeDisplay",
+        "merge_to": "ContentManager.initializeTimeDisplay",
+        "reason": "UI initialization part of content management"
+      }
+    ],
+    "removed_duplicates": [
+      "duplicate mobile menu setup functions",
+      "redundant modal handlers",
+      "overlapping initialization code"
+    ]
+  },
+  "call_site_updates": [
+    {
+      "file": "/pages/dashboard/dashboard.html",
+      "from": "dashboard-handler.js",
+      "to": "content-manager.js"
+    },
+    {
+      "file": "/assets/js/main-init.js", 
+      "from": "initializeDashboard()",
+      "to": "window.contentManager.initialize()"
+    }
+  ],
+  "database_schema_migration": {
+    "schema_file": "/data/Enhanced_HR_Database_Schema_v3.sql",
+    "key_tables": [
+      "employees", "departments", "stores", "attendance_records", 
+      "tasks", "work_shifts", "user_roles", "notifications"
+    ],
+    "migration_needed": [
+      "Update SQL queries to match v3 schema",
+      "Add proper joins for normalized tables", 
+      "Update field mappings for new column names",
+      "Add support for new tables (companies, audit_logs, performance_metrics)"
+    ]
+  }
+}
