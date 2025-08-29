@@ -14,10 +14,12 @@ class AuthManager {
         
         // Get token from storage (secure or regular)
         this.token = this.getFromStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        console.log('AuthManager initialized - Token found:', !!this.token);
         
         // Safely parse user data from storage
         try {
             this.userData = this.getFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
+            console.log('AuthManager initialized - User data found:', !!this.userData);
         } catch (error) {
             console.warn('Failed to parse user data from storage:', error);
             this.userData = null;
@@ -481,7 +483,8 @@ class AuthManager {
 
     async checkAuthentication() {
         if (!this.token) {
-            // window.location.href = "index.html"; // Commented for testing
+            console.log('No token found, redirecting to login');
+            window.location.href = "../../index.html";
             return null;
         }
 
@@ -567,7 +570,8 @@ class AuthManager {
             this.secureStorage.clearAllData();
         }
         
-        // window.location.href = "index.html"; // Commented for testing
+        console.log('Logout completed, redirecting to login');
+        window.location.href = "../../index.html";
     }
 }
 
