@@ -97,12 +97,16 @@ async function initializeDashboard() {
         }
         window.contentManager = new ContentManager(userData);
 
-        // Initialize enhanced navigation manager
+        // Initialize enhanced navigation manager (optional)
         if (typeof NavigationManager !== 'undefined') {
-            window.navigationManager = new NavigationManager(window.contentManager);
-            console.log('✅ NavigationManager initialized');
+            try {
+                window.navigationManager = new NavigationManager(window.contentManager);
+                console.log('✅ NavigationManager initialized');
+            } catch (error) {
+                console.warn('NavigationManager initialization failed:', error.message);
+            }
         } else {
-            console.warn('NavigationManager not available, using fallback navigation');
+            console.log('NavigationManager not available, using built-in navigation');
         }
 
         // Apply role-based section visibility FIRST
@@ -667,43 +671,64 @@ async function applyRoleBasedSectionVisibility() {
     
     console.log('🎛️ Applying role-based section visibility for role:', userRole);
     
-    // Role-based section visibility map
+    // Role-based section visibility map - updated for new dashboard structure
     const sectionVisibility = {
         'AD': {
-            '.quick-actions-section': true,
-            '.analytics-section': true,
-            '.store-management-section': true,
-            '.finance-section': true,
-            '.registration-approval-section': true,
-            '.personal-section': false,
-            '.activities-section': true
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': true,
+            '.user-management': true,
+            '.system-info': true
         },
         'QL': {
-            '.quick-actions-section': true,
-            '.analytics-section': false,
-            '.store-management-section': true,
-            '.finance-section': false,
-            '.registration-approval-section': true,
-            '.personal-section': false,
-            '.activities-section': true
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': false,
+            '.user-management': false,
+            '.system-info': true
         },
         'NV': {
-            '.quick-actions-section': false,
-            '.analytics-section': false,
-            '.store-management-section': false,
-            '.finance-section': false,
-            '.registration-approval-section': false,
-            '.personal-section': true,
-            '.activities-section': true
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': false,
+            '.user-management': false,
+            '.system-info': true
         },
         'AM': {
-            '.quick-actions-section': false,
-            '.analytics-section': false,
-            '.store-management-section': false,
-            '.finance-section': false,
-            '.registration-approval-section': false,
-            '.personal-section': true,
-            '.activities-section': true
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': false,
+            '.user-management': false,
+            '.system-info': true
+        },
+        // Support new role codes
+        'SUPER_ADMIN': {
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': true,
+            '.user-management': true,
+            '.system-info': true
+        },
+        'ADMIN': {
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': true,
+            '.user-management': true,
+            '.system-info': true
+        },
+        'STORE_MANAGER': {
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': false,
+            '.user-management': false,
+            '.system-info': true
+        },
+        'EMPLOYEE': {
+            '.dashboard-stats': true,
+            '.dashboard-overview': true,
+            '.admin-actions': false,
+            '.user-management': false,
+            '.system-info': true
         }
     };
     
@@ -714,7 +739,7 @@ async function applyRoleBasedSectionVisibility() {
     const visibleSections = Object.entries(roleConfig).filter(([_, isVisible]) => isVisible);
     console.log(`📊 Expected ${visibleSections.length} sections to be visible for ${userRole} role`);
     
-    // Apply visibility settings
+    // Apply visibility settings only to existing sections
     Object.entries(roleConfig).forEach(([selector, isVisible]) => {
         const section = document.querySelector(selector);
         if (section) {
@@ -730,48 +755,18 @@ async function applyRoleBasedSectionVisibility() {
                 section.classList.remove('role-visible');
                 console.log(`❌ Section hidden for ${userRole}: ${selector}`);
             }
-        } else {
-            console.warn(`⚠️ Section not found: ${selector}`);
         }
+        // Removed section not found warnings for cleaner logs
     });
     
     // Summary log
     const actualVisibleSections = document.querySelectorAll('.role-visible').length;
     console.log(`📈 Result: ${actualVisibleSections} sections are now visible`);
     
-    // Special debug for AD role
-    if (userRole === 'AD') {
-        console.log('🔍 AD Role Special Debug:');
-        console.log('  - Quick Actions:', !!document.querySelector('.quick-actions-section.role-visible'));
-        console.log('  - Analytics:', !!document.querySelector('.analytics-section.role-visible'));
-        console.log('  - Store Management:', !!document.querySelector('.store-management-section.role-visible'));
-        console.log('  - Finance:', !!document.querySelector('.finance-section.role-visible'));
-        console.log('  - Registration Approval:', !!document.querySelector('.registration-approval-section.role-visible'));
-        console.log('  - Activities:', !!document.querySelector('.activities-section.role-visible'));
-    }
-    
-    // Also apply role-based visibility to quick action buttons within the visible section
-    if (roleConfig['.quick-actions-section']) {
-        const quickActionVisibility = {
-            'AD': ['addEmployee', 'createSchedule', 'viewReports'],
-            'QL': ['createSchedule'],
-            'NV': [],
-            'AM': []
-        };
-        
-        const allowedActions = quickActionVisibility[userRole] || [];
-        
-        document.querySelectorAll('.quick-action-btn').forEach(btn => {
-            const action = btn.dataset.action;
-            if (allowedActions.includes(action)) {
-                btn.style.display = 'flex';
-                btn.style.visibility = 'visible';
-            } else {
-                btn.style.display = 'none';
-                btn.style.visibility = 'hidden';
-                console.log(`❌ Quick action hidden for ${userRole}: ${action}`);
-            }
-        });
+    // Apply menu-based role visibility instead of missing sections
+    if (typeof MenuManager !== 'undefined' && MenuManager.applyRoleBasedVisibility) {
+        MenuManager.applyRoleBasedVisibility(userRole);
+        console.log('📋 Applied MenuManager role-based visibility');
     }
     
 }
@@ -1053,14 +1048,22 @@ async function initializeFinanceDashboard() {
 
 // GitHub-Style Mobile Menu Dialog Handler
 function setupMobileMenu() {
-    const menuToggle = document.getElementById('menuToggle');
-    const mobileDialog = document.getElementById('mobile-nav-dialog');
-    const closeDialog = document.querySelector('.close-dialog');
+    const menuToggle = document.getElementById('btnSidebar');
+    const mobileDialog = document.getElementById('mobileSidebar');
     
     if (!menuToggle || !mobileDialog) {
-        console.warn('Mobile menu elements not found');
+        console.log('Mobile menu handled by inline script - skipping setupMobileMenu');
         return;
     }
+    
+    // Check if mobile menu is already handled by inline script
+    if (menuToggle.getAttribute('aria-expanded') !== null) {
+        console.log('✅ Mobile menu already initialized by HRMS-Responsive script');
+        return;
+    }
+    
+    // Fallback mobile menu setup (if inline script is not present)
+    console.log('🔧 Setting up fallback mobile menu functionality');
     
     let isMenuOpen = false;
     
