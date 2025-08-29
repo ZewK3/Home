@@ -1,662 +1,585 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp - ZewK HR Management">
-    <meta name="theme-color" content="#2563eb">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HR Management Dashboard</title>
     <link rel="icon" href="../../assets/icons/favicon-32x32.png" sizes="32x32">
-    <title>ZewK HR Management - Dashboard</title>
-    
-    <!-- Single Unified CSS -->
-    <link rel="stylesheet" href="../../assets/css/dashboard-unified.css">
-    
-    <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        :root{
+            --header-h:60px; --sidebar-w:260px;
+            --bg:#0f172a; --bg-soft:#111827; --text:#e5e7eb; --muted:#94a3b8;
+            --brand:#3b82f6; --ring:rgba(59,130,246,.5);
+            --success:#10b981; --warning:#f59e0b; --danger:#ef4444;
+        }
+        
+        *{box-sizing:border-box} html,body{height:100%}
+        body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
+             color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,#0b1224 100%)}
+        a{color:inherit;text-decoration:none} button{font:inherit}
+
+        /* Header */
+        .app-header{position:sticky;top:0;z-index:40;height:var(--header-h);display:flex;align-items:center;gap:12px;padding:0 16px;
+            background:linear-gradient(180deg,#0b1224,rgba(11,18,36,.7));border-bottom:1px solid rgba(148,163,184,.15);backdrop-filter:saturate(180%) blur(8px)}
+        .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+        .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 6px rgba(59,130,246,.2)}
+        .spacer{flex:1}
+        .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;border:0;background:transparent;color:var(--text);outline:2px solid transparent;outline-offset:2px;position:relative}
+        .icon-btn:hover{background:rgba(148,163,184,.12)} .icon-btn:focus-visible{box-shadow:0 0 0 3px var(--ring)}
+        
+        /* Notification Badge */
+        .notification-badge{position:absolute;top:6px;right:6px;background:var(--danger);color:white;border-radius:50%;width:18px;height:18px;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:600}
+        
+        /* Notification Dropdown */
+        .notification-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--bg-soft);border:1px solid rgba(148,163,184,.15);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.3);z-index:50;display:none;backdrop-filter:blur(8px)}
+        .notification-dropdown.show{display:block}
+        .notification-header{padding:16px;border-bottom:1px solid rgba(148,163,184,.1);display:flex;justify-content:space-between;align-items:center}
+        .notification-header h3{margin:0;font-size:16px;font-weight:600}
+        .mark-all-read{background:transparent;border:none;color:var(--brand);font-size:14px;cursor:pointer}
+        .notification-list{max-height:300px;overflow-y:auto}
+        .notification-item{padding:12px 16px;border-bottom:1px solid rgba(148,163,184,.05);display:flex;gap:12px;align-items:flex-start}
+        .notification-item:hover{background:rgba(148,163,184,.05)}
+        .notification-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.1);color:var(--brand)}
+        .notification-content{flex:1}
+        .notification-title{font-size:14px;font-weight:500;margin:0 0 4px}
+        .notification-text{font-size:13px;color:var(--muted);margin:0}
+        .notification-time{font-size:12px;color:var(--muted)}
+        .notification-footer{padding:12px 16px;text-align:center;border-top:1px solid rgba(148,163,184,.1)}
+        .notification-footer a{color:var(--brand);font-size:14px}
+
+        /* Shell */
+        .shell{display:flex;min-height:calc(100dvh - var(--header-h))}
+
+        /* Sidebar */
+        .app-sidebar{position:relative;width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
+            background:linear-gradient(180deg,var(--bg-soft),#0b1224);border-right:1px solid rgba(148,163,184,.15);
+            padding:14px;display:flex;flex-direction:column;gap:10px}
+        .nav-group{margin-top:8px} 
+        .nav-title{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 8px}
+        .nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--text);transition:all 0.2s ease}
+        .nav a:hover{background:rgba(148,163,184,.12)} 
+        .nav a[aria-current="page"]{background:rgba(59,130,246,.15);outline:1px solid rgba(59,130,246,.25)}
+        .nav .material-icons-round{font-size:20px}
+
+        /* Content */
+        .content{flex:1;min-width:0;padding:20px;display:flex;flex-direction:column;gap:16px}
+        .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+        .card{grid-column:span 12;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid rgba(148,163,184,.12);border-radius:16px;padding:16px;backdrop-filter:blur(8px)}
+        .card h3{margin:0 0 8px;font-size:18px;font-weight:600}
+        .card p{margin:8px 0;color:var(--muted)}
+        .card strong{color:var(--text);font-weight:600}
+
+        /* Statistics Cards */
+        .stat-card{display:flex;align-items:center;gap:16px;padding:20px;border-radius:12px;background:linear-gradient(135deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(148,163,184,.12)}
+        .stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+        .stat-icon.primary{background:rgba(59,130,246,.2);color:var(--brand)}
+        .stat-icon.success{background:rgba(16,185,129,.2);color:var(--success)}
+        .stat-icon.warning{background:rgba(245,158,11,.2);color:var(--warning)}
+        .stat-icon.danger{background:rgba(239,68,68,.2);color:var(--danger)}
+        .stat-content h4{margin:0 0 4px;font-size:14px;color:var(--muted);font-weight:500}
+        .stat-content .stat-number{font-size:32px;font-weight:700;margin:0;color:var(--text)}
+        .stat-content .stat-trend{font-size:14px;margin:4px 0 0;padding:4px 8px;border-radius:6px}
+        .stat-trend.positive{background:rgba(16,185,129,.2);color:var(--success)}
+        .stat-trend.negative{background:rgba(239,68,68,.2);color:var(--danger)}
+
+        /* Chart Placeholder */
+        .chart-container{height:240px;background:rgba(148,163,184,.08);border-radius:12px;display:flex;align-items:end;justify-content:center;padding:16px}
+        .chart-bars{display:flex;gap:12px;align-items:end;height:160px}
+        .chart-bar{width:24px;border-radius:4px 4px 0 0;background:linear-gradient(to top,var(--brand),#7aa7fb)}
+
+        /* Activity List */
+        .activity-list{list-style:none;padding:0;margin:0}
+        .activity-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(148,163,184,.1)}
+        .activity-item:last-child{border-bottom:none}
+        .activity-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.1);color:var(--brand);font-size:16px}
+        .activity-content{flex:1}
+        .activity-title{font-size:14px;font-weight:500;margin:0 0 2px}
+        .activity-time{font-size:12px;color:var(--muted)}
+
+        /* Chat System */
+        .chat-toggle{position:fixed;bottom:20px;right:20px;width:56px;height:56px;border-radius:50%;background:var(--brand);color:white;border:none;font-size:24px;box-shadow:0 4px 20px rgba(59,130,246,.3);z-index:1000;cursor:pointer;transition:all 0.3s ease}
+        .chat-toggle:hover{transform:scale(1.1);box-shadow:0 6px 25px rgba(59,130,246,.4)}
+        
+        .chat-panel{position:fixed;bottom:20px;right:20px;width:360px;height:480px;background:var(--bg-soft);border:1px solid rgba(148,163,184,.15);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.3);backdrop-filter:blur(8px);z-index:1001;display:none;flex-direction:column}
+        .chat-panel.show{display:flex}
+        .chat-header{padding:16px;border-bottom:1px solid rgba(148,163,184,.1);display:flex;justify-content:space-between;align-items:center}
+        .chat-header h3{margin:0;font-size:16px;font-weight:600}
+        .chat-close{background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+        .chat-tabs{display:flex;padding:0 16px;gap:8px;border-bottom:1px solid rgba(148,163,184,.1)}
+        .chat-tab{padding:8px 12px;background:transparent;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+        .chat-tab.active{color:var(--brand);border-bottom-color:var(--brand)}
+        .chat-content{flex:1;padding:16px;overflow-y:auto}
+        .chat-messages{display:flex;flex-direction:column;gap:8px}
+        .chat-message{display:flex;gap:8px;margin-bottom:12px}
+        .chat-avatar{width:32px;height:32px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;color:white;font-size:14px}
+        .chat-bubble{background:rgba(148,163,184,.1);padding:8px 12px;border-radius:12px;max-width:70%}
+        .chat-input{display:flex;gap:8px;padding:16px;border-top:1px solid rgba(148,163,184,.1)}
+        .chat-input input{flex:1;background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.2);border-radius:8px;padding:8px 12px;color:var(--text)}
+        .chat-input button{background:var(--brand);border:none;border-radius:8px;padding:8px 12px;color:white;cursor:pointer}
+
+        @media (min-width:1024px){
+            .cards .span-4{grid-column:span 4}
+            .cards .span-6{grid-column:span 6}
+            .cards .span-8{grid-column:span 8}
+            .cards .span-12{grid-column:span 12}
+        }
+
+        /* Mobile Off-canvas */
+        .sidebar-panel{position:fixed;inset:0;z-index:50;display:none}
+        .sidebar-panel.active{display:block}
+        .sidebar-overlay{position:absolute;inset:0;background:rgba(2,6,23,.45)}
+        .sidebar-drawer{position:absolute;inset:0 auto 0 0;width:min(86vw,320px);transform:translateX(-100%);transition:transform .25s ease;height:100%;display:flex}
+        .sidebar-panel.active .sidebar-drawer{transform:translateX(0)}
+        .sidebar-drawer .app-sidebar{width:100%;flex-basis:100%}
+        @media (max-width:1023.98px){.app-sidebar.permanent{display:none}}
+        @media (prefers-reduced-motion:reduce){.sidebar-drawer{transition:none}}
+        
+        /* Loading Screen */
+        .dashboard-loader{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+        .loader-content{text-align:center}
+        .dual-spinner-container{position:relative;width:60px;height:60px;margin:0 auto 20px}
+        .spinner-outer,.spinner-inner{border:3px solid transparent;border-top:3px solid var(--brand);border-radius:50%;position:absolute;animation:spin 1s linear infinite}
+        .spinner-outer{width:60px;height:60px}
+        .spinner-inner{width:40px;height:40px;top:10px;left:10px;animation-direction:reverse}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+        .loader-title{margin:0 0 8px;font-size:18px;font-weight:600}
+        .loader-subtitle{margin:0;color:var(--muted)}
+    </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-container">
-            <div class="loading-spinner">
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
-                <div class="spinner-ring"></div>
+    <!-- Dashboard Loading Screen -->
+    <div id="dashboardLoader" class="dashboard-loader">
+        <div class="loader-content">
+            <div class="dual-spinner-container">
+                <div class="spinner-outer"></div>
+                <div class="spinner-inner"></div>
             </div>
-            <h2 class="loading-title">ZewK HR Management</h2>
-            <p class="loading-subtitle">Đang khởi tạo hệ thống...</p>
+            <h3 class="loader-title">Đang tải Dashboard...</h3>
+            <p class="loader-subtitle">Vui lòng đợi trong giây lát</p>
         </div>
     </div>
 
-    <!-- Main Application Container -->
-    <div id="app" class="app-container">
+    <!-- Modern Dashboard Application Container -->
+    <div id="dashboardContent" class="dashboard-content" style="display: none;">
         
-        <!-- Top Navigation Header -->
-        <header class="app-header">
-            <div class="header-left">
-                <button id="sidebarToggle" class="sidebar-toggle" aria-label="Toggle sidebar">
-                    <span class="material-icons-round">menu</span>
+        <!-- Header -->
+        <header class="app-header" role="banner">
+            <button id="btnSidebar" class="icon-btn" aria-label="Mở menu" aria-controls="mobileSidebar" aria-expanded="false">
+                <span class="material-icons-round">menu</span>
+            </button>
+            <div class="brand">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span>HRMS</span>
+            </div>
+            <div class="spacer"></div>
+            
+            <!-- Search -->
+            <button class="icon-btn" aria-label="Tìm kiếm">
+                <span class="material-icons-round">search</span>
+            </button>
+            
+            <!-- Notifications -->
+            <div style="position: relative;">
+                <button id="notificationToggle" class="icon-btn" aria-label="Thông báo">
+                    <span class="material-icons-round">notifications</span>
+                    <span id="notificationBadge" class="notification-badge">3</span>
                 </button>
-                <div class="brand">
-                    <h1 class="brand-title">ZewK HR</h1>
-                    <span class="brand-subtitle">Management System</span>
-                </div>
-            </div>
-            
-            <div class="header-center">
-                <div class="search-container">
-                    <span class="material-icons-round search-icon">search</span>
-                    <input type="text" class="global-search" placeholder="Tìm kiếm nhân viên, báo cáo...">
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <!-- Notifications -->
-                <div class="header-item notifications">
-                    <button class="notification-btn" id="notificationBtn">
-                        <span class="material-icons-round">notifications</span>
-                        <span class="notification-badge">3</span>
-                    </button>
-                    <div class="notification-dropdown" id="notificationDropdown">
-                        <div class="notification-header">
-                            <h3>Thông báo</h3>
-                            <button class="mark-all-read">Đánh dấu đã đọc</button>
-                        </div>
-                        <div class="notification-list">
-                            <div class="notification-item unread">
-                                <div class="notification-icon success">
-                                    <span class="material-icons-round">check_circle</span>
-                                </div>
-                                <div class="notification-content">
-                                    <h4>Yêu cầu nghỉ phép được duyệt</h4>
-                                    <p>Đơn nghỉ phép từ 15/01 đã được quản lý phê duyệt</p>
-                                    <span class="notification-time">5 phút trước</span>
-                                </div>
-                            </div>
-                            <div class="notification-item">
-                                <div class="notification-icon info">
-                                    <span class="material-icons-round">info</span>
-                                </div>
-                                <div class="notification-content">
-                                    <h4>Cập nhật lịch làm việc</h4>
-                                    <p>Lịch ca tháng sau đã được cập nhật</p>
-                                    <span class="notification-time">1 giờ trước</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="notification-footer">
-                            <a href="#" class="view-all">Xem tất cả</a>
-                        </div>
-                    </div>
-                </div>
                 
-                <!-- User Profile -->
-                <div class="header-item user-profile">
-                    <button class="profile-btn" id="profileBtn">
-                        <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="user-avatar">
-                        <div class="user-info">
-                            <span class="user-name" id="userName">Admin User</span>
-                            <span class="user-role" id="userRole">System Administrator</span>
-                        </div>
-                        <span class="material-icons-round">expand_more</span>
-                    </button>
-                    <div class="profile-dropdown" id="profileDropdown">
-                        <div class="profile-header">
-                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="profile-avatar">
-                            <div class="profile-info">
-                                <h3 id="profileName">Admin User</h3>
-                                <p id="profileEmail">admin@zewk.com</p>
+                <!-- Notification Dropdown -->
+                <div id="notificationDropdown" class="notification-dropdown">
+                    <div class="notification-header">
+                        <h3>Thông báo</h3>
+                        <button id="markAllRead" class="mark-all-read">Đánh dấu đã đọc</button>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <span class="material-icons-round">assignment</span>
                             </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Đơn nghỉ phép mới</div>
+                                <div class="notification-text">Nguyễn Văn A đã gửi đơn xin nghỉ phép</div>
+                            </div>
+                            <div class="notification-time">5 phút</div>
                         </div>
-                        <div class="profile-menu">
-                            <a href="#" class="profile-menu-item">
-                                <span class="material-icons-round">person</span>
-                                Thông tin cá nhân
-                            </a>
-                            <a href="#" class="profile-menu-item">
-                                <span class="material-icons-round">settings</span>
-                                Cài đặt
-                            </a>
-                            <a href="#" class="profile-menu-item">
-                                <span class="material-icons-round">help</span>
-                                Trợ giúp
-                            </a>
-                            <hr class="profile-separator">
-                            <button class="profile-menu-item logout" id="logoutBtn">
-                                <span class="material-icons-round">logout</span>
-                                Đăng xuất
-                            </button>
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <span class="material-icons-round">schedule</span>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Ca làm việc</div>
+                                <div class="notification-text">Nhắc nhở ca chiều bắt đầu lúc 14:00</div>
+                            </div>
+                            <div class="notification-time">1 giờ</div>
                         </div>
+                        <div class="notification-item">
+                            <div class="notification-icon">
+                                <span class="material-icons-round">info</span>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-title">Cập nhật hệ thống</div>
+                                <div class="notification-text">Phiên bản 3.2.0 đã được cài đặt thành công</div>
+                            </div>
+                            <div class="notification-time">2 giờ</div>
+                        </div>
+                    </div>
+                    <div class="notification-footer">
+                        <a href="#">Xem tất cả thông báo</a>
                     </div>
                 </div>
             </div>
+            
+            <!-- User Profile -->
+            <button class="icon-btn" aria-label="Tài khoản" id="userProfileBtn">
+                <span class="material-icons-round">account_circle</span>
+            </button>
         </header>
 
-        <!-- Sidebar Navigation -->
-        <aside class="app-sidebar" id="sidebar">
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <h3 class="nav-title">Tổng quan</h3>
-                    <ul class="nav-list">
-                        <li class="nav-item active">
-                            <a href="#" class="nav-link" data-page="dashboard">
-                                <span class="material-icons-round">dashboard</span>
-                                <span class="nav-text">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="analytics">
-                                <span class="material-icons-round">analytics</span>
-                                <span class="nav-text">Phân tích</span>
-                            </a>
-                        </li>
-                    </ul>
+        <!-- Shell -->
+        <div class="shell" role="presentation">
+            <!-- Sidebar (desktop permanent) -->
+            <aside class="app-sidebar permanent" aria-label="Thanh điều hướng">
+                <div class="nav-group">
+                    <div class="nav-title">Tổng quan</div>
+                    <nav class="nav">
+                        <a href="#" aria-current="page" id="dashboardLink">
+                            <span class="material-icons-round">dashboard</span>
+                            Bảng điều khiển
+                        </a>
+                        <a href="#" id="reportsLink">
+                            <span class="material-icons-round">analytics</span>
+                            Báo cáo
+                        </a>
+                        <a href="#" id="calendarLink">
+                            <span class="material-icons-round">calendar_today</span>
+                            Lịch
+                        </a>
+                    </nav>
                 </div>
                 
-                <div class="nav-section" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
-                    <h3 class="nav-title">Quản lý nhân sự</h3>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="employees">
-                                <span class="material-icons-round">people</span>
-                                <span class="nav-text">Nhân viên</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="departments">
-                                <span class="material-icons-round">business</span>
-                                <span class="nav-text">Phòng ban</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="positions">
-                                <span class="material-icons-round">work</span>
-                                <span class="nav-text">Chức vụ</span>
-                            </a>
-                        </li>
-                    </ul>
+                <div class="nav-group">
+                    <div class="nav-title">Quản lý nhân sự</div>
+                    <nav class="nav">
+                        <a href="#" id="employeesLink">
+                            <span class="material-icons-round">people</span>
+                            Nhân viên
+                        </a>
+                        <a href="#" id="attendanceLink">
+                            <span class="material-icons-round">schedule</span>
+                            Chấm công
+                        </a>
+                        <a href="#" id="shiftsLink">
+                            <span class="material-icons-round">access_time</span>
+                            Ca làm việc
+                        </a>
+                        <a href="#" id="leaveRequestsLink">
+                            <span class="material-icons-round">event_busy</span>
+                            Đơn nghỉ phép
+                        </a>
+                    </nav>
                 </div>
                 
-                <div class="nav-section">
-                    <h3 class="nav-title">Công việc hàng ngày</h3>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="attendance">
-                                <span class="material-icons-round">schedule</span>
-                                <span class="nav-text">Chấm công</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="shifts">
-                                <span class="material-icons-round">event_available</span>
-                                <span class="nav-text">Phân ca</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="tasks">
-                                <span class="material-icons-round">assignment</span>
-                                <span class="nav-text">Nhiệm vụ</span>
-                            </a>
-                        </li>
-                    </ul>
+                <div class="nav-group">
+                    <div class="nav-title">Quản trị</div>
+                    <nav class="nav">
+                        <a href="#" id="usersLink" data-role="SUPER_ADMIN,ADMIN">
+                            <span class="material-icons-round">person</span>
+                            Người dùng
+                        </a>
+                        <a href="#" id="rolesLink" data-role="SUPER_ADMIN,ADMIN">
+                            <span class="material-icons-round">security</span>
+                            Phân quyền
+                        </a>
+                        <a href="#" id="settingsLink" data-role="SUPER_ADMIN,ADMIN">
+                            <span class="material-icons-round">settings</span>
+                            Cài đặt
+                        </a>
+                    </nav>
                 </div>
                 
-                <div class="nav-section">
-                    <h3 class="nav-title">Yêu cầu & Duyệt</h3>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="requests">
-                                <span class="material-icons-round">request_page</span>
-                                <span class="nav-text">Đơn từ</span>
-                                <span class="nav-badge">5</span>
-                            </a>
-                        </li>
-                        <li class="nav-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
-                            <a href="#" class="nav-link" data-page="approvals">
-                                <span class="material-icons-round">approval</span>
-                                <span class="nav-text">Phê duyệt</span>
-                                <span class="nav-badge warning">12</span>
-                            </a>
-                        </li>
-                    </ul>
+                <!-- Logout Button -->
+                <div style="margin-top: auto; padding-top: 20px;">
+                    <a href="#" id="logoutBtn" class="nav" style="color: var(--danger);">
+                        <span class="material-icons-round">logout</span>
+                        Đăng xuất
+                    </a>
                 </div>
-                
-                <div class="nav-section" data-role="SUPER_ADMIN,ADMIN">
-                    <h3 class="nav-title">Hệ thống</h3>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="settings">
-                                <span class="material-icons-round">settings</span>
-                                <span class="nav-text">Cài đặt</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-page="permissions">
-                                <span class="material-icons-round">admin_panel_settings</span>
-                                <span class="nav-text">Phân quyền</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </aside>
+            </aside>
 
-        <!-- Main Content Area -->
-        <main class="app-main" id="mainContent">
-            <!-- Breadcrumb -->
-            <div class="breadcrumb">
-                <span class="material-icons-round">home</span>
-                <span class="breadcrumb-separator">/</span>
-                <span class="breadcrumb-item">Dashboard</span>
-            </div>
-            
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="page-title-section">
-                    <h1 class="page-title">Dashboard</h1>
-                    <p class="page-subtitle">Tổng quan hệ thống quản lý nhân sự</p>
-                </div>
-                <div class="page-actions">
-                    <button class="btn btn-primary">
-                        <span class="material-icons-round">add</span>
-                        Thêm nhân viên
-                    </button>
-                    <button class="btn btn-secondary">
-                        <span class="material-icons-round">download</span>
-                        Xuất báo cáo
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Dashboard Content -->
-            <div class="dashboard-content">
+            <!-- Content -->
+            <main class="content" id="main" tabindex="-1">
+                <!-- Global notification container -->
+                <div id="notification" class="notification" style="display: none;" role="alert" aria-live="polite"></div>
                 
-                <!-- Statistics Cards -->
-                <section class="stats-section">
-                    <div class="stats-grid">
-                        <div class="stat-card primary">
-                            <div class="stat-icon">
+                <h2>HR Management Dashboard</h2>
+                <p style="color: var(--muted); margin-bottom: 24px;">Hệ thống quản lý nhân sự hiện đại với giao diện đã được tái cấu trúc</p>
+
+                <!-- Professional Header -->
+                <section class="cards">
+                    <article class="card span-12">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                            <div style="display:flex;align-items:center;gap:12px">
+                                <div style="background:rgba(255,255,255,.08);padding:10px;border-radius:12px">
+                                    <span class="material-icons-round" style="font-size: 24px;">dashboard</span>
+                                </div>
+                                <div>
+                                    <h3 style="margin:0">Bảng điều khiển tổng quan</h3>
+                                    <div style="opacity:.8;font-size:.9rem">Hệ thống quản lý nhân sự</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <button class="icon-btn" title="Xuất báo cáo" aria-label="Xuất báo cáo" id="exportReport">
+                                    <span class="material-icons-round">download</span>
+                                </button>
+                                <button class="icon-btn" title="Lọc dữ liệu" aria-label="Lọc dữ liệu" id="filterData">
+                                    <span class="material-icons-round">filter_list</span>
+                                </button>
+                                <button class="icon-btn" title="Làm mới" aria-label="Làm mới" id="refreshData">
+                                    <span class="material-icons-round">refresh</span>
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- KPI Statistics -->
+                <section class="cards">
+                    <article class="card span-4">
+                        <div class="stat-card">
+                            <div class="stat-icon primary">
                                 <span class="material-icons-round">people</span>
                             </div>
                             <div class="stat-content">
-                                <h3 class="stat-title">Tổng nhân viên</h3>
-                                <div class="stat-value" id="totalEmployees">248</div>
-                                <div class="stat-change positive">
-                                    <span class="material-icons-round">trending_up</span>
-                                    +12 tháng này
-                                </div>
+                                <h4>Nhân sự hiện diện</h4>
+                                <div class="stat-number" id="attendanceRate">82%</div>
+                                <div class="stat-trend positive">+5% từ tuần trước</div>
                             </div>
                         </div>
-                        
-                        <div class="stat-card success">
-                            <div class="stat-icon">
-                                <span class="material-icons-round">event_available</span>
+                    </article>
+                    
+                    <article class="card span-4">
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <span class="material-icons-round">trending_up</span>
                             </div>
                             <div class="stat-content">
-                                <h3 class="stat-title">Có mặt hôm nay</h3>
-                                <div class="stat-value" id="presentToday">235</div>
-                                <div class="stat-change positive">
-                                    <span class="material-icons-round">trending_up</span>
-                                    94.8% tỷ lệ
-                                </div>
+                                <h4>Năng suất</h4>
+                                <div class="stat-number" id="productivityRate">94%</div>
+                                <div class="stat-trend positive">+12% so với tuần trước</div>
                             </div>
                         </div>
-                        
-                        <div class="stat-card warning">
-                            <div class="stat-icon">
-                                <span class="material-icons-round">pending_actions</span>
-                            </div>
-                            <div class="stat-content">
-                                <h3 class="stat-title">Đơn chờ duyệt</h3>
-                                <div class="stat-value" id="pendingRequests">12</div>
-                                <div class="stat-change neutral">
-                                    <span class="material-icons-round">schedule</span>
-                                    Cần xử lý
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="stat-card info">
-                            <div class="stat-icon">
+                    </article>
+                    
+                    <article class="card span-4">
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
                                 <span class="material-icons-round">store</span>
                             </div>
                             <div class="stat-content">
-                                <h3 class="stat-title">Cửa hàng hoạt động</h3>
-                                <div class="stat-value" id="activeStores">8</div>
-                                <div class="stat-change positive">
-                                    <span class="material-icons-round">check_circle</span>
-                                    Tất cả hoạt động
+                                <h4>Hiệu suất cửa hàng</h4>
+                                <div class="stat-number" id="storePerformance">4.6/5</div>
+                                <div class="stat-trend positive">Từ bảng chấm điểm</div>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Analytics + Activity -->
+                <section class="cards">
+                    <article class="card span-8">
+                        <h3>Xu hướng theo tuần</h3>
+                        <div class="chart-container">
+                            <div class="chart-bars">
+                                <div class="chart-bar" style="height: 40px;"></div>
+                                <div class="chart-bar" style="height: 80px;"></div>
+                                <div class="chart-bar" style="height: 120px;"></div>
+                                <div class="chart-bar" style="height: 72px;"></div>
+                                <div class="chart-bar" style="height: 96px;"></div>
+                                <div class="chart-bar" style="height: 64px;"></div>
+                                <div class="chart-bar" style="height: 88px;"></div>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="card span-4">
+                        <h3>Hoạt động gần đây</h3>
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <span class="material-icons-round">assignment</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Phê duyệt đơn nghỉ phép</div>
+                                    <div class="activity-time">3 đơn chờ duyệt</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <span class="material-icons-round">schedule</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Cập nhật ca làm</div>
+                                    <div class="activity-time">Tuần tới đã sắp xếp</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <span class="material-icons-round">warning</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Nhân viên đến muộn</div>
+                                    <div class="activity-time">2 trường hợp hôm nay</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 </section>
-                
-                <!-- Main Dashboard Grid -->
-                <div class="dashboard-grid">
-                    
-                    <!-- Left Column -->
-                    <div class="dashboard-left">
-                        
-                        <!-- Quick Actions -->
-                        <section class="card quick-actions">
-                            <div class="card-header">
-                                <h2 class="card-title">
-                                    <span class="material-icons-round">bolt</span>
-                                    Thao tác nhanh
-                                </h2>
-                            </div>
-                            <div class="card-content">
-                                <div class="actions-grid">
-                                    <button class="action-item" data-action="add-employee" data-role="SUPER_ADMIN,ADMIN">
-                                        <span class="material-icons-round">person_add</span>
-                                        <span>Thêm nhân viên</span>
-                                    </button>
-                                    <button class="action-item" data-action="assign-shift" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
-                                        <span class="material-icons-round">schedule_send</span>
-                                        <span>Phân ca</span>
-                                    </button>
-                                    <button class="action-item" data-action="create-report">
-                                        <span class="material-icons-round">assessment</span>
-                                        <span>Tạo báo cáo</span>
-                                    </button>
-                                    <button class="action-item" data-action="manage-requests" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
-                                        <span class="material-icons-round">task_alt</span>
-                                        <span>Xử lý đơn từ</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </section>
-                        
-                        <!-- Attendance Overview -->
-                        <section class="card attendance-overview">
-                            <div class="card-header">
-                                <h2 class="card-title">
-                                    <span class="material-icons-round">access_time</span>
-                                    Chấm công hôm nay
-                                </h2>
-                                <div class="card-actions">
-                                    <button class="btn btn-sm btn-ghost">
-                                        <span class="material-icons-round">refresh</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="attendance-stats">
-                                    <div class="attendance-stat">
-                                        <div class="stat-icon on-time">
-                                            <span class="material-icons-round">check_circle</span>
-                                        </div>
-                                        <div class="stat-info">
-                                            <span class="stat-label">Đúng giờ</span>
-                                            <span class="stat-number">198</span>
-                                        </div>
-                                    </div>
-                                    <div class="attendance-stat">
-                                        <div class="stat-icon late">
-                                            <span class="material-icons-round">schedule</span>
-                                        </div>
-                                        <div class="stat-info">
-                                            <span class="stat-label">Muộn</span>
-                                            <span class="stat-number">15</span>
-                                        </div>
-                                    </div>
-                                    <div class="attendance-stat">
-                                        <div class="stat-icon absent">
-                                            <span class="material-icons-round">cancel</span>
-                                        </div>
-                                        <div class="stat-info">
-                                            <span class="stat-label">Vắng mặt</span>
-                                            <span class="stat-number">8</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="attendance-chart">
-                                    <div class="chart-placeholder">
-                                        <span class="material-icons-round">bar_chart</span>
-                                        <p>Biểu đồ chấm công 7 ngày</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                        
-                        <!-- Recent Activities -->
-                        <section class="card recent-activities">
-                            <div class="card-header">
-                                <h2 class="card-title">
-                                    <span class="material-icons-round">history</span>
-                                    Hoạt động gần đây
-                                </h2>
-                                <div class="card-actions">
-                                    <a href="#" class="text-link">Xem tất cả</a>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="activity-list">
-                                    <div class="activity-item">
-                                        <div class="activity-icon success">
-                                            <span class="material-icons-round">person_add</span>
-                                        </div>
-                                        <div class="activity-content">
-                                            <p class="activity-text">
-                                                <strong>Nguyễn Văn A</strong> đã được thêm vào hệ thống
-                                            </p>
-                                            <span class="activity-time">5 phút trước</span>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon warning">
-                                            <span class="material-icons-round">schedule</span>
-                                        </div>
-                                        <div class="activity-content">
-                                            <p class="activity-text">
-                                                <strong>Trần Thị B</strong> gửi đơn xin nghỉ phép
-                                            </p>
-                                            <span class="activity-time">15 phút trước</span>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon info">
-                                            <span class="material-icons-round">check_circle</span>
-                                        </div>
-                                        <div class="activity-content">
-                                            <p class="activity-text">
-                                                Ca sáng <strong>Store #001</strong> đã hoàn thành
-                                            </p>
-                                            <span class="activity-time">2 giờ trước</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
+
+                <!-- Additional Metrics -->
+                <section class="cards">
+                    <article class="card span-6">
+                        <h3>Điểm tuân thủ</h3>
+                        <p><strong>92/100</strong> • Không vi phạm lớn</p>
+                        <p style="color: var(--muted);">Đánh giá chung: Tốt</p>
+                    </article>
+                    <article class="card span-6">
+                        <h3>Giờ làm thêm</h3>
+                        <p><strong>18 giờ</strong> • tháng này</p>
+                        <p style="color: var(--muted);">Trung bình: 4.5 giờ/tuần</p>
+                    </article>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <div id="mobileSidebar" class="sidebar-panel" hidden>
+        <div class="sidebar-overlay" data-close></div>
+        <div class="sidebar-drawer" role="dialog" aria-modal="true" aria-label="Menu">
+            <aside class="app-sidebar" role="navigation">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+                    <div class="brand" style="font-size:14px">
+                        <span class="brand-dot"></span>
+                        <span>Menu</span>
                     </div>
-                    
-                    <!-- Right Column -->
-                    <div class="dashboard-right">
-                        
-                        <!-- Store Performance -->
-                        <section class="card store-performance" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
-                            <div class="card-header">
-                                <h2 class="card-title">
-                                    <span class="material-icons-round">store</span>
-                                    Hiệu suất cửa hàng
-                                </h2>
-                                <div class="card-actions">
-                                    <select class="select-sm">
-                                        <option>Tuần này</option>
-                                        <option>Tháng này</option>
-                                        <option>Quý này</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="store-list">
-                                    <div class="store-item">
-                                        <div class="store-info">
-                                            <h4 class="store-name">Cửa hàng Trung tâm</h4>
-                                            <p class="store-location">Quận 1, TP.HCM</p>
-                                        </div>
-                                        <div class="store-metrics">
-                                            <div class="metric">
-                                                <span class="metric-label">Nhân viên</span>
-                                                <span class="metric-value">24/25</span>
-                                            </div>
-                                            <div class="metric">
-                                                <span class="metric-label">Hiệu suất</span>
-                                                <span class="metric-value success">98.5%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="store-item">
-                                        <div class="store-info">
-                                            <h4 class="store-name">Cửa hàng Quận 7</h4>
-                                            <p class="store-location">Quận 7, TP.HCM</p>
-                                        </div>
-                                        <div class="store-metrics">
-                                            <div class="metric">
-                                                <span class="metric-label">Nhân viên</span>
-                                                <span class="metric-value">18/20</span>
-                                            </div>
-                                            <div class="metric">
-                                                <span class="metric-label">Hiệu suất</span>
-                                                <span class="metric-value warning">89.2%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                        
-                        <!-- Calendar Widget -->
-                        <section class="card calendar-widget">
-                            <div class="card-header">
-                                <h2 class="card-title">
-                                    <span class="material-icons-round">calendar_today</span>
-                                    Lịch làm việc
-                                </h2>
-                                <div class="card-actions">
-                                    <button class="btn btn-sm btn-ghost">
-                                        <span class="material-icons-round">today</span>
-                                        Hôm nay
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-content">
-                                <div class="calendar-mini">
-                                    <div class="calendar-header">
-                                        <button class="calendar-nav prev">
-                                            <span class="material-icons-round">chevron_left</span>
-                                        </button>
-                                        <h3 class="calendar-month">Tháng 1, 2024</h3>
-                                        <button class="calendar-nav next">
-                                            <span class="material-icons-round">chevron_right</span>
-                                        </button>
-                                    </div>
-                                    <div class="calendar-grid">
-                                        <div class="calendar-day-header">CN</div>
-                                        <div class="calendar-day-header">T2</div>
-                                        <div class="calendar-day-header">T3</div>
-                                        <div class="calendar-day-header">T4</div>
-                                        <div class="calendar-day-header">T5</div>
-                                        <div class="calendar-day-header">T6</div>
-                                        <div class="calendar-day-header">T7</div>
-                                        
-                                        <!-- Calendar days will be populated by JavaScript -->
-                                        <div class="calendar-day disabled">31</div>
-                                        <div class="calendar-day">1</div>
-                                        <div class="calendar-day">2</div>
-                                        <div class="calendar-day today">3</div>
-                                        <div class="calendar-day">4</div>
-                                        <div class="calendar-day">5</div>
-                                        <div class="calendar-day">6</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="upcoming-events">
-                                    <h4 class="events-title">Sự kiện sắp tới</h4>
-                                    <div class="event-item">
-                                        <div class="event-time">09:00</div>
-                                        <div class="event-content">
-                                            <h5>Họp team HR</h5>
-                                            <p>Phòng họp A</p>
-                                        </div>
-                                    </div>
-                                    <div class="event-item">
-                                        <div class="event-time">14:00</div>
-                                        <div class="event-content">
-                                            <h5>Training nhân viên mới</h5>
-                                            <p>Phòng đào tạo</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                        
-                        <!-- Performance Chart -->
-                        <section class="card performance-chart">
-                            <div class="card-header">
-                                <h2 class="card-title">
-                                    <span class="material-icons-round">trending_up</span>
-                                    Xu hướng hiệu suất
-                                </h2>
-                            </div>
-                            <div class="card-content">
-                                <div class="chart-container">
-                                    <div class="chart-placeholder">
-                                        <span class="material-icons-round">show_chart</span>
-                                        <p>Biểu đồ hiệu suất 6 tháng</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-                </div>
-            </div>
-        </main>
-        
-        <!-- Chat System -->
-        <div class="chat-system" id="chatSystem">
-            <button class="chat-toggle" id="chatToggle">
-                <span class="material-icons-round">chat</span>
-                <span class="chat-badge">3</span>
-            </button>
-            
-            <div class="chat-panel" id="chatPanel">
-                <div class="chat-header">
-                    <h3>Tin nhắn</h3>
-                    <button class="chat-close" id="chatClose">
+                    <button class="icon-btn" data-close aria-label="Đóng menu">
                         <span class="material-icons-round">close</span>
                     </button>
                 </div>
                 
-                <div class="chat-tabs">
-                    <button class="chat-tab active" data-chat="general">Chung</button>
-                    <button class="chat-tab" data-chat="department">Phòng ban</button>
-                    <button class="chat-tab" data-chat="private">Riêng tư</button>
+                <div class="nav-group">
+                    <div class="nav-title">Tổng quan</div>
+                    <nav class="nav">
+                        <a href="#" aria-current="page">
+                            <span class="material-icons-round">dashboard</span>
+                            Bảng điều khiển
+                        </a>
+                        <a href="#">
+                            <span class="material-icons-round">analytics</span>
+                            Báo cáo
+                        </a>
+                        <a href="#">
+                            <span class="material-icons-round">calendar_today</span>
+                            Lịch
+                        </a>
+                    </nav>
                 </div>
                 
-                <div class="chat-content">
-                    <div class="chat-messages" id="chatMessages">
-                        <!-- Messages will be populated here -->
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" placeholder="Nhập tin nhắn..." id="messageInput">
-                        <button type="button" id="sendMessage">
-                            <span class="material-icons-round">send</span>
-                        </button>
-                    </div>
+                <div class="nav-group">
+                    <div class="nav-title">Quản lý nhân sự</div>
+                    <nav class="nav">
+                        <a href="#">
+                            <span class="material-icons-round">people</span>
+                            Nhân viên
+                        </a>
+                        <a href="#">
+                            <span class="material-icons-round">schedule</span>
+                            Chấm công
+                        </a>
+                        <a href="#">
+                            <span class="material-icons-round">access_time</span>
+                            Ca làm việc
+                        </a>
+                        <a href="#">
+                            <span class="material-icons-round">event_busy</span>
+                            Đơn nghỉ phép
+                        </a>
+                    </nav>
                 </div>
-            </div>
+                
+                <div class="nav-group">
+                    <div class="nav-title">Quản trị</div>
+                    <nav class="nav">
+                        <a href="#" data-role="SUPER_ADMIN,ADMIN">
+                            <span class="material-icons-round">person</span>
+                            Người dùng
+                        </a>
+                        <a href="#" data-role="SUPER_ADMIN,ADMIN">
+                            <span class="material-icons-round">security</span>
+                            Phân quyền
+                        </a>
+                        <a href="#" data-role="SUPER_ADMIN,ADMIN">
+                            <span class="material-icons-round">settings</span>
+                            Cài đặt
+                        </a>
+                    </nav>
+                </div>
+                
+                <!-- Mobile Logout -->
+                <div style="margin-top: auto; padding-top: 20px;">
+                    <a href="#" id="mobileLogoutBtn" class="nav" style="color: var(--danger);">
+                        <span class="material-icons-round">logout</span>
+                        Đăng xuất
+                    </a>
+                </div>
+            </aside>
         </div>
     </div>
 
-    <!-- Notification Container -->
-    <div id="notificationContainer" class="notification-container"></div>
-    
-    <!-- JavaScript -->
-    <script src="../../assets/js/config.js"></script>
+    <!-- Chat System -->
+    <button id="chatToggle" class="chat-toggle">
+        <span class="material-icons-round">chat</span>
+    </button>
+
+    <div id="chatPanel" class="chat-panel">
+        <div class="chat-header">
+            <h3>Trò chuyện</h3>
+            <button id="chatClose" class="chat-close">
+                <span class="material-icons-round">close</span>
+            </button>
+        </div>
+        
+        <div class="chat-tabs">
+            <button class="chat-tab active" data-tab="general">Tổng</button>
+            <button class="chat-tab" data-tab="department">Phòng ban</button>
+            <button class="chat-tab" data-tab="private">Riêng tư</button>
+            <button class="chat-tab" data-tab="group">Nhóm</button>
+        </div>
+        
+        <div class="chat-content">
+            <div id="generalChat" class="chat-messages">
+                <div class="chat-message">
+                    <div class="chat-avatar">A</div>
+                    <div class="chat-bubble">Chào mọi người! Có ai online không?</div>
+                </div>
+                <div class="chat-message">
+                    <div class="chat-avatar">B</div>
+                    <div class="chat-bubble">Xin chào! Mình đang ở đây.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" placeholder="Nhập tin nhắn..." id="messageInput">
+            <button id="sendMessage">
+                <span class="material-icons-round">send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
     <script src="../../assets/js/utils.js"></script>
     <script src="../../assets/js/secure-storage.js"></script>
     <script src="../../assets/js/theme-manager.js"></script>
@@ -666,6 +589,141 @@
     <script src="../../assets/js/dashboard-handler.js"></script>
     <script src="../../assets/js/notification-chat-manager.js"></script>
     <script src="../../assets/js/main-init.js"></script>
-    <script src="../../assets/js/dashboard-modern.js"></script>
+
+    <script>
+        // HRMS-Responsive Mobile Sidebar JavaScript
+        (function(){
+            const btn = document.getElementById('btnSidebar');
+            const panel = document.getElementById('mobileSidebar');
+            const drawer = panel.querySelector('.sidebar-drawer');
+
+            function openSidebar(){
+                panel.hidden = false;
+                requestAnimationFrame(()=>{ 
+                    panel.classList.add('active'); 
+                    btn.setAttribute('aria-expanded','true'); 
+                });
+            }
+            
+            function closeSidebar(){
+                panel.classList.remove('active'); 
+                btn.setAttribute('aria-expanded','false');
+                drawer.addEventListener('transitionend', ()=> panel.hidden = true, { once:true });
+            }
+
+            btn.addEventListener('click', ()=> (panel.hidden || !panel.classList.contains('active')) ? openSidebar() : closeSidebar());
+            panel.addEventListener('click', (e)=>{ 
+                if(e.target.matches('[data-close], .sidebar-overlay')) closeSidebar(); 
+            });
+            window.addEventListener('keydown', (e)=>{ 
+                if(e.key==='Escape' && !panel.hidden) closeSidebar(); 
+            });
+
+            // Focus trap
+            panel.addEventListener('keydown', (e)=>{
+                if(e.key !== 'Tab') return;
+                const f = panel.querySelectorAll('a, button'); 
+                if(!f.length) return;
+                const first=f[0], last=f[f.length-1];
+                if(e.shiftKey && document.activeElement===first){ 
+                    last.focus(); e.preventDefault(); 
+                }
+                else if(!e.shiftKey && document.activeElement===last){ 
+                    first.focus(); e.preventDefault(); 
+                }
+            });
+
+            // Close on desktop
+            const mq = window.matchMedia('(min-width: 1024px)');
+            mq.addEventListener('change', (ev)=>{ 
+                if(ev.matches){ 
+                    panel.hidden = true; 
+                    panel.classList.remove('active'); 
+                    btn.setAttribute('aria-expanded','false'); 
+                }
+            });
+        })();
+
+        // Notification Dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationToggle = document.getElementById('notificationToggle');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            const markAllRead = document.getElementById('markAllRead');
+
+            notificationToggle.addEventListener('click', function() {
+                notificationDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!notificationToggle.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                    notificationDropdown.classList.remove('show');
+                }
+            });
+
+            markAllRead.addEventListener('click', function() {
+                document.getElementById('notificationBadge').style.display = 'none';
+                notificationDropdown.classList.remove('show');
+            });
+        });
+
+        // Chat System
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatToggle = document.getElementById('chatToggle');
+            const chatPanel = document.getElementById('chatPanel');
+            const chatClose = document.getElementById('chatClose');
+            const messageInput = document.getElementById('messageInput');
+            const sendMessage = document.getElementById('sendMessage');
+
+            chatToggle.addEventListener('click', function() {
+                chatPanel.classList.toggle('show');
+            });
+
+            chatClose.addEventListener('click', function() {
+                chatPanel.classList.remove('show');
+            });
+
+            sendMessage.addEventListener('click', function() {
+                const message = messageInput.value.trim();
+                if (message) {
+                    // Add message to chat (simple demo)
+                    const chatMessages = document.querySelector('.chat-messages');
+                    const newMessage = document.createElement('div');
+                    newMessage.className = 'chat-message';
+                    newMessage.innerHTML = `
+                        <div class="chat-avatar">U</div>
+                        <div class="chat-bubble">${message}</div>
+                    `;
+                    chatMessages.appendChild(newMessage);
+                    messageInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage.click();
+                }
+            });
+        });
+
+        // Logout functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+
+            function handleLogout() {
+                if (window.AuthManager) {
+                    window.AuthManager.logout();
+                } else {
+                    window.location.href = '../../index.html';
+                }
+            }
+
+            if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+            if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', handleLogout);
+        });
+    </script>
+
 </body>
 </html>
