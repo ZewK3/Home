@@ -84,7 +84,46 @@
                     </div>
                 </div>
                 
-                <div id="userInfo" class="user-info"></div>
+                <!-- User Info with Avatar Menu -->
+                <div class="user-info-container">
+                    <button id="userInfo" class="user-info-btn" aria-label="Menu người dùng" aria-expanded="false">
+                        <span class="material-icons-round user-avatar">person</span>
+                        <span class="user-name">Admin</span>
+                        <span class="material-icons-round dropdown-arrow">keyboard_arrow_down</span>
+                    </button>
+                    
+                    <!-- User Dropdown Menu -->
+                    <div id="userDropdown" class="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-avatar-large">
+                                <span class="material-icons-round">person</span>
+                            </div>
+                            <div class="user-details">
+                                <h4>Administrator</h4>
+                                <p>admin@zewk.com</p>
+                            </div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="#" id="userProfile" class="dropdown-item">
+                                <span class="material-icons-round">account_circle</span>
+                                <span>Your Profile</span>
+                            </a>
+                            <a href="#" id="reportBug" class="dropdown-item">
+                                <span class="material-icons-round">bug_report</span>
+                                <span>Báo Lỗi</span>
+                            </a>
+                            <a href="#" id="contactSupport" class="dropdown-item">
+                                <span class="material-icons-round">support</span>
+                                <span>Liên Hệ Hỗ Trợ</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" id="userLogout" class="dropdown-item logout">
+                                <span class="material-icons-round">logout</span>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 
                 <div id="currentTime" class="current-time">
                     <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
@@ -846,9 +885,75 @@
                                 <span class="material-icons-round">attach_file</span>
                             </button>
                             <input type="text" class="chat-input" placeholder="Nhập tin nhắn...">
-                            <button class="input-btn" title="Emoji">
+                            <button class="input-btn emoji-btn" title="Emoji" data-chat="general">
                                 <span class="material-icons-round">emoji_emotions</span>
                             </button>
+                            <!-- Emoji Picker -->
+                            <div class="emoji-picker" id="emojiPicker-general">
+                                <div class="emoji-grid">
+                                    <span class="emoji-item" data-emoji="😀">😀</span>
+                                    <span class="emoji-item" data-emoji="😃">😃</span>
+                                    <span class="emoji-item" data-emoji="😄">😄</span>
+                                    <span class="emoji-item" data-emoji="😁">😁</span>
+                                    <span class="emoji-item" data-emoji="😅">😅</span>
+                                    <span class="emoji-item" data-emoji="😂">😂</span>
+                                    <span class="emoji-item" data-emoji="🤣">🤣</span>
+                                    <span class="emoji-item" data-emoji="😊">😊</span>
+                                    <span class="emoji-item" data-emoji="😇">😇</span>
+                                    <span class="emoji-item" data-emoji="🙂">🙂</span>
+                                    <span class="emoji-item" data-emoji="🙃">🙃</span>
+                                    <span class="emoji-item" data-emoji="😉">😉</span>
+                                    <span class="emoji-item" data-emoji="😍">😍</span>
+                                    <span class="emoji-item" data-emoji="😘">😘</span>
+                                    <span class="emoji-item" data-emoji="😗">😗</span>
+                                    <span class="emoji-item" data-emoji="😙">😙</span>
+                                    <span class="emoji-item" data-emoji="😚">😚</span>
+                                    <span class="emoji-item" data-emoji="😋">😋</span>
+                                    <span class="emoji-item" data-emoji="😛">😛</span>
+                                    <span class="emoji-item" data-emoji="😝">😝</span>
+                                    <span class="emoji-item" data-emoji="😜">😜</span>
+                                    <span class="emoji-item" data-emoji="🤪">🤪</span>
+                                    <span class="emoji-item" data-emoji="🤨">🤨</span>
+                                    <span class="emoji-item" data-emoji="🧐">🧐</span>
+                                    <span class="emoji-item" data-emoji="🤓">🤓</span>
+                                    <span class="emoji-item" data-emoji="😎">😎</span>
+                                    <span class="emoji-item" data-emoji="🤩">🤩</span>
+                                    <span class="emoji-item" data-emoji="🥳">🥳</span>
+                                    <span class="emoji-item" data-emoji="😏">😏</span>
+                                    <span class="emoji-item" data-emoji="😒">😒</span>
+                                    <span class="emoji-item" data-emoji="😞">😞</span>
+                                    <span class="emoji-item" data-emoji="😔">😔</span>
+                                    <span class="emoji-item" data-emoji="😟">😟</span>
+                                    <span class="emoji-item" data-emoji="😕">😕</span>
+                                    <span class="emoji-item" data-emoji="🙁">🙁</span>
+                                    <span class="emoji-item" data-emoji="☹️">☹️</span>
+                                    <span class="emoji-item" data-emoji="😣">😣</span>
+                                    <span class="emoji-item" data-emoji="😖">😖</span>
+                                    <span class="emoji-item" data-emoji="😫">😫</span>
+                                    <span class="emoji-item" data-emoji="😩">😩</span>
+                                    <span class="emoji-item" data-emoji="🥺">🥺</span>
+                                    <span class="emoji-item" data-emoji="😢">😢</span>
+                                    <span class="emoji-item" data-emoji="😭">😭</span>
+                                    <span class="emoji-item" data-emoji="👍">👍</span>
+                                    <span class="emoji-item" data-emoji="👎">👎</span>
+                                    <span class="emoji-item" data-emoji="👌">👌</span>
+                                    <span class="emoji-item" data-emoji="✌️">✌️</span>
+                                    <span class="emoji-item" data-emoji="🤞">🤞</span>
+                                    <span class="emoji-item" data-emoji="🤟">🤟</span>
+                                    <span class="emoji-item" data-emoji="🤘">🤘</span>
+                                    <span class="emoji-item" data-emoji="👋">👋</span>
+                                    <span class="emoji-item" data-emoji="🙏">🙏</span>
+                                    <span class="emoji-item" data-emoji="💪">💪</span>
+                                    <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                    <span class="emoji-item" data-emoji="🧡">🧡</span>
+                                    <span class="emoji-item" data-emoji="💛">💛</span>
+                                    <span class="emoji-item" data-emoji="💚">💚</span>
+                                    <span class="emoji-item" data-emoji="💙">💙</span>
+                                    <span class="emoji-item" data-emoji="💜">💜</span>
+                                    <span class="emoji-item" data-emoji="🖤">🖤</span>
+                                    <span class="emoji-item" data-emoji="🤍">🤍</span>
+                                </div>
+                            </div>
                             <button class="send-btn" title="Gửi">
                                 <span class="material-icons-round">send</span>
                             </button>
@@ -879,9 +984,55 @@
                                 <span class="material-icons-round">attach_file</span>
                             </button>
                             <input type="text" class="chat-input" placeholder="Nhập tin nhắn cho phòng ban...">
-                            <button class="input-btn" title="Emoji">
+                            <button class="input-btn emoji-btn" title="Emoji" data-chat="department">
                                 <span class="material-icons-round">emoji_emotions</span>
                             </button>
+                            <!-- Emoji Picker -->
+                            <div class="emoji-picker" id="emojiPicker-department">
+                                <div class="emoji-grid">
+                                    <span class="emoji-item" data-emoji="😀">😀</span>
+                                    <span class="emoji-item" data-emoji="😃">😃</span>
+                                    <span class="emoji-item" data-emoji="😄">😄</span>
+                                    <span class="emoji-item" data-emoji="😁">😁</span>
+                                    <span class="emoji-item" data-emoji="😅">😅</span>
+                                    <span class="emoji-item" data-emoji="😂">😂</span>
+                                    <span class="emoji-item" data-emoji="🤣">🤣</span>
+                                    <span class="emoji-item" data-emoji="😊">😊</span>
+                                    <span class="emoji-item" data-emoji="😇">😇</span>
+                                    <span class="emoji-item" data-emoji="🙂">🙂</span>
+                                    <span class="emoji-item" data-emoji="🙃">🙃</span>
+                                    <span class="emoji-item" data-emoji="😉">😉</span>
+                                    <span class="emoji-item" data-emoji="😍">😍</span>
+                                    <span class="emoji-item" data-emoji="😘">😘</span>
+                                    <span class="emoji-item" data-emoji="😗">😗</span>
+                                    <span class="emoji-item" data-emoji="😙">😙</span>
+                                    <span class="emoji-item" data-emoji="😚">😚</span>
+                                    <span class="emoji-item" data-emoji="😋">😋</span>
+                                    <span class="emoji-item" data-emoji="😛">😛</span>
+                                    <span class="emoji-item" data-emoji="😝">😝</span>
+                                    <span class="emoji-item" data-emoji="😜">😜</span>
+                                    <span class="emoji-item" data-emoji="🤪">🤪</span>
+                                    <span class="emoji-item" data-emoji="🤨">🤨</span>
+                                    <span class="emoji-item" data-emoji="🧐">🧐</span>
+                                    <span class="emoji-item" data-emoji="🤓">🤓</span>
+                                    <span class="emoji-item" data-emoji="😎">😎</span>
+                                    <span class="emoji-item" data-emoji="🤩">🤩</span>
+                                    <span class="emoji-item" data-emoji="🥳">🥳</span>
+                                    <span class="emoji-item" data-emoji="😏">😏</span>
+                                    <span class="emoji-item" data-emoji="👍">👍</span>
+                                    <span class="emoji-item" data-emoji="👎">👎</span>
+                                    <span class="emoji-item" data-emoji="👌">👌</span>
+                                    <span class="emoji-item" data-emoji="✌️">✌️</span>
+                                    <span class="emoji-item" data-emoji="🤞">🤞</span>
+                                    <span class="emoji-item" data-emoji="👋">👋</span>
+                                    <span class="emoji-item" data-emoji="🙏">🙏</span>
+                                    <span class="emoji-item" data-emoji="💪">💪</span>
+                                    <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                    <span class="emoji-item" data-emoji="💚">💚</span>
+                                    <span class="emoji-item" data-emoji="💙">💙</span>
+                                    <span class="emoji-item" data-emoji="💜">💜</span>
+                                </div>
+                            </div>
                             <button class="send-btn" title="Gửi">
                                 <span class="material-icons-round">send</span>
                             </button>
@@ -932,9 +1083,55 @@
                                 <span class="material-icons-round">attach_file</span>
                             </button>
                             <input type="text" class="chat-input" placeholder="Nhập tin nhắn riêng...">
-                            <button class="input-btn" title="Emoji">
+                            <button class="input-btn emoji-btn" title="Emoji" data-chat="private">
                                 <span class="material-icons-round">emoji_emotions</span>
                             </button>
+                            <!-- Emoji Picker -->
+                            <div class="emoji-picker" id="emojiPicker-private">
+                                <div class="emoji-grid">
+                                    <span class="emoji-item" data-emoji="😀">😀</span>
+                                    <span class="emoji-item" data-emoji="😃">😃</span>
+                                    <span class="emoji-item" data-emoji="😄">😄</span>
+                                    <span class="emoji-item" data-emoji="😁">😁</span>
+                                    <span class="emoji-item" data-emoji="😅">😅</span>
+                                    <span class="emoji-item" data-emoji="😂">😂</span>
+                                    <span class="emoji-item" data-emoji="🤣">🤣</span>
+                                    <span class="emoji-item" data-emoji="😊">😊</span>
+                                    <span class="emoji-item" data-emoji="😇">😇</span>
+                                    <span class="emoji-item" data-emoji="🙂">🙂</span>
+                                    <span class="emoji-item" data-emoji="🙃">🙃</span>
+                                    <span class="emoji-item" data-emoji="😉">😉</span>
+                                    <span class="emoji-item" data-emoji="😍">😍</span>
+                                    <span class="emoji-item" data-emoji="😘">😘</span>
+                                    <span class="emoji-item" data-emoji="😗">😗</span>
+                                    <span class="emoji-item" data-emoji="😙">😙</span>
+                                    <span class="emoji-item" data-emoji="😚">😚</span>
+                                    <span class="emoji-item" data-emoji="😋">😋</span>
+                                    <span class="emoji-item" data-emoji="😛">😛</span>
+                                    <span class="emoji-item" data-emoji="😝">😝</span>
+                                    <span class="emoji-item" data-emoji="😜">😜</span>
+                                    <span class="emoji-item" data-emoji="🤪">🤪</span>
+                                    <span class="emoji-item" data-emoji="🤨">🤨</span>
+                                    <span class="emoji-item" data-emoji="🧐">🧐</span>
+                                    <span class="emoji-item" data-emoji="🤓">🤓</span>
+                                    <span class="emoji-item" data-emoji="😎">😎</span>
+                                    <span class="emoji-item" data-emoji="🤩">🤩</span>
+                                    <span class="emoji-item" data-emoji="🥳">🥳</span>
+                                    <span class="emoji-item" data-emoji="😏">😏</span>
+                                    <span class="emoji-item" data-emoji="👍">👍</span>
+                                    <span class="emoji-item" data-emoji="👎">👎</span>
+                                    <span class="emoji-item" data-emoji="👌">👌</span>
+                                    <span class="emoji-item" data-emoji="✌️">✌️</span>
+                                    <span class="emoji-item" data-emoji="🤞">🤞</span>
+                                    <span class="emoji-item" data-emoji="👋">👋</span>
+                                    <span class="emoji-item" data-emoji="🙏">🙏</span>
+                                    <span class="emoji-item" data-emoji="💪">💪</span>
+                                    <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                    <span class="emoji-item" data-emoji="💚">💚</span>
+                                    <span class="emoji-item" data-emoji="💙">💙</span>
+                                    <span class="emoji-item" data-emoji="💜">💜</span>
+                                </div>
+                            </div>
                             <button class="send-btn" title="Gửi">
                                 <span class="material-icons-round">send</span>
                             </button>
@@ -993,9 +1190,55 @@
                                 <span class="material-icons-round">attach_file</span>
                             </button>
                             <input type="text" class="chat-input" placeholder="Nhập tin nhắn nhóm...">
-                            <button class="input-btn" title="Emoji">
+                            <button class="input-btn emoji-btn" title="Emoji" data-chat="group">
                                 <span class="material-icons-round">emoji_emotions</span>
                             </button>
+                            <!-- Emoji Picker -->
+                            <div class="emoji-picker" id="emojiPicker-group">
+                                <div class="emoji-grid">
+                                    <span class="emoji-item" data-emoji="😀">😀</span>
+                                    <span class="emoji-item" data-emoji="😃">😃</span>
+                                    <span class="emoji-item" data-emoji="😄">😄</span>
+                                    <span class="emoji-item" data-emoji="😁">😁</span>
+                                    <span class="emoji-item" data-emoji="😅">😅</span>
+                                    <span class="emoji-item" data-emoji="😂">😂</span>
+                                    <span class="emoji-item" data-emoji="🤣">🤣</span>
+                                    <span class="emoji-item" data-emoji="😊">😊</span>
+                                    <span class="emoji-item" data-emoji="😇">😇</span>
+                                    <span class="emoji-item" data-emoji="🙂">🙂</span>
+                                    <span class="emoji-item" data-emoji="🙃">🙃</span>
+                                    <span class="emoji-item" data-emoji="😉">😉</span>
+                                    <span class="emoji-item" data-emoji="😍">😍</span>
+                                    <span class="emoji-item" data-emoji="😘">😘</span>
+                                    <span class="emoji-item" data-emoji="😗">😗</span>
+                                    <span class="emoji-item" data-emoji="😙">😙</span>
+                                    <span class="emoji-item" data-emoji="😚">😚</span>
+                                    <span class="emoji-item" data-emoji="😋">😋</span>
+                                    <span class="emoji-item" data-emoji="😛">😛</span>
+                                    <span class="emoji-item" data-emoji="😝">😝</span>
+                                    <span class="emoji-item" data-emoji="😜">😜</span>
+                                    <span class="emoji-item" data-emoji="🤪">🤪</span>
+                                    <span class="emoji-item" data-emoji="🤨">🤨</span>
+                                    <span class="emoji-item" data-emoji="🧐">🧐</span>
+                                    <span class="emoji-item" data-emoji="🤓">🤓</span>
+                                    <span class="emoji-item" data-emoji="😎">😎</span>
+                                    <span class="emoji-item" data-emoji="🤩">🤩</span>
+                                    <span class="emoji-item" data-emoji="🥳">🥳</span>
+                                    <span class="emoji-item" data-emoji="😏">😏</span>
+                                    <span class="emoji-item" data-emoji="👍">👍</span>
+                                    <span class="emoji-item" data-emoji="👎">👎</span>
+                                    <span class="emoji-item" data-emoji="👌">👌</span>
+                                    <span class="emoji-item" data-emoji="✌️">✌️</span>
+                                    <span class="emoji-item" data-emoji="🤞">🤞</span>
+                                    <span class="emoji-item" data-emoji="👋">👋</span>
+                                    <span class="emoji-item" data-emoji="🙏">🙏</span>
+                                    <span class="emoji-item" data-emoji="💪">💪</span>
+                                    <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                    <span class="emoji-item" data-emoji="💚">💚</span>
+                                    <span class="emoji-item" data-emoji="💙">💙</span>
+                                    <span class="emoji-item" data-emoji="💜">💜</span>
+                                </div>
+                            </div>
                             <button class="send-btn" title="Gửi">
                                 <span class="material-icons-round">send</span>
                             </button>
@@ -1055,19 +1298,21 @@
     <script src="../../assets/js/notification-chat-manager.js"></script>
     <script src="../../assets/js/main-init.js"></script>
 
-    <!-- Mobile Sidebar Script -->
+    <!-- Enhanced Mobile Sidebar Script -->
     <script>
         (function(){
             const btn = document.getElementById('btnSidebar');
             const panel = document.getElementById('mobileSidebar');
             
             if (btn && panel) {
+                // Toggle mobile sidebar
                 btn.addEventListener('click', () => {
                     panel.removeAttribute('hidden');
                     panel.classList.add('active');
                     btn.setAttribute('aria-expanded', 'true');
                 });
                 
+                // Close mobile sidebar
                 panel.addEventListener('click', (e) => {
                     if (e.target.hasAttribute('data-close') || e.target.closest('[data-close]')) {
                         panel.setAttribute('hidden', '');
@@ -1075,6 +1320,160 @@
                         btn.setAttribute('aria-expanded', 'false');
                     }
                 });
+
+                // Mobile accordion functionality
+                const mobileMenuToggles = document.querySelectorAll('[data-mobile-menu-toggle]');
+                mobileMenuToggles.forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        const parent = toggle.closest('.mobile-nav-item-parent');
+                        const submenuId = toggle.dataset.mobileMenuToggle;
+                        const submenu = document.getElementById(submenuId);
+                        
+                        if (parent && submenu) {
+                            parent.classList.toggle('expanded');
+                        }
+                    });
+                });
+
+                // Sync mobile menu links with desktop functionality
+                const syncMenuLinks = () => {
+                    // Work Management
+                    const mobileWorkManagement = document.getElementById('mobileWorkManagement');
+                    const mobileTimesheet = document.getElementById('mobileTimesheet');
+                    const mobileAttendance = document.getElementById('mobileAttendance');
+                    const mobileWorkTasks = document.getElementById('mobileWorkTasks');
+
+                    if (mobileWorkManagement) {
+                        mobileWorkManagement.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openWorkManagement');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileTimesheet) {
+                        mobileTimesheet.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openTimesheet');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileAttendance) {
+                        mobileAttendance.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openAttendance');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileWorkTasks) {
+                        mobileWorkTasks.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openWorkTasks');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    // Requests
+                    const mobileSubmitRequest = document.getElementById('mobileSubmitRequest');
+                    const mobileAttendanceRequest = document.getElementById('mobileAttendanceRequest');
+                    const mobileTaskAssignment = document.getElementById('mobileTaskAssignment');
+
+                    if (mobileSubmitRequest) {
+                        mobileSubmitRequest.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openSubmitRequest');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileAttendanceRequest) {
+                        mobileAttendanceRequest.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openAttendanceRequest');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileTaskAssignment) {
+                        mobileTaskAssignment.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openTaskAssignment');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    // Admin Functions
+                    const mobileTaskProcessing = document.getElementById('mobileTaskProcessing');
+                    const mobileRegistrationApproval = document.getElementById('mobileRegistrationApproval');
+                    const mobilePersonalInfo = document.getElementById('mobilePersonalInfo');
+
+                    if (mobileTaskProcessing) {
+                        mobileTaskProcessing.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openTaskProcessing');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileRegistrationApproval) {
+                        mobileRegistrationApproval.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openRegistrationApproval');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobilePersonalInfo) {
+                        mobilePersonalInfo.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openPersonalInfo');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    // Mobile Logout
+                    const mobileLogout = document.getElementById('mobileLogout');
+                    if (mobileLogout) {
+                        mobileLogout.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (window.authManager && typeof window.authManager.logout === 'function') {
+                                window.authManager.logout();
+                            } else {
+                                // Fallback logout
+                                if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                                    localStorage.clear();
+                                    sessionStorage.clear();
+                                    window.location.href = '../../index.html';
+                                }
+                            }
+                        });
+                    }
+                };
+
+                const closeMobileSidebar = () => {
+                    panel.setAttribute('hidden', '');
+                    panel.classList.remove('active');
+                    btn.setAttribute('aria-expanded', 'false');
+                };
+
+                // Initialize mobile menu links after DOM is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', syncMenuLinks);
+                } else {
+                    syncMenuLinks();
+                }
             }
         })();
     </script>

@@ -200,6 +200,8 @@ class ChatManager {
         this.loadPrivateChats();
         this.loadGroups();
         this.loadSampleMessages();
+        this.initializeEmojiPickers();
+        this.initializeUserDropdown();
         this.isInitialized = true;
         
         console.log('✅ ChatManager initialized');
@@ -324,15 +326,31 @@ class ChatManager {
             targetTab.classList.add('active');
         } else {
             console.warn(`Chat tab with data-tab="${roomType}" not found`);
+            return;
         }
 
-        // Update rooms (for this simple implementation, we just hide/show content)
-        // Since the HRMS implementation uses a single chat-content area
-        const chatContent = document.querySelector('.chat-content');
-        if (chatContent) {
-            // For simple implementation, just update the content
-            // In a full implementation, you'd have separate room divs
-            console.log(`Switched to ${roomType} chat room`);
+        // Update chat views - hide all first
+        document.querySelectorAll('.chat-view').forEach(view => {
+            view.classList.remove('active');
+        });
+
+        // Show the target chat view
+        const chatViewMap = {
+            'general': 'generalChat',
+            'department': 'departmentChat', 
+            'private': 'privateChat',
+            'group': 'groupChat'
+        };
+
+        const targetViewId = chatViewMap[roomType];
+        if (targetViewId) {
+            const targetView = document.getElementById(targetViewId);
+            if (targetView) {
+                targetView.classList.add('active');
+                console.log(`Successfully switched to ${roomType} chat room`);
+            } else {
+                console.warn(`Chat view with id="${targetViewId}" not found`);
+            }
         }
 
         this.currentRoom = roomType;
@@ -648,6 +666,325 @@ class ChatManager {
         } else {
             badge.style.display = 'none';
         }
+    }
+
+    // Enhanced Emoji Picker Functionality
+    initializeEmojiPickers() {
+        const emojiButtons = document.querySelectorAll('.emoji-btn');
+        
+        emojiButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const chatType = button.dataset.chat;
+                this.toggleEmojiPicker(chatType);
+            });
+        });
+
+        // Add emoji click handlers
+        document.querySelectorAll('.emoji-item').forEach(emoji => {
+            emoji.addEventListener('click', () => {
+                this.insertEmoji(emoji.dataset.emoji, emoji.closest('.chat-view'));
+            });
+        });
+
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.emoji-picker') && !e.target.closest('.emoji-btn')) {
+                this.closeAllEmojiPickers();
+            }
+        });
+    }
+
+    toggleEmojiPicker(chatType) {
+        const picker = document.getElementById(`emojiPicker-${chatType}`);
+        if (!picker) return;
+
+        // Close all other pickers first
+        this.closeAllEmojiPickers();
+        
+        // Toggle current picker
+        picker.classList.toggle('active');
+    }
+
+    closeAllEmojiPickers() {
+        document.querySelectorAll('.emoji-picker').forEach(picker => {
+            picker.classList.remove('active');
+        });
+    }
+
+    insertEmoji(emoji, chatView) {
+        const input = chatView.querySelector('.chat-input');
+        if (!input) return;
+
+        const currentValue = input.value;
+        const cursorPos = input.selectionStart;
+        
+        const newValue = currentValue.slice(0, cursorPos) + emoji + currentValue.slice(cursorPos);
+        input.value = newValue;
+        
+        // Set cursor position after emoji
+        const newCursorPos = cursorPos + emoji.length;
+        input.setSelectionRange(newCursorPos, newCursorPos);
+        input.focus();
+
+        // Close emoji picker
+        this.closeAllEmojiPickers();
+    }
+
+    // Enhanced User Dropdown Functionality
+    initializeUserDropdown() {
+        const userInfoBtn = document.getElementById('userInfo');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (!userInfoBtn || !userDropdown) return;
+
+        userInfoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleUserDropdown();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userDropdown.contains(e.target) && !userInfoBtn.contains(e.target)) {
+                this.closeUserDropdown();
+            }
+        });
+
+        // Add menu item handlers
+        const profileBtn = document.getElementById('userProfile');
+        const reportBugBtn = document.getElementById('reportBug');
+        const contactSupportBtn = document.getElementById('contactSupport');
+        const logoutBtn = document.getElementById('userLogout');
+
+        if (profileBtn) {
+            profileBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openUserProfile();
+            });
+        }
+
+        if (reportBugBtn) {
+            reportBugBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openBugReport();
+            });
+        }
+
+        if (contactSupportBtn) {
+            contactSupportBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.openContactSupport();
+            });
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleLogout();
+            });
+        }
+    }
+
+    toggleUserDropdown() {
+        const userDropdown = document.getElementById('userDropdown');
+        const userInfoBtn = document.getElementById('userInfo');
+        
+        if (!userDropdown || !userInfoBtn) return;
+
+        const isActive = userDropdown.classList.contains('active');
+        
+        if (isActive) {
+            this.closeUserDropdown();
+        } else {
+            userDropdown.classList.add('active');
+            userInfoBtn.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    closeUserDropdown() {
+        const userDropdown = document.getElementById('userDropdown');
+        const userInfoBtn = document.getElementById('userInfo');
+        
+        if (userDropdown) {
+            userDropdown.classList.remove('active');
+        }
+        
+        if (userInfoBtn) {
+            userInfoBtn.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    openUserProfile() {
+        this.closeUserDropdown();
+        // In a real app, this would open a profile modal or navigate to profile page
+        console.log('Opening user profile...');
+        
+        // For demo, we'll trigger a content change
+        const contentManager = window.contentManager;
+        if (contentManager && typeof contentManager.showPersonalInfo === 'function') {
+            contentManager.showPersonalInfo();
+        }
+    }
+
+    openBugReport() {
+        this.closeUserDropdown();
+        console.log('Opening bug report...');
+        
+        // Create a simple bug report modal
+        const modal = this.createBugReportModal();
+        document.body.appendChild(modal);
+        modal.classList.add('active');
+    }
+
+    openContactSupport() {
+        this.closeUserDropdown();
+        console.log('Opening contact support...');
+        
+        // Create a simple contact support modal
+        const modal = this.createContactSupportModal();
+        document.body.appendChild(modal);
+        modal.classList.add('active');
+    }
+
+    handleLogout() {
+        this.closeUserDropdown();
+        
+        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+            // Use global AuthManager if available
+            if (window.authManager && typeof window.authManager.logout === 'function') {
+                window.authManager.logout();
+            } else {
+                // Fallback logout
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = '../../index.html';
+            }
+        }
+    }
+
+    createBugReportModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <h3>Báo Lỗi</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="bugReportForm">
+                        <div class="form-group">
+                            <label for="bugTitle">Tiêu đề lỗi:</label>
+                            <input type="text" id="bugTitle" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bugDescription">Mô tả chi tiết:</label>
+                            <textarea id="bugDescription" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="bugSteps">Các bước tái hiện:</label>
+                            <textarea id="bugSteps" class="form-control" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="this.submitBugReport()">Gửi Báo Cáo</button>
+                </div>
+            </div>
+        `;
+        
+        modal.querySelector('.btn-primary').onclick = () => {
+            const title = modal.querySelector('#bugTitle').value;
+            const description = modal.querySelector('#bugDescription').value;
+            const steps = modal.querySelector('#bugSteps').value;
+            
+            if (title && description) {
+                console.log('Bug report submitted:', { title, description, steps });
+                alert('Báo cáo lỗi đã được gửi thành công!');
+                modal.remove();
+            } else {
+                alert('Vui lòng điền đầy đủ thông tin!');
+            }
+        };
+        
+        return modal;
+    }
+
+    createContactSupportModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <h3>Liên Hệ Hỗ Trợ</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="support-info">
+                        <div class="support-item">
+                            <span class="material-icons-round">email</span>
+                            <div>
+                                <strong>Email:</strong>
+                                <p>support@zewk.com</p>
+                            </div>
+                        </div>
+                        <div class="support-item">
+                            <span class="material-icons-round">phone</span>
+                            <div>
+                                <strong>Hotline:</strong>
+                                <p>1900 123 456</p>
+                            </div>
+                        </div>
+                        <div class="support-item">
+                            <span class="material-icons-round">schedule</span>
+                            <div>
+                                <strong>Giờ làm việc:</strong>
+                                <p>T2 - T6: 8:00 - 17:00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <form id="supportForm">
+                        <div class="form-group">
+                            <label for="supportSubject">Chủ đề:</label>
+                            <select id="supportSubject" class="form-control">
+                                <option value="technical">Vấn đề kỹ thuật</option>
+                                <option value="account">Tài khoản</option>
+                                <option value="feature">Yêu cầu tính năng</option>
+                                <option value="other">Khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="supportMessage">Tin nhắn:</label>
+                            <textarea id="supportMessage" class="form-control" rows="4" placeholder="Mô tả vấn đề của bạn..."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Đóng</button>
+                    <button type="button" class="btn btn-primary" onclick="this.submitSupportRequest()">Gửi Yêu Cầu</button>
+                </div>
+            </div>
+        `;
+        
+        modal.querySelector('.btn-primary').onclick = () => {
+            const subject = modal.querySelector('#supportSubject').value;
+            const message = modal.querySelector('#supportMessage').value;
+            
+            if (message.trim()) {
+                console.log('Support request submitted:', { subject, message });
+                alert('Yêu cầu hỗ trợ đã được gửi thành công!');
+                modal.remove();
+            } else {
+                alert('Vui lòng nhập tin nhắn!');
+            }
+        };
+        
+        return modal;
     }
 }
 
