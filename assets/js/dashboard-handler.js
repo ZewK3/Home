@@ -1219,7 +1219,7 @@ function setupMobileMenu() {
         document.getElementById('mobileAttendance')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showAttendance(), 300);
+            setTimeout(() => window.contentManager?.showAttendanceGPS(), 300);
         });
         
 
@@ -1270,13 +1270,22 @@ function setupMobileMenu() {
         document.getElementById('mobileGrantAccess')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showGrantAccess(), 300);
+            setTimeout(() => {
+                if (window.contentManager && typeof window.contentManager.showGrantAccess === 'function') {
+                    window.contentManager.showGrantAccess();
+                }
+            }, 300);
         });
         
         document.getElementById('mobilePersonalInformation')?.addEventListener('click', (e) => {
             e.preventDefault();
             closeMobileMenu();
-            setTimeout(() => window.contentManager?.showPersonalInformation(), 300);
+            setTimeout(() => {
+                // Use the same function as PC version
+                if (window.contentManager && typeof window.contentManager.showPersonalInfo === 'function') {
+                    window.contentManager.showPersonalInfo();
+                }
+            }, 300);
         });
         
         // Mobile logout

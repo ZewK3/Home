@@ -2031,6 +2031,12 @@ button {
         right: -10px;
     }
     
+    .notification-dropdown {
+        width: calc(100vw - 30px);
+        right: -10px;
+        max-width: 280px;
+    }
+    
     .current-time {
         display: none;
     }
@@ -2053,6 +2059,12 @@ button {
     .user-dropdown {
         width: 240px;
         right: -20px;
+    }
+    
+    .notification-dropdown {
+        width: calc(100vw - 40px);
+        right: -20px;
+        max-width: 300px;
     }
 }
 }
