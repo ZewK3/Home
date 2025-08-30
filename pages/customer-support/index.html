@@ -16,7 +16,7 @@
     <script src="../../assets/js/config.js"></script>
     <script src="../../assets/js/utils.js"></script>
     <script src="../../assets/js/auth-manager.js"></script>
-    <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/auth-handler.js"></script>
     <script src="../../assets/js/customer-support.js"></script>
     
     <style>
@@ -584,7 +584,7 @@
             const loginOverlay = document.getElementById('loginOverlay');
             loginOverlay.classList.add('show');
             
-            // Set up login form handler using the standard handleLogin from script.js
+            // Set up login form handler using the standard handleLogin from auth-handler.js
             const loginForm = document.getElementById('loginForm');
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -636,7 +636,7 @@
                         showLoginError(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
                     }
                 } else {
-                    // Fallback to local login handling if script.js is not loaded
+                    // Fallback to local login handling if auth-handler.js is not loaded
                     await handleLocalLogin(e);
                 }
             });
@@ -647,7 +647,7 @@
             loginOverlay.classList.remove('show');
         }
 
-        // Fallback login handler if script.js is not available
+        // Fallback login handler if auth-handler.js is not available
         async function handleLocalLogin(e) {
             e.preventDefault();
             
@@ -662,7 +662,7 @@
             loginButton.disabled = true;
             
             try {
-                // Use the same API call structure as script.js
+                // Use the same API call structure as auth-handler.js
                 const response = await fetch('https://zewk.tocotoco.workers.dev/?action=login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
