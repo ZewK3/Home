@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional HR Management System - GitHub Style</title>
+    <title>Professional HR Management System - Modern Design</title>
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp với công nghệ hiện đại, giao diện GitHub-inspired">
+    <meta name="theme-color" content="#0d1117">
     <link rel="icon" type="image/x-icon" href="public/favicon.ico">
     
-    <!-- GitHub-Inspired Styling -->
-    <link rel="stylesheet" href="assets/css/github-inspired.css">
+    <!-- Modern CSS Architecture -->
+    <link rel="stylesheet" href="assets/css/base-styles.css">
+    <link rel="stylesheet" href="assets/css/theme-system.css">
+    <link rel="stylesheet" href="assets/css/layout-system.css">
     <link rel="stylesheet" href="assets/css/customer-support-chat.css">
+    
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 <body>
     <!-- GitHub-Inspired Header -->
-    <header class="github-header">
+    <header class="app-header github-header">
         <div class="header-container">
             <nav class="header-nav">
                 <a href="#" class="github-logo">
@@ -36,7 +40,7 @@
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
                     <span class="material-icons-round">dark_mode</span>
                 </button>
-                <a href="pages/auth/index.html" class="btn-primary">
+                <a href="pages/auth/index.html" class="btn btn-primary">
                     <span class="material-icons-round">login</span>
                     Đăng nhập
                 </a>
@@ -326,6 +330,7 @@
         </div>
     </footer>
 
+    <script src="assets/js/theme-manager.js"></script>
     <script src="assets/js/home-page.js"></script>
     <script src="assets/js/customer-chat-widget.js"></script>
 </body>
