@@ -737,6 +737,7 @@ class ContentManager {
         try {
             if (this.isInitialized) {
                 console.log('ContentManager already initialized');
+                this.hideDashboardLoader(); // Hide loader if already initialized
                 return;
             }
 
@@ -757,11 +758,16 @@ class ContentManager {
             this.makeGloballyAccessible();
             
             this.isInitialized = true;
+            
+            // Hide dashboard loader after initialization is complete
+            this.hideDashboardLoader();
+            
             DOMUtils.showNotification('Dashboard initialized successfully', 'success');
             
             console.log('✅ ContentManager v4.0 fully initialized');
         } catch (error) {
             console.error('❌ ContentManager initialization failed:', error);
+            this.hideDashboardLoader(); // Hide loader even on error
             DOMUtils.showNotification('Failed to initialize dashboard', 'error');
         }
     }
@@ -1111,3 +1117,26 @@ class ContentManager {
                     </div>
                 </div>
             `).join('');
+        }
+    }
+
+    // =====================================================
+    // LOADING SCREEN MANAGEMENT
+    // =====================================================
+    
+    showDashboardLoader() {
+        const loader = document.querySelector('#dashboardLoader');
+        if (loader) {
+            loader.style.display = 'flex';
+            console.log('🔄 Dashboard loader shown');
+        }
+    }
+
+    hideDashboardLoader() {
+        const loader = document.querySelector('#dashboardLoader');
+        if (loader) {
+            loader.style.display = 'none';
+            console.log('✅ Dashboard loader hidden');
+        }
+    }
+}
