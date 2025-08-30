@@ -14,10 +14,12 @@ class AuthManager {
         
         // Get token from storage (secure or regular)
         this.token = this.getFromStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        console.log('AuthManager initialized - Token found:', !!this.token);
         
         // Safely parse user data from storage
         try {
             this.userData = this.getFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
+            console.log('AuthManager initialized - User data found:', !!this.userData);
         } catch (error) {
             console.warn('Failed to parse user data from storage:', error);
             this.userData = null;
@@ -195,14 +197,20 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh user data from API');
-                const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
-                if (user && user.employeeId) {
-                    this.cachedUser = user;
+                const response = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${this.token}`);
+                
+                // Extract user data from API response structure
+                const userData = response.data || response;
+                
+                if (userData && userData.employeeId) {
+                    // Map Enhanced Database Schema v3.0 fields
+                    const mappedUser = utils.mapUserDataFromEnhancedSchema(userData);
+                    this.cachedUser = mappedUser;
                     this.cacheTimestamp.user = Date.now();
                     // Update storage
-                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, user);
-                    this.userData = user;
-                    return user;
+                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, mappedUser);
+                    this.userData = mappedUser;
+                    return mappedUser;
                 }
                 throw new Error("Invalid user data received from API");
             } catch (error) {
@@ -295,9 +303,14 @@ class AuthManager {
             try {
                 console.log('Fetching fresh work tasks data');
                 const workTasks = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${employeeId}&token=${this.token}&page=1&limit=15`);
-                this.cachedWorkTasks = workTasks;
+                
+                // Map Enhanced Database Schema v3.0 fields for each task
+                const mappedTasks = Array.isArray(workTasks) ? 
+                    workTasks.map(task => utils.mapTaskDataFromEnhancedSchema(task)) : [];
+                
+                this.cachedWorkTasks = mappedTasks;
                 this.cacheTimestamp.workTasks = Date.now();
-                return workTasks;
+                return mappedTasks;
             } catch (error) {
                 console.error('Error fetching work tasks:', error);
                 return this.cachedWorkTasks || [];
@@ -338,16 +351,32 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh personal stats data');
-                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
-                this.cachedPersonalStats = personalStats;
+                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}&token=${this.token}`);
+                
+                // Enhanced Database Schema v3.0 personal stats mapping
+                const mappedStats = {
+                    workDaysThisMonth: personalStats.work_days_this_month || personalStats.workDaysThisMonth || 0,
+                    totalHoursThisMonth: personalStats.total_hours_this_month || personalStats.totalHoursThisMonth || 0,
+                    attendanceRate: personalStats.attendance_rate || personalStats.attendanceRate || 0,
+                    overtimeHours: personalStats.overtime_hours || personalStats.overtimeHours || 0,
+                    tasksCompleted: personalStats.tasks_completed || personalStats.tasksCompleted || 0,
+                    pendingTasks: personalStats.pending_tasks || personalStats.pendingTasks || 0,
+                    averageRating: personalStats.average_rating || personalStats.averageRating || 0
+                };
+                
+                this.cachedPersonalStats = mappedStats;
                 this.cacheTimestamp.personalStats = Date.now();
-                return personalStats;
+                return mappedStats;
             } catch (error) {
                 console.error('Error fetching personal stats:', error);
                 return this.cachedPersonalStats || {
                     workDaysThisMonth: 0,
                     totalHoursThisMonth: 0,
-                    attendanceRate: 0
+                    attendanceRate: 0,
+                    overtimeHours: 0,
+                    tasksCompleted: 0,
+                    pendingTasks: 0,
+                    averageRating: 0
                 };
             }
         });
@@ -454,7 +483,8 @@ class AuthManager {
 
     async checkAuthentication() {
         if (!this.token) {
-            // window.location.href = "index.html"; // Commented for testing
+            console.log('No token found, redirecting to login');
+            window.location.href = "../../index.html";
             return null;
         }
 
@@ -467,7 +497,9 @@ class AuthManager {
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
                 }
-                MenuManager.updateMenuByRole(user.position);
+                if (typeof MenuManager !== 'undefined') {
+                    MenuManager.updateMenuByRole(user.roles || [user.position]);
+                }
                 return user;
             }
 
@@ -483,7 +515,9 @@ class AuthManager {
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
                 }
-                MenuManager.updateMenuByRole(userData.position);
+                if (typeof MenuManager !== 'undefined') {
+                    MenuManager.updateMenuByRole(userData.roles || [userData.position]);
+                }
                 return userData;
             }
 
@@ -501,18 +535,24 @@ class AuthManager {
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
                 }
-                MenuManager.updateMenuByRole(user.position);
+                if (typeof MenuManager !== 'undefined') {
+                    MenuManager.updateMenuByRole(user.roles || [user.position]);
+                }
                 return user;
             }
 
             throw new Error("No valid user data found in cache, localStorage, or API");
         } catch (error) {
             console.error('Authentication check failed:', error);
-            utils.showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning");
+            if (typeof utils !== 'undefined') {
+                utils.showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning");
+            }
             this.logout();
             return null;
         }
     }
+
+
 
     setupLogoutHandler() {
         document.getElementById("logout")?.addEventListener("click", () => this.logout());
@@ -530,7 +570,8 @@ class AuthManager {
             this.secureStorage.clearAllData();
         }
         
-        // window.location.href = "index.html"; // Commented for testing
+        console.log('Logout completed, redirecting to login');
+        window.location.href = "../../index.html";
     }
 }
 

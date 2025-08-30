@@ -1,23 +1,25 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#0d1117">
     <link rel="icon" href="../../assets/icons/favicon-32x32.png" sizes="32x32">
     <title>HR Management System - Dashboard</title>
     
-    <!-- Modular CSS Files -->
-    <link rel="stylesheet" href="../../assets/css/base.css">
-    <link rel="stylesheet" href="../../assets/css/components.css">
-    <link rel="stylesheet" href="../../assets/css/navigation.css">
+    <!-- Modern CSS Architecture -->
+    <link rel="stylesheet" href="../../assets/css/base-styles.css">
+    <link rel="stylesheet" href="../../assets/css/theme-system.css">
+    <link rel="stylesheet" href="../../assets/css/layout-system.css">
+    <link rel="stylesheet" href="../../assets/css/sidebar-components.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard-components.css">
+    <link rel="stylesheet" href="../../assets/css/modern-chat.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard-chat.css">
     <link rel="stylesheet" href="../../assets/css/modals.css">
     <link rel="stylesheet" href="../../assets/css/containers.css">
-    <link rel="stylesheet" href="../../assets/css/dash.css">
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
 </head>
 <body>
     <!-- Dashboard Loading Screen -->
@@ -44,495 +46,1199 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Content (initially hidden) -->
+    <!-- Application Container -->
     <div id="dashboardContent" class="dashboard-content">
-
-    <!-- Mobile Navigation Dialog - GitHub Style -->
-    <dialog id="mobile-nav-dialog" class="mobile-nav-dialog">
-        <div class="mobile-nav-content">
-            <div class="mobile-nav-header">
-                <h2>Menu</h2>
-                <button type="button" class="close-dialog" aria-label="Close navigation">
-                    <span class="material-icons-round">close</span>
+        <!-- Header -->
+        <header class="app-header" role="banner">
+            <button id="btnSidebar" class="icon-btn" aria-label="Mở menu" aria-controls="mobileSidebar" aria-expanded="false">
+                <span class="material-icons-round">menu</span>
+            </button>
+            
+            <div class="brand">
+                <span class="brand-dot" aria-hidden="true"></span>
+                <span class="company-name-desktop">ZewK Management System</span>
+                <span class="company-name-mobile">ZewK</span>
+            </div>
+            
+            <div class="spacer"></div>
+            
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="material-icons-round">dark_mode</span>
                 </button>
-            </div>
-            <nav class="mobile-nav">
-                <ul id="mobileMenuList" class="mobile-menu-list">
-                    <li class="mobile-menu-item" data-role="AD,QL,NV">
-                        <a href="#" id="mobileWorkManagement" class="mobile-menu-link">
-                            <span class="material-icons-round">schedule</span>
-                            Quản Lý Công
-                        </a>
-                        <ul class="mobile-submenu">
-                            <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
-                                <a href="#" id="mobileTimesheet" class="mobile-submenu-link">
-                                    <span class="material-icons-round">calendar_view_month</span>
-                                    Bảng Công
-                                </a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD,AM,QL,NV">
-                                <a href="#" id="mobileAttendance" class="mobile-submenu-link">
-                                    <span class="material-icons-round">location_on</span>
-                                    Chấm Công
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="mobile-menu-item" data-role="AD,AM,QL,NV">
-                        <a href="#" id="mobileWorkTasks" class="mobile-menu-link">Công Việc</a>
-                    </li>
-                    <li class="mobile-menu-item" data-role="AD,NV">
-                        <a href="#" id="mobileSubmitRequest" class="mobile-menu-link">
-                            <span class="material-icons-round">send</span>
-                            Gửi Yêu Cầu
-                        </a>
-                        <ul class="mobile-submenu">
-                            <li class="mobile-submenu-item" data-role="AD,NV">
-                                <a href="#" id="mobileAttendanceRequest" class="mobile-submenu-link">
-                                    <span class="material-icons-round">assignment</span>
-                                    Đơn Từ
-                                </a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD,NV">
-                                <a href="#" id="mobileTaskAssignment" class="mobile-submenu-link">
-                                    <span class="material-icons-round">task_alt</span>
-                                    Nhiệm Vụ
-                                </a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD,AM,QL">
-                                <a href="#" id="mobileShiftAssignment" class="mobile-submenu-link">
-                                    <span class="material-icons-round">schedule_send</span>
-                                    Phân Ca
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="mobile-menu-item" data-role="AD,QL">
-                        <a href="#" id="mobileTaskProcessing" class="mobile-menu-link">Xử Lý Yêu Cầu</a>
-                        <ul class="mobile-submenu">
-                            <li class="mobile-submenu-item" data-role="AD">
-                                <a href="#" id="mobileTaskPersonnel" class="mobile-submenu-link">Nhân Sự</a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD,QL">
-                                <a href="#" id="mobileTaskStore" class="mobile-submenu-link">Cửa Hàng</a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD">
-                                <a href="#" id="mobileTaskFinance" class="mobile-submenu-link">Tài Chính</a>
-                            </li>
-                            <li class="mobile-submenu-item" data-role="AD,QL">
-                                <a href="#" id="mobileTaskApproval" class="mobile-submenu-link">Xét Duyệt</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="mobile-menu-item" data-role="AD,QL">
-                        <a href="#" id="mobileRegistrationApproval" class="mobile-menu-link">Duyệt Đăng Ký</a>
-                    </li>
-                    <li class="mobile-menu-item" data-role="AD">
-                        <a href="#" id="mobileGrantAccess" class="mobile-menu-link">Phân Quyền</a>
-                    </li>
-                    <li class="mobile-menu-item" data-role="AD,QL,AM,NV">
-                        <a href="#" id="mobilePersonalInformation" class="mobile-menu-link">Thông Tin Cá Nhân</a>
-                    </li>
-                </ul>
-                <div class="mobile-nav-footer">
-                    <button id="mobileLogout" class="mobile-logout-btn">
-                        <span class="material-icons-round">logout</span>
-                        Đăng xuất
+                
+                <button class="icon-btn" aria-label="Tìm kiếm">
+                    <span class="material-icons-round">search</span>
+                </button>
+                
+                <!-- Notifications -->
+                <div class="notification-container">
+                    <button id="notificationToggle" class="icon-btn" aria-label="Thông báo">
+                        <span class="material-icons-round">notifications</span>
+                        <span id="notificationBadge" class="notification-badge">3</span>
                     </button>
+                    
+                    <!-- Notification Dropdown -->
+                    <div id="notificationDropdown" class="notification-dropdown">
+                        <div class="notification-header">
+                            <h3>Thông báo</h3>
+                            <button id="markAllRead" class="mark-all-read">Đánh dấu đã đọc</button>
+                        </div>
+                        <div class="notification-list" id="notificationList">
+                            <!-- Notifications will be populated here -->
+                        </div>
+                        <div class="notification-footer">
+                            <a href="#" id="viewAllNotifications">Xem tất cả thông báo</a>
+                        </div>
+                    </div>
                 </div>
-            </nav>
-        </div>
-    </dialog>
-
-    <!-- Mobile Sidebar Overlay -->
-    <div id="sidebarOverlay" class="app-sidebar-overlay"></div>
-
-    <!-- User Info Header - GitHub AppHeader Style -->
-    <div class="app-header">
-        <!-- Mobile Menu Toggle - positioned within AppHeader -->
-        <button id="menuToggle" class="menu-toggle" aria-label="Toggle navigation" data-target="mobile-nav-dialog">
-            <span class="menu-icon">
-                <span class="menu-line"></span>
-                <span class="menu-line"></span>
-                <span class="menu-line"></span>
-            </span>
-        </button>
-        
-        <div class="AppHeader-context">
-            <div class="company-logo">
-                <h1><a href="#" id="companyLogoLink" class="AppHeader-logo" style="text-decoration: none; color: inherit; cursor: pointer;">
-                    <span class="company-name-desktop">ZewK Management System</span>
-                    <span class="company-name-mobile">ZewK</span>
-                </a></h1>
-            </div>
-        </div>
-        <div class="AppHeader-actions">
-            <div class="AppHeader-user">
-                <div id="userInfo" class="user-info"></div>
+                
+                <!-- User Info with Avatar Menu -->
+                <div class="user-info-container">
+                    <button id="userInfo" class="user-info-btn" aria-label="Menu người dùng" aria-expanded="false">
+                        <span class="material-icons-round user-avatar">person</span>
+                        <span class="user-name">Admin</span>
+                        <span class="material-icons-round dropdown-arrow">keyboard_arrow_down</span>
+                    </button>
+                    
+                    <!-- User Dropdown Menu -->
+                    <div id="userDropdown" class="user-dropdown">
+                        <div class="user-dropdown-header">
+                            <div class="user-avatar-large">
+                                <span class="material-icons-round">person</span>
+                            </div>
+                            <div class="user-details">
+                                <h4>Administrator</h4>
+                                <p>admin@zewk.com</p>
+                            </div>
+                        </div>
+                        <div class="user-dropdown-menu">
+                            <a href="#" id="userProfile" class="dropdown-item">
+                                <span class="material-icons-round">account_circle</span>
+                                <span>Your Profile</span>
+                            </a>
+                            <a href="#" id="reportBug" class="dropdown-item">
+                                <span class="material-icons-round">bug_report</span>
+                                <span>Báo Lỗi</span>
+                            </a>
+                            <a href="#" id="contactSupport" class="dropdown-item">
+                                <span class="material-icons-round">support</span>
+                                <span>Liên Hệ Hỗ Trợ</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" id="userLogout" class="dropdown-item logout">
+                                <span class="material-icons-round">logout</span>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
                 <div id="currentTime" class="current-time">
                     <span id="timeIcon" class="time-icon material-icons-round">wb_sunny</span>
                     <span id="timeDisplay" class="time-display">00:00</span>
                 </div>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Sidebar -->
-    <div class="app-sidebar">
-        <ul id="menuList" class="menu-list">
-            <li class="menu-item" data-role="AD,QL,NV">
-                <a href="#" id="openWorkManagement" class="menu-link">
-                    <span class="material-icons-round">schedule</span>
-                    Quản Lý Công
-                </a>
-                <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,AM,QL,NV">
-                        <a href="#" id="openTimesheet" class="submenu-link">
+        <!-- Shell Container -->
+        <div class="shell" role="presentation">
+            <!-- Sidebar (desktop permanent) -->
+            <aside class="app-sidebar permanent" aria-label="Thanh điều hướng">
+                <div class="nav-group">
+                    <div class="nav-item-parent" data-menu-toggle="work-management">
+                        <div class="nav-title expandable">
+                            <span class="material-icons-round">work_outline</span>
+                            Quản lý công việc
+                            <span class="material-icons-round nav-chevron">expand_more</span>
+                        </div>
+                    </div>
+                    <nav class="nav nav-submenu" id="work-management">
+                        <a href="#" id="openWorkManagement" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,EMPLOYEE,AD,QL,NV">
+                            <span class="material-icons-round">schedule</span>
+                            Quản Lý Công
+                        </a>
+                        <a href="#" id="openTimesheet" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
                             <span class="material-icons-round">calendar_view_month</span>
                             Bảng Công
                         </a>
-                    </li>
-                    <li class="submenu-item" data-role="AD,AM,QL,NV">
-                        <a href="#" id="openAttendance" class="submenu-link">
+                        <a href="#" id="openAttendance" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
                             <span class="material-icons-round">location_on</span>
                             Chấm Công
                         </a>
-                    </li>
-                </ul>
-            </li>
-            <li class="menu-item" data-role="AD,AM,QL,NV">
-                <a href="#" id="openWorkTasks" class="menu-link">
-                    <span class="material-icons-round">work</span>
-                    Công Việc
-                </a>
-            </li>
-            <li class="menu-item" data-role="AD,NV">
-                <a href="#" id="openSubmitRequest" class="menu-link">
-                    <span class="material-icons-round">send</span>
-                    Gửi Yêu Cầu
-                </a>
-                <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,NV">
-                        <a href="#" id="openAttendanceRequest" class="submenu-link">
+                        <a href="#" id="openWorkTasks" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                            <span class="material-icons-round">work</span>
+                            Công Việc
+                        </a>
+                    </nav>
+                </div>
+                
+                <div class="nav-group">
+                    <div class="nav-item-parent" data-menu-toggle="requests">
+                        <div class="nav-title expandable">
+                            <span class="material-icons-round">request_page</span>
+                            Yêu cầu
+                            <span class="material-icons-round nav-chevron">expand_more</span>
+                        </div>
+                    </div>
+                    <nav class="nav nav-submenu" id="requests">
+                        <a href="#" id="openSubmitRequest" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                            <span class="material-icons-round">send</span>
+                            Gửi Yêu Cầu
+                        </a>
+                        <a href="#" id="openAttendanceRequest" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
                             <span class="material-icons-round">assignment</span>
                             Đơn Từ
                         </a>
-                    </li>
-                    <li class="submenu-item" data-role="AD,NV">
-                        <a href="#" id="openTaskAssignment" class="submenu-link">
+                        <a href="#" id="openTaskAssignment" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
                             <span class="material-icons-round">task_alt</span>
                             Nhiệm Vụ
                         </a>
-                    </li>
-                    <li class="submenu-item" data-role="AD,AM,QL">
-                        <a href="#" id="openShiftAssignment" class="submenu-link">
+                        <a href="#" id="openShiftAssignment" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,AD,AM,QL">
                             <span class="material-icons-round">schedule_send</span>
                             Phân Ca
                         </a>
-                    </li>
-                </ul>
-            </li>
-            <li class="menu-item" data-role="AD,QL,AM">
-                <a href="#" id="openTaskProcessing" class="menu-link">Xử Lý Yêu Cầu</a>
-                <ul class="submenu">
-                    <li class="submenu-item" data-role="AD,QL">
-                        <a href="#" id="taskPersonnel" class="submenu-link">Nhân Sự</a>
-                    </li>
-                    <li class="submenu-item" data-role="AD,AM">
-                        <a href="#" id="taskStore" class="submenu-link">Cửa Hàng</a>
-                    </li>
-                    <li class="submenu-item" data-role="AD">
-                        <a href="#" id="taskFinance" class="submenu-link">Tài Chính</a>
-                    </li>
-                    <li class="submenu-item" data-role="AD,QL">
-                        <a href="#" id="taskApproval" class="submenu-link">Xét Duyệt</a>
-                    </li>
-                </ul>
-            </li>
-            <li class="menu-item" data-role="AD,QL">
-                <a href="#" id="openRegistrationApproval" class="menu-link">Duyệt Đăng Ký</a>
-            </li>
-            <li class="menu-item" data-role="AD">
-                <a href="#" id="openGrantAccess" class="menu-link">Phân Quyền</a>
-            </li>
-            <li class="menu-item" data-role="AD,QL,AM,NV">
-                <a href="#" id="openPersonalInformation" class="menu-link">Thông Tin Cá Nhân</a>
-            </li>
-        </ul>
-        <button id="logout" class="logout-btn">Đăng xuất</button>
-    </div>
-
-    <!-- Enhanced Loading Screen -->
-    <div id="loadingScreen" class="loading-screen hidden">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <h2 class="loading-text">Đang tải hệ thống HR</h2>
-            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0;">Vui lòng chờ trong giây lát</p>
-            <div class="loading-dots">
-                <span class="loading-dot"></span>
-                <span class="loading-dot"></span>
-                <span class="loading-dot"></span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <main class="main dashboard-main-fade-in">
-        <div id="notification" class="notification hidden"></div>
-        <div id="content" class="content">
-            <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
-            
-            <!-- Enhanced Dashboard Overview -->
-            <div class="welcome-section">
-                <!-- Main Statistics Grid -->
-                <div class="stats-grid">
-                    <div class="stat-card primary">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-info">
-                            <h3>Tổng Nhân Viên</h3>
-                            <p id="totalEmployees">-</p>
-                            <span class="stat-trend">+2 tuần này</span>
-                        </div>
-                    </div>
-                    <div class="stat-card success">
-                        <div class="stat-icon">📅</div>
-                        <div class="stat-info">
-                            <h3>Ca Hôm Nay</h3>
-                            <p id="todayShift">-</p>
-                            <span class="stat-trend" id="todayShiftTime">-</span>
-                        </div>
-                    </div>
-                    <div class="stat-card warning">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-info">
-                            <h3>Yêu Cầu Chờ</h3>
-                            <p id="pendingRequests">-</p>
-                            <span class="stat-trend">Cần xử lý</span>
-                        </div>
-                    </div>
-                    <div class="stat-card info">
-                        <div class="stat-icon">💬</div>
-                        <div class="stat-info">
-                            <h3>Tin Nhắn Mới</h3>
-                            <p id="recentMessages">-</p>
-                            <span class="stat-trend">24h qua</span>
-                        </div>
-                    </div>
+                    </nav>
                 </div>
-
-                <!-- Role-based Quick Actions -->
-                <div class="quick-actions-section">
-                    <h2 class="section-title">Thao Tác Nhanh</h2>
-                    <div class="quick-actions-grid">
-                        <button class="quick-action-btn" data-action="addEmployee">
-                            <span class="action-icon">👤</span>
-                            <span class="action-text">Thêm Nhân Viên</span>
-                        </button>
-                        <button class="quick-action-btn" data-action="assignShift">
-                            <span class="action-icon">📊</span>
-                            <span class="action-text">Phân Ca</span>
-                        </button>
-                        <button class="quick-action-btn" data-action="manageRewards">
-                            <span class="action-icon">🏆</span>
-                            <span class="action-text">Quản Lý Thưởng</span>
-                        </button>
-                        <button class="quick-action-btn" data-action="viewReports">
-                            <span class="action-icon">📈</span>
-                            <span class="action-text">Báo Cáo</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Advanced Analytics Dashboard for Admin -->
-                <div class="analytics-section">
-                    <h2 class="section-title">Phân Tích Dữ Liệu</h2>
-                    <div class="analytics-grid">
-                        <div class="chart-card">
-                            <h3>Hiệu Suất Nhân Viên</h3>
-                            <div class="chart-placeholder" id="performanceChart">
-                                <p>Đang tải biểu đồ...</p>
-                            </div>
-                        </div>
-                        <div class="chart-card">
-                            <h3>Lịch Làm Theo Tuần</h3>
-                            <div class="chart-placeholder" id="scheduleChart">
-                                <p>Đang tải biểu đồ...</p>
-                            </div>
-                        </div>
-                        <div class="chart-card">
-                            <h3>Thưởng/Phạt</h3>
-                            <div class="chart-placeholder" id="rewardsChart">
-                                <p>Đang tải biểu đồ...</p>
-                            </div>
-                        </div>
-                        <div class="chart-card">
-                            <h3>Doanh Thu</h3>
-                            <div class="chart-placeholder" id="revenueChart">
-                                <p>Đang tải biểu đồ...</p>
-                            </div>
+                
+                <div class="nav-group">
+                    <div class="nav-item-parent" data-menu-toggle="admin">
+                        <div class="nav-title expandable">
+                            <span class="material-icons-round">admin_panel_settings</span>
+                            Quản trị
+                            <span class="material-icons-round nav-chevron">expand_more</span>
                         </div>
                     </div>
+                    <nav class="nav nav-submenu" id="admin">
+                        <a href="#" id="openTaskProcessing" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,AD,QL,AM">
+                            <span class="material-icons-round">pending_actions</span>
+                            Xử Lý Yêu Cầu
+                        </a>
+                        <a href="#" id="openRegistrationApproval" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AD,QL">
+                            <span class="material-icons-round">how_to_reg</span>
+                            Duyệt Đăng Ký
+                        </a>
+                        <a href="#" id="openGrantAccess" data-role="SUPER_ADMIN,ADMIN,AD">
+                            <span class="material-icons-round">admin_panel_settings</span>
+                            Phân Quyền
+                        </a>
+                        <a href="#" id="openPersonalInformation" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,EMPLOYEE,AD,QL,AM,NV">
+                            <span class="material-icons-round">person</span>
+                            Thông Tin Cá Nhân
+                        </a>
+                    </nav>
                 </div>
+                
+                <div class="sidebar-footer">
+                    <button id="logout" class="logout-btn">
+                        <span class="material-icons-round">logout</span>
+                        Đăng xuất
+                    </button>
+                </div>
+            </aside>
 
-                <!-- Store Management for Managers -->
-                <div class="store-management-section">
-                    <h2 class="section-title">Quản Lý Cửa Hàng</h2>
-                    <div class="store-grid">
-                        <div class="store-card" data-store="ST001">
-                            <div class="store-header">
-                                <h3>Cửa Hàng Trung Tâm</h3>
-                                <span class="store-status active">Hoạt động</span>
-                            </div>
-                            <div class="store-stats">
-                                <div class="store-stat">
-                                    <span class="stat-label">Nhân viên:</span>
-                                    <span class="stat-value" id="store1Employees">-</span>
+            <!-- Main Content -->
+            <main class="content" id="main" tabindex="-1">
+                <!-- Global notification container -->
+                <div id="notification" class="notification hidden" role="alert" aria-live="polite"></div>
+                
+                <!-- Dashboard Header -->
+                <section class="cards">
+                    <article class="card span-12">
+                        <div class="dashboard-header-content">
+                            <div class="header-title-section">
+                                <div class="title-icon-container">
+                                    <span class="material-icons-round">dashboard</span>
                                 </div>
-                                <div class="store-stat">
-                                    <span class="stat-label">Ca làm hôm nay:</span>
-                                    <span class="stat-value" id="store1Shift">-</span>
+                                <div>
+                                    <h1 class="dashboard-title">Hệ Thống Quản Lý Nhân Sự</h1>
+                                    <div class="dashboard-breadcrumb">
+                                        <span class="material-icons-round">home</span>
+                                        <span class="breadcrumb-separator">/</span>
+                                        <span class="breadcrumb-item active">Dashboard</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="store-actions">
-                                <button class="btn-sm btn-primary" onclick="manageStore('ST001')">Quản Lý</button>
-                                <button class="btn-sm btn-outline" onclick="viewStoreShifts('ST001')">Xem Ca</button>
-                            </div>
-                        </div>
-                        <div class="store-card" data-store="ST002">
-                            <div class="store-header">
-                                <h3>Cửa Hàng Quận 1</h3>
-                                <span class="store-status active">Hoạt động</span>
-                            </div>
-                            <div class="store-stats">
-                                <div class="store-stat">
-                                    <span class="stat-label">Nhân viên:</span>
-                                    <span class="stat-value" id="store2Employees">-</span>
+                            <div class="header-actions">
+                                <div class="date-time-widget">
+                                    <div class="current-date" id="currentDateDisplay"></div>
+                                    <div class="current-time" id="currentTimeDisplay"></div>
                                 </div>
-                                <div class="store-stat">
-                                    <span class="stat-label">Ca làm hôm nay:</span>
-                                    <span class="stat-value" id="store2Shift">-</span>
-                                </div>
-                            </div>
-                            <div class="store-actions">
-                                <button class="btn-sm btn-primary" onclick="manageStore('ST002')">Quản Lý</button>
-                                <button class="btn-sm btn-outline" onclick="viewStoreShifts('ST002')">Xem Ca</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Activities -->
-                <div class="activities-section">
-                    <h2 class="section-title">Hoạt Động Gần Đây</h2>
-                    <div class="activities-container">
-                        <div id="recentActivities" class="activities-list">
-                            <p class="loading-text">Đang tải hoạt động...</p>
-                        </div>
-                        <div class="activities-footer">
-                            <button class="btn-outline" onclick="loadMoreActivities()">Xem thêm</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Finance Overview for Admin -->
-                <div class="finance-section">
-                    <h2 class="section-title">Tổng Quan Tài Chính</h2>
-                    <div class="finance-grid">
-                        <div class="finance-card revenue">
-                            <div class="finance-header">
-                                <h3>Doanh Thu Tháng</h3>
-                                <span class="finance-trend up">↗ +12%</span>
-                            </div>
-                            <div class="finance-amount" id="monthlyRevenue">0 ₫</div>
-                            <div class="finance-subtitle">So với tháng trước</div>
-                        </div>
-                        <div class="finance-card expense">
-                            <div class="finance-header">
-                                <h3>Chi Phí Tháng</h3>
-                                <span class="finance-trend down">↘ -5%</span>
-                            </div>
-                            <div class="finance-amount" id="monthlyExpense">0 ₫</div>
-                            <div class="finance-subtitle">Tiết kiệm được</div>
-                        </div>
-                        <div class="finance-card profit">
-                            <div class="finance-header">
-                                <h3>Lợi Nhuận</h3>
-                                <span class="finance-trend up">↗ +18%</span>
-                            </div>
-                            <div class="finance-amount" id="monthlyProfit">0 ₫</div>
-                            <div class="finance-subtitle">Tăng trưởng tốt</div>
-                        </div>
-                        <div class="finance-card payroll">
-                            <div class="finance-header">
-                                <h3>Lương Nhân Viên</h3>
-                                <span class="finance-trend neutral">→ 0%</span>
-                            </div>
-                            <div class="finance-amount" id="monthlyPayroll">0 ₫</div>
-                            <div class="finance-subtitle">Ổn định</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Registration Approval for Admin and Managers -->
-                <div class="registration-approval-section">
-                    <h2 class="section-title">Duyệt Đăng Ký Nhân Viên</h2>
-                    <div class="approval-container">
-                        <div class="approval-header">
-                            <div class="approval-filters">
-                                <select id="storeFilter" class="filter-select">
-                                    <option value="">Tất cả cửa hàng</option>
-                                </select>
-                                <button id="refreshPendingBtn" class="refresh-btn">
+                                <button class="refresh-btn" id="refreshDashboard">
                                     <span class="material-icons-round">refresh</span>
                                     Làm mới
                                 </button>
                             </div>
                         </div>
+                    </article>
+                </section>
+
+                <!-- Statistics Overview -->
+                <section class="cards">
+                    <article class="card span-3">
+                        <div class="stat-card primary">
+                            <div class="stat-icon">
+                                <span class="material-icons-round">people</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Tổng Nhân Viên</h3>
+                                <div class="stat-number" id="totalEmployees">248</div>
+                                <div class="stat-trend positive" id="employeesTrend">+2.1%</div>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="card span-3">
+                        <div class="stat-card success">
+                            <div class="stat-icon">
+                                <span class="material-icons-round">schedule</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Ca Hôm Nay</h3>
+                                <div class="stat-number" id="todayShift">42/43</div>
+                                <div class="stat-trend neutral" id="shiftsTrend">98.5%</div>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="card span-3">
+                        <div class="stat-card warning">
+                            <div class="stat-icon">
+                                <span class="material-icons-round">pending_actions</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Yêu Cầu Chờ</h3>
+                                <div class="stat-number" id="pendingRequests">12</div>
+                                <div class="stat-trend negative" id="pendingTrend">-15%</div>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="card span-3">
+                        <div class="stat-card info">
+                            <div class="stat-icon">
+                                <span class="material-icons-round">chat</span>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Tin Nhắn Mới</h3>
+                                <div class="stat-number" id="recentMessages">24</div>
+                                <div class="stat-trend positive" id="messagesTrend">+8</div>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Action Center -->
+                <section class="cards" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
+                    <article class="card span-12">
+                        <h3>
+                            <span class="material-icons-round">rocket_launch</span>
+                            Trung Tâm Điều Khiển
+                        </h3>
+                        <div class="actions-grid">
+                            <button class="action-card primary-action" data-action="addEmployee" data-role="SUPER_ADMIN,ADMIN">
+                                <div class="action-icon">
+                                    <span class="material-icons-round">person_add</span>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Thêm Nhân Viên</h4>
+                                    <p>Tạo hồ sơ nhân viên mới</p>
+                                </div>
+                            </button>
+                            
+                            <button class="action-card success-action" data-action="assignShift" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
+                                <div class="action-icon">
+                                    <span class="material-icons-round">event_available</span>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Phân Ca Làm Việc</h4>
+                                    <p>Lập lịch và phân ca</p>
+                                </div>
+                            </button>
+                            
+                            <button class="action-card warning-action" data-action="manageRewards" data-role="SUPER_ADMIN,ADMIN">
+                                <div class="action-icon">
+                                    <span class="material-icons-round">emoji_events</span>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Quản Lý Thưởng Phạt</h4>
+                                    <p>Đánh giá và khen thưởng</p>
+                                </div>
+                            </button>
+                            
+                            <button class="action-card info-action" data-action="viewReports" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
+                                <div class="action-icon">
+                                    <span class="material-icons-round">assessment</span>
+                                </div>
+                                <div class="action-content">
+                                    <h4>Báo Cáo Phân Tích</h4>
+                                    <p>Xem báo cáo chi tiết</p>
+                                </div>
+                            </button>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Analytics and Activities -->
+                <section class="cards">
+                    <article class="card span-8" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
+                        <h3>
+                            <span class="material-icons-round">trending_up</span>
+                            Phân Tích Hiệu Suất
+                        </h3>
+                        <div class="analytics-controls">
+                            <select class="analytics-period">
+                                <option value="today">Hôm nay</option>
+                                <option value="week" selected>Tuần này</option>
+                                <option value="month">Tháng này</option>
+                                <option value="quarter">Quý này</option>
+                            </select>
+                        </div>
+                        <div class="chart-container" id="performanceChart">
+                            <div class="chart-placeholder">
+                                <span class="material-icons-round">bar_chart</span>
+                                <p>Đang tải biểu đồ hiệu suất...</p>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="card span-4">
+                        <h3>
+                            <span class="material-icons-round">history</span>
+                            Hoạt Động Gần Đây
+                        </h3>
+                        <div id="recentActivities" class="activities-list">
+                            <div class="activity-item">
+                                <div class="activity-icon success">
+                                    <span class="material-icons-round">person_add</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Nhân viên mới đã được thêm</div>
+                                    <div class="activity-description">Nguyễn Văn Nam - Nhân viên bán hàng</div>
+                                    <div class="activity-time">2 phút trước</div>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon warning">
+                                    <span class="material-icons-round">schedule</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Yêu cầu nghỉ phép</div>
+                                    <div class="activity-description">Trần Thị Lan - Nghỉ phép 2 ngày</div>
+                                    <div class="activity-time">15 phút trước</div>
+                                </div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon info">
+                                    <span class="material-icons-round">check_circle</span>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Chấm công hoàn tất</div>
+                                    <div class="activity-description">Ca sáng đã được xác nhận</div>
+                                    <div class="activity-time">1 giờ trước</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-actions">
+                            <button class="view-all-btn" onclick="loadMoreActivities()">
+                                <span class="material-icons-round">open_in_new</span>
+                                Xem tất cả
+                            </button>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Store Management and Finance -->
+                <section class="cards">
+                    <article class="card span-6" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
+                        <h3>
+                            <span class="material-icons-round">store</span>
+                            Quản Lý Cửa Hàng
+                        </h3>
+                        <div class="stores-grid">
+                            <div class="store-card" data-store="ST001">
+                                <div class="store-header">
+                                    <div class="store-info">
+                                        <h4>Cửa Hàng Trung Tâm</h4>
+                                        <div class="store-meta">
+                                            <span class="store-code">ST001</span>
+                                            <span class="store-location">
+                                                <span class="material-icons-round">location_on</span>
+                                                Quận 1, TP.HCM
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span class="store-status active">
+                                        <span class="status-dot"></span>
+                                        Hoạt động
+                                    </span>
+                                </div>
+                                
+                                <div class="store-metrics">
+                                    <div class="metric-item">
+                                        <span class="material-icons-round">group</span>
+                                        <div>
+                                            <span class="metric-label">Nhân viên</span>
+                                            <span class="metric-value" id="store1Employees">24</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item">
+                                        <span class="material-icons-round">access_time</span>
+                                        <div>
+                                            <span class="metric-label">Ca hôm nay</span>
+                                            <span class="metric-value" id="store1Shift">18/20</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="metric-item">
+                                        <span class="material-icons-round">trending_up</span>
+                                        <div>
+                                            <span class="metric-label">Hiệu suất</span>
+                                            <span class="metric-value positive">96.5%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-actions">
+                            <button class="add-store-btn" id="addStoreBtn">
+                                <span class="material-icons-round">add</span>
+                                Thêm cửa hàng
+                            </button>
+                        </div>
+                    </article>
+                    
+                    <article class="card span-6" data-role="SUPER_ADMIN,ADMIN">
+                        <h3>
+                            <span class="material-icons-round">account_balance</span>
+                            Tổng Quan Tài Chính
+                        </h3>
+                        <div class="finance-period">
+                            <select class="period-select">
+                                <option value="month" selected>Tháng này</option>
+                                <option value="quarter">Quý này</option>
+                                <option value="year">Năm này</option>
+                            </select>
+                        </div>
+                        <div class="finance-grid">
+                            <div class="finance-card revenue">
+                                <div class="finance-header">
+                                    <span class="material-icons-round">trending_up</span>
+                                    <div class="finance-trend positive">
+                                        <span class="material-icons-round">arrow_upward</span>
+                                        <span>+12.5%</span>
+                                    </div>
+                                </div>
+                                <div class="finance-content">
+                                    <h4>Doanh Thu</h4>
+                                    <div class="finance-amount" id="monthlyRevenue">2.1 tỷ ₫</div>
+                                </div>
+                            </div>
+                            
+                            <div class="finance-card expense">
+                                <div class="finance-header">
+                                    <span class="material-icons-round">trending_down</span>
+                                    <div class="finance-trend negative">
+                                        <span class="material-icons-round">arrow_downward</span>
+                                        <span>-5.2%</span>
+                                    </div>
+                                </div>
+                                <div class="finance-content">
+                                    <h4>Chi Phí</h4>
+                                    <div class="finance-amount" id="monthlyExpense">1.3 tỷ ₫</div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Registration Approvals -->
+                <section class="cards" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER">
+                    <article class="card span-12">
+                        <h3>
+                            <span class="material-icons-round">how_to_reg</span>
+                            Duyệt Đăng Ký
+                        </h3>
+                        <div class="approval-filters">
+                            <select id="storeFilter" class="filter-select">
+                                <option value="">Tất cả cửa hàng</option>
+                                <option value="ST001">Cửa hàng Trung tâm</option>
+                                <option value="ST002">Cửa hàng Quận 7</option>
+                            </select>
+                            <button id="refreshPendingBtn" class="refresh-btn">
+                                <span class="material-icons-round">refresh</span>
+                            </button>
+                        </div>
                         <div id="pendingRegistrationsList" class="registrations-list">
-                            <p class="loading-text">Đang tải danh sách...</p>
+                            <div class="registration-item">
+                                <div class="registration-avatar">
+                                    <span class="material-icons-round">person</span>
+                                </div>
+                                <div class="registration-info">
+                                    <div class="registration-name">Phạm Minh Đức</div>
+                                    <div class="registration-position">Nhân viên bán hàng</div>
+                                    <div class="registration-store">Cửa hàng Trung tâm</div>
+                                </div>
+                                <div class="registration-actions">
+                                    <button class="approve-btn">
+                                        <span class="material-icons-round">check</span>
+                                    </button>
+                                    <button class="reject-btn">
+                                        <span class="material-icons-round">close</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- Personal Information for Employees -->
+                <section class="cards" data-role="EMPLOYEE">
+                    <article class="card span-12">
+                        <h3>
+                            <span class="material-icons-round">person</span>
+                            Thông Tin Cá Nhân
+                        </h3>
+                        <div class="personal-grid">
+                            <div class="personal-card schedule">
+                                <h4>
+                                    <span class="material-icons-round">event</span>
+                                    Ca Làm Tuần Này
+                                </h4>
+                                <div id="personalShifts" class="shift-preview">
+                                    <div class="shift-item">
+                                        <div class="shift-day">Thứ 2</div>
+                                        <div class="shift-time">07:00 - 15:00</div>
+                                    </div>
+                                    <div class="shift-item">
+                                        <div class="shift-day">Thứ 3</div>
+                                        <div class="shift-time">15:00 - 23:00</div>
+                                    </div>
+                                    <div class="shift-item">
+                                        <div class="shift-day">Thứ 4</div>
+                                        <div class="shift-time">Nghỉ</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="personal-card rewards">
+                                <h4>
+                                    <span class="material-icons-round">star</span>
+                                    Thưởng/Phạt
+                                </h4>
+                                <div id="personalRewards" class="rewards-preview">
+                                    <div class="reward-item positive">
+                                        <span class="reward-type">Thưởng hiệu suất</span>
+                                        <span class="reward-amount">+500k</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="personal-card tasks">
+                                <h4>
+                                    <span class="material-icons-round">task</span>
+                                    Yêu Cầu Của Tôi
+                                </h4>
+                                <div id="personalTasks" class="tasks-preview">
+                                    <div class="task-item pending">
+                                        <span class="task-title">Nghỉ phép</span>
+                                        <span class="task-status">Chờ duyệt</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+            </main>
+        </div>
+
+        <!-- Mobile Sidebar -->
+        <div id="mobileSidebar" class="sidebar-panel" hidden>
+            <div class="sidebar-overlay" data-close></div>
+            <div class="sidebar-drawer" role="dialog" aria-modal="true" aria-label="Menu">
+                <aside class="app-sidebar" role="navigation">
+                    <div class="mobile-sidebar-header">
+                        <div class="brand">
+                            <span class="brand-dot"></span>
+                            <span>Menu</span>
+                        </div>
+                        <button class="icon-btn" data-close aria-label="Đóng menu">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Mobile Navigation Menu with Accordion Structure -->
+                    <div class="mobile-nav-groups">
+                        <div class="mobile-nav-group">
+                            <div class="mobile-nav-item-parent" data-mobile-menu-toggle="mobile-work-management">
+                                <div class="mobile-nav-title expandable">
+                                    <span class="material-icons-round">work_outline</span>
+                                    Quản lý công việc
+                                    <span class="material-icons-round mobile-nav-chevron">expand_more</span>
+                                </div>
+                            </div>
+                            <ul class="mobile-nav-submenu" id="mobile-work-management">
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,EMPLOYEE,AD,QL,NV">
+                                    <a href="#" id="mobileWorkManagement" class="mobile-menu-link">
+                                        <span class="material-icons-round">schedule</span>
+                                        Quản Lý Công
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                                    <a href="#" id="mobileTimesheet" class="mobile-menu-link">
+                                        <span class="material-icons-round">calendar_view_month</span>
+                                        Bảng Công
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                                    <a href="#" id="mobileAttendance" class="mobile-menu-link">
+                                        <span class="material-icons-round">location_on</span>
+                                        Chấm Công
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,EMPLOYEE,AD,AM,QL,NV">
+                                    <a href="#" id="mobileWorkTasks" class="mobile-menu-link">
+                                        <span class="material-icons-round">work</span>
+                                        Công Việc
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mobile-nav-group">
+                            <div class="mobile-nav-item-parent" data-mobile-menu-toggle="mobile-requests">
+                                <div class="mobile-nav-title expandable">
+                                    <span class="material-icons-round">request_page</span>
+                                    Yêu cầu
+                                    <span class="material-icons-round mobile-nav-chevron">expand_more</span>
+                                </div>
+                            </div>
+                            <ul class="mobile-nav-submenu" id="mobile-requests">
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                                    <a href="#" id="mobileSubmitRequest" class="mobile-menu-link">
+                                        <span class="material-icons-round">send</span>
+                                        Gửi Yêu Cầu
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                                    <a href="#" id="mobileAttendanceRequest" class="mobile-menu-link">
+                                        <span class="material-icons-round">assignment</span>
+                                        Đơn Từ
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,EMPLOYEE,AD,NV">
+                                    <a href="#" id="mobileTaskAssignment" class="mobile-menu-link">
+                                        <span class="material-icons-round">task_alt</span>
+                                        Nhiệm Vụ
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AREA_MANAGER,STORE_MANAGER,AD,AM,QL">
+                                    <a href="#" id="mobileShiftAssignment" class="mobile-menu-link">
+                                        <span class="material-icons-round">schedule_send</span>
+                                        Phân Ca
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mobile-nav-group">
+                            <div class="mobile-nav-item-parent" data-mobile-menu-toggle="mobile-admin">
+                                <div class="mobile-nav-title expandable">
+                                    <span class="material-icons-round">admin_panel_settings</span>
+                                    Quản trị
+                                    <span class="material-icons-round mobile-nav-chevron">expand_more</span>
+                                </div>
+                            </div>
+                            <ul class="mobile-nav-submenu" id="mobile-admin">
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,AD,QL,AM">
+                                    <a href="#" id="mobileTaskProcessing" class="mobile-menu-link">
+                                        <span class="material-icons-round">pending_actions</span>
+                                        Xử Lý Yêu Cầu
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AD,QL">
+                                    <a href="#" id="mobileRegistrationApproval" class="mobile-menu-link">
+                                        <span class="material-icons-round">how_to_reg</span>
+                                        Duyệt Đăng Ký
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,AD">
+                                    <a href="#" id="mobileGrantAccess" class="mobile-menu-link">
+                                        <span class="material-icons-round">admin_panel_settings</span>
+                                        Phân Quyền
+                                    </a>
+                                </li>
+                                <li class="mobile-menu-item" data-role="SUPER_ADMIN,ADMIN,STORE_MANAGER,AREA_MANAGER,EMPLOYEE,AD,QL,AM,NV">
+                                    <a href="#" id="mobilePersonalInformation" class="mobile-menu-link">
+                                        <span class="material-icons-round">person</span>
+                                        Thông Tin Cá Nhân
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
-                </div>
+                    
+                    <div class="mobile-nav-footer">
+                        <button id="mobileLogout" class="mobile-logout-btn">
+                            <span class="material-icons-round">logout</span>
+                            Đăng xuất
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+    <!-- End of dashboardContent -->
 
-                <!-- Personal Dashboard for Employees -->
-                <div class="personal-section">
-                    <h2 class="section-title">Thông Tin Cá Nhân</h2>
-                    <div class="personal-grid">
-                        <div class="personal-card schedule">
-                            <h3>Ca Làm Tuần Này</h3>
-                            <div id="personalShifts" class="shift-preview">
-                                <p>Đang tải ca làm...</p>
+    <!-- Internal Employee Chat System -->
+    <div id="chatSystem" class="chat-system">
+        <!-- Chat Toggle Button -->
+        <button id="chatToggle" class="chat-toggle-btn" aria-label="Mở chat">
+            <span class="material-icons-round">chat</span>
+            <span id="chatNotificationBadge" class="chat-notification-badge">3</span>
+        </button>
+        
+        <!-- Modern Chat Panel -->
+        <div id="chatPanel" class="modern-chat-panel">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="header-left">
+                    <span class="material-icons-round chat-icon">forum</span>
+                    <div class="header-text">
+                        <h3 class="chat-title">Tin nhắn</h3>
+                        <p class="chat-subtitle">3 cuộc trò chuyện đang hoạt động</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="chatSearch" class="header-btn" title="Tìm kiếm">
+                        <span class="material-icons-round">search</span>
+                    </button>
+                    <button id="chatSettings" class="header-btn" title="Cài đặt">
+                        <span class="material-icons-round">settings</span>
+                    </button>
+                    <button id="closeChat" class="header-btn" title="Đóng">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chat Body -->
+            <div class="chat-body">
+                <!-- Chat Sidebar -->
+                <div class="chat-sidebar">
+                    <!-- Chat Tabs -->
+                    <div class="chat-tabs">
+                        <button class="chat-tab active" data-tab="general">
+                            <span class="material-icons-round">public</span>
+                            <span class="tab-text">Tổng</span>
+                        </button>
+                        <button class="chat-tab" data-tab="department">
+                            <span class="material-icons-round">business</span>
+                            <span class="tab-text">PB</span>
+                        </button>
+                        <button class="chat-tab" data-tab="private">
+                            <span class="material-icons-round">person</span>
+                            <span class="tab-text">Riêng</span>
+                        </button>
+                        <button class="chat-tab" data-tab="group">
+                            <span class="material-icons-round">group</span>
+                            <span class="tab-text">Nhóm</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat View -->
+                <div class="chat-view">
+                    <!-- General Chat View -->
+                    <div id="generalChatView" class="chat-view-content active">
+                        <div class="chat-messages" id="generalMessages">
+                            <div class="message received">
+                                <div class="message-avatar">AD</div>
+                                <div class="message-content">
+                                    <div class="message-header">
+                                        <span class="message-sender">Admin System</span>
+                                        <span class="message-time">10:30</span>
+                                    </div>
+                                    <div class="message-text">Chào mừng tất cả nhân viên! Hệ thống HR mới đã được cập nhật với nhiều tính năng tuyệt vời.</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="personal-card rewards">
-                            <h3>Thưởng/Phạt Gần Đây</h3>
-                            <div id="personalRewards" class="rewards-preview">
-                                <p>Đang tải thông tin...</p>
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn..." maxlength="500">
+                                <button class="chat-send-btn" aria-label="Gửi tin nhắn">
+                                    <span class="material-icons-round">send</span>
+                                </button>
                             </div>
                         </div>
-                        <div class="personal-card tasks">
-                            <h3>Yêu Cầu Của Tôi</h3>
-                            <div id="personalTasks" class="tasks-preview">
-                                <p>Đang tải yêu cầu...</p>
+                    </div>
+                    
+                    <!-- Department Chat View -->
+                    <div id="departmentChatView" class="chat-view-content">
+                        <div class="department-info">
+                            <div class="department-header">
+                                <span class="material-icons-round">business</span>
+                                <h4>Chat Phòng Ban - IT</h4>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="departmentMessages">
+                            <div class="message received">
+                                <div class="message-avatar">QL</div>
+                                <div class="message-content">
+                                    <div class="message-header">
+                                        <span class="message-sender">Quản Lý IT</span>
+                                        <span class="message-time">09:15</span>
+                                    </div>
+                                    <div class="message-text">Meeting lúc 14:00 để thảo luận về dự án mới nhé team!</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <div class="chat-input-wrapper">
+                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn cho phòng ban..." maxlength="500">
+                                <button class="chat-send-btn" aria-label="Gửi tin nhắn">
+                                    <span class="material-icons-round">send</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Private Chat View -->
+                    <div id="privateChatView" class="chat-view-content">
+                        <!-- Conversations List -->
+                        <div id="conversationsList" class="conversations-list active">
+                            <div class="conversations-header">
+                                <h4>Cuộc trò chuyện riêng</h4>
+                                <button class="new-conversation-btn">
+                                    <span class="material-icons-round">add</span>
+                                </button>
+                            </div>
+                            <div class="conversation-item" data-conversation="user1">
+                                <div class="conversation-avatar">NV</div>
+                                <div class="conversation-info">
+                                    <div class="conversation-name">Nguyễn Văn An</div>
+                                    <div class="conversation-preview">Anh ơi, em muốn hỏi về...</div>
+                                </div>
+                                <div class="conversation-meta">
+                                    <span class="conversation-time">2 phút</span>
+                                    <span class="unread-count">2</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Private Chat Messages -->
+                        <div id="privateChatMessages" class="private-chat-messages">
+                            <div class="private-chat-header">
+                                <button class="back-to-conversations">
+                                    <span class="material-icons-round">arrow_back</span>
+                                </button>
+                                <div class="chat-user-info">
+                                    <div class="user-avatar">NV</div>
+                                    <div class="user-details">
+                                        <h4>Nguyễn Văn An</h4>
+                                        <span class="user-status">Đang hoạt động</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="privateMessages">
+                                <!-- Messages will be loaded here -->
+                            </div>
+                            <div class="chat-input-container">
+                                <div class="chat-input-wrapper">
+                                    <input type="text" class="chat-input" placeholder="Nhập tin nhắn riêng..." maxlength="500">
+                                    <button class="chat-send-btn" aria-label="Gửi tin nhắn">
+                                        <span class="material-icons-round">send</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Group Chat View -->
+                    <div id="groupChatView" class="chat-view-content">
+                        <!-- Groups List -->
+                        <div id="groupsList" class="groups-list active">
+                            <div class="groups-header">
+                                <h4>Nhóm chat</h4>
+                                <button class="new-group-btn">
+                                    <span class="material-icons-round">add</span>
+                                </button>
+                            </div>
+                            <div class="group-item" data-group="project1">
+                                <div class="group-avatar">PR</div>
+                                <div class="group-info">
+                                    <div class="group-name">Dự án Website</div>
+                                    <div class="group-preview">5 thành viên • Online</div>
+                                </div>
+                                <div class="group-meta">
+                                    <span class="group-time">30 phút</span>
+                                    <span class="unread-count">1</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Group Chat Messages -->
+                        <div id="groupChatMessages" class="group-chat-messages">
+                            <div class="group-chat-header">
+                                <button class="back-to-groups">
+                                    <span class="material-icons-round">arrow_back</span>
+                                </button>
+                                <div class="group-info">
+                                    <div class="group-avatar">PR</div>
+                                    <div class="group-details">
+                                        <h4>Dự án Website</h4>
+                                        <span class="group-members">5 thành viên</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="groupMessages">
+                                <!-- Messages will be loaded here -->
+                            </div>
+                            <div class="chat-input-container">
+                                <div class="chat-input-wrapper">
+                                    <input type="text" class="chat-input" placeholder="Nhập tin nhắn nhóm..." maxlength="500">
+                                    <button class="chat-send-btn" aria-label="Gửi tin nhắn">
+                                        <span class="material-icons-round">send</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tạo nhóm chat mới</h3>
+                <button class="modal-close" data-modal="createGroupModal">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="groupName">Tên nhóm</label>
+                    <input type="text" id="groupName" class="form-input" placeholder="Nhập tên nhóm">
+                </div>
+                <div class="form-group">
+                    <label for="groupDescription">Mô tả (tùy chọn)</label>
+                    <textarea id="groupDescription" class="form-textarea" placeholder="Mô tả về nhóm"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Thành viên</label>
+                    <div class="member-selection" id="memberSelection">
+                        <!-- Will be populated with employee list -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-modal="createGroupModal">Hủy</button>
+                <button type="button" id="createGroupConfirm" class="btn btn-primary">Tạo nhóm</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Load JavaScript modules in correct order -->
+    <!-- JavaScript Files -->
     <script src="../../assets/js/config.js"></script>
     <script src="../../assets/js/utils.js"></script>
+    <script src="../../assets/js/secure-storage.js"></script>
     <script src="../../assets/js/auth-manager.js"></script>
     <script src="../../assets/js/theme-manager.js"></script>
+    <script src="../../assets/js/sidebar-manager.js"></script>
     <script src="../../assets/js/menu-manager.js"></script>
     <script src="../../assets/js/content-manager.js"></script>
-    <script src="../../assets/js/dashboard-handler.js"></script>
-    <script src="../../assets/js/script.js"></script>
+    <script src="../../assets/js/notification-chat-manager.js"></script>
+    <script src="../../assets/js/dashboard-chat.js"></script>
     <script src="../../assets/js/main-init.js"></script>
-    </div> <!-- End dashboardContent -->
+
+    <!-- Enhanced Mobile Sidebar Script -->
+    <script>
+        (function(){
+            const btn = document.getElementById('btnSidebar');
+            const panel = document.getElementById('mobileSidebar');
+            
+            if (btn && panel) {
+                // Toggle mobile sidebar
+                btn.addEventListener('click', () => {
+                    panel.removeAttribute('hidden');
+                    panel.classList.add('active');
+                    btn.setAttribute('aria-expanded', 'true');
+                });
+                
+                // Close mobile sidebar
+                panel.addEventListener('click', (e) => {
+                    if (e.target.hasAttribute('data-close') || e.target.closest('[data-close]')) {
+                        panel.setAttribute('hidden', '');
+                        panel.classList.remove('active');
+                        btn.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                // Mobile accordion functionality
+                const mobileMenuToggles = document.querySelectorAll('[data-mobile-menu-toggle]');
+                mobileMenuToggles.forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        const parent = toggle.closest('.mobile-nav-item-parent');
+                        const submenuId = toggle.dataset.mobileMenuToggle;
+                        const submenu = document.getElementById(submenuId);
+                        
+                        if (parent && submenu) {
+                            parent.classList.toggle('expanded');
+                        }
+                    });
+                });
+
+                // Sync mobile menu links with desktop functionality
+                const syncMenuLinks = () => {
+                    // Work Management
+                    const mobileWorkManagement = document.getElementById('mobileWorkManagement');
+                    const mobileTimesheet = document.getElementById('mobileTimesheet');
+                    const mobileAttendance = document.getElementById('mobileAttendance');
+                    const mobileWorkTasks = document.getElementById('mobileWorkTasks');
+
+                    if (mobileWorkManagement) {
+                        mobileWorkManagement.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openWorkManagement');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileTimesheet) {
+                        mobileTimesheet.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openTimesheet');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileAttendance) {
+                        mobileAttendance.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openAttendance');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileWorkTasks) {
+                        mobileWorkTasks.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openWorkTasks');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    // Requests
+                    const mobileSubmitRequest = document.getElementById('mobileSubmitRequest');
+                    const mobileAttendanceRequest = document.getElementById('mobileAttendanceRequest');
+                    const mobileTaskAssignment = document.getElementById('mobileTaskAssignment');
+
+                    if (mobileSubmitRequest) {
+                        mobileSubmitRequest.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openSubmitRequest');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileAttendanceRequest) {
+                        mobileAttendanceRequest.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openAttendanceRequest');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileTaskAssignment) {
+                        mobileTaskAssignment.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openTaskAssignment');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    // Admin Functions
+                    const mobileTaskProcessing = document.getElementById('mobileTaskProcessing');
+                    const mobileRegistrationApproval = document.getElementById('mobileRegistrationApproval');
+                    const mobilePersonalInfo = document.getElementById('mobilePersonalInfo');
+
+                    if (mobileTaskProcessing) {
+                        mobileTaskProcessing.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openTaskProcessing');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobileRegistrationApproval) {
+                        mobileRegistrationApproval.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openRegistrationApproval');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    if (mobilePersonalInfo) {
+                        mobilePersonalInfo.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            const desktopLink = document.getElementById('openPersonalInfo');
+                            if (desktopLink) desktopLink.click();
+                            closeMobileSidebar();
+                        });
+                    }
+
+                    // Mobile Logout
+                    const mobileLogout = document.getElementById('mobileLogout');
+                    if (mobileLogout) {
+                        mobileLogout.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (window.authManager && typeof window.authManager.logout === 'function') {
+                                window.authManager.logout();
+                            } else {
+                                // Fallback logout
+                                if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                                    localStorage.clear();
+                                    sessionStorage.clear();
+                                    window.location.href = '../../index.html';
+                                }
+                            }
+                        });
+                    }
+                };
+
+                const closeMobileSidebar = () => {
+                    panel.setAttribute('hidden', '');
+                    panel.classList.remove('active');
+                    btn.setAttribute('aria-expanded', 'false');
+                };
+
+                // Initialize mobile menu links after DOM is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', syncMenuLinks);
+                } else {
+                    syncMenuLinks();
+                }
+            }
+        })();
+    </script>
+    
+    <!-- Enhanced Dashboard Components -->
+    <script src="../../assets/js/dashboard-enhancements.js"></script>
 </body>
 </html>
