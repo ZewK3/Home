@@ -1885,7 +1885,8 @@ class APIUtils {
 
     async validateAndParseResponse(response) {
         if (!response) {
-            throw new Error('Không nhận được phản hồi từ server');
+            console.warn('API Warning: Không nhận được phản hồi từ server');
+            return null;
         }
 
         const contentType = response.headers.get('content-type');
@@ -1894,14 +1895,16 @@ class APIUtils {
         if (contentType && contentType.includes('text/html')) {
             const htmlText = await response.text();
             if (htmlText.includes('<!DOCTYPE')) {
-                throw new Error('Server trả về trang lỗi thay vì dữ liệu JSON');
+                console.warn('API Warning: Server trả về trang lỗi thay vì dữ liệu JSON');
+                return null;
             }
         }
 
         // Check if response is empty
         const textResponse = await response.text();
         if (!textResponse || textResponse.trim() === '') {
-            throw new Error('Server trả về dữ liệu trống');
+            console.warn('API Warning: Server trả về dữ liệu trống');
+            return null;
         }
 
         // Try to parse JSON
@@ -1909,15 +1912,18 @@ class APIUtils {
             const jsonData = JSON.parse(textResponse);
             
             if (!response.ok) {
-                throw new Error(jsonData.message || `HTTP Error: ${response.status}`);
+                console.warn(`API Warning: HTTP Error ${response.status}:`, jsonData.message || 'Unknown error');
+                return null;
             }
             
             return jsonData;
         } catch (parseError) {
             if (parseError instanceof SyntaxError) {
-                throw new Error('Dữ liệu từ server không đúng định dạng JSON');
+                console.warn('API Warning: Dữ liệu từ server không đúng định dạng JSON');
+                return null;
             }
-            throw parseError;
+            console.warn('API Warning:', parseError.message);
+            return null;
         }
     }
 
