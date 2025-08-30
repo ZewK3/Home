@@ -1,6 +1,5 @@
 // Main application initialization
 // This file coordinates the initialization of all modules
-// Updated to use consolidated ContentManager (replaces dashboard-handler.js)
 
 // Global instances
 let authManager;
@@ -18,19 +17,17 @@ async function initializeApplication() {
         authManager = new AuthManager();
         window.authManager = authManager;
         
+        // Content manager will be initialized by dashboard handler
+        // after authentication is confirmed
+        
         // Check authentication and setup
         const user = await authManager.checkAuthentication();
         if (user) {
             authManager.setupLogoutHandler();
-            console.log('User authenticated:', user.name || user.fullName);
+            console.log('User authenticated:', user.fullName);
             
-            // Initialize consolidated ContentManager with user data
-            contentManager = new ContentManager(user);
-            window.contentManager = contentManager;
-            
-            // Initialize dashboard components using ContentManager
-            await contentManager.initialize();
-            
+            // Initialize dashboard components with user data already cached
+            await initializeDashboard();
         } else {
             console.warn('Authentication failed, redirecting to login');
             return;

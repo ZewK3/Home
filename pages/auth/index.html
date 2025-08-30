@@ -9,214 +9,78 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Professional HR Management System - Authentication</title>
-    
-    <!-- Modern CSS Architecture -->
-    <link rel="stylesheet" href="../../assets/css/foundation.css">
-    <link rel="stylesheet" href="../../assets/css/theme.css">
-    <link rel="stylesheet" href="../../assets/css/auth.css">
+    <title>ZewK Management System - Đăng nhập</title>
+    <link rel="stylesheet" href="../../assets/css/reg&log.css">
     <link rel="icon" type="image/png" href="../../assets/icons/favicon-32x32.png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-    <!-- Auth Container -->
-    <div class="auth-container">
-        <!-- Background Pattern -->
-        <div class="auth-background">
-            <div class="auth-pattern"></div>
-        </div>
-        
-        <!-- Auth Content -->
-        <div class="auth-content">
-            <!-- Login Form -->
-            <div id="loginFormContainer" class="auth-card">
-                <!-- Header -->
-                <div class="auth-header">
-                    <div class="auth-logo">
-                        <span class="material-icons-round">business</span>
-                    </div>
-                    <h1 class="auth-title">Đăng nhập</h1>
-                    <p class="auth-subtitle">Truy cập vào hệ thống quản lý nhân sự</p>
-                </div>
-
-                <!-- Login Form -->
-                <form id="loginForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="loginEmployeeId" class="form-label">Mã nhân viên</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">badge</span>
-                            <input type="text" id="loginEmployeeId" name="loginEmployeeId" class="form-input" placeholder="Nhập mã nhân viên" required autocomplete="username">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="loginPassword" class="form-label">Mật khẩu</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">lock</span>
-                            <input type="password" id="loginPassword" name="loginPassword" class="form-input" placeholder="Nhập mật khẩu" required autocomplete="current-password">
-                            <button type="button" class="password-toggle" aria-label="Show password">
-                                <span class="material-icons-round">visibility</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-options">
-                        <label class="checkbox-group">
-                            <input type="checkbox" id="rememberMe" class="form-checkbox">
-                            <span class="checkbox-label">Nhớ đăng nhập</span>
-                        </label>
-                        <a href="#" class="forgot-link">Quên mật khẩu?</a>
-                    </div>
-
-                    <button type="submit" class="auth-submit">
-                        <span class="material-icons-round">login</span>
-                        Đăng nhập
-                    </button>
-                </form>
-
-                <!-- Footer -->
-                <div class="auth-footer">
-                    <p class="auth-switch">
-                        Chưa có tài khoản?
-                        <a href="#" id="showRegister">Đăng ký ngay</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Register Form (Hidden by default) -->
-            <div id="registerFormContainer" class="auth-card" style="display: none;">
-                <!-- Header -->
-                <div class="auth-header">
-                    <div class="auth-logo">
-                        <span class="material-icons-round">person_add</span>
-                    </div>
-                    <h1 class="auth-title">Đăng ký</h1>
-                    <p class="auth-subtitle">Tạo tài khoản mới cho hệ thống</p>
-                </div>
-
-                <!-- Register Form -->
-                <form id="registerForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="registerFullName" class="form-label">Họ và tên</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">person</span>
-                            <input type="text" id="registerFullName" name="registerFullName" class="form-input" placeholder="Nhập họ và tên" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="registerEmployeeId" class="form-label">Mã nhân viên</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">badge</span>
-                            <input type="text" id="registerEmployeeId" name="registerEmployeeId" class="form-input" placeholder="Nhập mã nhân viên" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="registerEmail" class="form-label">Email</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">email</span>
-                            <input type="email" id="registerEmail" name="registerEmail" class="form-input" placeholder="Nhập địa chỉ email" required>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="registerPassword" class="form-label">Mật khẩu</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">lock</span>
-                            <input type="password" id="registerPassword" name="registerPassword" class="form-input" placeholder="Nhập mật khẩu" required>
-                            <button type="button" class="password-toggle" aria-label="Show password">
-                                <span class="material-icons-round">visibility</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="confirmPassword" class="form-label">Xác nhận mật khẩu</label>
-                        <div class="input-with-icon">
-                            <span class="material-icons-round input-icon">lock</span>
-                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Nhập lại mật khẩu" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="auth-submit">
-                        <span class="material-icons-round">person_add</span>
-                        Đăng ký
-                    </button>
-                </form>
-
-                <!-- Footer -->
-                <div class="auth-footer">
-                    <p class="auth-switch">
-                        Đã có tài khoản?
-                        <a href="#" id="showLogin">Đăng nhập</a>
-                    </p>
-                </div>
-            </div>
-        </div>
+    <div class='flag-vn'></div>
+    <div class="glass-bg">
+        <div class="glass-circle circle-1"></div>
+        <div class="glass-circle circle-2"></div>
+        <div class="glass-circle circle-3"></div>
     </div>
 
-    <!-- Theme Toggle -->
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" style="position: fixed; top: 1rem; right: 1rem; z-index: 1000;">
-        <span class="material-icons-round">dark_mode</span>
-    </button>
+    <div class="aurora"></div>
+    <div class="stars"></div>
+    <div class="light-streaks"></div>
 
-    <!-- Scripts -->
-    <script src="../../assets/js/theme-manager.js"></script>
-    <script>
-        // Form switching functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const loginContainer = document.getElementById('loginFormContainer');
-            const registerContainer = document.getElementById('registerFormContainer');
-            const showRegisterBtn = document.getElementById('showRegister');
-            const showLoginBtn = document.getElementById('showLogin');
+    <!-- Notification Element -->
+    <div id="notification" class="notification hidden"></div>
 
-            showRegisterBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                loginContainer.style.display = 'none';
-                registerContainer.style.display = 'block';
-            });
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container active">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng nhập</h2>
+                </div>
+            </div>
 
-            showLoginBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                registerContainer.style.display = 'none';
-                loginContainer.style.display = 'block';
-            });
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
+                        <label for="loginEmployeeId">Mã nhân viên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
 
-            // Password toggle functionality
-            document.querySelectorAll('.password-toggle').forEach(toggle => {
-                toggle.addEventListener('click', function() {
-                    const input = this.previousElementSibling;
-                    const icon = this.querySelector('.material-icons-round');
-                    
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        icon.textContent = 'visibility_off';
-                    } else {
-                        input.type = 'password';
-                        icon.textContent = 'visibility';
-                    }
-                });
-            });
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
 
-            // Form submission
-            document.getElementById('loginForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                // Add your login logic here
-                alert('Login functionality would be implemented here');
-                // For demo, redirect to dashboard
-                window.location.href = '../dashboard/dashboard.html';
-            });
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                </div>
 
-            document.getElementById('registerForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                // Add your registration logic here
-                alert('Registration functionality would be implemented here');
-            });
-        });
-    </script>
-</body>
-</html>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">login</span>
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loader"></span>
+                </button>
 
                 <div class="form-footer">
                     <div class="footer-row">
@@ -405,6 +269,6 @@
         </div>
     </div>
 
-    <script src="../../assets/js/auth-handler.js"></script>
+    <script src="../../assets/js/script.js"></script>
 </body>
 </html>

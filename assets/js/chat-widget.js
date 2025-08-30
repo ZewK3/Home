@@ -39,52 +39,33 @@ class ChatWidget {
 
     bindEvents() {
         // Chat toggle
-        const chatToggle = document.getElementById('chatToggle');
-        if (chatToggle) {
-            chatToggle.addEventListener('click', () => {
-                this.toggleChat();
-            });
-        }
+        document.getElementById('chatToggle').addEventListener('click', () => {
+            this.toggleChat();
+        });
 
-        // Chat close button (update from chatMinimize to closeChat)
-        const closeChat = document.getElementById('closeChat');
-        if (closeChat) {
-            closeChat.addEventListener('click', () => {
-                this.toggleChat();
-            });
-        }
+        // Chat minimize
+        document.getElementById('chatMinimize').addEventListener('click', () => {
+            this.toggleChat();
+        });
 
         // Chat form submission
-        const chatForm = document.getElementById('chatForm');
-        if (chatForm) {
-            chatForm.addEventListener('submit', (e) => {
+        document.getElementById('chatForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.sendMessage();
+        });
+
+        // Input events
+        const chatInput = document.getElementById('chatInput');
+        chatInput.addEventListener('input', () => {
+            this.toggleSendButton();
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 this.sendMessage();
-            });
-        } else {
-            // Alternative: listen for send button if no form
-            const sendBtn = document.querySelector('.chat-send-btn');
-            if (sendBtn) {
-                sendBtn.addEventListener('click', () => {
-                    this.sendMessage();
-                });
             }
-        }
-
-        // Input events (update to use actual input class)
-        const chatInput = document.querySelector('.customer-chat-input .chat-input') || document.getElementById('chatInput');
-        if (chatInput) {
-            chatInput.addEventListener('input', () => {
-                this.toggleSendButton();
-            });
-
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
-        }
+        });
 
         // Suggestion buttons
         document.addEventListener('click', (e) => {
@@ -94,18 +75,15 @@ class ChatWidget {
             }
         });
 
-        // Emoji button (optional)
-        const emojiBtn = document.getElementById('emojiBtn');
-        if (emojiBtn) {
-            emojiBtn.addEventListener('click', () => {
-                this.showEmojiPicker();
-            });
-        }
+        // Emoji button
+        document.getElementById('emojiBtn').addEventListener('click', () => {
+            this.showEmojiPicker();
+        });
 
         // Close chat when clicking outside
         document.addEventListener('click', (e) => {
             const chatWidget = document.getElementById('chatWidget');
-            if (chatWidget && !chatWidget.contains(e.target) && this.isOpen) {
+            if (!chatWidget.contains(e.target) && this.isOpen) {
                 // Don't auto-close for better UX
                 // this.toggleChat();
             }
@@ -114,42 +92,35 @@ class ChatWidget {
 
     toggleChat() {
         this.isOpen = !this.isOpen;
-        const chatPanel = document.getElementById('chatPanel');
+        const chatWindow = document.getElementById('chatWindow');
         const chatToggle = document.getElementById('chatToggle');
-        const chatIcon = chatToggle?.querySelector('.material-icons-round');
-        const notification = document.getElementById('chatNotificationBadge');
-
-        if (!chatPanel || !chatToggle) {
-            console.warn('Chat elements not found');
-            return;
-        }
+        const chatIcon = chatToggle.querySelector('.chat-icon');
+        const closeIcon = chatToggle.querySelector('.chat-close-icon');
+        const notification = document.getElementById('chatNotification');
 
         if (this.isOpen) {
-            chatPanel.classList.add('open');
-            chatToggle.classList.add('active');
-            if (notification) {
-                notification.style.display = 'none';
-            }
+            chatWindow.classList.add('open');
+            chatIcon.style.display = 'none';
+            closeIcon.style.display = 'block';
+            notification.style.display = 'none';
             
             // Focus input
             setTimeout(() => {
-                const input = document.querySelector('.customer-chat-input .chat-input');
-                if (input) {
-                    input.focus();
-                }
+                document.getElementById('chatInput').focus();
             }, 300);
             
             // Mark messages as read
             this.markMessagesAsRead();
         } else {
-            chatPanel.classList.remove('open');
-            chatToggle.classList.remove('active');
+            chatWindow.classList.remove('open');
+            chatIcon.style.display = 'block';
+            closeIcon.style.display = 'none';
         }
     }
 
     async sendMessage(messageText = null) {
-        const input = document.querySelector('.customer-chat-input .chat-input') || document.getElementById('chatInput');
-        const text = messageText || (input ? input.value.trim() : '');
+        const input = document.getElementById('chatInput');
+        const text = messageText || input.value.trim();
         
         if (!text) return;
 
@@ -157,9 +128,7 @@ class ChatWidget {
         this.addMessage(text, 'user');
         
         // Clear input
-        if (input) {
-            input.value = '';
-        }
+        input.value = '';
         this.toggleSendButton();
         
         // Hide suggestions after first message
@@ -218,36 +187,23 @@ class ChatWidget {
     }
 
     addMessage(text, sender, timestamp = null) {
-        const messagesContainer = document.getElementById('customerMessages') || document.getElementById('chatMessages');
-        if (!messagesContainer) {
-            console.warn('Messages container not found');
-            return;
-        }
-        
+        const messagesContainer = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender === 'user' ? 'sent' : 'received'}`;
+        messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'agent-message'}`;
         
         const time = timestamp || this.formatTime(new Date());
         
-        if (sender === 'user') {
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="message-text">${this.formatMessageText(text)}</div>
-                    <div class="message-time">${time}</div>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <div class="message-avatar">CS</div>
-                <div class="message-content">
-                    <div class="message-header">
-                        <span class="message-sender">Hỗ trợ khách hàng</span>
-                        <span class="message-time">${time}</span>
-                    </div>
-                    <div class="message-text">${this.formatMessageText(text)}</div>
-                </div>
-            `;
-        }
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+            </div>
+            <div class="message-content">
+                <div class="message-text">${this.formatMessageText(text)}</div>
+                <div class="message-time">${time}</div>
+            </div>
+        `;
         
         messagesContainer.appendChild(messageDiv);
         this.scrollToBottom();
@@ -349,27 +305,21 @@ class ChatWidget {
     }
 
     toggleSendButton() {
-        const input = document.querySelector('.customer-chat-input .chat-input') || document.getElementById('chatInput');
-        const sendBtn = document.querySelector('.chat-send-btn') || document.getElementById('sendBtn');
+        const input = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
         
-        if (input && sendBtn) {
-            if (input.value.trim()) {
-                sendBtn.disabled = false;
-                sendBtn.classList.add('active');
-            } else {
-                sendBtn.disabled = true;
-                sendBtn.classList.remove('active');
-            }
+        if (input.value.trim()) {
+            sendBtn.disabled = false;
+        } else {
+            sendBtn.disabled = true;
         }
     }
 
     scrollToBottom() {
-        const messagesContainer = document.getElementById('customerMessages') || document.getElementById('chatMessages');
-        if (messagesContainer) {
-            setTimeout(() => {
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 100);
-        }
+        const messagesContainer = document.getElementById('chatMessages');
+        setTimeout(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
     }
 
     showNotification() {
