@@ -1,381 +1,390 @@
-// Enhanced Sidebar Manager with Parent-Child Menu Support
-class SidebarManager {
+/* ==========================================================================
+   Enhanced Sidebar Manager
+   Professional HR Management System Dashboard
+   ========================================================================== */
+
+class EnhancedSidebarManager {
     constructor() {
-        this.sidebar = null;
-        this.mobileSidebar = null;
-        this.sidebarToggle = null;
+        this.activeItem = null;
         this.expandedMenus = new Set();
-        this.activeMenuItem = null;
-        this.isMobile = window.innerWidth <= 1024;
+        this.sidebar = null;
+        this.mobileOverlay = null;
+        this.isMobile = false;
         
-        this.initialize();
+        this.init();
     }
-    
-    initialize() {
-        this.setupSidebarElements();
-        this.setupEventListeners();
-        this.setupMenuAccordion();
-        this.setupResizeHandler();
+
+    init() {
+        this.sidebar = document.querySelector('.app-sidebar');
+        if (!this.sidebar) {
+            console.warn('Sidebar not found');
+            return;
+        }
+
+        // Initialize parent-child menu functionality
+        this.initializeParentChildMenus();
+        
+        // Initialize mobile functionality
+        this.initializeMobileNavigation();
+        
+        // Load saved state
         this.loadSavedState();
         
-        console.log('SidebarManager initialized');
+        // Setup responsive behavior
+        this.setupResponsiveBehavior();
+        
+        console.log('Enhanced Sidebar Manager initialized');
     }
-    
-    setupSidebarElements() {
-        this.sidebar = document.querySelector('.app-sidebar.permanent');
-        this.mobileSidebar = document.querySelector('.app-sidebar:not(.permanent)');
-        this.sidebarToggle = document.getElementById('btnSidebar');
-        this.mobileOverlay = document.querySelector('.mobile-sidebar-overlay');
+
+    initializeParentChildMenus() {
+        // Find all nav items with children
+        const parentItems = this.sidebar.querySelectorAll('.nav-item.has-children');
         
-        // Create mobile overlay if it doesn't exist
-        if (!this.mobileOverlay && this.mobileSidebar) {
-            this.createMobileOverlay();
-        }
-    }
-    
-    createMobileOverlay() {
-        this.mobileOverlay = document.createElement('div');
-        this.mobileOverlay.className = 'mobile-sidebar-overlay';
-        document.body.appendChild(this.mobileOverlay);
-        
-        this.mobileOverlay.addEventListener('click', () => {
-            this.closeMobileSidebar();
-        });
-    }
-    
-    setupEventListeners() {
-        // Sidebar toggle
-        if (this.sidebarToggle) {
-            this.sidebarToggle.addEventListener('click', () => {
-                this.toggleSidebar();
-            });
-        }
-        
-        // Close mobile sidebar button
-        const closeBtn = document.querySelector('[data-close]');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
-                this.closeMobileSidebar();
-            });
-        }
-        
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.isMobileSidebarOpen()) {
-                this.closeMobileSidebar();
-            }
-        });
-    }
-    
-    setupMenuAccordion() {
-        // Desktop menu accordion
-        this.setupDesktopAccordion();
-        
-        // Mobile menu accordion
-        this.setupMobileAccordion();
-    }
-    
-    setupDesktopAccordion() {
-        const parentItems = document.querySelectorAll('.nav-item-parent[data-menu-toggle]');
-        
-        parentItems.forEach(parentItem => {
-            const menuId = parentItem.getAttribute('data-menu-toggle');
-            const navTitle = parentItem.querySelector('.nav-title');
-            const submenu = document.getElementById(menuId);
+        parentItems.forEach(item => {
+            const navLink = item.querySelector('.nav-link');
+            const subMenu = item.querySelector('.sub-menu');
             
-            if (navTitle && submenu) {
-                // Mark as expandable
-                navTitle.classList.add('expandable');
-                
-                // Add click handler
-                navTitle.addEventListener('click', (e) => {
+            if (navLink && subMenu) {
+                // Add click event for parent menu toggle
+                navLink.addEventListener('click', (e) => {
                     e.preventDefault();
-                    this.toggleSubmenu(menuId, navTitle, submenu);
+                    this.toggleParentMenu(item);
                 });
-                
-                // Set initial state
-                if (this.expandedMenus.has(menuId)) {
-                    this.expandSubmenu(menuId, navTitle, submenu, false);
-                } else {
-                    this.collapseSubmenu(menuId, navTitle, submenu, false);
-                }
-            }
-        });
-        
-        // Setup submenu item clicks
-        this.setupSubmenuItems();
-    }
-    
-    setupMobileAccordion() {
-        const mobileParentItems = document.querySelectorAll('.mobile-nav-item-parent[data-mobile-menu-toggle]');
-        
-        mobileParentItems.forEach(parentItem => {
-            const menuId = parentItem.getAttribute('data-mobile-menu-toggle');
-            const navTitle = parentItem.querySelector('.mobile-nav-title');
-            const submenu = document.getElementById(menuId);
-            
-            if (navTitle && submenu) {
-                navTitle.classList.add('expandable');
-                
-                navTitle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.toggleMobileSubmenu(menuId, navTitle, submenu);
+
+                // Add keyboard support
+                navLink.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.toggleParentMenu(item);
+                    }
                 });
-                
-                // Set initial state
-                this.collapseMobileSubmenu(menuId, navTitle, submenu, false);
+
+                // Initialize submenu items
+                const subItems = subMenu.querySelectorAll('.nav-link');
+                subItems.forEach(subLink => {
+                    subLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.setActiveItem(subLink);
+                        this.handleSubMenuClick(subLink);
+                    });
+                });
             }
         });
     }
-    
-    setupSubmenuItems() {
-        const submenuItems = document.querySelectorAll('.nav-submenu a, .nav-submenu button');
-        
-        submenuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                // Remove active class from all items
-                submenuItems.forEach(i => i.classList.remove('active'));
-                
-                // Add active class to clicked item
-                item.classList.add('active');
-                this.activeMenuItem = item;
-                
-                // Save active state
-                this.saveActiveState(item);
-            });
-        });
-    }
-    
-    toggleSubmenu(menuId, navTitle, submenu) {
-        if (this.expandedMenus.has(menuId)) {
-            this.collapseSubmenu(menuId, navTitle, submenu);
-        } else {
-            this.expandSubmenu(menuId, navTitle, submenu);
-        }
-        
-        this.saveExpandedState();
-    }
-    
-    expandSubmenu(menuId, navTitle, submenu, animated = true) {
-        this.expandedMenus.add(menuId);
-        navTitle.classList.add('expanded');
-        submenu.classList.remove('collapsed');
-        submenu.classList.add('expanded');
-        
-        if (animated) {
-            submenu.classList.add('submenu-entering');
-            setTimeout(() => {
-                submenu.classList.remove('submenu-entering');
-            }, 300);
-        }
-        
-        // Update ARIA attributes
-        navTitle.setAttribute('aria-expanded', 'true');
-        submenu.setAttribute('aria-hidden', 'false');
-    }
-    
-    collapseSubmenu(menuId, navTitle, submenu, animated = true) {
-        this.expandedMenus.delete(menuId);
-        navTitle.classList.remove('expanded');
-        submenu.classList.remove('expanded');
-        
-        if (animated) {
-            submenu.classList.add('submenu-leaving');
-            setTimeout(() => {
-                submenu.classList.add('collapsed');
-                submenu.classList.remove('submenu-leaving');
-            }, 300);
-        } else {
-            submenu.classList.add('collapsed');
-        }
-        
-        // Update ARIA attributes
-        navTitle.setAttribute('aria-expanded', 'false');
-        submenu.setAttribute('aria-hidden', 'true');
-    }
-    
-    toggleMobileSubmenu(menuId, navTitle, submenu) {
-        const isExpanded = navTitle.classList.contains('expanded');
+
+    toggleParentMenu(parentItem) {
+        const menuId = parentItem.getAttribute('data-menu-id') || parentItem.querySelector('.nav-link').textContent.trim();
+        const isExpanded = parentItem.classList.contains('expanded');
         
         if (isExpanded) {
-            this.collapseMobileSubmenu(menuId, navTitle, submenu);
+            this.collapseMenu(parentItem, menuId);
         } else {
-            this.expandMobileSubmenu(menuId, navTitle, submenu);
+            this.expandMenu(parentItem, menuId);
         }
+        
+        // Save state
+        this.saveState();
     }
-    
-    expandMobileSubmenu(menuId, navTitle, submenu, animated = true) {
-        navTitle.classList.add('expanded');
-        submenu.classList.add('expanded');
-        navTitle.setAttribute('aria-expanded', 'true');
-        submenu.setAttribute('aria-hidden', 'false');
-    }
-    
-    collapseMobileSubmenu(menuId, navTitle, submenu, animated = true) {
-        navTitle.classList.remove('expanded');
-        submenu.classList.remove('expanded');
-        navTitle.setAttribute('aria-expanded', 'false');
-        submenu.setAttribute('aria-hidden', 'true');
-    }
-    
-    toggleSidebar() {
-        if (this.isMobile) {
-            this.toggleMobileSidebar();
-        } else {
-            this.toggleDesktopSidebar();
+
+    expandMenu(parentItem, menuId) {
+        parentItem.classList.add('expanded');
+        this.expandedMenus.add(menuId);
+        
+        // Update ARIA attributes
+        const navLink = parentItem.querySelector('.nav-link');
+        if (navLink) {
+            navLink.setAttribute('aria-expanded', 'true');
         }
+        
+        const subMenu = parentItem.querySelector('.sub-menu');
+        if (subMenu) {
+            subMenu.setAttribute('aria-hidden', 'false');
+        }
+        
+        console.log(`Expanded menu: ${menuId}`);
     }
-    
+
+    collapseMenu(parentItem, menuId) {
+        parentItem.classList.remove('expanded');
+        this.expandedMenus.delete(menuId);
+        
+        // Update ARIA attributes
+        const navLink = parentItem.querySelector('.nav-link');
+        if (navLink) {
+            navLink.setAttribute('aria-expanded', 'false');
+        }
+        
+        const subMenu = parentItem.querySelector('.sub-menu');
+        if (subMenu) {
+            subMenu.setAttribute('aria-hidden', 'true');
+        }
+        
+        console.log(`Collapsed menu: ${menuId}`);
+    }
+
+    setActiveItem(navLink) {
+        // Remove active class from all nav links
+        this.sidebar.querySelectorAll('.nav-link.active').forEach(link => {
+            link.classList.remove('active');
+            link.removeAttribute('aria-current');
+        });
+        
+        // Add active class to selected item
+        navLink.classList.add('active');
+        navLink.setAttribute('aria-current', 'page');
+        
+        this.activeItem = navLink.getAttribute('data-item-id') || navLink.textContent.trim();
+        
+        // Save state
+        this.saveState();
+        
+        console.log(`Active item set to: ${this.activeItem}`);
+    }
+
+    handleSubMenuClick(subLink) {
+        const itemId = subLink.getAttribute('data-item-id');
+        const href = subLink.getAttribute('href');
+        
+        // Dispatch custom event for content loading
+        const event = new CustomEvent('sidebarItemClick', {
+            detail: {
+                itemId: itemId,
+                href: href,
+                element: subLink,
+                timestamp: Date.now()
+            }
+        });
+        
+        document.dispatchEvent(event);
+    }
+
+    initializeMobileNavigation() {
+        // Create mobile overlay
+        this.createMobileOverlay();
+        
+        // Mobile menu toggle button
+        const mobileToggle = document.querySelector('.mobile-menu-toggle');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => {
+                this.toggleMobileSidebar();
+            });
+        }
+        
+        // Close on overlay click
+        if (this.mobileOverlay) {
+            this.mobileOverlay.addEventListener('click', () => {
+                this.closeMobileSidebar();
+            });
+        }
+        
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isMobileOpen()) {
+                this.closeMobileSidebar();
+            }
+        });
+    }
+
+    createMobileOverlay() {
+        this.mobileOverlay = document.createElement('div');
+        this.mobileOverlay.className = 'sidebar-mobile-overlay';
+        this.mobileOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: var(--z-modal-backdrop);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        `;
+        
+        document.body.appendChild(this.mobileOverlay);
+    }
+
     toggleMobileSidebar() {
-        if (this.isMobileSidebarOpen()) {
+        if (this.isMobileOpen()) {
             this.closeMobileSidebar();
         } else {
             this.openMobileSidebar();
         }
     }
-    
+
     openMobileSidebar() {
-        if (this.mobileSidebar) {
-            this.mobileSidebar.classList.add('active');
-            document.body.classList.add('sidebar-open');
-            
-            if (this.mobileOverlay) {
-                this.mobileOverlay.classList.add('active');
-            }
-            
-            // Update toggle button
-            if (this.sidebarToggle) {
-                this.sidebarToggle.setAttribute('aria-expanded', 'true');
-            }
-            
-            // Focus first menu item for accessibility
-            const firstMenuItem = this.mobileSidebar.querySelector('a, button');
-            if (firstMenuItem) {
-                firstMenuItem.focus();
-            }
+        this.sidebar.classList.add('mobile-open');
+        this.mobileOverlay.style.opacity = '1';
+        this.mobileOverlay.style.visibility = 'visible';
+        document.body.style.overflow = 'hidden';
+        
+        // Focus first focusable element
+        const firstFocusable = this.sidebar.querySelector('.nav-link');
+        if (firstFocusable) {
+            firstFocusable.focus();
         }
     }
-    
+
     closeMobileSidebar() {
-        if (this.mobileSidebar) {
-            this.mobileSidebar.classList.remove('active');
-            document.body.classList.remove('sidebar-open');
-            
-            if (this.mobileOverlay) {
-                this.mobileOverlay.classList.remove('active');
-            }
-            
-            // Update toggle button
-            if (this.sidebarToggle) {
-                this.sidebarToggle.setAttribute('aria-expanded', 'false');
-                this.sidebarToggle.focus(); // Return focus to toggle button
-            }
-        }
+        this.sidebar.classList.remove('mobile-open');
+        this.mobileOverlay.style.opacity = '0';
+        this.mobileOverlay.style.visibility = 'hidden';
+        document.body.style.overflow = '';
     }
-    
-    isMobileSidebarOpen() {
-        return this.mobileSidebar && this.mobileSidebar.classList.contains('active');
+
+    isMobileOpen() {
+        return this.sidebar.classList.contains('mobile-open');
     }
-    
-    toggleDesktopSidebar() {
-        // For future implementation of collapsible desktop sidebar
-        console.log('Desktop sidebar toggle - feature coming soon');
-    }
-    
-    setupResizeHandler() {
-        window.addEventListener('resize', () => {
+
+    setupResponsiveBehavior() {
+        const checkMobile = () => {
             const wasMobile = this.isMobile;
             this.isMobile = window.innerWidth <= 1024;
             
-            // Close mobile sidebar if switching to desktop
-            if (wasMobile && !this.isMobile && this.isMobileSidebarOpen()) {
+            // Close mobile sidebar when switching to desktop
+            if (wasMobile && !this.isMobile && this.isMobileOpen()) {
                 this.closeMobileSidebar();
             }
-        });
-    }
-    
-    saveExpandedState() {
-        localStorage.setItem('sidebarExpandedMenus', JSON.stringify([...this.expandedMenus]));
-    }
-    
-    saveActiveState(item) {
-        const itemId = item.id || item.getAttribute('data-content') || '';
-        localStorage.setItem('sidebarActiveItem', itemId);
-    }
-    
-    loadSavedState() {
-        // Load expanded menus
-        try {
-            const saved = localStorage.getItem('sidebarExpandedMenus');
-            if (saved) {
-                const expandedMenus = JSON.parse(saved);
-                this.expandedMenus = new Set(expandedMenus);
-            }
-        } catch (e) {
-            console.warn('Failed to load sidebar expanded state:', e);
-        }
+        };
         
-        // Load active item
+        // Check on load
+        checkMobile();
+        
+        // Check on resize
+        window.addEventListener('resize', checkMobile);
+    }
+
+    saveState() {
+        const state = {
+            activeItem: this.activeItem,
+            expandedMenus: Array.from(this.expandedMenus)
+        };
+        
+        localStorage.setItem('hr-sidebar-state', JSON.stringify(state));
+    }
+
+    loadSavedState() {
         try {
-            const activeItemId = localStorage.getItem('sidebarActiveItem');
-            if (activeItemId) {
-                const activeItem = document.getElementById(activeItemId) || 
-                                 document.querySelector(`[data-content="${activeItemId}"]`);
-                if (activeItem) {
-                    activeItem.classList.add('active');
-                    this.activeMenuItem = activeItem;
+            const savedState = localStorage.getItem('hr-sidebar-state');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                
+                // Restore expanded menus
+                if (state.expandedMenus) {
+                    state.expandedMenus.forEach(menuId => {
+                        const parentItem = this.findParentItemByMenuId(menuId);
+                        if (parentItem) {
+                            this.expandMenu(parentItem, menuId);
+                        }
+                    });
+                }
+                
+                // Restore active item
+                if (state.activeItem) {
+                    const activeLink = this.findNavLinkByItemId(state.activeItem);
+                    if (activeLink) {
+                        this.setActiveItem(activeLink);
+                    }
                 }
             }
-        } catch (e) {
-            console.warn('Failed to load sidebar active state:', e);
+        } catch (error) {
+            console.warn('Failed to load sidebar state:', error);
         }
     }
-    
+
+    findParentItemByMenuId(menuId) {
+        return this.sidebar.querySelector(`[data-menu-id="${menuId}"]`) ||
+               Array.from(this.sidebar.querySelectorAll('.nav-item.has-children')).find(item => {
+                   const navLink = item.querySelector('.nav-link');
+                   return navLink && navLink.textContent.trim() === menuId;
+               });
+    }
+
+    findNavLinkByItemId(itemId) {
+        return this.sidebar.querySelector(`[data-item-id="${itemId}"]`) ||
+               Array.from(this.sidebar.querySelectorAll('.nav-link')).find(link => {
+                   return link.textContent.trim() === itemId;
+               });
+    }
+
     // Public API methods
-    expandMenu(menuId) {
-        const parentItem = document.querySelector(`[data-menu-toggle="${menuId}"]`);
-        const submenu = document.getElementById(menuId);
-        const navTitle = parentItem?.querySelector('.nav-title');
-        
-        if (navTitle && submenu) {
-            this.expandSubmenu(menuId, navTitle, submenu);
-            this.saveExpandedState();
+    expandMenuById(menuId) {
+        const parentItem = this.findParentItemByMenuId(menuId);
+        if (parentItem) {
+            this.expandMenu(parentItem, menuId);
         }
     }
-    
-    collapseMenu(menuId) {
-        const parentItem = document.querySelector(`[data-menu-toggle="${menuId}"]`);
-        const submenu = document.getElementById(menuId);
-        const navTitle = parentItem?.querySelector('.nav-title');
-        
-        if (navTitle && submenu) {
-            this.collapseSubmenu(menuId, navTitle, submenu);
-            this.saveExpandedState();
+
+    collapseMenuById(menuId) {
+        const parentItem = this.findParentItemByMenuId(menuId);
+        if (parentItem) {
+            this.collapseMenu(parentItem, menuId);
         }
     }
-    
-    setActiveItem(itemId) {
-        // Remove active from all items
-        document.querySelectorAll('.nav-submenu a, .nav-submenu button').forEach(item => {
-            item.classList.remove('active');
+
+    setActiveItemById(itemId) {
+        const navLink = this.findNavLinkByItemId(itemId);
+        if (navLink) {
+            this.setActiveItem(navLink);
+        }
+    }
+
+    getActiveItem() {
+        return this.activeItem;
+    }
+
+    getExpandedMenus() {
+        return Array.from(this.expandedMenus);
+    }
+
+    clearState() {
+        localStorage.removeItem('hr-sidebar-state');
+        this.activeItem = null;
+        this.expandedMenus.clear();
+        
+        // Reset UI
+        this.sidebar.querySelectorAll('.nav-link.active').forEach(link => {
+            link.classList.remove('active');
+            link.removeAttribute('aria-current');
         });
         
-        // Set new active item
-        const item = document.getElementById(itemId) || 
-                    document.querySelector(`[data-content="${itemId}"]`);
-        if (item) {
-            item.classList.add('active');
-            this.activeMenuItem = item;
-            this.saveActiveState(item);
-        }
+        this.sidebar.querySelectorAll('.nav-item.has-children.expanded').forEach(item => {
+            const menuId = item.getAttribute('data-menu-id') || item.querySelector('.nav-link').textContent.trim();
+            this.collapseMenu(item, menuId);
+        });
     }
 }
 
-// Initialize sidebar manager when DOM is ready
+/* ==========================================================================
+   Auto-initialization
+   ========================================================================== */
+let sidebarManager;
+
+function initializeSidebarManager() {
+    if (!sidebarManager && document.querySelector('.app-sidebar')) {
+        sidebarManager = new EnhancedSidebarManager();
+        
+        // Make it globally accessible
+        window.sidebarManager = sidebarManager;
+    }
+    
+    return sidebarManager;
+}
+
+// Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.sidebarManager = new SidebarManager();
-    });
+    document.addEventListener('DOMContentLoaded', initializeSidebarManager);
 } else {
-    window.sidebarManager = new SidebarManager();
+    initializeSidebarManager();
+}
+
+/* ==========================================================================
+   Export for module systems
+   ========================================================================== */
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = EnhancedSidebarManager;
+}
+
+if (typeof window !== 'undefined') {
+    window.EnhancedSidebarManager = EnhancedSidebarManager;
 }
