@@ -1,0 +1,36 @@
+/* Quick Fix for Sidebar Parent-Child Menu Animation */
+
+.nav-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--color-bg-secondary, #f6f8fa);
+    margin: 0 var(--space-2, 0.5rem);
+    border-radius: var(--radius-md, 0.5rem);
+    border: 1px solid transparent;
+    opacity: 0;
+}
+
+.nav-submenu.expanded {
+    max-height: 400px !important;
+    border-color: var(--color-border-primary, #d1d5db) !important;
+    margin-bottom: var(--space-2, 0.5rem) !important;
+    opacity: 1 !important;
+}
+
+[data-theme="dark"] .nav-submenu {
+    background: rgba(1, 4, 9, 0.8);
+}
+
+[data-theme="dark"] .nav-submenu.expanded {
+    border-color: var(--color-border-primary, #30363d) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.nav-title.expanded .nav-chevron {
+    transform: rotate(180deg);
+}
+
+.nav-title.expanded::after {
+    opacity: 1;
+}
