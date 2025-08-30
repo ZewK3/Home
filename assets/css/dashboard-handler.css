@@ -1,0 +1,311 @@
+/*
+ * Dashboard Handler CSS - Extracted from JavaScript
+ * Mobile-first, modern styling for dashboard functionality
+ */
+
+/* Modal Management */
+.modal-hidden {
+    display: none !important;
+}
+
+.modal-visible {
+    display: block !important;
+}
+
+/* Dashboard Content States */
+.dashboard-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.dashboard-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+
+/* Dashboard Content Layout */
+.dashboard-content-visible {
+    display: block !important;
+}
+
+.dashboard-main-visible {
+    display: block !important;
+}
+
+.dashboard-cards-visible {
+    display: grid !important;
+    visibility: visible !important;
+}
+
+.dashboard-card-visible {
+    display: block !important;
+}
+
+/* Loading States */
+.dashboard-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+[data-theme="dark"] .dashboard-loader {
+    background: rgba(17, 24, 39, 0.95);
+}
+
+.dashboard-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Loader Animation States */
+.loader-fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.5s ease;
+}
+
+/* Dashboard Layout Management */
+.dashboard-layout-hrms .main-content {
+    display: block;
+}
+
+.dashboard-layout-hrms .content-area {
+    display: block;
+}
+
+.dashboard-layout-hrms .dashboard-cards {
+    display: grid;
+    visibility: visible;
+}
+
+/* Stats Display */
+.stats-visible {
+    display: block !important;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.stats-hidden {
+    display: none !important;
+    opacity: 0;
+}
+
+/* Quick Action States */
+.quick-actions-visible {
+    display: flex !important;
+    gap: 1rem;
+}
+
+.quick-actions-hidden {
+    display: none !important;
+}
+
+/* Recent Activity States */
+.recent-activity-visible {
+    display: block !important;
+}
+
+.recent-activity-hidden {
+    display: none !important;
+}
+
+/* Error States */
+.dashboard-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: #ef4444;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 0.5rem;
+    margin: 1rem;
+}
+
+[data-theme="dark"] .dashboard-error {
+    background: #450a0a;
+    border-color: #991b1b;
+    color: #fca5a5;
+}
+
+/* Mobile-specific states */
+@media (max-width: 768px) {
+    .dashboard-mobile-hidden {
+        display: none !important;
+    }
+    
+    .dashboard-mobile-visible {
+        display: block !important;
+    }
+    
+    .dashboard-mobile-flex {
+        display: flex !important;
+    }
+}
+
+/* Animation Classes for Transitions */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-in-out;
+}
+
+.slide-in-up {
+    animation: slideInUp 0.3s ease-out;
+}
+
+.slide-out-down {
+    animation: slideOutDown 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutDown {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+/* Time Display Enhancement */
+.time-display {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    transition: color 0.2s ease;
+}
+
+/* User Info States */
+.user-info-loaded {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+}
+
+.user-info-loading {
+    opacity: 0.5;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+/* Card Animation States */
+.card-enter {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+}
+
+.card-enter-active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: all 0.3s ease;
+}
+
+.card-exit {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.card-exit-active {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: all 0.3s ease;
+}
+
+/* Enhanced Focus States */
+.dashboard-focusable:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+}
+
+/* Loading State Improvements */
+.content-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.content-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+[data-theme="dark"] .content-loading::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-hidden,
+    .dashboard-visible,
+    .fade-in,
+    .fade-out,
+    .slide-in-up,
+    .slide-out-down,
+    .card-enter-active,
+    .card-exit-active,
+    .content-loading::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HR Management Dashboard</title>
+  <style>
+    :root{
+      --header-h:60px; --sidebar-w:260px;
+      --bg:#0f172a; --bg-soft:#111827; --text:#e5e7eb; --muted:#94a3b8;
+      --brand:#3b82f6; --ring:rgba(59,130,246,.5);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
+         color:var(--text);background:linear-gradient(180deg,var(--bg) 0%,#0b1224 100%)}
+    a{color:inherit;text-decoration:none} button{font:inherit}
+
+    /* Header */
+    .app-header{position:sticky;top:0;z-index:40;height:var(--header-h);display:flex;align-items:center;gap:12px;padding:0 16px;
+      background:linear-gradient(180deg,#0b1224,rgba(11,18,36,.7));border-bottom:1px solid rgba(148,163,184,.15);backdrop-filter:saturate(180%) blur(8px)}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 6px rgba(59,130,246,.2)}
+    .spacer{flex:1}
+    .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;border:0;background:transparent;color:var(--text);outline:2px solid transparent;outline-offset:2px}
+    .icon-btn:hover{background:rgba(148,163,184,.12)} .icon-btn:focus-visible{box-shadow:0 0 0 3px var(--ring)}
+
+    /* Shell */
+    .shell{display:flex;min-height:calc(100dvh - var(--header-h))}
+
+    /* Sidebar */
+    .app-sidebar{position:relative;width:var(--sidebar-w);flex:0 0 var(--sidebar-w);
+      background:linear-gradient(180deg,var(--bg-soft),#0b1224);border-right:1px solid rgba(148,163,184,.15);
+      padding:14px;display:flex;flex-direction:column;gap:10px}
+    .nav-group{margin-top:8px} .nav-title{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 8px}
+    .nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--text)}
+    .nav a:hover{background:rgba(148,163,184,.12)} .nav a[aria-current="page"]{background:rgba(59,130,246,.15);outline:1px solid rgba(59,130,246,.25)}
+
+    /* Content */
+    .content{flex:1;min-width:0;padding:20px;display:flex;flex-direction:column;gap:16px}
+    .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .card{grid-column:span 12;background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid rgba(148,163,184,.12);border-radius:16px;padding:16px}
+    .card h3{margin:0 0 8px}
+
+    @media (min-width:1024px){
+      .cards .span-4{grid-column:span 4}
+      .cards .span-6{grid-column:span 6}
+      .cards .span-8{grid-column:span 8}
+      .cards .span-12{grid-column:span 12}
+    }
+
+    /* Mobile Off-canvas */
+    .sidebar-panel{position:fixed;inset:0;z-index:50;display:none}
+    .sidebar-panel.active{display:block}
+    .sidebar-overlay{position:absolute;inset:0;background:rgba(2,6,23,.45)}
+    .sidebar-drawer{position:absolute;inset:0 auto 0 0;width:min(86vw,320px);transform:translateX(-100%);transition:transform .25s ease;height:100%;display:flex}
+    .sidebar-panel.active .sidebar-drawer{transform:translateX(0)}
+    .sidebar-drawer .app-sidebar{width:100%;flex-basis:100%}
+    @media (max-width:1023.98px){.app-sidebar.permanent{display:none}}
+    @media (prefers-reduced-motion:reduce){.sidebar-drawer{transition:none}}
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header" role="banner">
+    <button id="btnSidebar" class="icon-btn" aria-label="Mở menu" aria-controls="mobileSidebar" aria-expanded="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="brand"><span class="brand-dot" aria-hidden="true"></span><span>HRMS</span></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" aria-label="Tìm kiếm"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="icon-btn" aria-label="Thông báo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0v5l2 3H4l2-3V8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 19a2 2 0 1 0 4 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <button class="icon-btn" aria-label="Tài khoản"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/><path d="M4 22a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="2"/></svg></button>
+  </header>
+
+  <!-- Shell -->
+  <div class="shell" role="presentation">
+    <!-- Sidebar (desktop permanent) -->
+    <aside class="app-sidebar permanent" aria-label="Thanh điều hướng">
+      <div class="nav-group">
+        <div class="nav-title">Tổng quan</div>
+        <nav class="nav">
+          <a href="#" aria-current="page">Bảng điều khiển</a>
+          <a href="#">Báo cáo</a>
+          <a href="#">Lịch</a>
+        </nav>
+      </div>
+      <div class="nav-group">
+        <div class="nav-title">Quản trị</div>
+        <nav class="nav">
+          <a href="#">Người dùng</a>
+          <a href="#">Phân quyền</a>
+          <a href="#">Cài đặt</a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content" id="main" tabindex="-1">
+      <h2>HR Management Dashboard</h2>
+      <p class="muted">Tái cấu trúc theo layout chuẩn: Header cố định, Sidebar trái, Content chiếm phần còn lại; Sidebar chuyển sang off-canvas trên mobile.</p>
+
+      <!-- Professional Header (từ file gốc) -->
+      <section class="cards">
+        <article class="card span-12">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="background:rgba(255,255,255,.08);padding:10px;border-radius:12px">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H4z" stroke="currentColor" stroke-width="2"/><path d="M8 20h8" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+              <div>
+                <h3 style="margin:0">Bảng điều khiển tổng quan</h3>
+                <div style="opacity:.8;font-size:.9rem">Hệ thống quản lý nhân sự</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="icon-btn" title="Xuất báo cáo" aria-label="Xuất báo cáo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 19h16" stroke="currentColor" stroke-width="2"/></svg>
+              </button>
+              <button class="icon-btn" title="Lọc dữ liệu" aria-label="Lọc dữ liệu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 5h18M6 12h12M10 19h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- KPI -->
+      <section class="cards">
+        <article class="card span-4"><h3>Nhân sự hiện diện</h3><p><strong>82%</strong> / mục tiêu 90%</p><p class="muted">Theo dõi tỷ lệ chấm công</p></article>
+        <article class="card span-4"><h3>Năng suất</h3><p><strong>+12%</strong> so với tuần trước</p><p class="muted">Hiệu quả công việc</p></article>
+        <article class="card span-4"><h3>Hiệu suất cửa hàng</h3><p><strong>4.6/5</strong> đánh giá</p><p class="muted">Từ bảng chấm điểm</p></article>
+      </section>
+
+      <!-- Analytics + Activity -->
+      <section class="cards">
+        <article class="card span-8">
+          <h3>Xu hướng theo tuần</h3>
+          <div style="height:240px;background:rgba(148,163,184,.08);border-radius:12px;display:flex;align-items:end;justify-content:center;padding:16px">
+            <div style="display:flex;gap:12px;align-items:end;height:160px">
+              <div style="width:24px;height:40px;background:linear-gradient(to top,var(--brand),#7aa7fb);border-radius:4px 4px 0 0"></div>
+              <div style="width:24px;height:80px;background:linear-gradient(to top,var(--brand),#7aa7fb);border-radius:4px 4px 0 0"></div>
+              <div style="width:24px;height:120px;background:linear-gradient(to top,var(--brand),#7aa7fb);border-radius:4px 4px 0 0"></div>
+              <div style="width:24px;height:72px;background:linear-gradient(to top,var(--brand),#7aa7fb);border-radius:4px 4px 0 0"></div>
+              <div style="width:24px;height:96px;background:linear-gradient(to top,var(--brand),#7aa7fb);border-radius:4px 4px 0 0"></div>
+            </div>
+          </div>
+        </article>
+        <article class="card span-4">
+          <h3>Hoạt động gần đây</h3>
+          <ul style="margin:0;padding-left:18px;line-height:1.8">
+            <li>Phê duyệt đơn nghỉ phép (3)</li>
+            <li>Cập nhật ca làm tuần tới</li>
+            <li>2 nhân viên đến muộn hôm nay</li>
+          </ul>
+        </article>
+      </section>
+
+      <!-- Metrics mẫu -->
+      <section class="cards">
+        <article class="card span-6"><h3>Điểm tuân thủ</h3><p><strong>92/100</strong> • Không vi phạm lớn</p></article>
+        <article class="card span-6"><h3>Giờ OT</h3><p><strong>18 giờ</strong> • tháng này</p></article>
+      </section>
+    </main>
+  </div>
+
+  <!-- Mobile Sidebar -->
+  <div id="mobileSidebar" class="sidebar-panel" hidden>
+    <div class="sidebar-overlay" data-close></div>
+    <div class="sidebar-drawer" role="dialog" aria-modal="true" aria-label="Menu">
+      <aside class="app-sidebar" role="navigation">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div class="brand" style="font-size:14px"><span class="brand-dot"></span><span>Menu</span></div>
+          <button class="icon-btn" data-close aria-label="Đóng menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Tổng quan</div>
+          <nav class="nav">
+            <a href="#" aria-current="page">Bảng điều khiển</a>
+            <a href="#">Báo cáo</a>
+            <a href="#">Lịch</a>
+          </nav>
+        </div>
+        <div class="nav-group">
+          <div class="nav-title">Quản trị</div>
+          <nav class="nav">
+            <a href="#">Người dùng</a>
+            <a href="#">Phân quyền</a>
+            <a href="#">Cài đặt</a>
+          </nav>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('btnSidebar');
+      const panel = document.getElementById('mobileSidebar');
+      const drawer = panel.querySelector('.sidebar-drawer');
+
+      function openSidebar(){
+        panel.hidden = false;
+        requestAnimationFrame(()=>{ panel.classList.add('active'); btn.setAttribute('aria-expanded','true'); });
+      }
+      function closeSidebar(){
+        panel.classList.remove('active'); btn.setAttribute('aria-expanded','false');
+        drawer.addEventListener('transitionend', ()=> panel.hidden = true, { once:true });
+      }
+
+      btn.addEventListener('click', ()=> (panel.hidden || !panel.classList.contains('active')) ? openSidebar() : closeSidebar());
+      panel.addEventListener('click', (e)=>{ if(e.target.matches('[data-close], .sidebar-overlay')) closeSidebar(); });
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && !panel.hidden) closeSidebar(); });
+
+      // trap focus (nhẹ)
+      panel.addEventListener('keydown', (e)=>{
+        if(e.key !== 'Tab') return;
+        const f = panel.querySelectorAll('a, button'); if(!f.length) return;
+        const first=f[0], last=f[f.length-1];
+        if(e.shiftKey && document.activeElement===first){ last.focus(); e.preventDefault(); }
+        else if(!e.shiftKey && document.activeElement===last){ first.focus(); e.preventDefault(); }
+      });
+
+      // khi lên desktop thì đảm bảo đóng panel
+      const mq = window.matchMedia('(min-width: 1024px)');
+      mq.addEventListener('change', (ev)=>{ if(ev.matches){ panel.hidden = true; panel.classList.remove('active'); btn.setAttribute('aria-expanded','false'); }});
+    })();
+  </script>
+</body>
+</html>

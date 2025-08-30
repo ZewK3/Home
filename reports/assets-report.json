@@ -1,0 +1,185 @@
+{
+  "used": [
+    "assets/css/landing.css",
+    "assets/css/landing-enhanced.css",
+    "assets/js/config.js",
+    "assets/js/utils.js",
+    "assets/js/landing.js",
+    "assets/js/chat-widget.js",
+    "assets/js/landing-enhanced.js",
+    "assets/css/reg&log.css",
+    "assets/js/script.js",
+    "assets/css/base.css",
+    "assets/css/components.css",
+    "assets/js/auth-manager.js",
+    "assets/js/customer-support.js",
+    "assets/css/navigation.css",
+    "assets/css/modals.css",
+    "assets/css/containers.css",
+    "assets/css/dash.css",
+    "assets/css/modern-enhancements.css",
+    "assets/css/professional-dashboard-v2.css",
+    "assets/css/modern-chat.css",
+    "assets/js/theme-manager.js",
+    "assets/js/menu-manager.js",
+    "assets/js/content-manager.js",
+    "assets/js/dashboard-handler.js",
+    "assets/js/notification-chat-manager.js",
+    "assets/js/main-init.js",
+    "assets/css/dashboard-unified.css",
+    "assets/css/hrms-dashboard.css",
+    "assets/css/app.personal-info.css",
+    "assets/js/secure-storage.js"
+  ],
+  "unused": [],
+  "duplicates": {
+    "identical": [],
+    "likely": [
+      {
+        "baseName": "landingenhanced",
+        "files": [
+          "assets/css/landing-enhanced.css",
+          "assets/js/landing-enhanced.js"
+        ]
+      },
+      {
+        "baseName": "landing",
+        "files": [
+          "assets/css/landing.css",
+          "assets/js/landing.js"
+        ]
+      }
+    ]
+  },
+  "crossRefs": {
+    "assets/css/landing.css": [
+      "index.html"
+    ],
+    "assets/css/landing-enhanced.css": [
+      "index.html"
+    ],
+    "assets/js/config.js": [
+      "index.html",
+      "pages/customer-support/index.html",
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/utils.js": [
+      "index.html",
+      "pages/customer-support/index.html",
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/landing.js": [
+      "index.html"
+    ],
+    "assets/js/chat-widget.js": [
+      "index.html"
+    ],
+    "assets/js/landing-enhanced.js": [
+      "index.html"
+    ],
+    "assets/css/reg&log.css": [
+      "pages/auth/index.html"
+    ],
+    "assets/js/script.js": [
+      "pages/auth/index.html",
+      "pages/customer-support/index.html",
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/base.css": [
+      "pages/customer-support/index.html",
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/components.css": [
+      "pages/customer-support/index.html",
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/js/auth-manager.js": [
+      "pages/customer-support/index.html",
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/customer-support.js": [
+      "pages/customer-support/index.html"
+    ],
+    "assets/css/navigation.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/modals.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/css/containers.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/dash.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/modern-enhancements.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/professional-dashboard-v2.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html"
+    ],
+    "assets/css/modern-chat.css": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/theme-manager.js": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/menu-manager.js": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/content-manager.js": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/dashboard-handler.js": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/notification-chat-manager.js": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/main-init.js": [
+      "pages/dashboard/dashboard-backup.html",
+      "pages/dashboard/dashboard-old.html",
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/css/dashboard-unified.css": [
+      "pages/dashboard/dashboard-preview.html"
+    ],
+    "assets/css/hrms-dashboard.css": [
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/css/app.personal-info.css": [
+      "pages/dashboard/dashboard.html"
+    ],
+    "assets/js/secure-storage.js": [
+      "pages/dashboard/dashboard.html"
+    ]
+  }
+}
