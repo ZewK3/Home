@@ -6,7 +6,7 @@ function setupModalCloseHandlers() {
         if (e.target.classList.contains('close-btn') || e.target.closest('.close-btn')) {
             const modal = e.target.closest('.modal');
             if (modal) {
-                modal.style.display = 'none';
+                modal.classList.add('modal-hidden');
             }
         }
         
@@ -14,22 +14,22 @@ function setupModalCloseHandlers() {
         if (e.target.classList.contains('modal-close')) {
             const modal = e.target.closest('.modal');
             if (modal) {
-                modal.style.display = 'none';
+                modal.classList.add('modal-hidden');
             }
         }
         
         // Close modal when clicking outside
         if (e.target.classList.contains('modal')) {
-            e.target.style.display = 'none';
+            e.target.classList.add('modal-hidden');
         }
     });
     
     // Add escape key handler for modals
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            const visibleModals = document.querySelectorAll('.modal[style*="display: block"], .modal[style*="display:block"]');
+            const visibleModals = document.querySelectorAll('.modal:not(.modal-hidden)');
             visibleModals.forEach(modal => {
-                modal.style.display = 'none';
+                modal.classList.add('modal-hidden');
             });
         }
     });
@@ -182,15 +182,15 @@ async function updateDashboardStatsUI() {
     const cards = document.querySelector('.cards');
     
     if (main) {
-        main.style.display = 'block';
+        main.classList.add('dashboard-main-visible');
     }
     
     if (content) {
-        content.style.display = 'block';
+        content.classList.add('dashboard-content-visible');
     }
     
     if (cards) {
-        cards.style.display = 'grid';
+        cards.classList.add('dashboard-cards-visible');
     }
     
     // Wait a moment for DOM to be ready
@@ -310,15 +310,15 @@ async function getDashboardStats() {
     const cards = document.querySelector('.cards');
     
     if (main) {
-        main.style.display = 'block';
+        main.classList.add('dashboard-visible');
     }
     
     if (content) {
-        content.style.display = 'block';
+        content.classList.add('dashboard-visible');
     }
     
     if (cards) {
-        cards.style.display = 'grid';
+        cards.classList.add('dashboard-cards-visible');
     }
     
     // Wait a moment for DOM to be ready
@@ -438,13 +438,13 @@ async function updateStatsGrid() {
     
     if (cards.length > 0) {
         cards.forEach(cardSection => {
-            cardSection.style.display = 'grid';
-            cardSection.style.visibility = 'visible';
+            cardSection.classList.add('dashboard-cards-visible');
+            cardSection.classList.add('dashboard-visible');
         });
         
         // Ensure all stat cards are visible
         statCards.forEach((card, index) => {
-            card.style.display = 'block';
+            card.classList.add('dashboard-visible');
         });
         
         // Update dashboard statistics
@@ -454,8 +454,8 @@ async function updateStatsGrid() {
     }
     
     if (main) {
-        main.style.display = 'block';
-        main.style.visibility = 'visible';
+        main.classList.add('dashboard-visible');
+        main.classList.add('dashboard-visible');
     }
     
     // Force a re-layout
@@ -610,7 +610,7 @@ async function initializeRoleBasedUI() {
         if (hasAccess) {
             element.classList.add('role-visible');
             element.style.display = '';
-            element.style.visibility = 'visible';
+            element.classList.add('dashboard-visible');
             
             // Special tracking for AD role debugging
             if (allowedRoles.includes('AD') && userPosition === 'AD') {
@@ -641,8 +641,8 @@ async function initializeRoleBasedUI() {
             // Use more flexible selector approach
             const section = document.querySelector(selector);
             if (section) {
-                section.style.display = 'block';
-                section.style.visibility = 'visible';
+                section.classList.add('dashboard-visible');
+                section.classList.add('dashboard-visible');
                 section.classList.add('role-visible');
                 section.classList.remove('role-hidden');
             } else {
@@ -650,8 +650,8 @@ async function initializeRoleBasedUI() {
                 const altSelector = selector.startsWith('.') ? selector.substring(1) : '.' + selector;
                 const altSection = document.querySelector(altSelector);
                 if (altSection) {
-                    altSection.style.display = 'block';
-                    altSection.style.visibility = 'visible';
+                    altSection.classList.add('dashboard-visible');
+                    altSection.classList.add('dashboard-visible');
                     altSection.classList.add('role-visible');
                     altSection.classList.remove('role-hidden');
                 } else {
@@ -659,8 +659,8 @@ async function initializeRoleBasedUI() {
                     const className = selector.replace('.', '');
                     const classSection = document.querySelector(`div.${className}`);
                     if (classSection) {
-                        classSection.style.display = 'block';
-                        classSection.style.visibility = 'visible';
+                        classSection.classList.add('dashboard-visible');
+                        classSection.classList.add('dashboard-visible');
                         classSection.classList.add('role-visible');
                         classSection.classList.remove('role-hidden');
                     } else {
@@ -772,8 +772,8 @@ async function applyRoleBasedSectionVisibility() {
         const section = document.querySelector(selector);
         if (section) {
             if (isVisible) {
-                section.style.display = 'block';
-                section.style.visibility = 'visible';
+                section.classList.add('dashboard-visible');
+                section.classList.add('dashboard-visible');
                 section.classList.remove('role-hidden');
                 section.classList.add('role-visible');
             } else {
@@ -1331,20 +1331,20 @@ function showDashboardContent() {
     
     // Make sure main content is visible (HRMS structure)
     if (main) {
-        main.style.display = 'block';
-        main.style.visibility = 'visible';
+        main.classList.add('dashboard-visible');
+        main.classList.add('dashboard-visible');
     }
     
     // Make sure legacy content is visible
     if (content) {
-        content.style.display = 'block';
-        content.style.visibility = 'visible';
+        content.classList.add('dashboard-visible');
+        content.classList.add('dashboard-visible');
     }
     
     // Make sure card sections are visible
     cards.forEach(cardSection => {
-        cardSection.style.display = 'grid';
-        cardSection.style.visibility = 'visible';
+        cardSection.classList.add('dashboard-cards-visible');
+        cardSection.classList.add('dashboard-visible');
     });
     
     // Log element existence
@@ -1640,7 +1640,7 @@ async function initializeEnhancedDashboard() {
             console.log(`Found ${adElements.length} AD elements to show`);
             
             adElements.forEach((element, index) => {
-                element.style.display = 'block';
+                element.classList.add('dashboard-visible');
                 element.classList.add('role-visible');
                 element.classList.remove('role-hidden');
                 console.log(`AD Element ${index + 1}: ${element.tagName}.${element.className} - Made visible`);
@@ -1668,7 +1668,7 @@ async function initializeEnhancedDashboard() {
                 if (visibleADElements.length < adElements.length) {
                     console.warn('⚠️ Some AD elements still not visible. Re-applying...');
                     adElements.forEach(el => {
-                        el.style.display = 'block';
+                        el.classList.add('dashboard-visible');
                         el.classList.add('role-visible');
                     });
                 }
