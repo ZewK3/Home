@@ -10,7 +10,7 @@
     <!-- GitHub-Inspired Styling -->
     <link rel="stylesheet" href="assets/css/github-inspired.css">
     <link rel="stylesheet" href="assets/css/modern-chat.css">
-    <link rel="stylesheet" href="assets/css/chat-widget-enhanced.css">
+    <link rel="stylesheet" href="assets/css/customer-support-chat.css">
     <link rel="stylesheet" href="assets/css/content-manager-modules.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
@@ -203,237 +203,53 @@
         </div>
     </section>
 
-    <!-- Chat System -->
-    <div id="chatSystem" class="chat-system">
+    <!-- Customer Support Chat Widget -->
+    <div id="chatWidget" class="customer-chat-widget">
         <!-- Chat Toggle Button -->
-        <button id="chatToggle" class="chat-toggle-btn" aria-label="Mở chat">
-            <span class="material-icons-round">chat</span>
-            <span id="chatNotificationBadge" class="chat-notification-badge">3</span>
+        <button id="chatToggle" class="customer-chat-toggle" aria-label="Hỗ trợ khách hàng">
+            <span class="material-icons-round">support_agent</span>
+            <span id="chatNotificationBadge" class="chat-notification-badge">!</span>
         </button>
         
-        <!-- Modern Chat Panel -->
-        <div id="chatPanel" class="modern-chat-panel">
+        <!-- Customer Support Chat Panel -->
+        <div id="chatPanel" class="customer-chat-panel">
             <!-- Chat Header -->
-            <div class="chat-header">
+            <div class="customer-chat-header">
                 <div class="header-left">
-                    <span class="material-icons-round chat-icon">forum</span>
+                    <span class="material-icons-round chat-icon">support_agent</span>
                     <div class="header-text">
-                        <h3 class="chat-title">Tin nhắn</h3>
-                        <p class="chat-subtitle">3 cuộc trò chuyện đang hoạt động</p>
+                        <h3 class="chat-title">Hỗ trợ khách hàng</h3>
+                        <p class="chat-subtitle">Chúng tôi sẵn sàng hỗ trợ bạn</p>
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button id="chatSearch" class="header-btn" title="Tìm kiếm">
-                        <span class="material-icons-round">search</span>
-                    </button>
-                    <button id="chatSettings" class="header-btn" title="Cài đặt">
-                        <span class="material-icons-round">settings</span>
-                    </button>
                     <button id="closeChat" class="header-btn" title="Đóng">
                         <span class="material-icons-round">close</span>
                     </button>
                 </div>
             </div>
             
-            <!-- Chat Body -->
-            <div class="chat-body">
-                <!-- Chat Sidebar -->
-                <div class="chat-sidebar">
-                    <!-- Chat Tabs -->
-                    <div class="chat-tabs">
-                        <button class="chat-tab active" data-tab="general">
-                            <span class="material-icons-round">public</span>
-                            <span class="tab-text">Tổng</span>
-                        </button>
-                        <button class="chat-tab" data-tab="department">
-                            <span class="material-icons-round">business</span>
-                            <span class="tab-text">PB</span>
-                        </button>
-                        <button class="chat-tab" data-tab="private">
-                            <span class="material-icons-round">person</span>
-                            <span class="tab-text">Riêng</span>
-                        </button>
-                        <button class="chat-tab" data-tab="group">
-                            <span class="material-icons-round">group</span>
-                            <span class="tab-text">Nhóm</span>
-                        </button>
+            <!-- Customer Support Chat Body -->
+            <div class="customer-chat-body">
+                <div class="customer-chat-messages" id="customerMessages">
+                    <div class="message received">
+                        <div class="message-avatar">CS</div>
+                        <div class="message-content">
+                            <div class="message-header">
+                                <span class="message-sender">Hỗ trợ khách hàng</span>
+                                <span class="message-time">Bây giờ</span>
+                            </div>
+                            <div class="message-text">Xin chào! Tôi có thể giúp gì cho bạn về hệ thống HR Management không?</div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- Chat View -->
-                <div class="chat-view">
-                    <!-- General Chat View -->
-                    <div id="generalChatView" class="chat-view-content active">
-                        <div class="chat-messages" id="generalMessages">
-                            <div class="message received">
-                                <div class="message-avatar">AD</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-sender">Admin System</span>
-                                        <span class="message-time">10:30</span>
-                                    </div>
-                                    <div class="message-text">Chào mừng tất cả nhân viên! Hệ thống HR mới đã được cập nhật với nhiều tính năng tuyệt vời.</div>
-                                </div>
-                            </div>
-                            <div class="message sent">
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-time">10:32</span>
-                                    </div>
-                                    <div class="message-text">Cảm ơn thông tin! Tôi đã thấy các tính năng mới rất hữu ích.</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chat-input-container">
-                            <div class="chat-input-wrapper">
-                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn..." maxlength="500">
-                                <button class="chat-send-btn" aria-label="Gửi tin nhắn">
-                                    <span class="material-icons-round">send</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Department Chat View -->
-                    <div id="departmentChatView" class="chat-view-content">
-                        <div class="department-info">
-                            <div class="department-header">
-                                <span class="material-icons-round">business</span>
-                                <h4>Chat Phòng Ban - IT</h4>
-                            </div>
-                        </div>
-                        <div class="chat-messages" id="departmentMessages">
-                            <div class="message received">
-                                <div class="message-avatar">QL</div>
-                                <div class="message-content">
-                                    <div class="message-header">
-                                        <span class="message-sender">Quản Lý IT</span>
-                                        <span class="message-time">09:15</span>
-                                    </div>
-                                    <div class="message-text">Meeting lúc 14:00 để thảo luận về dự án mới nhé team!</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chat-input-container">
-                            <div class="chat-input-wrapper">
-                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn cho phòng ban..." maxlength="500">
-                                <button class="chat-send-btn" aria-label="Gửi tin nhắn">
-                                    <span class="material-icons-round">send</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Private Chat View -->
-                    <div id="privateChatView" class="chat-view-content">
-                        <!-- Conversations List -->
-                        <div id="conversationsList" class="conversations-list active">
-                            <div class="conversations-header">
-                                <h4>Cuộc trò chuyện riêng</h4>
-                                <button class="new-conversation-btn">
-                                    <span class="material-icons-round">add</span>
-                                </button>
-                            </div>
-                            <div class="conversation-item" data-conversation="user1">
-                                <div class="conversation-avatar">NV</div>
-                                <div class="conversation-info">
-                                    <div class="conversation-name">Nguyễn Văn An</div>
-                                    <div class="conversation-preview">Anh ơi, em muốn hỏi về...</div>
-                                </div>
-                                <div class="conversation-meta">
-                                    <span class="conversation-time">2 phút</span>
-                                    <span class="unread-count">2</span>
-                                </div>
-                            </div>
-                            <div class="conversation-item" data-conversation="user2">
-                                <div class="conversation-avatar">QL</div>
-                                <div class="conversation-info">
-                                    <div class="conversation-name">Trần Thị Bình</div>
-                                    <div class="conversation-preview">Báo cáo tháng này đã sẵn sàng</div>
-                                </div>
-                                <div class="conversation-meta">
-                                    <span class="conversation-time">1 giờ</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Private Chat Messages -->
-                        <div id="privateChatMessages" class="private-chat-messages">
-                            <div class="private-chat-header">
-                                <button class="back-to-conversations">
-                                    <span class="material-icons-round">arrow_back</span>
-                                </button>
-                                <div class="chat-user-info">
-                                    <div class="user-avatar">NV</div>
-                                    <div class="user-details">
-                                        <h4>Nguyễn Văn An</h4>
-                                        <span class="user-status">Đang hoạt động</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="chat-messages" id="privateMessages">
-                                <!-- Messages will be loaded here -->
-                            </div>
-                            <div class="chat-input-container">
-                                <div class="chat-input-wrapper">
-                                    <input type="text" class="chat-input" placeholder="Nhập tin nhắn riêng..." maxlength="500">
-                                    <button class="chat-send-btn" aria-label="Gửi tin nhắn">
-                                        <span class="material-icons-round">send</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Group Chat View -->
-                    <div id="groupChatView" class="chat-view-content">
-                        <!-- Groups List -->
-                        <div id="groupsList" class="groups-list active">
-                            <div class="groups-header">
-                                <h4>Nhóm chat</h4>
-                                <button class="new-group-btn">
-                                    <span class="material-icons-round">add</span>
-                                </button>
-                            </div>
-                            <div class="group-item" data-group="project1">
-                                <div class="group-avatar">PR</div>
-                                <div class="group-info">
-                                    <div class="group-name">Dự án Website</div>
-                                    <div class="group-preview">5 thành viên • Online</div>
-                                </div>
-                                <div class="group-meta">
-                                    <span class="group-time">30 phút</span>
-                                    <span class="unread-count">1</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Group Chat Messages -->
-                        <div id="groupChatMessages" class="group-chat-messages">
-                            <div class="group-chat-header">
-                                <button class="back-to-groups">
-                                    <span class="material-icons-round">arrow_back</span>
-                                </button>
-                                <div class="group-info">
-                                    <div class="group-avatar">PR</div>
-                                    <div class="group-details">
-                                        <h4>Dự án Website</h4>
-                                        <span class="group-members">5 thành viên</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="chat-messages" id="groupMessages">
-                                <!-- Messages will be loaded here -->
-                            </div>
-                            <div class="chat-input-container">
-                                <div class="chat-input-wrapper">
-                                    <input type="text" class="chat-input" placeholder="Nhập tin nhắn nhóm..." maxlength="500">
-                                    <button class="chat-send-btn" aria-label="Gửi tin nhắn">
-                                        <span class="material-icons-round">send</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                <div class="customer-chat-input">
+                    <div class="input-wrapper">
+                        <input type="text" class="chat-input" placeholder="Nhập câu hỏi của bạn..." maxlength="500">
+                        <button class="chat-send-btn" aria-label="Gửi tin nhắn">
+                            <span class="material-icons-round">send</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -503,7 +319,6 @@
     </footer>
 
     <script src="assets/js/github-home.js"></script>
-    <script src="assets/js/home-chat.js"></script>
-    <script src="assets/js/chat-widget-enhanced.js"></script>
+    <script src="assets/js/chat-widget.js"></script>
 </body>
 </html>

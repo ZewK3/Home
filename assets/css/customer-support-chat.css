@@ -1,0 +1,330 @@
+/* =====================================================
+   CUSTOMER SUPPORT CHAT WIDGET CSS
+   =====================================================
+   Professional customer support chat styling for Home page
+   ===================================================== */
+
+/* Customer Chat Widget Container */
+.customer-chat-widget {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 1000;
+}
+
+/* Customer Chat Toggle Button */
+.customer-chat-toggle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.customer-chat-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+}
+
+.customer-chat-toggle .material-icons-round {
+    font-size: 24px;
+}
+
+/* Notification Badge */
+.customer-chat-toggle .chat-notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Customer Chat Panel */
+.customer-chat-panel {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e8ed;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.customer-chat-panel.active {
+    display: flex;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Customer Chat Header */
+.customer-chat-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.customer-chat-header .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-chat-header .chat-icon {
+    font-size: 24px;
+}
+
+.customer-chat-header .chat-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.customer-chat-header .chat-subtitle {
+    font-size: 12px;
+    opacity: 0.9;
+    margin: 2px 0 0 0;
+}
+
+.customer-chat-header .header-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.customer-chat-header .header-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Customer Chat Body */
+.customer-chat-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: calc(500px - 64px);
+}
+
+/* Customer Messages */
+.customer-chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.customer-chat-messages .message {
+    margin-bottom: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.customer-chat-messages .message.sent {
+    flex-direction: row-reverse;
+}
+
+.customer-chat-messages .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.customer-chat-messages .message.sent .message-avatar {
+    background: #28a745;
+}
+
+.customer-chat-messages .message-content {
+    flex: 1;
+    max-width: 70%;
+}
+
+.customer-chat-messages .message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.customer-chat-messages .message-sender {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.customer-chat-messages .message-time {
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.customer-chat-messages .message-text {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.customer-chat-messages .message.sent .message-text {
+    background: #007bff;
+    color: white;
+}
+
+/* Customer Chat Input */
+.customer-chat-input {
+    padding: 16px;
+    border-top: 1px solid #e1e8ed;
+    background: white;
+}
+
+.customer-chat-input .input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8f9fa;
+    border-radius: 24px;
+    padding: 8px 12px;
+    border: 1px solid #e1e8ed;
+    transition: border-color 0.2s ease;
+}
+
+.customer-chat-input .input-wrapper:focus-within {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.customer-chat-input .chat-input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 8px 0;
+    font-size: 14px;
+    outline: none;
+    color: #495057;
+}
+
+.customer-chat-input .chat-input::placeholder {
+    color: #6c757d;
+}
+
+.customer-chat-input .chat-send-btn {
+    background: #007bff;
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.customer-chat-input .chat-send-btn:hover {
+    background: #0056b3;
+}
+
+.customer-chat-input .chat-send-btn .material-icons-round {
+    font-size: 18px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .customer-chat-panel {
+        width: calc(100vw - 32px);
+        height: calc(100vh - 120px);
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+    }
+    
+    .customer-chat-widget {
+        right: 16px;
+        bottom: 16px;
+    }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+    .customer-chat-panel {
+        background: #1a1a1a;
+        border-color: #333;
+        color: #fff;
+    }
+    
+    .customer-chat-messages {
+        background: #2a2a2a;
+    }
+    
+    .customer-chat-messages .message-text {
+        background: #333;
+        color: #fff;
+    }
+    
+    .customer-chat-messages .message.sent .message-text {
+        background: #007bff;
+        color: white;
+    }
+    
+    .customer-chat-input {
+        background: #1a1a1a;
+        border-color: #333;
+    }
+    
+    .customer-chat-input .input-wrapper {
+        background: #2a2a2a;
+        border-color: #444;
+    }
+    
+    .customer-chat-input .chat-input {
+        color: #fff;
+    }
+}
