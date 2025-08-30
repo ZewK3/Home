@@ -1,0 +1,550 @@
+/* ==========================================================================
+   Enhanced Sidebar Component System - Advanced Parent-Child Menu Implementation
+   ========================================================================== */
+
+/* ==========================================================================
+   Sidebar Layout Structure
+   ========================================================================== */
+.app-sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    background: var(--color-bg-elevated);
+    border-right: 1px solid var(--color-border-primary);
+    z-index: var(--z-fixed);
+    transition: all var(--transition-normal);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Collapsed sidebar state */
+.app-sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+}
+
+.app-sidebar.collapsed .nav-text,
+.app-sidebar.collapsed .nav-chevron,
+.app-sidebar.collapsed .badge {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.app-sidebar.collapsed .nav-submenu {
+    display: none;
+}
+
+/* Mobile sidebar overlay */
+@media (max-width: 1024px) {
+    .app-sidebar {
+        transform: translateX(-100%);
+        box-shadow: none;
+        z-index: var(--z-modal);
+    }
+    
+    .app-sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-xl);
+    }
+    
+    /* Mobile backdrop */
+    .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: var(--color-bg-overlay);
+        z-index: calc(var(--z-modal) - 1);
+        opacity: 0;
+        visibility: hidden;
+        transition: all var(--transition-normal);
+    }
+    
+    .sidebar-backdrop.active {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* ==========================================================================
+   Sidebar Content Structure
+   ========================================================================== */
+.sidebar-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 60px;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-lg);
+}
+
+.sidebar-brand .brand-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--color-brand-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--space-2) 0;
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: var(--color-border-secondary);
+    border-radius: 2px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-primary);
+}
+
+/* ==========================================================================
+   Navigation Groups and Structure
+   ========================================================================== */
+.nav-group {
+    margin-bottom: var(--space-2);
+}
+
+.nav-group-title {
+    padding: var(--space-3) var(--space-4) var(--space-2);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all var(--transition-normal);
+}
+
+.app-sidebar.collapsed .nav-group-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* ==========================================================================
+   Parent Menu Items
+   ========================================================================== */
+.nav-item-parent {
+    position: relative;
+}
+
+.nav-title {
+    display: flex;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    margin: 0 var(--space-2);
+    user-select: none;
+    position: relative;
+}
+
+.nav-title:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+}
+
+.nav-title.active {
+    background: var(--color-brand-primary);
+    color: white;
+}
+
+.nav-title .material-icons-round:first-child {
+    margin-right: var(--space-3);
+    font-size: 20px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.nav-text {
+    flex: 1;
+    transition: all var(--transition-normal);
+}
+
+.nav-chevron {
+    margin-left: auto;
+    font-size: 18px;
+    transition: all var(--transition-normal);
+    transform-origin: center;
+}
+
+.nav-title.expanded .nav-chevron {
+    transform: rotate(180deg);
+}
+
+/* Expandable indicator */
+.nav-title.expandable {
+    position: relative;
+}
+
+.nav-title.expandable::after {
+    content: '';
+    position: absolute;
+    right: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 12px;
+    background: var(--color-brand-primary);
+    border-radius: 1px;
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+.nav-title.expandable.expanded::after {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Submenu (Child Items) Styling
+   ========================================================================== */
+.nav-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    background: var(--color-bg-secondary);
+    margin: 0 var(--space-2);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+}
+
+.nav-submenu.expanded {
+    max-height: 400px;
+    border-color: var(--color-border-primary);
+    margin-bottom: var(--space-2);
+}
+
+.nav-submenu a {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-4) var(--space-2) var(--space-12);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-sm);
+    margin: var(--space-1) var(--space-2);
+    position: relative;
+}
+
+.nav-submenu a:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    transform: translateX(4px);
+}
+
+.nav-submenu a.active {
+    background: var(--color-brand-primary);
+    color: white;
+    font-weight: var(--font-weight-medium);
+}
+
+.nav-submenu a.active::before {
+    content: '';
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.nav-submenu a .material-icons-round {
+    margin-right: var(--space-3);
+    font-size: 18px;
+    min-width: 18px;
+}
+
+/* Badge/notification indicator */
+.badge {
+    background: var(--color-error);
+    color: white;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.2;
+    margin-left: auto;
+    transition: all var(--transition-normal);
+}
+
+/* ==========================================================================
+   Single Navigation Items (Non-parent)
+   ========================================================================== */
+.nav-item-single {
+    margin: 0 var(--space-2) var(--space-1);
+}
+
+.nav-item-single a {
+    display: flex;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-md);
+}
+
+.nav-item-single a:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+}
+
+.nav-item-single a.active {
+    background: var(--color-brand-primary);
+    color: white;
+}
+
+.nav-item-single a .material-icons-round {
+    margin-right: var(--space-3);
+    font-size: 20px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ==========================================================================
+   Sidebar Footer
+   ========================================================================== */
+.sidebar-footer {
+    padding: var(--space-4);
+    border-top: 1px solid var(--color-border-primary);
+    margin-top: auto;
+}
+
+.logout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.logout-btn:hover {
+    background: var(--color-error);
+    color: white;
+    border-color: var(--color-error);
+}
+
+/* ==========================================================================
+   Dark Theme Enhancements
+   ========================================================================== */
+[data-theme="dark"] .app-sidebar {
+    background: rgba(22, 27, 34, 0.95);
+    backdrop-filter: blur(20px);
+    border-right-color: var(--color-border-primary);
+}
+
+[data-theme="dark"] .nav-submenu {
+    background: rgba(1, 4, 9, 0.8);
+}
+
+[data-theme="dark"] .nav-submenu.expanded {
+    border-color: var(--color-border-primary);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .nav-title:hover {
+    background: rgba(33, 38, 45, 0.8);
+}
+
+[data-theme="dark"] .nav-submenu a:hover {
+    background: rgba(33, 38, 45, 0.6);
+}
+
+[data-theme="dark"] .sidebar-footer {
+    background: rgba(13, 17, 23, 0.5);
+}
+
+/* ==========================================================================
+   Responsive Behavior
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .nav-title {
+        padding: var(--space-4);
+    }
+    
+    .nav-submenu a {
+        padding: var(--space-3) var(--space-4) var(--space-3) var(--space-16);
+    }
+    
+    .sidebar-content {
+        padding: var(--space-4) 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .app-sidebar {
+        width: 280px;
+    }
+}
+
+/* ==========================================================================
+   Animation Enhancement Classes
+   ========================================================================== */
+@keyframes slideDown {
+    from {
+        max-height: 0;
+        opacity: 0;
+    }
+    to {
+        max-height: 400px;
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        max-height: 400px;
+        opacity: 1;
+    }
+    to {
+        max-height: 0;
+        opacity: 0;
+    }
+}
+
+.submenu-entering {
+    animation: slideDown var(--transition-normal) ease-out;
+}
+
+.submenu-leaving {
+    animation: slideUp var(--transition-normal) ease-in;
+}
+
+/* Hover glow effect for active items */
+.nav-title.active,
+.nav-submenu a.active {
+    box-shadow: 0 0 0 1px var(--color-brand-primary), 0 0 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Loading state for dynamic content */
+.nav-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* ==========================================================================
+   Accessibility Enhancements
+   ========================================================================== */
+.nav-title:focus,
+.nav-submenu a:focus {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+}
+
+.nav-title[aria-expanded="true"] .nav-chevron {
+    transform: rotate(180deg);
+}
+
+/* Screen reader announcements */
+.sr-expanded::after {
+    content: " (expanded)";
+    clip: rect(0, 0, 0, 0);
+    position: absolute;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+}
+
+.sr-collapsed::after {
+    content: " (collapsed)";
+    clip: rect(0, 0, 0, 0);
+    position: absolute;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Performance Optimizations
+   ========================================================================== */
+.app-sidebar,
+.nav-submenu {
+    will-change: transform;
+}
+
+.nav-title,
+.nav-submenu a {
+    will-change: background-color, color, transform;
+}
+
+/* Disable transitions during page load */
+.no-transitions,
+.no-transitions * {
+    transition: none !important;
+    animation: none !important;
+}

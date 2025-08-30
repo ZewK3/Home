@@ -1,0 +1,526 @@
+/* ==========================================================================
+   Enhanced Theme System - Advanced Dark/Light Mode with Smooth Animations
+   ========================================================================== */
+
+/* ==========================================================================
+   Theme Toggle Component with Ripple Effects
+   ========================================================================== */
+.theme-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    overflow: hidden;
+    z-index: 1;
+}
+
+.theme-toggle:hover {
+    background-color: var(--color-bg-tertiary);
+    border-color: var(--color-border-secondary);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.theme-toggle:active {
+    transform: scale(0.98);
+}
+
+.theme-toggle .material-icons-round {
+    font-size: 20px;
+    transition: all var(--transition-normal);
+    z-index: 2;
+}
+
+/* Enhanced Ripple Effect */
+.theme-toggle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(
+        circle,
+        var(--color-brand-primary) 0%,
+        var(--color-brand-primary-light) 30%,
+        transparent 70%
+    );
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-slow);
+    opacity: 0;
+    z-index: 1;
+}
+
+.theme-toggle.switching::before {
+    width: 120px;
+    height: 120px;
+    opacity: 0.2;
+}
+
+/* Animated Icon Rotation */
+.theme-toggle.switching .material-icons-round {
+    transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   Theme Switching Animation Classes
+   ========================================================================== */
+.theme-switching {
+    transition: all var(--transition-slow) !important;
+}
+
+.theme-switching * {
+    transition: 
+        background-color var(--transition-slow),
+        color var(--transition-slow),
+        border-color var(--transition-slow),
+        box-shadow var(--transition-slow) !important;
+}
+
+/* Page-wide theme transition overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(
+        circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
+        var(--color-brand-primary) 0%,
+        transparent 50%
+    );
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: opacity var(--transition-slow);
+}
+
+body.theme-switching::before {
+    opacity: 0.05;
+}
+
+/* ==========================================================================
+   Enhanced Dark Theme Styling
+   ========================================================================== */
+[data-theme="dark"] {
+    /* Enhanced dark color variables */
+    --color-bg-primary: #0d1117;
+    --color-bg-secondary: #010409;
+    --color-bg-tertiary: #21262d;
+    --color-bg-elevated: #161b22;
+    --color-bg-overlay: rgba(255, 255, 255, 0.1);
+    
+    /* Dark theme text colors */
+    --color-text-primary: #f0f6fc;
+    --color-text-secondary: #7d8590;
+    --color-text-muted: #656d76;
+    --color-text-inverse: var(--color-gray-900);
+    --color-text-brand: #58a6ff;
+    
+    /* Dark theme borders */
+    --color-border-primary: #30363d;
+    --color-border-secondary: #21262d;
+    --color-border-focus: #58a6ff;
+    
+    /* Enhanced gradients for dark theme */
+    --gradient-primary: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+    --gradient-elevated: linear-gradient(135deg, #161b22 0%, #21262d 100%);
+    --gradient-hero: linear-gradient(135deg, #0d1117 0%, #161b22 30%, #1c2128 60%, #21262d 100%);
+    
+    /* Glass morphism effects for dark theme */
+    --glass-bg: rgba(255, 255, 255, 0.02);
+    --glass-border: rgba(148, 163, 184, 0.12);
+    --glass-backdrop: blur(16px) saturate(180%);
+    
+    /* Dark theme shadows */
+    --shadow-dark: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    --shadow-dark-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    
+    /* Dark theme button colors */
+    --btn-primary-bg: #238636;
+    --btn-primary-bg-hover: #2ea043;
+    --btn-secondary-bg: #21262d;
+    --btn-secondary-bg-hover: #30363d;
+}
+
+[data-theme="dark"] body {
+    background: var(--gradient-primary);
+    background-attachment: fixed;
+}
+
+/* Dark theme glass effects */
+[data-theme="dark"] .glass-effect {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-backdrop);
+    border: 1px solid var(--glass-border);
+}
+
+/* Dark theme enhanced shadows */
+[data-theme="dark"] .shadow {
+    box-shadow: var(--shadow-dark);
+}
+
+[data-theme="dark"] .shadow-lg {
+    box-shadow: var(--shadow-dark-lg);
+}
+
+/* ==========================================================================
+   Enhanced Light Theme Styling
+   ========================================================================== */
+[data-theme="light"] {
+    /* Light theme color enhancements */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f6f8fa;
+    --color-bg-tertiary: #f1f3f4;
+    --color-bg-elevated: #ffffff;
+    --color-bg-overlay: rgba(0, 0, 0, 0.5);
+    
+    /* Light theme text colors */
+    --color-text-primary: #1f2328;
+    --color-text-secondary: #656d76;
+    --color-text-muted: #8b949e;
+    --color-text-inverse: #ffffff;
+    --color-text-brand: #0969da;
+    
+    /* Light theme borders */
+    --color-border-primary: #d1d9e0;
+    --color-border-secondary: #d8dee4;
+    --color-border-focus: #0969da;
+    
+    /* Enhanced gradients for light theme */
+    --gradient-primary: linear-gradient(135deg, #ffffff 0%, #f6f8fa 50%, #f1f3f4 100%);
+    --gradient-elevated: linear-gradient(135deg, #ffffff 0%, #f6f8fa 100%);
+    --gradient-hero: linear-gradient(135deg, #ffffff 0%, #f6f8fa 30%, #f1f3f4 60%, #eaeef2 100%);
+    
+    /* Glass effects for light theme */
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.1);
+    --glass-backdrop: blur(16px) saturate(180%);
+    
+    /* Light theme button colors */
+    --btn-primary-bg: #2da44e;
+    --btn-primary-bg-hover: #2c974b;
+    --btn-secondary-bg: #f6f8fa;
+    --btn-secondary-bg-hover: #f3f4f6;
+}
+
+[data-theme="light"] body {
+    background: var(--gradient-primary);
+    background-attachment: fixed;
+}
+
+/* ==========================================================================
+   Theme-Aware Component Styling
+   ========================================================================== */
+
+/* Enhanced Header Styling */
+.github-header,
+.app-header {
+    background: var(--color-bg-elevated);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--color-border-primary);
+    transition: all var(--transition-normal);
+}
+
+[data-theme="dark"] .github-header,
+[data-theme="dark"] .app-header {
+    background: rgba(13, 17, 23, 0.85);
+    border-bottom-color: var(--color-border-primary);
+}
+
+[data-theme="light"] .github-header,
+[data-theme="light"] .app-header {
+    background: rgba(255, 255, 255, 0.85);
+    border-bottom-color: var(--color-border-primary);
+}
+
+/* Enhanced Button Styling */
+.btn-primary {
+    background: var(--btn-primary-bg);
+    color: white;
+    border: 1px solid var(--btn-primary-bg);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+}
+
+.btn-primary:hover {
+    background: var(--btn-primary-bg-hover);
+    border-color: var(--btn-primary-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-primary);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: var(--btn-secondary-bg-hover);
+    border-color: var(--color-border-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    color: var(--color-text-primary);
+    text-decoration: none;
+}
+
+/* Enhanced Card Styling */
+.card,
+.feature-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    transition: all var(--transition-normal);
+}
+
+.card:hover,
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-border-secondary);
+}
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .feature-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-backdrop);
+    border-color: var(--glass-border);
+}
+
+/* Enhanced Navigation Links */
+.nav-link {
+    color: var(--color-text-secondary);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    font-weight: var(--font-weight-medium);
+}
+
+.nav-link:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-tertiary);
+    text-decoration: none;
+}
+
+.nav-link.active {
+    color: var(--color-text-brand);
+    background: var(--color-bg-tertiary);
+}
+
+/* ==========================================================================
+   Hero Section Enhanced Styling
+   ========================================================================== */
+.hero-section {
+    background: var(--gradient-hero);
+    padding: var(--space-24) 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, var(--color-brand-primary) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, var(--color-brand-accent) 0%, transparent 50%);
+    opacity: 0.05;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* ==========================================================================
+   Enhanced Animations
+   ========================================================================== */
+@keyframes themeRipple {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 0.1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(4);
+        opacity: 0;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Animation utility classes */
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Staggered animation delays */
+.animate-delay-100 { animation-delay: 100ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-300 { animation-delay: 300ms; }
+.animate-delay-400 { animation-delay: 400ms; }
+.animate-delay-500 { animation-delay: 500ms; }
+
+/* ==========================================================================
+   Mobile Theme Enhancements
+   ========================================================================== */
+@media (max-width: 768px) {
+    .theme-toggle {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .theme-toggle .material-icons-round {
+        font-size: 18px;
+    }
+    
+    /* Mobile-specific theme adjustments */
+    [data-theme="dark"] .mobile-menu {
+        background: rgba(13, 17, 23, 0.95);
+        backdrop-filter: blur(20px);
+    }
+    
+    [data-theme="light"] .mobile-menu {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+    }
+}
+
+/* ==========================================================================
+   Accessibility Enhancements for Themes
+   ========================================================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color-scheme: light;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .theme-toggle {
+        border-width: 2px;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle,
+    .theme-toggle *,
+    .theme-switching,
+    .theme-switching * {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .theme-toggle::before {
+        display: none !important;
+    }
+    
+    body::before {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Theme System JavaScript Integration Styles
+   ========================================================================== */
+.theme-system-ready {
+    transition: all var(--transition-normal);
+}
+
+.theme-loading {
+    opacity: 0;
+}
+
+.theme-loaded {
+    opacity: 1;
+}
+
+/* Theme persistence indicator */
+.theme-saved {
+    position: relative;
+}
+
+.theme-saved::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: var(--color-success);
+    border-radius: 50%;
+    opacity: 0;
+    animation: pulse 1s ease-in-out;
+}
