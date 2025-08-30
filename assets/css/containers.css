@@ -1,5 +1,326 @@
 /* Container-specific Styles */
 
+/* Permission Management Container Enhanced */
+.permission-management-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin: 1rem 0;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.permission-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.permission-header h2 {
+    color: var(--text-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.permission-header h2 .material-icons-round {
+    color: var(--primary);
+    font-size: 2.5rem;
+}
+
+.permission-header .header-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Permission Statistics Grid */
+.permission-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.permission-stat-card {
+    background: linear-gradient(135deg, var(--bg-glass) 0%, var(--bg-card) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.permission-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary);
+    transition: all 0.3s ease;
+}
+
+.permission-stat-card.admin::before {
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.permission-stat-card.manager::before {
+    background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+}
+
+.permission-stat-card.assistant::before {
+    background: linear-gradient(90deg, #0891b2, #06b6d4);
+}
+
+.permission-stat-card.employee::before {
+    background: linear-gradient(90deg, #059669, #10b981);
+}
+
+.permission-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.permission-stat-card .stat-icon {
+    font-size: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: rgba(59, 130, 246, 0.1);
+    flex-shrink: 0;
+}
+
+.permission-stat-card.admin .stat-icon {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.1));
+}
+
+.permission-stat-card.manager .stat-icon {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(139, 92, 246, 0.1));
+}
+
+.permission-stat-card.assistant .stat-icon {
+    background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(6, 182, 212, 0.1));
+}
+
+.permission-stat-card.employee .stat-icon {
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.1));
+}
+
+.stat-details {
+    flex: 1;
+}
+
+.stat-details h3 {
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.stat-value {
+    color: var(--primary);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Permission Main Content */
+.permission-main-content {
+    margin-top: 2rem;
+}
+
+.search-section {
+    margin-bottom: 1.5rem;
+}
+
+.search-section h3 {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-section h3 .material-icons-round {
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.search-controls {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.permission-user-list-container {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Permission States */
+.no-data-state, .error-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--bg-glass);
+    border-radius: 12px;
+    border: 2px dashed var(--border-color);
+}
+
+.no-data-icon, .error-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.no-data-state h3, .error-state h3 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+}
+
+.no-data-state p, .error-state p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Permission Edit Modal */
+.permission-edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.permission-edit-content {
+    background: var(--bg-card);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.permission-edit-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.permission-edit-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.permission-edit-header .btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.permission-edit-header .btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.permission-edit-body {
+    padding: 2rem;
+}
+
+.current-user-info {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.user-edit-section {
+    margin-bottom: 2rem;
+}
+
+.user-edit-section h4 {
+    color: var(--text-primary);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-edit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.edit-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.edit-form-group label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
 /* Task Assignment Container Enhanced */
 .task-assignment-container {
     background: var(--bg-card);
@@ -11,6 +332,336 @@
     transition: var(--transition);
 }
 
+
+/* Task Assignment Card */
+.task-assignment-container .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.task-assignment-container .card-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+}
+
+.task-assignment-container .card-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.task-assignment-container .card-header h2 .material-icons-round {
+    font-size: 1.75rem;
+}
+
+.task-assignment-container .card-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.task-assignment-container .card-body {
+    padding: 2rem;
+}
+
+/* Task Form */
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.task-form .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.task-form .form-group label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.task-form .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Enhanced Text Editor */
+.text-editor-container.enhanced-editor {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.text-editor-container.enhanced-editor:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editor-header {
+    background: var(--bg-glass);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.editor-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.editor-title .material-icons-round {
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.editor-tools {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tool-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tool-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.tool-btn .material-icons-round {
+    font-size: 1.125rem;
+}
+
+/* Editor Toolbar */
+.editor-toolbar.enhanced-toolbar {
+    background: var(--bg-glass);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.25rem;
+}
+
+.toolbar-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.toolbar-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+.toolbar-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+.toolbar-btn .material-icons-round {
+    font-size: 1rem;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
+    margin: 0 0.5rem;
+}
+
+.toolbar-select {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+.toolbar-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.color-picker-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.color-picker-btn input[type="color"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Editor Workspace */
+.editor-workspace {
+    position: relative;
+}
+
+.rich-text-editor.enhanced-rich-editor {
+    padding: 1.5rem;
+    min-height: 200px;
+    max-height: 600px;
+    overflow-y: auto;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: none;
+}
+
+.rich-text-editor.enhanced-rich-editor:empty::before {
+    content: attr(placeholder);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: var(--bg-glass);
+    border-top: 1px solid var(--border-color);
+    border-left: 1px solid var(--border-color);
+    border-top-left-radius: 6px;
+    cursor: se-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resize-handle .material-icons-round {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Editor Footer */
+.editor-footer {
+    background: var(--bg-glass);
+    border-top: 1px solid var(--border-color);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.editor-stats {
+    display: flex;
+    gap: 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.editor-actions .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.secondary-btn {
+    background: var(--bg-glass);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.secondary-btn:hover {
+    background: var(--bg-card);
+    border-color: var(--primary);
+}
+
+/* User Selection Section */
+.user-selection-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.user-selection-section h3 {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-selection-section h3 .material-icons-round {
+    color: var(--primary);
+    font-size: 1.5rem;
+}
 
 .task-assignment-header {
     border-bottom: 1px solid var(--border-color);
@@ -355,8 +1006,167 @@
     letter-spacing: 0.05em;
 }
 
+/* Form Controls */
+.form-control {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-control[multiple] {
+    min-height: 120px;
+}
+
+.form-text {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Button Styles */
+.btn {
+    background: var(--primary);
+    color: white;
+    border: 1px solid var(--primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn.btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn.btn-secondary {
+    background: var(--bg-glass);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn.btn-secondary:hover {
+    background: var(--bg-card);
+    border-color: var(--primary);
+}
+
+.btn.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.btn .material-icons-round {
+    font-size: 1rem;
+}
+
+/* Assignment Form Grid */
+.assignment-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-3xl);
+    margin-bottom: var(--spacing-3xl);
+}
+
+.assignment-form-section {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-2xl);
+}
+
+.assignment-form-section h3 {
+    color: var(--text-primary);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin: 0 0 var(--spacing-lg) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.assignment-form-section .material-icons-round {
+    color: var(--primary);
+    font-size: var(--font-size-xl);
+}
+
+/* Task Assignment Buttons */
+.task-assignment-actions {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    margin-top: 2rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
+    .permission-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .permission-stat-card {
+        padding: 1rem;
+    }
+    
+    .permission-stat-card .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 2rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .search-controls {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .permission-edit-modal {
+        padding: 1rem;
+    }
+    
+    .permission-edit-content {
+        max-height: 95vh;
+    }
+    
+    .permission-edit-body {
+        padding: 1.5rem;
+    }
+    
+    .user-edit-grid {
+        grid-template-columns: 1fr;
+    }
+    
     .assignment-form-grid,
     .info-grid {
         grid-template-columns: 1fr;
@@ -384,5 +1194,79 @@
     
     .info-value {
         text-align: left;
+    }
+    
+    .editor-toolbar.enhanced-toolbar {
+        flex-wrap: wrap;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    
+    .toolbar-group {
+        flex-wrap: wrap;
+    }
+    
+    .editor-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .task-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .task-assignment-container .card-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .task-assignment-container .card-body {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .permission-management-container,
+    .task-assignment-container {
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+    
+    .permission-header h2 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .permission-header h2 .material-icons-round {
+        font-size: 2rem;
+    }
+    
+    .editor-tools {
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .tool-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .toolbar-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .rich-text-editor.enhanced-rich-editor {
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .task-assignment-container .card-header h2 {
+        font-size: 1.25rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
     }
 }
