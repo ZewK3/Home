@@ -111,12 +111,6 @@ class ChatWidget {
             }
         });
     }
-            if (!chatWidget.contains(e.target) && this.isOpen) {
-                // Don't auto-close for better UX
-                // this.toggleChat();
-            }
-        });
-    }
 
     toggleChat() {
         this.isOpen = !this.isOpen;

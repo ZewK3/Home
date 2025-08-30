@@ -225,6 +225,26 @@ class ChatPanelManager {
         }
     }
     
+    initializeTabs() {
+        // Initialize tab system and set default tab
+        const firstTab = document.querySelector('.chat-tab-btn');
+        if (firstTab) {
+            const defaultTab = firstTab.getAttribute('data-tab') || 'general';
+            this.switchTab(defaultTab);
+        }
+        
+        // Ensure tab event listeners are properly bound
+        const tabButtons = document.querySelectorAll('.chat-tab-btn');
+        tabButtons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Set first tab as active
+        if (firstTab) {
+            firstTab.classList.add('active');
+        }
+    }
+    
     switchTab(tabId) {
         this.currentTab = tabId;
         this.currentView = 'conversations';
