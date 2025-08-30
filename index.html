@@ -9,9 +9,7 @@
     
     <!-- GitHub-Inspired Styling -->
     <link rel="stylesheet" href="assets/css/github-inspired.css">
-    <link rel="stylesheet" href="assets/css/modern-chat.css">
     <link rel="stylesheet" href="assets/css/customer-support-chat.css">
-    <link rel="stylesheet" href="assets/css/content-manager-modules.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 </head>
 <body>
@@ -204,58 +202,68 @@
     </section>
 
     <!-- Customer Support Chat Widget -->
-    <div id="chatWidget" class="customer-chat-widget">
+    <div id="customerChatWidget" class="customer-support-widget">
         <!-- Chat Toggle Button -->
-        <button id="chatToggle" class="customer-chat-toggle" aria-label="Hỗ trợ khách hàng">
+        <button id="chatToggle" class="chat-toggle-btn" aria-label="Hỗ trợ khách hàng">
             <span class="material-icons-round">support_agent</span>
-            <span id="chatNotificationBadge" class="chat-notification-badge">!</span>
+            <span class="chat-status-indicator online"></span>
         </button>
         
-        <!-- Customer Support Chat Panel -->
+        <!-- Chat Panel -->
         <div id="chatPanel" class="customer-chat-panel">
             <!-- Chat Header -->
             <div class="customer-chat-header">
-                <div class="header-left">
-                    <span class="material-icons-round chat-icon">support_agent</span>
-                    <div class="header-text">
-                        <h3 class="chat-title">Hỗ trợ khách hàng</h3>
-                        <p class="chat-subtitle">Chúng tôi sẵn sàng hỗ trợ bạn</p>
+                <div class="header-info">
+                    <div class="agent-avatar">
+                        <span class="material-icons-round">support_agent</span>
+                    </div>
+                    <div class="agent-details">
+                        <h4>Hỗ trợ khách hàng</h4>
+                        <span class="agent-status online">Đang trực tuyến</span>
                     </div>
                 </div>
-                <div class="header-actions">
-                    <button id="closeChat" class="header-btn" title="Đóng">
-                        <span class="material-icons-round">close</span>
-                    </button>
-                </div>
+                <button id="closeChat" class="close-chat-btn" aria-label="Đóng chat">
+                    <span class="material-icons-round">close</span>
+                </button>
             </div>
             
-            <!-- Customer Support Chat Body -->
-            <div class="customer-chat-body">
-                <div class="customer-chat-messages" id="customerMessages">
-                    <div class="message received">
-                        <div class="message-avatar">CS</div>
-                        <div class="message-content">
-                            <div class="message-header">
-                                <span class="message-sender">Hỗ trợ khách hàng</span>
-                                <span class="message-time">Bây giờ</span>
-                            </div>
-                            <div class="message-text">Xin chào! Tôi có thể giúp gì cho bạn về hệ thống HR Management không?</div>
+            <!-- Chat Messages -->
+            <div class="customer-chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="message-avatar">
+                        <span class="material-icons-round">support_agent</span>
+                    </div>
+                    <div class="message-content">
+                        <p>Xin chào! Tôi có thể giúp gì cho bạn hôm nay?</p>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-action="pricing">Bảng giá</button>
+                            <button class="quick-action-btn" data-action="demo">Xem demo</button>
+                            <button class="quick-action-btn" data-action="contact">Liên hệ</button>
                         </div>
                     </div>
                 </div>
-                
-                <div class="customer-chat-input">
-                    <div class="input-wrapper">
-                        <input type="text" class="chat-input" placeholder="Nhập câu hỏi của bạn..." maxlength="500">
-                        <button class="chat-send-btn" aria-label="Gửi tin nhắn">
-                            <span class="material-icons-round">send</span>
-                        </button>
-                    </div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="customer-chat-input">
+                <div class="input-wrapper">
+                    <input type="text" class="chat-input" placeholder="Nhập tin nhắn của bạn..." maxlength="500">
+                    <button class="send-btn" aria-label="Gửi tin nhắn">
+                        <span class="material-icons-round">send</span>
+                    </button>
+                </div>
+                <div class="chat-footer">
+                    <span class="typing-indicator" id="typingIndicator" style="display: none;">
+                        <span class="material-icons-round">more_horiz</span>
+                        Đang gõ...
+                    </span>
+                    <span class="powered-by">
+                        Kết nối với <a href="pages/customer-support/index.html">bộ phận hỗ trợ</a>
+                    </span>
                 </div>
             </div>
         </div>
     </div>
-
     <!-- Footer -->
     <footer id="contact" class="github-footer">
         <div class="footer-container">
