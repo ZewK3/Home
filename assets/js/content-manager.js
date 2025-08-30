@@ -895,6 +895,47 @@ class ContentManager {
 
     /**
      * =====================================================
+     * RESPONSE VALIDATION HELPERS
+     * =====================================================
+     * Helper functions to validate API responses before JSON parsing
+     */
+    
+    async validateAndParseResponse(response) {
+        try {
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            // Get response text first to check if it's valid JSON
+            const responseText = await response.text();
+            
+            // Check if response starts with HTML (common error indicator)
+            if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+                throw new Error('Server returned HTML instead of JSON. Check API endpoint and authentication.');
+            }
+            
+            // Check if response is empty
+            if (!responseText.trim()) {
+                throw new Error('Server returned empty response');
+            }
+            
+            // Try to parse as JSON
+            try {
+                return JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('JSON parse error. Response text:', responseText.substring(0, 200));
+                throw new Error(`Invalid JSON response: ${parseError.message}`);
+            }
+            
+        } catch (error) {
+            console.error('Response validation failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * =====================================================
      * ENHANCED DATABASE HELPERS FOR SCHEMA V3.1
      * =====================================================
      * Comprehensive helper functions for all v3.1 tables
@@ -1315,7 +1356,8 @@ class ContentManager {
                 <div class="modular-user-card" 
                      data-user-id="${userId}" 
                      data-role="${userRole}"
-                     onclick="window.contentManager?.handleUserSelect('${containerId}', '${userId}')">
+                     onclick="window.contentManager?.handleUserSelect('${containerId}', '${userId}')"
+                     ${containerId === 'permissionUserList' ? `ondblclick="window.editUserRole('${userId}')"` : ''}>
                     ${showAvatars ? `
                         <div class="modular-user-avatar">${userName.substring(0, 2).toUpperCase()}</div>
                     ` : ''}
@@ -4507,7 +4549,8 @@ class ContentManager {
                     showRoles: true,
                     title: 'Danh sách người dùng hệ thống',
                     onUserSelect: (user, userId) => {
-                        window.editUserRole(userId);
+                        // Only highlight the selected user, don't open edit modal immediately
+                        this.highlightSelectedUser(userId);
                     }
                 });
                 
@@ -6711,6 +6754,49 @@ class ContentManager {
         
     }
     
+    highlightSelectedUser(userId) {
+        // Remove previous selections
+        document.querySelectorAll('.modular-user-card.selected').forEach(card => {
+            card.classList.remove('selected');
+        });
+        
+        // Highlight the selected user
+        const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+        if (userCard) {
+            userCard.classList.add('selected');
+            
+            // Show edit button or instructions
+            this.showEditUserInstructions(userId);
+        }
+    }
+
+    showEditUserInstructions(userId) {
+        // Remove any existing instructions
+        const existingInstructions = document.getElementById('editUserInstructions');
+        if (existingInstructions) {
+            existingInstructions.remove();
+        }
+        
+        // Add edit instructions
+        const permissionUserList = document.getElementById('permissionUserList');
+        if (permissionUserList) {
+            const instructions = document.createElement('div');
+            instructions.id = 'editUserInstructions';
+            instructions.className = 'edit-user-instructions';
+            instructions.innerHTML = `
+                <div class="instructions-content">
+                    <span class="material-icons-round">info</span>
+                    <p>Đã chọn người dùng. <strong>Nhấp đúp vào người dùng</strong> hoặc nhấp nút bên dưới để chỉnh sửa phân quyền.</p>
+                    <button class="btn-edit-permissions" onclick="window.editUserRole('${userId}')">
+                        <span class="material-icons-round">edit</span>
+                        Chỉnh sửa phân quyền
+                    </button>
+                </div>
+            `;
+            permissionUserList.appendChild(instructions);
+        }
+    }
+
     getTestUsersForPermissionManagement() {
         // Return comprehensive test users for permission management testing
         return [
@@ -12440,9 +12526,8 @@ class ContentManager {
     async getEmployeeData(employeeId) {
         try {
             const response = await fetch(`${this.baseURL}?action=getUser&employeeId=${encodeURIComponent(employeeId)}&token=${this.token}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const result = await this.validateAndParseResponse(response);
             
-            const result = await response.json();
             if (result.success && result.data) {
                 return {
                     employeeId: result.data.employeeId,
@@ -12480,9 +12565,8 @@ class ContentManager {
             if (endDate) params.append('endDate', endDate);
             
             const response = await fetch(`${this.baseURL}?${params.toString()}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const result = await this.validateAndParseResponse(response);
             
-            const result = await response.json();
             if (result.success) {
                 return result.data.map(record => ({
                     id: record.id,
@@ -12521,9 +12605,7 @@ class ContentManager {
             if (status) params.append('status', status);
             
             const response = await fetch(`${this.baseURL}?${params.toString()}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.tasks) {
                 return result.tasks.map(task => ({
                     id: task.id,
@@ -12552,9 +12634,7 @@ class ContentManager {
     async getPersonalStats(employeeId) {
         try {
             const response = await fetch(`${this.baseURL}?action=getPersonalStats&employeeId=${encodeURIComponent(employeeId)}&token=${this.token}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.employeeId) {
                 return {
                     employeeId: result.employeeId,
@@ -12600,9 +12680,7 @@ class ContentManager {
             if (endDate) params.append('endDate', endDate);
             
             const response = await fetch(`${this.baseURL}?${params.toString()}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.employeeId) {
                 return {
                     employeeId: result.employeeId,
@@ -12642,9 +12720,7 @@ class ContentManager {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.message && result.requestId) {
                 return {
                     success: true,
@@ -12676,9 +12752,7 @@ class ContentManager {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.message && result.taskId) {
                 return {
                     success: true,
@@ -12713,9 +12787,7 @@ class ContentManager {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.success) {
                 return {
                     success: true,
@@ -12750,9 +12822,7 @@ class ContentManager {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.success) {
                 return {
                     success: true,
@@ -12782,9 +12852,7 @@ class ContentManager {
             if (date) params.append('date', date);
             
             const response = await fetch(`${this.baseURL}?${params.toString()}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.success) {
                 return result.data;
             }
@@ -12813,9 +12881,7 @@ class ContentManager {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.message) {
                 return {
                     success: true,
@@ -12842,9 +12908,7 @@ class ContentManager {
             });
             
             const response = await fetch(`${this.baseURL}?${params.toString()}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.users) {
                 return result.users;
             }
@@ -12873,9 +12937,7 @@ class ContentManager {
                 })
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.message) {
                 return {
                     success: true,
@@ -12896,9 +12958,7 @@ class ContentManager {
         try {
             const empId = employeeId || this.user.employeeId;
             const response = await fetch(`${this.baseURL}?action=getCurrentShift&employeeId=${encodeURIComponent(empId)}&token=${this.token}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.success) {
                 return result.data;
             }
@@ -12916,9 +12976,7 @@ class ContentManager {
         try {
             const empId = employeeId || this.user.employeeId;
             const response = await fetch(`${this.baseURL}?action=getPendingRequestsCount&employeeId=${encodeURIComponent(empId)}&token=${this.token}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const result = await response.json();
+            const result = await this.validateAndParseResponse(response);
             if (result.employeeId) {
                 return result.pendingRequests;
             }
