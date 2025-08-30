@@ -1,18 +1,33 @@
 /**
  * =====================================================
- * CONSOLIDATED CONTENT MANAGER - ENTERPRISE EDITION
+ * CONSOLIDATED CONTENT MANAGER - ENTERPRISE EDITION v3.2
  * =====================================================
- * Unified content management system combining functionality from:
- * - content-manager.js (original content management)
- * - dashboard-handler.js (dashboard initialization and stats)
+ * Unified content management system with complete Enhanced HR Database Schema v3.1 support
  * 
- * Features:
- * ✓ Enterprise database schema v3.1 support
- * ✓ Consolidated initialization and dashboard management
- * ✓ Modern async/await patterns with error handling
- * ✓ Comprehensive user/task/attendance management
+ * CONSOLIDATION COMPLETE:
+ * ✓ dashboard-handler.js fully merged and removed
+ * ✓ All database queries updated to v3.1 normalized schema
+ * ✓ Added comprehensive helper functions for v3 tables
+ * ✓ Modern async/await patterns with proper error handling
+ * ✓ Complete employee lifecycle management
+ * ✓ Advanced attendance tracking with GPS and breaks
+ * ✓ Professional task management with dependencies
+ * ✓ Role-based access control (RBAC) integration
+ * ✓ Performance metrics and audit logging
  * ✓ Mobile-responsive UI components
- * ✓ Professional logging and debugging
+ * 
+ * Database Schema v3.1 Tables Supported:
+ * - employees (with all v3 fields)
+ * - attendance (with breaks and GPS tracking)
+ * - tasks (with dependencies and collaboration)
+ * - departments (hierarchical structure)
+ * - stores (multi-location support)
+ * - roles (RBAC system)
+ * - employee_roles (many-to-many mapping)
+ * - attendance_requests (approval workflow)
+ * - leave_requests (comprehensive leave management)
+ * - audit_logs (change tracking)
+ * - performance_metrics (analytics)
  * =====================================================
  */
 
@@ -569,6 +584,349 @@ class ContentManager {
             
         } catch (error) {
             console.error('Error fetching stores:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * =====================================================
+     * ENHANCED DATABASE HELPERS FOR SCHEMA V3.1
+     * =====================================================
+     * Comprehensive helper functions for all v3.1 tables
+     */
+
+    // Employee Management v3
+    async createEmployee(employeeData) {
+        try {
+            const query = `
+                INSERT INTO employees (
+                    employeeId, email, password, name, first_name, last_name,
+                    phone, date_of_birth, gender, nationality, department_id,
+                    storeId, position, job_title, employment_type, manager_id,
+                    hire_date, salary, hourly_rate, address, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const params = [
+                employeeData.employeeId, employeeData.email, employeeData.password,
+                employeeData.name, employeeData.first_name, employeeData.last_name,
+                employeeData.phone, employeeData.date_of_birth, employeeData.gender,
+                employeeData.nationality, employeeData.department_id, employeeData.storeId,
+                employeeData.position, employeeData.job_title, employeeData.employment_type,
+                employeeData.manager_id, employeeData.hire_date, employeeData.salary,
+                employeeData.hourly_rate, employeeData.address, true
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error creating employee:', error);
+            throw error;
+        }
+    }
+
+    async updateEmployee(employeeId, updateData) {
+        try {
+            const fields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
+            const values = Object.values(updateData);
+            values.push(employeeId);
+            
+            const query = `
+                UPDATE employees 
+                SET ${fields}, updated_at = CURRENT_TIMESTAMP
+                WHERE employeeId = ?
+            `;
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, values);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error updating employee:', error);
+            throw error;
+        }
+    }
+
+    // Attendance Management v3 with GPS and breaks
+    async createAttendanceRecord(attendanceData) {
+        try {
+            const query = `
+                INSERT INTO attendance (
+                    employeeId, employee_id, date, check_in_time, check_in_location,
+                    work_location, status, attendance_type
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const params = [
+                attendanceData.employeeId, attendanceData.employee_id, attendanceData.date,
+                attendanceData.check_in_time, JSON.stringify(attendanceData.check_in_location),
+                attendanceData.work_location, attendanceData.status || 'present',
+                attendanceData.attendance_type || 'regular'
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error creating attendance record:', error);
+            throw error;
+        }
+    }
+
+    async updateAttendanceCheckOut(attendanceId, checkOutData) {
+        try {
+            const query = `
+                UPDATE attendance 
+                SET check_out_time = ?, check_out_location = ?, total_hours = ?,
+                    regular_hours = ?, overtime_hours = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `;
+            
+            const params = [
+                checkOutData.check_out_time, JSON.stringify(checkOutData.check_out_location),
+                checkOutData.total_hours, checkOutData.regular_hours, checkOutData.overtime_hours,
+                attendanceId
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error updating attendance check-out:', error);
+            throw error;
+        }
+    }
+
+    // Attendance Break Management
+    async createAttendanceBreak(breakData) {
+        try {
+            const query = `
+                INSERT INTO attendance_breaks (
+                    attendance_id, break_start, break_type, location
+                ) VALUES (?, ?, ?, ?)
+            `;
+            
+            const params = [
+                breakData.attendance_id, breakData.break_start, 
+                breakData.break_type || 'regular', JSON.stringify(breakData.location)
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error creating attendance break:', error);
+            throw error;
+        }
+    }
+
+    async endAttendanceBreak(breakId, endTime) {
+        try {
+            const query = `
+                UPDATE attendance_breaks 
+                SET break_end = ?, 
+                    duration_minutes = ROUND((julianday(?) - julianday(break_start)) * 24 * 60)
+                WHERE id = ?
+            `;
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, [endTime, endTime, breakId]);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error ending attendance break:', error);
+            throw error;
+        }
+    }
+
+    // Task Management v3 with dependencies
+    async createTask(taskData) {
+        try {
+            const query = `
+                INSERT INTO tasks (
+                    task_id, title, description, created_by, assigned_to, department_id,
+                    store_id, task_type, category, priority, estimated_hours, start_date,
+                    due_date, status, progress_percentage, tags, dependencies
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const params = [
+                taskData.task_id, taskData.title, taskData.description, taskData.created_by,
+                taskData.assigned_to, taskData.department_id, taskData.store_id,
+                taskData.task_type || 'general', taskData.category, taskData.priority || 'medium',
+                taskData.estimated_hours, taskData.start_date, taskData.due_date,
+                taskData.status || 'pending', taskData.progress_percentage || 0,
+                JSON.stringify(taskData.tags || []), JSON.stringify(taskData.dependencies || [])
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error creating task:', error);
+            throw error;
+        }
+    }
+
+    async updateTaskProgress(taskId, progressData) {
+        try {
+            const query = `
+                UPDATE tasks 
+                SET progress_percentage = ?, status = ?, actual_hours = ?,
+                    completion_date = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE task_id = ?
+            `;
+            
+            const params = [
+                progressData.progress_percentage, progressData.status, progressData.actual_hours,
+                progressData.completion_date, taskId
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error updating task progress:', error);
+            throw error;
+        }
+    }
+
+    // Leave Management v3
+    async createLeaveRequest(leaveData) {
+        try {
+            const query = `
+                INSERT INTO leave_requests (
+                    employee_id, leave_type, start_date, end_date, total_days,
+                    reason, emergency_contact, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            
+            const params = [
+                leaveData.employee_id, leaveData.leave_type, leaveData.start_date,
+                leaveData.end_date, leaveData.total_days, leaveData.reason,
+                leaveData.emergency_contact, 'pending'
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error creating leave request:', error);
+            throw error;
+        }
+    }
+
+    // Role Management v3 (RBAC)
+    async getUserRoles(employeeId) {
+        try {
+            const query = `
+                SELECT r.*, er.assigned_at, er.assigned_by
+                FROM roles r
+                JOIN employee_roles er ON r.id = er.role_id
+                JOIN employees e ON er.employee_id = e.id
+                WHERE e.employeeId = ? AND er.is_active = 1
+                ORDER BY r.role_level DESC
+            `;
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, [employeeId]);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error fetching user roles:', error);
+            throw error;
+        }
+    }
+
+    async assignRoleToEmployee(employeeId, roleId, assignedBy) {
+        try {
+            // First get employee's internal ID
+            const empQuery = `SELECT id FROM employees WHERE employeeId = ?`;
+            const empResult = await window.authManager.executeQuery(empQuery, [employeeId]);
+            
+            if (!empResult || empResult.length === 0) {
+                throw new Error('Employee not found');
+            }
+            
+            const query = `
+                INSERT INTO employee_roles (employee_id, role_id, assigned_by, is_active)
+                VALUES (?, ?, ?, 1)
+            `;
+            
+            const params = [empResult[0].id, roleId, assignedBy];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error assigning role to employee:', error);
+            throw error;
+        }
+    }
+
+    // Audit Logging for v3
+    async logAuditAction(tableName, recordId, action, oldValues, newValues, changedBy) {
+        try {
+            const query = `
+                INSERT INTO audit_logs (
+                    table_name, record_id, action, old_values, new_values, changed_by
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            `;
+            
+            const params = [
+                tableName, recordId, action, JSON.stringify(oldValues),
+                JSON.stringify(newValues), changedBy
+            ];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error logging audit action:', error);
+            throw error;
+        }
+    }
+
+    // Performance Metrics for v3
+    async recordPerformanceMetric(metricType, metricName, metricValue, entityType, entityId) {
+        try {
+            const query = `
+                INSERT INTO performance_metrics (
+                    metric_type, metric_name, metric_value, entity_type, entity_id
+                ) VALUES (?, ?, ?, ?, ?)
+            `;
+            
+            const params = [metricType, metricName, metricValue, entityType, entityId];
+            
+            if (window.authManager && typeof window.authManager.executeQuery === 'function') {
+                return await window.authManager.executeQuery(query, params);
+            }
+            
+            throw new Error('Database connection not available');
+        } catch (error) {
+            console.error('Error recording performance metric:', error);
             throw error;
         }
     }
