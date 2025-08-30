@@ -965,19 +965,27 @@
                 
                 <!-- Department Chat -->
                 <div id="departmentChat" class="chat-view">
-                    <div class="department-selector">
-                        <select id="departmentSelect" class="modern-select">
-                            <option value="hr">Nhân sự</option>
-                            <option value="it">Công nghệ thông tin</option>
-                            <option value="sales">Kinh doanh</option>
-                            <option value="finance">Tài chính</option>
-                            <option value="operations">Vận hành</option>
-                        </select>
+                    <div class="department-header">
+                        <div class="dept-info">
+                            <span class="material-icons-round">business</span>
+                            <div class="dept-details">
+                                <h4 class="dept-name" id="userDepartmentName">Phòng Công Nghệ Thông Tin</h4>
+                                <p class="dept-subtitle">Trò chuyện với đồng nghiệp cùng phòng ban</p>
+                            </div>
+                        </div>
+                        <div class="dept-actions">
+                            <button class="header-btn" id="deptMembersBtn" title="Xem thành viên">
+                                <span class="material-icons-round">people</span>
+                            </button>
+                            <button class="header-btn" id="deptSettingsBtn" title="Cài đặt">
+                                <span class="material-icons-round">settings</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="chat-messages" id="departmentMessages">
-                        <div class="empty-state">
-                            <span class="material-icons-round">business</span>
-                            <p>Chọn phòng ban để bắt đầu trò chuyện</p>
+                        <div class="loading-state">
+                            <div class="loading-spinner"></div>
+                            <p>Đang tải tin nhắn phòng ban...</p>
                         </div>
                     </div>
                     <div class="chat-input-area">
@@ -1044,206 +1052,311 @@
                 
                 <!-- Private Chat -->
                 <div id="privateChat" class="chat-view">
-                    <div class="conversations-list">
-                        <div class="conversation-item active">
-                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
-                            <div class="conv-content">
-                                <h4 class="conv-name">Trần Thị B</h4>
-                                <p class="conv-preview">Cảm ơn bạn về báo cáo...</p>
-                            </div>
-                            <div class="conv-meta">
-                                <span class="conv-time">2m</span>
-                                <span class="conv-unread">2</span>
-                            </div>
-                        </div>
-                        <div class="conversation-item">
-                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
-                            <div class="conv-content">
-                                <h4 class="conv-name">Lê Văn C</h4>
-                                <p class="conv-preview">Tôi sẽ gửi file cho bạn...</p>
-                            </div>
-                            <div class="conv-meta">
-                                <span class="conv-time">1h</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chat-messages" id="privateMessages">
-                        <div class="message-group">
-                            <div class="message-sender">
-                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
-                                <span class="sender-name">Trần Thị B</span>
-                                <span class="message-time">10:45</span>
-                            </div>
-                            <div class="message-bubble">
-                                <p>Cảm ơn bạn về báo cáo tháng này!</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chat-input-area">
-                        <div class="input-container">
-                            <button class="input-btn" title="Đính kèm file">
-                                <span class="material-icons-round">attach_file</span>
+                    <!-- Conversations List View (Default) -->
+                    <div class="conversations-view" id="conversationsView">
+                        <div class="conversations-header">
+                            <h3>
+                                <span class="material-icons-round">forum</span>
+                                Cuộc trò chuyện
+                            </h3>
+                            <button class="header-btn" id="newConversationBtn" title="Bắt đầu cuộc trò chuyện mới">
+                                <span class="material-icons-round">add</span>
                             </button>
-                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn riêng...">
-                            <button class="input-btn emoji-btn" title="Emoji" data-chat="private">
-                                <span class="material-icons-round">emoji_emotions</span>
-                            </button>
-                            <!-- Emoji Picker -->
-                            <div class="emoji-picker" id="emojiPicker-private">
-                                <div class="emoji-grid">
-                                    <span class="emoji-item" data-emoji="😀">😀</span>
-                                    <span class="emoji-item" data-emoji="😃">😃</span>
-                                    <span class="emoji-item" data-emoji="😄">😄</span>
-                                    <span class="emoji-item" data-emoji="😁">😁</span>
-                                    <span class="emoji-item" data-emoji="😅">😅</span>
-                                    <span class="emoji-item" data-emoji="😂">😂</span>
-                                    <span class="emoji-item" data-emoji="🤣">🤣</span>
-                                    <span class="emoji-item" data-emoji="😊">😊</span>
-                                    <span class="emoji-item" data-emoji="😇">😇</span>
-                                    <span class="emoji-item" data-emoji="🙂">🙂</span>
-                                    <span class="emoji-item" data-emoji="🙃">🙃</span>
-                                    <span class="emoji-item" data-emoji="😉">😉</span>
-                                    <span class="emoji-item" data-emoji="😍">😍</span>
-                                    <span class="emoji-item" data-emoji="😘">😘</span>
-                                    <span class="emoji-item" data-emoji="😗">😗</span>
-                                    <span class="emoji-item" data-emoji="😙">😙</span>
-                                    <span class="emoji-item" data-emoji="😚">😚</span>
-                                    <span class="emoji-item" data-emoji="😋">😋</span>
-                                    <span class="emoji-item" data-emoji="😛">😛</span>
-                                    <span class="emoji-item" data-emoji="😝">😝</span>
-                                    <span class="emoji-item" data-emoji="😜">😜</span>
-                                    <span class="emoji-item" data-emoji="🤪">🤪</span>
-                                    <span class="emoji-item" data-emoji="🤨">🤨</span>
-                                    <span class="emoji-item" data-emoji="🧐">🧐</span>
-                                    <span class="emoji-item" data-emoji="🤓">🤓</span>
-                                    <span class="emoji-item" data-emoji="😎">😎</span>
-                                    <span class="emoji-item" data-emoji="🤩">🤩</span>
-                                    <span class="emoji-item" data-emoji="🥳">🥳</span>
-                                    <span class="emoji-item" data-emoji="😏">😏</span>
-                                    <span class="emoji-item" data-emoji="👍">👍</span>
-                                    <span class="emoji-item" data-emoji="👎">👎</span>
-                                    <span class="emoji-item" data-emoji="👌">👌</span>
-                                    <span class="emoji-item" data-emoji="✌️">✌️</span>
-                                    <span class="emoji-item" data-emoji="🤞">🤞</span>
-                                    <span class="emoji-item" data-emoji="👋">👋</span>
-                                    <span class="emoji-item" data-emoji="🙏">🙏</span>
-                                    <span class="emoji-item" data-emoji="💪">💪</span>
-                                    <span class="emoji-item" data-emoji="❤️">❤️</span>
-                                    <span class="emoji-item" data-emoji="💚">💚</span>
-                                    <span class="emoji-item" data-emoji="💙">💙</span>
-                                    <span class="emoji-item" data-emoji="💜">💜</span>
+                        </div>
+                        <div class="conversations-search">
+                            <div class="search-container">
+                                <span class="material-icons-round">search</span>
+                                <input type="text" placeholder="Tìm kiếm cuộc trò chuyện..." id="conversationSearch">
+                            </div>
+                        </div>
+                        <div class="conversations-list" id="conversationsList">
+                            <div class="conversation-item active" data-conversation-id="conv-001">
+                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
+                                <div class="conv-content">
+                                    <h4 class="conv-name">Trần Thị B</h4>
+                                    <p class="conv-preview">Cảm ơn bạn về báo cáo...</p>
+                                </div>
+                                <div class="conv-meta">
+                                    <span class="conv-time">2m</span>
+                                    <span class="conv-unread">2</span>
                                 </div>
                             </div>
-                            <button class="send-btn" title="Gửi">
-                                <span class="material-icons-round">send</span>
+                            <div class="conversation-item" data-conversation-id="conv-002">
+                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
+                                <div class="conv-content">
+                                    <h4 class="conv-name">Lê Văn C</h4>
+                                    <p class="conv-preview">Tôi sẽ gửi file cho bạn...</p>
+                                </div>
+                                <div class="conv-meta">
+                                    <span class="conv-time">1h</span>
+                                </div>
+                            </div>
+                            <div class="conversation-item" data-conversation-id="conv-003">
+                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-avatar">
+                                <div class="conv-content">
+                                    <h4 class="conv-name">Nguyễn Văn D</h4>
+                                    <p class="conv-preview">Cuộc họp hôm nay như thế nào?</p>
+                                </div>
+                                <div class="conv-meta">
+                                    <span class="conv-time">3h</span>
+                                    <span class="conv-unread">1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Messages View (Hidden by default) -->
+                    <div class="chat-messages-view" id="chatMessagesView" style="display: none;">
+                        <div class="chat-conversation-header">
+                            <button class="back-btn" id="backToConversations">
+                                <span class="material-icons-round">arrow_back</span>
                             </button>
+                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="conv-header-avatar">
+                            <div class="conv-header-info">
+                                <h4 class="conv-header-name" id="activeConversationName">Trần Thị B</h4>
+                                <p class="conv-header-status">Đang hoạt động</p>
+                            </div>
+                            <div class="conv-header-actions">
+                                <button class="header-btn" title="Gọi điện">
+                                    <span class="material-icons-round">call</span>
+                                </button>
+                                <button class="header-btn" title="Video call">
+                                    <span class="material-icons-round">videocam</span>
+                                </button>
+                                <button class="header-btn" title="Thông tin">
+                                    <span class="material-icons-round">info</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="privateMessages">
+                            <div class="message-group">
+                                <div class="message-sender">
+                                    <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                                    <span class="sender-name">Trần Thị B</span>
+                                    <span class="message-time">10:45</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <p>Cảm ơn bạn về báo cáo tháng này!</p>
+                                </div>
+                            </div>
+                            <div class="message-group own">
+                                <div class="message-sender">
+                                    <span class="sender-name">Bạn</span>
+                                    <span class="message-time">10:46</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <p>Không có gì! Mình sẽ gửi thêm phân tích chi tiết vào chiều nay.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <div class="input-container">
+                                <button class="input-btn" title="Đính kèm file">
+                                    <span class="material-icons-round">attach_file</span>
+                                </button>
+                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn riêng...">
+                                <button class="input-btn emoji-btn" title="Emoji" data-chat="private">
+                                    <span class="material-icons-round">emoji_emotions</span>
+                                </button>
+                                <!-- Emoji Picker -->
+                                <div class="emoji-picker" id="emojiPicker-private">
+                                    <div class="emoji-grid">
+                                        <span class="emoji-item" data-emoji="😀">😀</span>
+                                        <span class="emoji-item" data-emoji="😃">😃</span>
+                                        <span class="emoji-item" data-emoji="😄">😄</span>
+                                        <span class="emoji-item" data-emoji="😁">😁</span>
+                                        <span class="emoji-item" data-emoji="😅">😅</span>
+                                        <span class="emoji-item" data-emoji="😂">😂</span>
+                                        <span class="emoji-item" data-emoji="🤣">🤣</span>
+                                        <span class="emoji-item" data-emoji="😊">😊</span>
+                                        <span class="emoji-item" data-emoji="😇">😇</span>
+                                        <span class="emoji-item" data-emoji="🙂">🙂</span>
+                                        <span class="emoji-item" data-emoji="🙃">🙃</span>
+                                        <span class="emoji-item" data-emoji="😉">😉</span>
+                                        <span class="emoji-item" data-emoji="😍">😍</span>
+                                        <span class="emoji-item" data-emoji="😘">😘</span>
+                                        <span class="emoji-item" data-emoji="👍">👍</span>
+                                        <span class="emoji-item" data-emoji="👎">👎</span>
+                                        <span class="emoji-item" data-emoji="👌">👌</span>
+                                        <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                        <span class="emoji-item" data-emoji="💚">💚</span>
+                                        <span class="emoji-item" data-emoji="💙">💙</span>
+                                    </div>
+                                </div>
+                                <button class="send-btn" title="Gửi">
+                                    <span class="material-icons-round">send</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Group Chat -->
                 <div id="groupChat" class="chat-view">
-                    <div class="groups-list">
-                        <div class="group-item active">
-                            <div class="group-avatar">
-                                <span class="material-icons-round">group</span>
-                            </div>
-                            <div class="group-content">
-                                <h4 class="group-name">Dự án Website</h4>
-                                <p class="group-members">8 thành viên</p>
-                            </div>
-                            <div class="group-meta">
-                                <span class="group-time">5m</span>
-                                <span class="group-unread">1</span>
-                            </div>
-                        </div>
-                        <div class="group-item">
-                            <div class="group-avatar">
-                                <span class="material-icons-round">group</span>
-                            </div>
-                            <div class="group-content">
-                                <h4 class="group-name">Team Marketing</h4>
-                                <p class="group-members">5 thành viên</p>
-                            </div>
-                            <div class="group-meta">
-                                <span class="group-time">2h</span>
-                            </div>
-                        </div>
-                        <button class="create-group-btn" id="createGroupBtn">
-                            <span class="material-icons-round">add</span>
-                            <span>Tạo nhóm mới</span>
-                        </button>
-                    </div>
-                    <div class="chat-messages" id="groupMessages">
-                        <div class="message-group">
-                            <div class="message-sender">
-                                <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
-                                <span class="sender-name">Phạm Văn D</span>
-                                <span class="message-time">11:00</span>
-                            </div>
-                            <div class="message-bubble">
-                                <p>Mọi người đã xem mockup mới chưa?</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chat-input-area">
-                        <div class="input-container">
-                            <button class="input-btn" title="Đính kèm file">
-                                <span class="material-icons-round">attach_file</span>
+                    <!-- Groups List View (Default) -->
+                    <div class="groups-view" id="groupsView">
+                        <div class="groups-header">
+                            <h3>
+                                <span class="material-icons-round">groups</span>
+                                Nhóm trò chuyện
+                            </h3>
+                            <button class="header-btn" id="createGroupBtn" title="Tạo nhóm mới">
+                                <span class="material-icons-round">add</span>
                             </button>
-                            <input type="text" class="chat-input" placeholder="Nhập tin nhắn nhóm...">
-                            <button class="input-btn emoji-btn" title="Emoji" data-chat="group">
-                                <span class="material-icons-round">emoji_emotions</span>
-                            </button>
-                            <!-- Emoji Picker -->
-                            <div class="emoji-picker" id="emojiPicker-group">
-                                <div class="emoji-grid">
-                                    <span class="emoji-item" data-emoji="😀">😀</span>
-                                    <span class="emoji-item" data-emoji="😃">😃</span>
-                                    <span class="emoji-item" data-emoji="😄">😄</span>
-                                    <span class="emoji-item" data-emoji="😁">😁</span>
-                                    <span class="emoji-item" data-emoji="😅">😅</span>
-                                    <span class="emoji-item" data-emoji="😂">😂</span>
-                                    <span class="emoji-item" data-emoji="🤣">🤣</span>
-                                    <span class="emoji-item" data-emoji="😊">😊</span>
-                                    <span class="emoji-item" data-emoji="😇">😇</span>
-                                    <span class="emoji-item" data-emoji="🙂">🙂</span>
-                                    <span class="emoji-item" data-emoji="🙃">🙃</span>
-                                    <span class="emoji-item" data-emoji="😉">😉</span>
-                                    <span class="emoji-item" data-emoji="😍">😍</span>
-                                    <span class="emoji-item" data-emoji="😘">😘</span>
-                                    <span class="emoji-item" data-emoji="😗">😗</span>
-                                    <span class="emoji-item" data-emoji="😙">😙</span>
-                                    <span class="emoji-item" data-emoji="😚">😚</span>
-                                    <span class="emoji-item" data-emoji="😋">😋</span>
-                                    <span class="emoji-item" data-emoji="😛">😛</span>
-                                    <span class="emoji-item" data-emoji="😝">😝</span>
-                                    <span class="emoji-item" data-emoji="😜">😜</span>
-                                    <span class="emoji-item" data-emoji="🤪">🤪</span>
-                                    <span class="emoji-item" data-emoji="🤨">🤨</span>
-                                    <span class="emoji-item" data-emoji="🧐">🧐</span>
-                                    <span class="emoji-item" data-emoji="🤓">🤓</span>
-                                    <span class="emoji-item" data-emoji="😎">😎</span>
-                                    <span class="emoji-item" data-emoji="🤩">🤩</span>
-                                    <span class="emoji-item" data-emoji="🥳">🥳</span>
-                                    <span class="emoji-item" data-emoji="😏">😏</span>
-                                    <span class="emoji-item" data-emoji="👍">👍</span>
-                                    <span class="emoji-item" data-emoji="👎">👎</span>
-                                    <span class="emoji-item" data-emoji="👌">👌</span>
-                                    <span class="emoji-item" data-emoji="✌️">✌️</span>
-                                    <span class="emoji-item" data-emoji="🤞">🤞</span>
-                                    <span class="emoji-item" data-emoji="👋">👋</span>
-                                    <span class="emoji-item" data-emoji="🙏">🙏</span>
-                                    <span class="emoji-item" data-emoji="💪">💪</span>
-                                    <span class="emoji-item" data-emoji="❤️">❤️</span>
-                                    <span class="emoji-item" data-emoji="💚">💚</span>
-                                    <span class="emoji-item" data-emoji="💙">💙</span>
-                                    <span class="emoji-item" data-emoji="💜">💜</span>
+                        </div>
+                        <div class="groups-search">
+                            <div class="search-container">
+                                <span class="material-icons-round">search</span>
+                                <input type="text" placeholder="Tìm kiếm nhóm..." id="groupSearch">
+                            </div>
+                        </div>
+                        <div class="groups-list" id="groupsList">
+                            <div class="group-item active" data-group-id="group-001">
+                                <div class="group-avatar">
+                                    <span class="material-icons-round">group</span>
+                                </div>
+                                <div class="group-content">
+                                    <h4 class="group-name">Dự án Website</h4>
+                                    <p class="group-members">8 thành viên</p>
+                                </div>
+                                <div class="group-meta">
+                                    <span class="group-time">5m</span>
+                                    <span class="group-unread">1</span>
                                 </div>
                             </div>
-                            <button class="send-btn" title="Gửi">
-                                <span class="material-icons-round">send</span>
+                            <div class="group-item" data-group-id="group-002">
+                                <div class="group-avatar">
+                                    <span class="material-icons-round">group</span>
+                                </div>
+                                <div class="group-content">
+                                    <h4 class="group-name">Team Marketing</h4>
+                                    <p class="group-members">5 thành viên</p>
+                                </div>
+                                <div class="group-meta">
+                                    <span class="group-time">2h</span>
+                                </div>
+                            </div>
+                            <div class="group-item" data-group-id="group-003">
+                                <div class="group-avatar">
+                                    <span class="material-icons-round">group</span>
+                                </div>
+                                <div class="group-content">
+                                    <h4 class="group-name">Phòng IT</h4>
+                                    <p class="group-members">12 thành viên</p>
+                                </div>
+                                <div class="group-meta">
+                                    <span class="group-time">1d</span>
+                                    <span class="group-unread">3</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Group Messages View (Hidden by default) -->
+                    <div class="group-messages-view" id="groupMessagesView" style="display: none;">
+                        <div class="group-conversation-header">
+                            <button class="back-btn" id="backToGroups">
+                                <span class="material-icons-round">arrow_back</span>
                             </button>
+                            <div class="group-header-avatar">
+                                <span class="material-icons-round">group</span>
+                            </div>
+                            <div class="group-header-info">
+                                <h4 class="group-header-name" id="activeGroupName">Dự án Website</h4>
+                                <p class="group-header-members">8 thành viên</p>
+                            </div>
+                            <div class="group-header-actions">
+                                <button class="header-btn" title="Thành viên">
+                                    <span class="material-icons-round">people</span>
+                                </button>
+                                <button class="header-btn" title="Cài đặt nhóm">
+                                    <span class="material-icons-round">settings</span>
+                                </button>
+                                <button class="header-btn" title="Thông tin nhóm">
+                                    <span class="material-icons-round">info</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="groupMessages">
+                            <div class="message-group">
+                                <div class="message-sender">
+                                    <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                                    <span class="sender-name">Phạm Văn D</span>
+                                    <span class="message-time">11:00</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <p>Mọi người đã xem mockup mới chưa?</p>
+                                </div>
+                            </div>
+                            <div class="message-group own">
+                                <div class="message-sender">
+                                    <span class="sender-name">Bạn</span>
+                                    <span class="message-time">11:02</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <p>Mình vừa xem xong, thiết kế rất đẹp! 👍</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input-area">
+                            <div class="input-container">
+                                <button class="input-btn" title="Đính kèm file">
+                                    <span class="material-icons-round">attach_file</span>
+                                </button>
+                                <input type="text" class="chat-input" placeholder="Nhập tin nhắn nhóm...">
+                                <button class="input-btn emoji-btn" title="Emoji" data-chat="group">
+                                    <span class="material-icons-round">emoji_emotions</span>
+                                </button>
+                                <!-- Emoji Picker -->
+                                <div class="emoji-picker" id="emojiPicker-group">
+                                    <div class="emoji-grid">
+                                        <span class="emoji-item" data-emoji="😀">😀</span>
+                                        <span class="emoji-item" data-emoji="😃">😃</span>
+                                        <span class="emoji-item" data-emoji="😄">😄</span>
+                                        <span class="emoji-item" data-emoji="😁">😁</span>
+                                        <span class="emoji-item" data-emoji="😅">😅</span>
+                                        <span class="emoji-item" data-emoji="😂">😂</span>
+                                        <span class="emoji-item" data-emoji="🤣">🤣</span>
+                                        <span class="emoji-item" data-emoji="😊">😊</span>
+                                        <span class="emoji-item" data-emoji="😇">😇</span>
+                                        <span class="emoji-item" data-emoji="🙂">🙂</span>
+                                        <span class="emoji-item" data-emoji="🙃">🙃</span>
+                                        <span class="emoji-item" data-emoji="😉">😉</span>
+                                        <span class="emoji-item" data-emoji="😍">😍</span>
+                                        <span class="emoji-item" data-emoji="😘">😘</span>
+                                        <span class="emoji-item" data-emoji="😗">😗</span>
+                                        <span class="emoji-item" data-emoji="😙">😙</span>
+                                        <span class="emoji-item" data-emoji="😚">😚</span>
+                                        <span class="emoji-item" data-emoji="😋">😋</span>
+                                        <span class="emoji-item" data-emoji="😛">😛</span>
+                                        <span class="emoji-item" data-emoji="😝">😝</span>
+                                        <span class="emoji-item" data-emoji="😜">😜</span>
+                                        <span class="emoji-item" data-emoji="🤪">🤪</span>
+                                        <span class="emoji-item" data-emoji="🤨">🤨</span>
+                                        <span class="emoji-item" data-emoji="🧐">🧐</span>
+                                        <span class="emoji-item" data-emoji="🤓">🤓</span>
+                                        <span class="emoji-item" data-emoji="😎">😎</span>
+                                        <span class="emoji-item" data-emoji="🤩">🤩</span>
+                                        <span class="emoji-item" data-emoji="🥳">🥳</span>
+                                        <span class="emoji-item" data-emoji="😏">😏</span>
+                                        <span class="emoji-item" data-emoji="👍">👍</span>
+                                        <span class="emoji-item" data-emoji="👎">👎</span>
+                                        <span class="emoji-item" data-emoji="👌">👌</span>
+                                        <span class="emoji-item" data-emoji="✌️">✌️</span>
+                                        <span class="emoji-item" data-emoji="🤞">🤞</span>
+                                        <span class="emoji-item" data-emoji="👋">👋</span>
+                                        <span class="emoji-item" data-emoji="🙏">🙏</span>
+                                        <span class="emoji-item" data-emoji="💪">💪</span>
+                                        <span class="emoji-item" data-emoji="❤️">❤️</span>
+                                        <span class="emoji-item" data-emoji="💚">💚</span>
+                                        <span class="emoji-item" data-emoji="💙">💙</span>
+                                        <span class="emoji-item" data-emoji="💜">💜</span>
+                                    </div>
+                                </div>
+                                <button class="send-btn" title="Gửi">
+                                    <span class="material-icons-round">send</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

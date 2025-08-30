@@ -117,6 +117,7 @@ class ContentManager {
     }
 
     initializeTimeDisplay() {
+        // Start real-time clock display with proper formatting
         this.timeDisplay = setInterval(() => {
             const now = new Date();
             const timeString = now.toLocaleTimeString('vi-VN', {
@@ -124,10 +125,29 @@ class ContentManager {
                 minute: '2-digit',
                 second: '2-digit'
             });
+            const dateString = now.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
             
+            // Update time display elements
             const timeElements = document.querySelectorAll('.current-time, #currentTime');
             timeElements.forEach(element => {
-                if (element) element.textContent = timeString;
+                if (element) {
+                    // Check if element has both date and time display areas
+                    const timeDisplay = element.querySelector('#timeDisplay, .time-display');
+                    const dateDisplay = element.querySelector('#currentDateDisplay, .current-date');
+                    
+                    if (timeDisplay && dateDisplay) {
+                        // Separate date and time displays
+                        timeDisplay.textContent = timeString;
+                        dateDisplay.textContent = dateString;
+                    } else {
+                        // Single element - show time only to prevent duplication
+                        element.textContent = timeString;
+                    }
+                }
             });
         }, 1000);
     }
@@ -353,9 +373,244 @@ class ContentManager {
                 window.chatManager = new ChatManager();
                 console.log('✅ ChatManager initialized');
             }
+            
+            // Initialize enhanced chat features
+            this.initializeEnhancedChatFeatures();
+            
         } catch (error) {
             console.warn('Notification/Chat managers initialization failed:', error);
         }
+    }
+
+    initializeEnhancedChatFeatures() {
+        // Department chat - load user's department automatically
+        this.loadUserDepartmentChat();
+        
+        // Private chat conversation navigation
+        this.setupPrivateChatNavigation();
+        
+        // Group chat navigation
+        this.setupGroupChatNavigation();
+        
+        // Mobile fullscreen chat
+        this.setupMobileChatFullscreen();
+        
+        console.log('✅ Enhanced chat features initialized');
+    }
+
+    loadUserDepartmentChat() {
+        try {
+            const userDepartmentName = document.getElementById('userDepartmentName');
+            if (userDepartmentName && this.user && this.user.department) {
+                userDepartmentName.textContent = this.user.department;
+            }
+            
+            // Load department messages automatically
+            const departmentMessages = document.getElementById('departmentMessages');
+            if (departmentMessages) {
+                departmentMessages.innerHTML = `
+                    <div class="message-group">
+                        <div class="message-sender">
+                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                            <span class="sender-name">Trưởng phòng IT</span>
+                            <span class="message-time">09:30</span>
+                        </div>
+                        <div class="message-bubble">
+                            <p>Chào mọi người! Hôm nay chúng ta có cuộc họp team vào lúc 2:00 PM.</p>
+                        </div>
+                    </div>
+                    <div class="message-group">
+                        <div class="message-sender">
+                            <img src="../../assets/icons/avatar-placeholder.png" alt="Avatar" class="sender-avatar">
+                            <span class="sender-name">Nguyễn Văn A</span>
+                            <span class="message-time">09:32</span>
+                        </div>
+                        <div class="message-bubble">
+                            <p>Được ạ, mình sẽ chuẩn bị báo cáo tiến độ dự án.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading department chat:', error);
+        }
+    }
+
+    setupPrivateChatNavigation() {
+        // Conversation item click handlers
+        const conversationItems = document.querySelectorAll('.conversation-item');
+        conversationItems.forEach(item => {
+            item.addEventListener('click', () => {
+                this.openPrivateConversation(item);
+            });
+        });
+
+        // Back to conversations button
+        const backToConversations = document.getElementById('backToConversations');
+        if (backToConversations) {
+            backToConversations.addEventListener('click', () => {
+                this.showConversationsList();
+            });
+        }
+
+        // New conversation button
+        const newConversationBtn = document.getElementById('newConversationBtn');
+        if (newConversationBtn) {
+            newConversationBtn.addEventListener('click', () => {
+                this.createNewConversation();
+            });
+        }
+    }
+
+    setupGroupChatNavigation() {
+        // Group item click handlers
+        const groupItems = document.querySelectorAll('.group-item');
+        groupItems.forEach(item => {
+            item.addEventListener('click', () => {
+                this.openGroupConversation(item);
+            });
+        });
+
+        // Back to groups button
+        const backToGroups = document.getElementById('backToGroups');
+        if (backToGroups) {
+            backToGroups.addEventListener('click', () => {
+                this.showGroupsList();
+            });
+        }
+
+        // Create group button
+        const createGroupBtn = document.getElementById('createGroupBtn');
+        if (createGroupBtn) {
+            createGroupBtn.addEventListener('click', () => {
+                this.createNewGroup();
+            });
+        }
+    }
+
+    setupMobileChatFullscreen() {
+        const chatPanel = document.getElementById('chatPanel');
+        const closeChat = document.getElementById('closeChat');
+        
+        if (window.innerWidth <= 768) {
+            // Add fullscreen class on mobile
+            if (chatPanel && chatPanel.classList.contains('active')) {
+                chatPanel.classList.add('mobile-fullscreen');
+            }
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (chatPanel) {
+                if (window.innerWidth <= 768) {
+                    if (chatPanel.classList.contains('active')) {
+                        chatPanel.classList.add('mobile-fullscreen');
+                    }
+                } else {
+                    chatPanel.classList.remove('mobile-fullscreen');
+                }
+            }
+        });
+    }
+
+    openPrivateConversation(conversationItem) {
+        // Update active state
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        conversationItem.classList.add('active');
+
+        // Get conversation data
+        const conversationId = conversationItem.getAttribute('data-conversation-id');
+        const conversationName = conversationItem.querySelector('.conv-name').textContent;
+
+        // Update header info
+        const activeConversationName = document.getElementById('activeConversationName');
+        if (activeConversationName) {
+            activeConversationName.textContent = conversationName;
+        }
+
+        // Show chat messages view
+        this.showChatMessagesView();
+    }
+
+    openGroupConversation(groupItem) {
+        // Update active state
+        document.querySelectorAll('.group-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        groupItem.classList.add('active');
+
+        // Get group data
+        const groupId = groupItem.getAttribute('data-group-id');
+        const groupName = groupItem.querySelector('.group-name').textContent;
+        const groupMembers = groupItem.querySelector('.group-members').textContent;
+
+        // Update header info
+        const activeGroupName = document.getElementById('activeGroupName');
+        const groupHeaderMembers = document.querySelector('.group-header-members');
+        
+        if (activeGroupName) {
+            activeGroupName.textContent = groupName;
+        }
+        if (groupHeaderMembers) {
+            groupHeaderMembers.textContent = groupMembers;
+        }
+
+        // Show group messages view
+        this.showGroupMessagesView();
+    }
+
+    showConversationsList() {
+        const conversationsView = document.getElementById('conversationsView');
+        const chatMessagesView = document.getElementById('chatMessagesView');
+        
+        if (conversationsView && chatMessagesView) {
+            conversationsView.style.display = 'flex';
+            chatMessagesView.style.display = 'none';
+        }
+    }
+
+    showChatMessagesView() {
+        const conversationsView = document.getElementById('conversationsView');
+        const chatMessagesView = document.getElementById('chatMessagesView');
+        
+        if (conversationsView && chatMessagesView) {
+            conversationsView.style.display = 'none';
+            chatMessagesView.style.display = 'flex';
+        }
+    }
+
+    showGroupsList() {
+        const groupsView = document.getElementById('groupsView');
+        const groupMessagesView = document.getElementById('groupMessagesView');
+        
+        if (groupsView && groupMessagesView) {
+            groupsView.style.display = 'flex';
+            groupMessagesView.style.display = 'none';
+        }
+    }
+
+    showGroupMessagesView() {
+        const groupsView = document.getElementById('groupsView');
+        const groupMessagesView = document.getElementById('groupMessagesView');
+        
+        if (groupsView && groupMessagesView) {
+            groupsView.style.display = 'none';
+            groupMessagesView.style.display = 'flex';
+        }
+    }
+
+    createNewConversation() {
+        // Implementation for creating new conversation
+        console.log('Creating new conversation...');
+        // This would typically open a modal to select users
+    }
+
+    createNewGroup() {
+        // Implementation for creating new group
+        console.log('Creating new group...');
+        // This would typically open a modal to create group
     }
 
     async initializeEnhancedDashboard() {
@@ -2250,30 +2505,93 @@ class ContentManager {
 
             content.innerHTML = `
                 <div class="attendance-gps-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><span class="material-icons-round">location_on</span> Chấm Công GPS</h2>
-                            <p>Hệ thống chấm công dựa trên vị trí địa lý</p>
+                    <div class="gps-header">
+                        <div class="header-icon">
+                            <span class="material-icons-round">my_location</span>
                         </div>
-                        <div class="card-body">
-                            <div class="attendance-actions">
-                                <div class="location-status" id="locationStatus">
+                        <div class="header-content">
+                            <h1 class="gps-title">Smart Attendance System</h1>
+                            <p class="gps-subtitle">GPS-based attendance tracking with real-time location verification</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="header-btn" id="refreshLocation" title="Refresh Location">
+                                <span class="material-icons-round">refresh</span>
+                            </button>
+                            <button class="header-btn" id="helpAttendance" title="Help">
+                                <span class="material-icons-round">help_outline</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="gps-main-content">
+                        <!-- Location Status Card -->
+                        <div class="location-card">
+                            <div class="card-header">
+                                <span class="material-icons-round">location_on</span>
+                                <h3>Current Location</h3>
+                            </div>
+                            <div class="location-status" id="locationStatus">
+                                <div class="status-indicator searching">
                                     <span class="material-icons-round location-icon">location_searching</span>
-                                    <span class="location-text">Đang định vị...</span>
+                                    <div class="status-text">
+                                        <span class="status-title">Detecting Location...</span>
+                                        <span class="status-subtitle">Please wait while we verify your location</span>
+                                    </div>
                                 </div>
-                                <div class="store-info" id="storeInfo" style="display: none;">
+                            </div>
+                            <div class="store-info" id="storeInfo" style="display: none;">
+                                <div class="store-badge">
                                     <span class="material-icons-round">store</span>
-                                    <span id="currentStore">Không xác định</span>
+                                    <div class="store-details">
+                                        <span class="store-name" id="currentStore">Unknown Location</span>
+                                        <span class="store-address" id="storeAddress">Verifying...</span>
+                                    </div>
                                 </div>
-                                <button id="attendanceButton" class="attendance-btn" disabled>
-                                    <span class="material-icons-round">access_time</span>
-                                    <span class="btn-text">Chấm Công</span>
+                            </div>
+                        </div>
+
+                        <!-- Attendance Action Card -->
+                        <div class="attendance-card">
+                            <div class="card-header">
+                                <span class="material-icons-round">schedule</span>
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <div class="attendance-actions">
+                                <div class="current-time" id="currentTime"></div>
+                                <button id="attendanceButton" class="attendance-btn primary" disabled>
+                                    <span class="btn-icon material-icons-round">access_time</span>
+                                    <div class="btn-content">
+                                        <span class="btn-text">Clock In</span>
+                                        <span class="btn-subtitle">Tap to record attendance</span>
+                                    </div>
+                                </button>
+                                <div class="attendance-options">
+                                    <button class="option-btn" id="breakTimeBtn">
+                                        <span class="material-icons-round">coffee</span>
+                                        Break
+                                    </button>
+                                    <button class="option-btn" id="overtimeBtn">
+                                        <span class="material-icons-round">schedule</span>
+                                        Overtime
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's History Card -->
+                        <div class="history-card">
+                            <div class="card-header">
+                                <span class="material-icons-round">history</span>
+                                <h3>Today's Timeline</h3>
+                                <button class="view-all-btn" id="viewFullHistory">
+                                    <span class="material-icons-round">open_in_new</span>
+                                    View All
                                 </button>
                             </div>
-                            <div class="attendance-history">
-                                <h3><span class="material-icons-round">history</span> Lịch sử chấm công hôm nay</h3>
-                                <div id="attendanceHistoryToday" class="attendance-list">
-                                    <div class="loading-text">Đang tải lịch sử...</div>
+                            <div class="attendance-timeline" id="attendanceHistoryToday">
+                                <div class="timeline-loading">
+                                    <div class="loading-spinner"></div>
+                                    <span>Loading today's records...</span>
                                 </div>
                             </div>
                         </div>
@@ -12972,16 +13290,9 @@ class ContentManager {
     }
 
     startCurrentTimeDisplay() {
-        const timeElement = document.getElementById('currentTime');
-        if (!timeElement) return;
-
-        const updateTime = () => {
-            const now = new Date();
-            timeElement.textContent = now.toLocaleString('vi-VN');
-        };
-
-        updateTime();
-        setInterval(updateTime, 1000);
+        // Time display is already handled by the main time interval in initialize()
+        // This function is kept for compatibility but doesn't create duplicate intervals
+        console.log('Time display already initialized in main initialize() method');
     }
 
     getCurrentLocation() {
