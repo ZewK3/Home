@@ -264,30 +264,80 @@ class ContentManager {
     }
 
     initializeAccordionMenu() {
-        const accordionBtns = document.querySelectorAll('.accordion-btn');
-        accordionBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const isActive = btn.classList.contains('active');
-                
-                // Close all accordions
-                accordionBtns.forEach(b => {
-                    b.classList.remove('active');
-                    const content = b.nextElementSibling;
-                    if (content && content.classList.contains('accordion-content')) {
-                        content.style.maxHeight = null;
+        // Initialize nav-item-parent accordion functionality
+        const navParents = document.querySelectorAll('.nav-item-parent');
+        
+        navParents.forEach(parent => {
+            const navTitle = parent.querySelector('.nav-title.expandable');
+            const menuToggle = parent.getAttribute('data-menu-toggle');
+            const submenu = document.getElementById(menuToggle);
+            const chevron = parent.querySelector('.nav-chevron');
+            
+            if (navTitle && submenu) {
+                navTitle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isExpanded = submenu.classList.contains('expanded');
+                    
+                    // Close all other submenus
+                    document.querySelectorAll('.nav-submenu').forEach(menu => {
+                        if (menu !== submenu) {
+                            menu.classList.remove('expanded');
+                            menu.style.maxHeight = null;
+                        }
+                    });
+                    
+                    // Reset all chevrons
+                    document.querySelectorAll('.nav-chevron').forEach(c => {
+                        if (c !== chevron) {
+                            c.textContent = 'expand_more';
+                        }
+                    });
+                    
+                    // Toggle current submenu
+                    if (isExpanded) {
+                        submenu.classList.remove('expanded');
+                        submenu.style.maxHeight = null;
+                        if (chevron) chevron.textContent = 'expand_more';
+                    } else {
+                        submenu.classList.add('expanded');
+                        submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                        if (chevron) chevron.textContent = 'expand_less';
                     }
                 });
-                
-                // Open clicked accordion if it wasn't active
-                if (!isActive) {
-                    btn.classList.add('active');
-                    const content = btn.nextElementSibling;
-                    if (content && content.classList.contains('accordion-content')) {
-                        content.style.maxHeight = content.scrollHeight + 'px';
-                    }
-                }
-            });
+            }
         });
+        
+        // Initialize mobile menu accordion functionality
+        const mobileNavParents = document.querySelectorAll('.mobile-nav-parent');
+        mobileNavParents.forEach(parent => {
+            const navTitle = parent.querySelector('.mobile-nav-title');
+            const submenu = parent.querySelector('.mobile-nav-submenu');
+            const chevron = parent.querySelector('.mobile-nav-chevron');
+            
+            if (navTitle && submenu) {
+                navTitle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isExpanded = submenu.classList.contains('expanded');
+                    
+                    // Toggle submenu
+                    if (isExpanded) {
+                        submenu.classList.remove('expanded');
+                        submenu.style.maxHeight = null;
+                        if (chevron) chevron.textContent = 'expand_more';
+                    } else {
+                        submenu.classList.add('expanded');
+                        submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                        if (chevron) chevron.textContent = 'expand_less';
+                    }
+                });
+            }
+        });
+        
+        console.log('✅ Accordion menu initialized for nav-item-parent elements');
     }
 
     initializeNotificationAndChatManagers() {
@@ -12059,5 +12109,1029 @@ class ContentManager {
     async loadKPIData() {
         // Placeholder for KPI data loading
         console.log('Loading KPI data...');
+    }
+
+    // =====================================================
+    // ENHANCED FUNCTIONS FROM WORKER-SERVICE.JS
+    // Database Schema v3.1 Integration
+    // =====================================================
+
+    /**
+     * Enhanced employee data retrieval with v3.1 schema support
+     */
+    async getEmployeeData(employeeId) {
+        try {
+            const response = await fetch(`${this.baseURL}?action=getUser&employeeId=${encodeURIComponent(employeeId)}&token=${this.token}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.success && result.data) {
+                return {
+                    employeeId: result.data.employeeId,
+                    name: result.data.name,
+                    email: result.data.email,
+                    phone: result.data.phone,
+                    position: result.data.position,
+                    department_id: result.data.department_id,
+                    storeId: result.data.storeId,
+                    employment_status: result.data.employment_status,
+                    hire_date: result.data.hire_date,
+                    role_code: result.data.role_code,
+                    role_name: result.data.role_name
+                };
+            }
+            throw new Error(result.message || 'Failed to fetch employee data');
+        } catch (error) {
+            console.error('Error fetching employee data:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Enhanced attendance records with GPS tracking and breaks
+     */
+    async getAttendanceRecords(employeeId, startDate, endDate) {
+        try {
+            const params = new URLSearchParams({
+                action: 'getAttendanceData',
+                employeeId: employeeId,
+                token: this.token
+            });
+            
+            if (startDate) params.append('startDate', startDate);
+            if (endDate) params.append('endDate', endDate);
+            
+            const response = await fetch(`${this.baseURL}?${params.toString()}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.success) {
+                return result.data.map(record => ({
+                    id: record.id,
+                    employeeId: record.employeeId,
+                    date: record.date,
+                    check_in_time: record.check_in_time,
+                    check_out_time: record.check_out_time,
+                    total_hours: parseFloat(record.total_hours) || 0,
+                    status: record.status,
+                    gps_latitude: record.gps_latitude,
+                    gps_longitude: record.gps_longitude,
+                    check_in_location: record.check_in_location,
+                    check_out_location: record.check_out_location,
+                    break_duration: record.break_duration || 0,
+                    notes: record.notes
+                }));
+            }
+            throw new Error(result.message || 'Failed to fetch attendance records');
+        } catch (error) {
+            console.error('Error fetching attendance records:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Enhanced task assignments with dependencies and collaboration
+     */
+    async getTaskAssignments(employeeId, status = null) {
+        try {
+            const params = new URLSearchParams({
+                action: 'getWorkTasks',
+                employeeId: employeeId,
+                token: this.token
+            });
+            
+            if (status) params.append('status', status);
+            
+            const response = await fetch(`${this.baseURL}?${params.toString()}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.tasks) {
+                return result.tasks.map(task => ({
+                    id: task.id,
+                    title: task.title,
+                    description: task.description,
+                    status: task.status,
+                    priority: task.priority,
+                    assigned_to: task.assigned_to || task.assignedTo,
+                    created_by: task.created_by,
+                    due_date: task.due_date,
+                    created_at: task.created_at,
+                    updated_at: task.updated_at,
+                    project_id: task.project_id
+                }));
+            }
+            throw new Error(result.message || 'Failed to fetch task assignments');
+        } catch (error) {
+            console.error('Error fetching task assignments:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Enhanced personal statistics with comprehensive metrics
+     */
+    async getPersonalStats(employeeId) {
+        try {
+            const response = await fetch(`${this.baseURL}?action=getPersonalStats&employeeId=${encodeURIComponent(employeeId)}&token=${this.token}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.employeeId) {
+                return {
+                    employeeId: result.employeeId,
+                    name: result.name,
+                    position: result.position,
+                    department_id: result.department_id,
+                    attendance: {
+                        totalDays: result.attendance.totalDays,
+                        presentDays: result.attendance.presentDays,
+                        lateDays: result.attendance.lateDays,
+                        absentDays: result.attendance.absentDays,
+                        attendanceRate: result.attendance.attendanceRate
+                    },
+                    tasks: {
+                        totalTasks: result.tasks.totalTasks,
+                        completedTasks: result.tasks.completedTasks,
+                        pendingTasks: result.tasks.pendingTasks,
+                        inProgressTasks: result.tasks.inProgressTasks,
+                        completionRate: result.tasks.completionRate
+                    }
+                };
+            }
+            throw new Error(result.message || 'Failed to fetch personal statistics');
+        } catch (error) {
+            console.error('Error fetching personal statistics:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Enhanced timesheet with detailed tracking
+     */
+    async getTimesheet(employeeId, month = null, startDate = null, endDate = null) {
+        try {
+            const params = new URLSearchParams({
+                action: 'getTimesheet',
+                employeeId: employeeId,
+                token: this.token
+            });
+            
+            if (month) params.append('month', month);
+            if (startDate) params.append('startDate', startDate);
+            if (endDate) params.append('endDate', endDate);
+            
+            const response = await fetch(`${this.baseURL}?${params.toString()}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.employeeId) {
+                return {
+                    employeeId: result.employeeId,
+                    period: result.period,
+                    records: result.records,
+                    summary: {
+                        totalHours: parseFloat(result.summary.totalHours),
+                        totalDays: result.summary.totalDays,
+                        presentDays: result.summary.presentDays,
+                        lateDays: result.summary.lateDays,
+                        absentDays: result.summary.absentDays,
+                        attendanceRate: parseFloat(result.summary.attendanceRate)
+                    }
+                };
+            }
+            throw new Error(result.message || 'Failed to fetch timesheet');
+        } catch (error) {
+            console.error('Error fetching timesheet:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Create attendance request with enhanced workflow
+     */
+    async createAttendanceRequest(requestData) {
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'createAttendanceRequest',
+                    token: this.token,
+                    ...requestData
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.message && result.requestId) {
+                return {
+                    success: true,
+                    requestId: result.requestId,
+                    message: result.message
+                };
+            }
+            throw new Error(result.message || 'Failed to create attendance request');
+        } catch (error) {
+            console.error('Error creating attendance request:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Create task assignment with enhanced features
+     */
+    async createTaskAssignment(taskData) {
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'createTaskAssignment',
+                    token: this.token,
+                    ...taskData
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.message && result.taskId) {
+                return {
+                    success: true,
+                    taskId: result.taskId,
+                    message: result.message
+                };
+            }
+            throw new Error(result.message || 'Failed to create task assignment');
+        } catch (error) {
+            console.error('Error creating task assignment:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Enhanced GPS check-in with location tracking
+     */
+    async checkInWithGPS(latitude, longitude, location) {
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'checkIn',
+                    token: this.token,
+                    employeeId: this.user.employeeId,
+                    latitude: latitude,
+                    longitude: longitude,
+                    location: location
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.success) {
+                return {
+                    success: true,
+                    checkInTime: result.checkInTime,
+                    message: result.message
+                };
+            }
+            throw new Error(result.message || 'Failed to check in');
+        } catch (error) {
+            console.error('Error checking in with GPS:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Enhanced GPS check-out with location tracking
+     */
+    async checkOutWithGPS(latitude, longitude, location) {
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'checkOut',
+                    token: this.token,
+                    employeeId: this.user.employeeId,
+                    latitude: latitude,
+                    longitude: longitude,
+                    location: location
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.success) {
+                return {
+                    success: true,
+                    checkOutTime: result.checkOutTime,
+                    workHours: result.workHours,
+                    message: result.message
+                };
+            }
+            throw new Error(result.message || 'Failed to check out');
+        } catch (error) {
+            console.error('Error checking out with GPS:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get shift assignments with enhanced scheduling
+     */
+    async getShiftAssignments(employeeId, date = null) {
+        try {
+            const params = new URLSearchParams({
+                action: 'getShiftAssignments',
+                token: this.token
+            });
+            
+            if (employeeId) params.append('employeeId', employeeId);
+            if (date) params.append('date', date);
+            
+            const response = await fetch(`${this.baseURL}?${params.toString()}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.success) {
+                return result.data;
+            }
+            throw new Error(result.message || 'Failed to fetch shift assignments');
+        } catch (error) {
+            console.error('Error fetching shift assignments:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Save shift assignments with enhanced workflow
+     */
+    async saveShiftAssignments(assignments) {
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'saveShiftAssignments',
+                    token: this.token,
+                    assignments: assignments,
+                    assignedBy: this.user.employeeId
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.message) {
+                return {
+                    success: true,
+                    message: result.message,
+                    assignmentsCount: result.assignmentsCount
+                };
+            }
+            throw new Error(result.message || 'Failed to save shift assignments');
+        } catch (error) {
+            console.error('Error saving shift assignments:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get all users with enhanced filtering
+     */
+    async getAllUsers(includeInactive = false) {
+        try {
+            const params = new URLSearchParams({
+                action: 'getAllUsers',
+                token: this.token,
+                includeInactive: includeInactive.toString()
+            });
+            
+            const response = await fetch(`${this.baseURL}?${params.toString()}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.users) {
+                return result.users;
+            }
+            throw new Error(result.message || 'Failed to fetch users');
+        } catch (error) {
+            console.error('Error fetching all users:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update personal information with history tracking
+     */
+    async updatePersonalInfo(personalData) {
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'updatePersonalInfo',
+                    token: this.token,
+                    employeeId: this.user.employeeId,
+                    ...personalData
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.message) {
+                return {
+                    success: true,
+                    message: result.message
+                };
+            }
+            throw new Error(result.message || 'Failed to update personal information');
+        } catch (error) {
+            console.error('Error updating personal information:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get current shift with enhanced scheduling
+     */
+    async getCurrentShift(employeeId = null) {
+        try {
+            const empId = employeeId || this.user.employeeId;
+            const response = await fetch(`${this.baseURL}?action=getCurrentShift&employeeId=${encodeURIComponent(empId)}&token=${this.token}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.success) {
+                return result.data;
+            }
+            throw new Error(result.message || 'Failed to fetch current shift');
+        } catch (error) {
+            console.error('Error fetching current shift:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get pending requests count for dashboard
+     */
+    async getPendingRequestsCount(employeeId = null) {
+        try {
+            const empId = employeeId || this.user.employeeId;
+            const response = await fetch(`${this.baseURL}?action=getPendingRequestsCount&employeeId=${encodeURIComponent(empId)}&token=${this.token}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const result = await response.json();
+            if (result.employeeId) {
+                return result.pendingRequests;
+            }
+            throw new Error(result.message || 'Failed to fetch pending requests count');
+        } catch (error) {
+            console.error('Error fetching pending requests count:', error);
+            throw error;
+        }
+    }
+
+    // =====================================================
+    // ENHANCED UI FUNCTIONS WITH v3.1 SCHEMA SUPPORT
+    // =====================================================
+
+    /**
+     * Enhanced showPersonalInfo with v3.1 schema integration
+     */
+    async showPersonalInfo() {
+        try {
+            const contentContainer = document.getElementById('main');
+            if (!contentContainer) {
+                console.error('Content container not found');
+                return;
+            }
+
+            // Show loading state
+            contentContainer.innerHTML = '<div class="loading-container">Đang tải thông tin cá nhân...</div>';
+
+            // Fetch enhanced personal data
+            const personalData = await this.getEmployeeData(this.user.employeeId);
+            const personalStats = await this.getPersonalStats(this.user.employeeId);
+
+            contentContainer.innerHTML = `
+                <div class="personal-info-container">
+                    <div class="personal-info-header">
+                        <div class="avatar-section">
+                            <div class="avatar">
+                                <span class="material-icons-round">person</span>
+                            </div>
+                            <button class="change-avatar-btn">
+                                <span class="material-icons-round">camera_alt</span>
+                                Đổi ảnh
+                            </button>
+                        </div>
+                        <div class="info-header">
+                            <h2>${personalData.name || 'N/A'}</h2>
+                            <p class="position">${personalData.position || 'N/A'}</p>
+                            <p class="employee-id">ID: ${personalData.employeeId}</p>
+                        </div>
+                    </div>
+
+                    <div class="personal-info-content">
+                        <div class="info-section">
+                            <h3>📋 Thông tin cơ bản</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="label">📧 Email:</span>
+                                    <span class="value">${personalData.email || 'N/A'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">📱 Điện thoại:</span>
+                                    <span class="value">${personalData.phone || 'N/A'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">🏢 Phòng ban:</span>
+                                    <span class="value">${personalData.department_id || 'N/A'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">🏪 Cửa hàng:</span>
+                                    <span class="value">${personalData.storeId || 'N/A'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">📅 Ngày vào làm:</span>
+                                    <span class="value">${personalData.hire_date || 'N/A'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">👤 Vai trò:</span>
+                                    <span class="value">${personalData.role_name || personalData.role_code || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stats-section">
+                            <h3>📊 Thống kê tháng này</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">📅</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">${personalStats.attendance.totalDays}</div>
+                                        <div class="stat-label">Tổng ngày làm</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">✅</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">${personalStats.attendance.presentDays}</div>
+                                        <div class="stat-label">Ngày có mặt</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">⏰</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">${personalStats.attendance.lateDays}</div>
+                                        <div class="stat-label">Ngày đi muộn</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">📈</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">${personalStats.attendance.attendanceRate}%</div>
+                                        <div class="stat-label">Tỷ lệ chấm công</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">📝</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">${personalStats.tasks.totalTasks}</div>
+                                        <div class="stat-label">Tổng công việc</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">✅</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">${personalStats.tasks.completedTasks}</div>
+                                        <div class="stat-label">Đã hoàn thành</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actions-section">
+                            <button class="action-btn primary-btn" onclick="window.contentManager.editPersonalInfo()">
+                                <span class="material-icons-round">edit</span>
+                                Chỉnh sửa thông tin
+                            </button>
+                            <button class="action-btn secondary-btn" onclick="window.contentManager.changePassword()">
+                                <span class="material-icons-round">lock</span>
+                                Đổi mật khẩu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            console.log('✅ Personal info displayed with v3.1 schema data');
+        } catch (error) {
+            console.error('Error showing personal info:', error);
+            const contentContainer = document.getElementById('main');
+            if (contentContainer) {
+                contentContainer.innerHTML = `
+                    <div class="error-container">
+                        <span class="material-icons-round">error</span>
+                        <h3>Lỗi tải thông tin</h3>
+                        <p>Không thể tải thông tin cá nhân. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showPersonalInfo()" class="retry-btn">Thử lại</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    /**
+     * Enhanced showTimesheet with comprehensive tracking
+     */
+    async showTimesheet() {
+        try {
+            const contentContainer = document.getElementById('main');
+            if (!contentContainer) {
+                console.error('Content container not found');
+                return;
+            }
+
+            // Show loading state
+            contentContainer.innerHTML = '<div class="loading-container">Đang tải bảng chấm công...</div>';
+
+            // Get current month
+            const currentDate = new Date();
+            const currentMonth = currentDate.toISOString().slice(0, 7); // YYYY-MM format
+
+            // Fetch timesheet data
+            const timesheetData = await this.getTimesheet(this.user.employeeId, currentMonth);
+
+            contentContainer.innerHTML = `
+                <div class="timesheet-container">
+                    <div class="timesheet-header">
+                        <h2>📅 Bảng chấm công</h2>
+                        <div class="period-selector">
+                            <input type="month" id="monthSelector" value="${currentMonth}" onchange="window.contentManager.loadTimesheetForMonth(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="timesheet-summary">
+                        <div class="summary-card">
+                            <div class="summary-icon">⏰</div>
+                            <div class="summary-info">
+                                <div class="summary-number">${timesheetData.summary.totalHours}h</div>
+                                <div class="summary-label">Tổng giờ làm</div>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">📅</div>
+                            <div class="summary-info">
+                                <div class="summary-number">${timesheetData.summary.totalDays}</div>
+                                <div class="summary-label">Tổng ngày</div>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">✅</div>
+                            <div class="summary-info">
+                                <div class="summary-number">${timesheetData.summary.presentDays}</div>
+                                <div class="summary-label">Ngày có mặt</div>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">📈</div>
+                            <div class="summary-info">
+                                <div class="summary-number">${timesheetData.summary.attendanceRate}%</div>
+                                <div class="summary-label">Tỷ lệ chấm công</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timesheet-records">
+                        <div class="records-header">
+                            <h3>Chi tiết chấm công - ${timesheetData.period}</h3>
+                        </div>
+                        <div class="records-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Giờ vào</th>
+                                        <th>Giờ ra</th>
+                                        <th>Tổng giờ</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${timesheetData.records.map(record => `
+                                        <tr class="record-row ${record.status}">
+                                            <td>${this.formatDate(record.date)}</td>
+                                            <td>${record.check_in_time || '-'}</td>
+                                            <td>${record.check_out_time || '-'}</td>
+                                            <td>${record.total_hours || '0'}h</td>
+                                            <td>
+                                                <span class="status-badge ${record.status}">${this.getStatusText(record.status)}</span>
+                                            </td>
+                                            <td>${record.notes || '-'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            console.log('✅ Timesheet displayed with v3.1 schema data');
+        } catch (error) {
+            console.error('Error showing timesheet:', error);
+            const contentContainer = document.getElementById('main');
+            if (contentContainer) {
+                contentContainer.innerHTML = `
+                    <div class="error-container">
+                        <span class="material-icons-round">error</span>
+                        <h3>Lỗi tải bảng công</h3>
+                        <p>Không thể tải bảng chấm công. Vui lòng thử lại.</p>
+                        <button onclick="window.contentManager.showTimesheet()" class="retry-btn">Thử lại</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    /**
+     * Load timesheet for specific month
+     */
+    async loadTimesheetForMonth(month) {
+        try {
+            const timesheetData = await this.getTimesheet(this.user.employeeId, month);
+            const recordsTable = document.querySelector('.records-table tbody');
+            const summaryCards = document.querySelectorAll('.summary-card .summary-number');
+            
+            if (recordsTable) {
+                recordsTable.innerHTML = timesheetData.records.map(record => `
+                    <tr class="record-row ${record.status}">
+                        <td>${this.formatDate(record.date)}</td>
+                        <td>${record.check_in_time || '-'}</td>
+                        <td>${record.check_out_time || '-'}</td>
+                        <td>${record.total_hours || '0'}h</td>
+                        <td>
+                            <span class="status-badge ${record.status}">${this.getStatusText(record.status)}</span>
+                        </td>
+                        <td>${record.notes || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            // Update summary
+            if (summaryCards.length >= 4) {
+                summaryCards[0].textContent = `${timesheetData.summary.totalHours}h`;
+                summaryCards[1].textContent = timesheetData.summary.totalDays;
+                summaryCards[2].textContent = timesheetData.summary.presentDays;
+                summaryCards[3].textContent = `${timesheetData.summary.attendanceRate}%`;
+            }
+            
+        } catch (error) {
+            console.error('Error loading timesheet for month:', error);
+        }
+    }
+
+    /**
+     * Enhanced showAttendanceGPS with location tracking
+     */
+    async showAttendanceGPS() {
+        try {
+            const contentContainer = document.getElementById('main');
+            if (!contentContainer) {
+                console.error('Content container not found');
+                return;
+            }
+
+            contentContainer.innerHTML = `
+                <div class="attendance-gps-container">
+                    <div class="attendance-header">
+                        <h2>📍 Chấm công GPS</h2>
+                        <div class="current-time" id="currentTime"></div>
+                    </div>
+
+                    <div class="location-info" id="locationInfo">
+                        <div class="location-status">
+                            <span class="material-icons-round">location_searching</span>
+                            <span>Đang xác định vị trí...</span>
+                        </div>
+                    </div>
+
+                    <div class="attendance-actions">
+                        <button id="checkInBtn" class="attendance-btn check-in-btn" disabled>
+                            <span class="material-icons-round">login</span>
+                            Chấm công vào
+                        </button>
+                        <button id="checkOutBtn" class="attendance-btn check-out-btn" disabled>
+                            <span class="material-icons-round">logout</span>
+                            Chấm công ra
+                        </button>
+                    </div>
+
+                    <div class="attendance-history" id="attendanceHistory">
+                        <h3>📊 Lịch sử chấm công hôm nay</h3>
+                        <div class="history-loading">Đang tải...</div>
+                    </div>
+                </div>
+            `;
+
+            // Start current time display
+            this.startCurrentTimeDisplay();
+
+            // Get GPS location
+            this.getCurrentLocation();
+
+            // Load today's attendance history
+            this.loadTodayAttendance();
+
+            console.log('✅ Attendance GPS interface displayed');
+        } catch (error) {
+            console.error('Error showing attendance GPS:', error);
+        }
+    }
+
+    startCurrentTimeDisplay() {
+        const timeElement = document.getElementById('currentTime');
+        if (!timeElement) return;
+
+        const updateTime = () => {
+            const now = new Date();
+            timeElement.textContent = now.toLocaleString('vi-VN');
+        };
+
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
+
+    getCurrentLocation() {
+        const locationInfo = document.getElementById('locationInfo');
+        const checkInBtn = document.getElementById('checkInBtn');
+        const checkOutBtn = document.getElementById('checkOutBtn');
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    
+                    locationInfo.innerHTML = `
+                        <div class="location-status success">
+                            <span class="material-icons-round">location_on</span>
+                            <span>Vị trí đã xác định</span>
+                        </div>
+                        <div class="location-details">
+                            <div>📍 Latitude: ${latitude.toFixed(6)}</div>
+                            <div>📍 Longitude: ${longitude.toFixed(6)}</div>
+                        </div>
+                    `;
+
+                    // Enable buttons and add event listeners
+                    checkInBtn.disabled = false;
+                    checkOutBtn.disabled = false;
+
+                    checkInBtn.onclick = () => this.performCheckIn(latitude, longitude);
+                    checkOutBtn.onclick = () => this.performCheckOut(latitude, longitude);
+                },
+                (error) => {
+                    locationInfo.innerHTML = `
+                        <div class="location-status error">
+                            <span class="material-icons-round">location_off</span>
+                            <span>Không thể xác định vị trí</span>
+                        </div>
+                        <div class="location-error">
+                            ${error.message}
+                        </div>
+                    `;
+                }
+            );
+        } else {
+            locationInfo.innerHTML = `
+                <div class="location-status error">
+                    <span class="material-icons-round">location_disabled</span>
+                    <span>Trình duyệt không hỗ trợ GPS</span>
+                </div>
+            `;
+        }
+    }
+
+    async performCheckIn(latitude, longitude) {
+        try {
+            const location = `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`;
+            const result = await this.checkInWithGPS(latitude, longitude, location);
+            
+            this.showNotification(result.message, 'success');
+            this.loadTodayAttendance(); // Refresh attendance history
+        } catch (error) {
+            this.showNotification(error.message, 'error');
+        }
+    }
+
+    async performCheckOut(latitude, longitude) {
+        try {
+            const location = `Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}`;
+            const result = await this.checkOutWithGPS(latitude, longitude, location);
+            
+            this.showNotification(`${result.message} (${result.workHours}h)`, 'success');
+            this.loadTodayAttendance(); // Refresh attendance history
+        } catch (error) {
+            this.showNotification(error.message, 'error');
+        }
+    }
+
+    async loadTodayAttendance() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const records = await this.getAttendanceRecords(this.user.employeeId, today, today);
+            
+            const historyContainer = document.getElementById('attendanceHistory');
+            if (!historyContainer) return;
+
+            if (records.length === 0) {
+                historyContainer.innerHTML = `
+                    <h3>📊 Lịch sử chấm công hôm nay</h3>
+                    <div class="no-records">Chưa có bản ghi chấm công nào hôm nay</div>
+                `;
+                return;
+            }
+
+            const record = records[0]; // Today's record
+            historyContainer.innerHTML = `
+                <h3>📊 Lịch sử chấm công hôm nay</h3>
+                <div class="today-record">
+                    <div class="record-item">
+                        <span class="record-label">Giờ vào:</span>
+                        <span class="record-value">${record.check_in_time || 'Chưa chấm công'}</span>
+                    </div>
+                    <div class="record-item">
+                        <span class="record-label">Giờ ra:</span>
+                        <span class="record-value">${record.check_out_time || 'Chưa chấm công'}</span>
+                    </div>
+                    <div class="record-item">
+                        <span class="record-label">Tổng giờ:</span>
+                        <span class="record-value">${record.total_hours || '0'}h</span>
+                    </div>
+                    <div class="record-item">
+                        <span class="record-label">Trạng thái:</span>
+                        <span class="record-value status-${record.status}">${this.getStatusText(record.status)}</span>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading today attendance:', error);
+        }
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            'present': '✅ Có mặt',
+            'late': '⏰ Đi muộn',
+            'absent': '❌ Vắng mặt',
+            'completed': '✅ Hoàn thành',
+            'active': '🔄 Đang làm'
+        };
+        return statusMap[status] || status || 'N/A';
+    }
+
+    formatDate(dateString) {
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN');
+        } catch (error) {
+            return dateString;
+        }
+    }
+
+    // Helper function to show notifications
+    showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        if (notification) {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
+        }
     }
 }
