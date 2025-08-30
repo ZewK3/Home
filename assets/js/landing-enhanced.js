@@ -63,24 +63,68 @@ class EnhancedLanding {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('animated');
+                    
+                    // Trigger child element animations for feature cards
+                    if (entry.target.classList.contains('feature-card')) {
+                        this.animateFeatureCardElements(entry.target);
+                    }
                 }
             });
         }, observerOptions);
 
-        // Observe feature cards
-        const featureCards = document.querySelectorAll('.interactive-card');
+        // Observe ALL feature cards with proper animation classes
+        const featureCards = document.querySelectorAll('.feature-card.interactive-card');
         featureCards.forEach((card, index) => {
-            card.classList.add('animate-on-scroll');
-            card.style.transitionDelay = `${index * 0.1}s`;
+            // Ensure all cards have the animation class
+            if (!card.classList.contains('animate-on-scroll')) {
+                card.classList.add('animate-on-scroll');
+            }
+            
+            // Stagger animation delays
+            card.style.transitionDelay = `${index * 0.15}s`;
             observer.observe(card);
         });
 
-        // Observe other elements
-        const animateElements = document.querySelectorAll('.hero-stats, .testimonial-content');
-        animateElements.forEach(element => {
+        // Observe other elements that need animation
+        const animateElements = document.querySelectorAll('.hero-stats, .testimonial-content, .section-header');
+        animateElements.forEach((element, index) => {
             element.classList.add('animate-on-scroll');
+            element.style.transitionDelay = `${index * 0.1}s`;
             observer.observe(element);
         });
+        
+        console.log(`✅ Intersection Observer setup complete - watching ${featureCards.length} feature cards`);
+    }
+
+    // Animate child elements within feature cards
+    animateFeatureCardElements(card) {
+        setTimeout(() => {
+            // Animate highlights
+            const highlights = card.querySelectorAll('.feature-highlights .highlight');
+            highlights.forEach((highlight, index) => {
+                setTimeout(() => {
+                    highlight.style.opacity = '1';
+                    highlight.style.transform = 'translateX(0)';
+                }, index * 100);
+            });
+
+            // Animate stats
+            const stats = card.querySelectorAll('.feature-stats .stat');
+            stats.forEach((stat, index) => {
+                setTimeout(() => {
+                    stat.style.opacity = '1';
+                    stat.style.transform = 'scale(1)';
+                }, 400 + (index * 100));
+            });
+
+            // Start progress bar animations
+            const progressBars = card.querySelectorAll('.progress-fill');
+            progressBars.forEach((bar, index) => {
+                setTimeout(() => {
+                    bar.style.transform = 'scaleX(1)';
+                }, 600 + (index * 200));
+            });
+        }, 200);
     }
 
     // Setup tilt effect for cards

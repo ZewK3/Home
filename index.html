@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="public/favicon.ico">
     <link rel="stylesheet" href="assets/css/landing.css">
     <link rel="stylesheet" href="assets/css/landing-enhanced.css">
+    <link rel="stylesheet" href="assets/css/features-enhanced.css">
 </head>
 <body>
     <!-- Header -->
@@ -175,7 +176,7 @@
                 </p>
             </div>
             <div class="features-grid enhanced-grid">
-                <div class="feature-card interactive-card" data-tilt>
+                <div class="feature-card interactive-card animate-on-scroll" data-tilt>
                     <div class="feature-header">
                         <div class="feature-icon animated-icon">
                             👥
@@ -203,7 +204,7 @@
                     </div>
                 </div>
                 
-                <div class="feature-card interactive-card" data-tilt>
+                <div class="feature-card interactive-card animate-on-scroll" data-tilt>
                     <div class="feature-header">
                         <div class="feature-icon animated-icon">
                             🕐
@@ -230,7 +231,7 @@
                     </div>
                 </div>
                 
-                <div class="feature-card interactive-card" data-tilt>
+                <div class="feature-card interactive-card animate-on-scroll" data-tilt>
                     <div class="feature-header">
                         <div class="feature-icon animated-icon">
                             💰
@@ -256,7 +257,7 @@
                     </div>
                 </div>
                 
-                <div class="feature-card interactive-card" data-tilt>
+                <div class="feature-card interactive-card animate-on-scroll" data-tilt>
                     <div class="feature-header">
                         <div class="feature-icon animated-icon">
                             📊
@@ -288,7 +289,7 @@
                     </div>
                 </div>
                 
-                <div class="feature-card interactive-card" data-tilt>
+                <div class="feature-card interactive-card animate-on-scroll" data-tilt>
                     <div class="feature-header">
                         <div class="feature-icon animated-icon">
                             🔒
@@ -298,6 +299,52 @@
                     <h3 class="feature-title">Bảo mật & Tuân thủ</h3>
                     <p class="feature-description">
                         Bảo mật cấp enterprise với mã hóa AES-256 và tuân thủ GDPR, ISO 27001
+                    </p>
+                    <div class="feature-highlights">
+                        <span class="highlight">✓ Mã hóa AES-256</span>
+                        <span class="highlight">✓ Tuân thủ GDPR</span>
+                        <span class="highlight">✓ ISO 27001</span>
+                    </div>
+                    <div class="feature-stats">
+                        <div class="stat">
+                            <strong>100%</strong>
+                            <span>Bảo mật</span>
+                        </div>
+                        <div class="stat">
+                            <strong>24/7</strong>
+                            <span>Giám sát</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="feature-card interactive-card animate-on-scroll" data-tilt>
+                    <div class="feature-header">
+                        <div class="feature-icon animated-icon">
+                            📱
+                        </div>
+                        <div class="feature-badge mobile">Mobile</div>
+                    </div>
+                    <h3 class="feature-title">Ứng dụng di động</h3>
+                    <p class="feature-description">
+                        Ứng dụng mobile responsive với tất cả tính năng của web, hoạt động offline
+                    </p>
+                    <div class="feature-highlights">
+                        <span class="highlight">✓ Responsive design</span>
+                        <span class="highlight">✓ Offline support</span>
+                        <span class="highlight">✓ Push notifications</span>
+                    </div>
+                    <div class="feature-stats">
+                        <div class="stat">
+                            <strong>iOS</strong>
+                            <span>& Android</span>
+                        </div>
+                        <div class="stat">
+                            <strong>PWA</strong>
+                            <span>Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
                     </p>
                     <div class="feature-highlights">
                         <span class="highlight">✓ Mã hóa AES-256</span>
@@ -612,632 +659,10 @@
     <script src="assets/js/landing.js"></script>
     <script src="assets/js/chat-widget.js"></script>
     <script src="assets/js/landing-enhanced.js"></script>
+    
+    <!-- External CSS for modular styling -->
+    <link rel="stylesheet" href="assets/css/chat-widget.css">
+    <link rel="stylesheet" href="assets/css/footer-enhanced.css">
 
-    <!-- Chat Widget Styles -->
-    <style>
-        /* Chat Widget Styles */
-        .chat-widget {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 10000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        .chat-toggle {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .chat-toggle:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
-        }
-
-        .chat-toggle .chat-icon {
-            width: 24px;
-            height: 24px;
-            color: white;
-        }
-
-        .chat-toggle .chat-close-icon {
-            width: 24px;
-            height: 24px;
-            color: white;
-        }
-
-        .chat-notification {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #ef4444;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-        }
-
-        .chat-window {
-            position: absolute;
-            bottom: 80px;
-            right: 0;
-            width: 380px;
-            height: 500px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .chat-window.open {
-            display: flex;
-            animation: slideUp 0.3s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .chat-header-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .agent-avatar {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .agent-avatar svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .agent-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .agent-status {
-            font-size: 12px;
-            opacity: 0.9;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #10b981;
-        }
-
-        .chat-minimize {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .chat-minimize:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .chat-minimize svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #f8fafc;
-        }
-
-        .message {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .message-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #667eea;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .message-avatar svg {
-            width: 16px;
-            height: 16px;
-            color: white;
-        }
-
-        .user-message {
-            flex-direction: row-reverse;
-        }
-
-        .user-message .message-avatar {
-            background: #374151;
-        }
-
-        .message-content {
-            max-width: 80%;
-        }
-
-        .message-text {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 14px;
-            line-height: 1.4;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .user-message .message-text {
-            background: #667eea;
-            color: white;
-        }
-
-        .message-time {
-            font-size: 11px;
-            color: #6b7280;
-            margin-top: 4px;
-            padding: 0 16px;
-        }
-
-        .chat-input-area {
-            border-top: 1px solid #e5e7eb;
-            background: white;
-        }
-
-        .chat-suggestions {
-            padding: 12px 16px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .suggestion-btn {
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 16px;
-            padding: 6px 12px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .suggestion-btn:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
-        }
-
-        .chat-typing {
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        .typing-indicator {
-            display: flex;
-            gap: 2px;
-        }
-
-        .typing-indicator span {
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background: #9ca3af;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-10px);
-            }
-        }
-
-        .chat-input-form {
-            padding: 16px;
-        }
-
-        .chat-input-wrapper {
-            display: flex;
-            align-items: center;
-            background: #f9fafb;
-            border: 1px solid #d1d5db;
-            border-radius: 24px;
-            padding: 8px 16px;
-            gap: 8px;
-        }
-
-        .chat-input-wrapper:focus-within {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        #chatInput {
-            flex: 1;
-            border: none;
-            background: none;
-            outline: none;
-            font-size: 14px;
-            padding: 4px 0;
-        }
-
-        .emoji-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 4px;
-            border-radius: 50%;
-            transition: background-color 0.2s;
-        }
-
-        .emoji-btn:hover {
-            background: #e5e7eb;
-        }
-
-        .send-btn {
-            background: #667eea;
-            border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .send-btn:hover:not(:disabled) {
-            background: #5a67d8;
-            transform: scale(1.05);
-        }
-
-        .send-btn:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-        }
-
-        .send-btn svg {
-            width: 16px;
-            height: 16px;
-            color: white;
-        }
-
-        /* Enhanced Footer Styles */
-        .footer {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            padding: 60px 0 40px;
-        }
-
-        .footer-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #f1f5f9;
-        }
-
-        .footer-description {
-            line-height: 1.6;
-            color: #cbd5e1;
-            margin-bottom: 24px;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 12px;
-        }
-
-        .social-link {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            color: #cbd5e1;
-        }
-
-        .social-link:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .social-link svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .footer-links {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .footer-links li {
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .footer-links a, .footer-links span {
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: color 0.3s ease;
-            font-size: 14px;
-        }
-
-        .footer-links a:hover {
-            color: white;
-        }
-
-        .footer-icon {
-            width: 16px;
-            height: 16px;
-            color: #94a3b8;
-            flex-shrink: 0;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 30px 0;
-        }
-
-        .footer-bottom-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .footer-bottom p {
-            color: #94a3b8;
-            font-size: 14px;
-            margin: 0;
-        }
-
-        .footer-bottom-links {
-            display: flex;
-            gap: 24px;
-        }
-
-        .footer-bottom-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s ease;
-        }
-
-        .footer-bottom-links a:hover {
-            color: white;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .chat-window {
-                width: calc(100vw - 40px);
-                height: 400px;
-                bottom: 80px;
-                right: 20px;
-                left: 20px;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-                gap: 30px;
-                padding: 40px 0 30px;
-            }
-
-            .footer-bottom-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .social-links {
-                justify-content: center;
-            }
-        }
-
-        /* Customer Info Modal Styles */
-        .chat-info-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        }
-
-        .chat-info-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .chat-info-content h3 {
-            margin: 0 0 10px 0;
-            color: #1a202c;
-            font-size: 1.25rem;
-        }
-
-        .chat-info-content p {
-            margin: 0 0 20px 0;
-            color: #4a5568;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #2d3748;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #3182ce;
-            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 25px;
-        }
-
-        .form-actions button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        #cancelInfo {
-            background: #f7fafc;
-            color: #4a5568;
-            border: 2px solid #e2e8f0;
-        }
-
-        #cancelInfo:hover {
-            background: #edf2f7;
-            border-color: #cbd5e0;
-        }
-
-        #submitInfo {
-            background: #3182ce;
-            color: white;
-        }
-
-        #submitInfo:hover {
-            background: #2c5aa0;
-        }
-    </style>
 </body>
 </html>
