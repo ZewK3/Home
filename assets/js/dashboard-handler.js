@@ -2255,8 +2255,8 @@ function initializeAccordionMenu() {
                     toggle.classList.add('expanded');
                     submenu.classList.remove('submenu-collapsed');
                     submenu.classList.add('submenu-expanded');
-                    // Set dynamic height for smooth animation
-                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    // Set height for smooth animation using CSS class
+                    submenu.classList.add('submenu-dynamic-height');
                     console.log(`Expanded menu: ${menuId}`);
                 }
             });
@@ -2300,8 +2300,8 @@ function initializeAccordionMenu() {
                     toggle.classList.add('expanded');
                     submenu.classList.remove('submenu-collapsed');
                     submenu.classList.add('submenu-expanded');
-                    // Set dynamic height for smooth animation
-                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    // Set height for smooth animation using CSS class
+                    submenu.classList.add('submenu-dynamic-height');
                     console.log(`Expanded mobile menu: ${menuId}`);
                 }
             });

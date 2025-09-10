@@ -361,6 +361,10 @@ button {
     max-height: 500px;
 }
 
+.submenu-dynamic-height {
+    max-height: none !important;
+}
+
 .nav-submenu a {
     padding: 8px 12px;
     margin: 2px 0;
@@ -2065,6 +2069,579 @@ button {
         width: calc(100vw - 40px);
         right: -20px;
         max-width: 300px;
+    }
+}
+
+/* Dynamic Content Container Styles */
+.dynamic-content-container {
+    background: linear-gradient(180deg, var(--glass-bg), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.content-section {
+    width: 100%;
+}
+
+.content-section h3 {
+    color: var(--text);
+    margin: 0 0 20px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Work Management Grid */
+.work-management-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.management-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.management-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(148, 163, 184, 0.2);
+    transform: translateY(-2px);
+}
+
+.management-card .material-icons-round {
+    font-size: 32px;
+    color: var(--brand);
+    margin-bottom: 12px;
+}
+
+.management-card h4 {
+    margin: 0 0 8px 0;
+    color: var(--text);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.management-card p {
+    margin: 0 0 16px 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* Form Styles */
+.request-form, .assignment-form, .access-form, .personal-info-form {
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Button Styles */
+.btn-primary, .btn-success, .btn-warning, .btn-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--brand);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--brand-light);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+}
+
+/* Timesheet Styles */
+.timesheet-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.date-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timesheet-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.timesheet-table th,
+.timesheet-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.timesheet-table th {
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.timesheet-table td {
+    color: var(--text-secondary);
+}
+
+/* Attendance Styles */
+.attendance-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.status-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.status-card .material-icons-round {
+    font-size: 28px;
+    color: var(--brand);
+    margin-bottom: 8px;
+}
+
+.status-card h4 {
+    margin: 0 0 8px 0;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.status-card p {
+    margin: 0 0 16px 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.attendance-history h4 {
+    color: var(--text);
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.attendance-record {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.record-date {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.record-times {
+    display: flex;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+/* Task Lists */
+.tasks-controls, .processing-filters, .approval-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tasks-list, .pending-tasks, .registrations-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.task-item, .request-item {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.task-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.task-header h4 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.task-status, .request-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.task-status.pending, .request-status.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.task-status.in_progress {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--brand);
+}
+
+.task-status.completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.task-description {
+    margin: 8px 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.task-meta {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    font-size: 0.8rem;
+}
+
+.task-priority {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.task-priority.low {
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--muted);
+}
+
+.task-priority.medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.task-priority.high {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Shift Schedule */
+.shift-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.shift-schedule {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.shift-calendar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shift-item {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.shift-date {
+    color: var(--text);
+    font-weight: 600;
+    min-width: 120px;
+}
+
+.shift-details {
+    flex: 1;
+    display: flex;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.shift-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Access Management */
+.access-management {
+    max-width: 600px;
+}
+
+.user-search {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.user-search input {
+    flex: 1;
+}
+
+.search-results {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    min-height: 60px;
+    color: var(--muted);
+}
+
+.role-assignment h4 {
+    color: var(--text);
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Personal Info */
+.personal-info-form {
+    max-width: 800px;
+}
+
+.info-section {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.info-section h4 {
+    color: var(--text);
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.status-badge.completed {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.status-badge.in_progress {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--brand);
+}
+
+/* Message States */
+.loading-message, .no-data-message, .error-message, .info-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-style: italic;
+}
+
+.error-message {
+    color: var(--danger);
+}
+
+.info-message {
+    color: var(--brand);
+}
+
+/* Mobile Responsive for Content */
+@media (max-width: 768px) {
+    .work-management-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .attendance-status {
+        grid-template-columns: 1fr;
+    }
+    
+    .timesheet-controls,
+    .tasks-controls,
+    .processing-filters,
+    .approval-controls,
+    .shift-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .date-selector,
+    .filter-controls,
+    .date-range {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .user-search {
+        flex-direction: column;
+    }
+    
+    .task-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .task-actions {
+        flex-direction: column;
+    }
+    
+    .shift-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .shift-details {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .shift-actions {
+        align-self: flex-end;
     }
 }
 }
