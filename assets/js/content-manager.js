@@ -238,29 +238,73 @@ class ContentManager {
         }
     }
 
-    loadTasks() {
+    // Load real tasks from API instead of sample data
+    async loadTasks() {
         const tasksContainer = document.getElementById('tasksContainer');
         if (tasksContainer) {
-            tasksContainer.innerHTML = `
-                <div class="task-item">
-                    <h4>Sample Task</h4>
-                    <p>This is a sample task for demonstration</p>
-                    <span class="task-status pending">Pending</span>
-                </div>
-            `;
+            try {
+                const tasks = await utils.fetchAPI(`?action=getUserTasks&employeeId=${this.user.employeeId}&status=pending&limit=5`);
+                
+                if (tasks && tasks.success && Array.isArray(tasks.data) && tasks.data.length > 0) {
+                    const tasksHTML = tasks.data.map(task => `
+                        <div class="task-item" data-task-id="${task.id}">
+                            <h4>${task.title || 'Untitled Task'}</h4>
+                            <p>${task.description || 'No description available'}</p>
+                            <span class="task-status ${task.status || 'pending'}">${task.status || 'Pending'}</span>
+                            <span class="task-date">${task.created_at ? utils.formatDate(task.created_at) : ''}</span>
+                        </div>
+                    `).join('');
+                    tasksContainer.innerHTML = tasksHTML;
+                } else {
+                    tasksContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <p>Không có công việc nào được giao</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                tasksContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>Không thể tải danh sách công việc</p>
+                    </div>
+                `;
+            }
         }
     }
 
-    loadPersonnelRequests() {
+    // Load real personnel requests from API instead of sample data
+    async loadPersonnelRequests() {
         const requestsContainer = document.getElementById('personnelRequestsContainer');
         if (requestsContainer) {
-            requestsContainer.innerHTML = `
-                <div class="request-item">
-                    <h4>Sample Request</h4>
-                    <p>Sample personnel request for review</p>
-                    <span class="request-status pending">Pending Review</span>
-                </div>
-            `;
+            try {
+                const requests = await utils.fetchAPI(`?action=getPersonnelRequests&employeeId=${this.user.employeeId}&status=pending&limit=5`);
+                
+                if (requests && requests.success && Array.isArray(requests.data) && requests.data.length > 0) {
+                    const requestsHTML = requests.data.map(request => `
+                        <div class="request-item" data-request-id="${request.id}">
+                            <h4>${request.type || 'Personnel Request'}</h4>
+                            <p>${request.description || 'No description available'}</p>
+                            <span class="request-status ${request.status || 'pending'}">${request.status || 'Pending Review'}</span>
+                            <span class="request-date">${request.created_at ? utils.formatDate(request.created_at) : ''}</span>
+                        </div>
+                    `).join('');
+                    requestsContainer.innerHTML = requestsHTML;
+                } else {
+                    requestsContainer.innerHTML = `
+                        <div class="no-data-message">
+                            <p>Không có yêu cầu nào chờ xử lý</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading personnel requests:', error);
+                requestsContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>Không thể tải danh sách yêu cầu</p>
+                    </div>
+                `;
+            }
         }
     }
 

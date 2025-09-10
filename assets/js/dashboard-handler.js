@@ -462,33 +462,58 @@ async function updateStatsGrid() {
     await new Promise(resolve => setTimeout(resolve, 50));
 }
 
-// Update dashboard statistics numbers (HRMS-style)
+// Update dashboard statistics numbers (fetch from API instead of hardcoded values)
 async function updateDashboardNumbers() {
     try {
-        console.log('📊 Updating dashboard numbers...');
+        console.log('📊 Updating dashboard numbers from API...');
         
-        // Update attendance rate
-        const attendanceRateEl = document.getElementById('attendanceRate');
-        if (attendanceRateEl) {
-            attendanceRateEl.textContent = '82%';
-        }
+        // Fetch real-time dashboard metrics from API
+        const stats = await utils.fetchAPI('?action=getDashboardMetrics');
         
-        // Update productivity rate
-        const productivityRateEl = document.getElementById('productivityRate');
-        if (productivityRateEl) {
-            productivityRateEl.textContent = '94%';
-        }
-        
-        // Update store performance
-        const storePerformanceEl = document.getElementById('storePerformance');
-        if (storePerformanceEl) {
-            storePerformanceEl.textContent = '4.6/5';
+        if (stats && stats.success) {
+            // Update attendance rate
+            const attendanceRateEl = document.getElementById('attendanceRate');
+            if (attendanceRateEl) {
+                attendanceRateEl.textContent = stats.attendanceRate || '0%';
+            }
+            
+            // Update productivity rate
+            const productivityRateEl = document.getElementById('productivityRate');
+            if (productivityRateEl) {
+                productivityRateEl.textContent = stats.productivityRate || '0%';
+            }
+            
+            // Update store performance
+            const storePerformanceEl = document.getElementById('storePerformance');
+            if (storePerformanceEl) {
+                storePerformanceEl.textContent = stats.storePerformance || '0/5';
+            }
+        } else {
+            console.warn('⚠️ API returned no dashboard metrics, using defaults');
+            // Use default values if API fails
+            const attendanceRateEl = document.getElementById('attendanceRate');
+            if (attendanceRateEl) attendanceRateEl.textContent = '0%';
+            
+            const productivityRateEl = document.getElementById('productivityRate');
+            if (productivityRateEl) productivityRateEl.textContent = '0%';
+            
+            const storePerformanceEl = document.getElementById('storePerformance');
+            if (storePerformanceEl) storePerformanceEl.textContent = '0/5';
         }
         
         console.log('✅ Dashboard numbers updated successfully');
         
     } catch (error) {
         console.error('❌ Error updating dashboard numbers:', error);
+        // Fallback to default values on error
+        const attendanceRateEl = document.getElementById('attendanceRate');
+        if (attendanceRateEl) attendanceRateEl.textContent = '0%';
+        
+        const productivityRateEl = document.getElementById('productivityRate');
+        if (productivityRateEl) productivityRateEl.textContent = '0%';
+        
+        const storePerformanceEl = document.getElementById('storePerformance');
+        if (storePerformanceEl) storePerformanceEl.textContent = '0/5';
     }
 }
 
@@ -504,10 +529,20 @@ async function updateWelcomeStats() {
             return;
         }
         
-        // Update total employees (mock data for now)
+        // Update total employees (fetch from API instead of hardcoded data)
         const totalEmployeesEl = document.getElementById('totalEmployees');
         if (totalEmployeesEl) {
-            totalEmployeesEl.textContent = '45'; // Mock data
+            try {
+                const employeeStats = await utils.fetchAPI('?action=getEmployeeCount');
+                if (employeeStats && employeeStats.success) {
+                    totalEmployeesEl.textContent = employeeStats.totalEmployees?.toString() || '0';
+                } else {
+                    totalEmployeesEl.textContent = '0';
+                }
+            } catch (error) {
+                console.log('Could not fetch employee count:', error);
+                totalEmployeesEl.textContent = '0';
+            }
         }
         
         // Update today's shift info
@@ -545,10 +580,20 @@ async function updateWelcomeStats() {
             }
         }
         
-        // Update recent messages (mock data)
+        // Update recent messages (fetch from API instead of random data)
         const recentMessagesEl = document.getElementById('recentMessages');
         if (recentMessagesEl) {
-            recentMessagesEl.textContent = Math.floor(Math.random() * 10).toString();
+            try {
+                const messageStats = await utils.fetchAPI(`?action=getRecentMessagesCount&employeeId=${userData.employeeId}`);
+                if (messageStats && messageStats.success) {
+                    recentMessagesEl.textContent = messageStats.count?.toString() || '0';
+                } else {
+                    recentMessagesEl.textContent = '0';
+                }
+            } catch (error) {
+                console.log('Could not fetch recent messages count:', error);
+                recentMessagesEl.textContent = '0';
+            }
         }
         
         console.log('✅ Welcome stats updated successfully');
@@ -557,9 +602,9 @@ async function updateWelcomeStats() {
     }
 }
 
-// Role-based UI Management  
+// Role-based UI Management with updated role codes
 async function initializeRoleBasedUI() {
-    let userPosition = 'NV'; // Default fallback
+    let userPosition = 'EMPLOYEE'; // Default fallback using new role code
     
     // Use cached user data instead of making fresh API calls during initialization
     try {
@@ -575,7 +620,7 @@ async function initializeRoleBasedUI() {
             userPosition = freshUserData.position;
             console.log('🔐 Using cached role for UI initialization:', userPosition);
         } else {
-            console.warn('⚠️ No user data found, using default role NV');
+            console.warn('⚠️ No user data found, using default role EMPLOYEE');
         }
     } catch (error) {
         console.warn('⚠️ Using default role due to error:', error);
@@ -583,10 +628,10 @@ async function initializeRoleBasedUI() {
     
     console.log('🔐 Initializing role-based UI for position:', userPosition);
     
-    // Show/hide elements based on role (simple direct matching like original)
+    // Show/hide elements based on role using both new and legacy role codes
     const allRoleElements = document.querySelectorAll('[data-role]');
-    let adElementsFound = 0;
-    let adElementsShown = 0;
+    let adminElementsFound = 0;
+    let adminElementsShown = 0;
     
     allRoleElements.forEach(element => {
         // Skip menu items as they are handled by MenuManager
@@ -600,11 +645,13 @@ async function initializeRoleBasedUI() {
         }
         
         const allowedRoles = element.dataset.role.split(',');
-        const hasAccess = allowedRoles.includes(userPosition);
         
-        // Special tracking for AD role debugging
-        if (allowedRoles.includes('AD')) {
-            adElementsFound++;
+        // Check access using unified role system
+        const hasAccess = utils.checkRoleAccess(userPosition, allowedRoles);
+        
+        // Special tracking for admin role debugging (check both new and legacy codes)
+        if (allowedRoles.some(role => ['ADMIN', 'AD', 'SUPER_ADMIN'].includes(role.trim()))) {
+            adminElementsFound++;
         }
         
         if (hasAccess) {
@@ -613,9 +660,10 @@ async function initializeRoleBasedUI() {
             element.classList.remove('element-hidden');
             element.classList.add('dashboard-visible');
             
-            // Special tracking for AD role debugging
-            if (allowedRoles.includes('AD') && userPosition === 'AD') {
-                adElementsShown++;
+            // Special tracking for admin role debugging
+            if (allowedRoles.some(role => ['ADMIN', 'AD', 'SUPER_ADMIN'].includes(role.trim())) && 
+                ['Admin', 'System Administrator', 'AD', 'ADMIN', 'SUPER_ADMIN'].includes(userPosition)) {
+                adminElementsShown++;
             }
         } else {
             element.classList.remove('role-visible');
@@ -624,11 +672,12 @@ async function initializeRoleBasedUI() {
         }
     });
     
-    if (userPosition === 'AD') {
-        console.log(`🔍 AD Role Summary: Found ${adElementsFound} AD elements, Shown ${adElementsShown} elements`);
+    // Admin role verification (check both new and legacy admin roles)
+    if (['Admin', 'System Administrator', 'AD', 'ADMIN', 'SUPER_ADMIN'].includes(userPosition)) {
+        console.log(`🔍 Admin Role Summary: Found ${adminElementsFound} admin elements, Shown ${adminElementsShown} elements`);
         
-        // Additional verification for all AD-specific sections - with improved error handling
-        const adSections = [
+        // Additional verification for all admin-specific sections
+        const adminSections = [
             '.quick-actions-section',
             '.analytics-section', 
             '.finance-section',
@@ -639,40 +688,15 @@ async function initializeRoleBasedUI() {
         // Wait for DOM to be fully ready before checking sections
         await new Promise(resolve => setTimeout(resolve, 100));
         
-        adSections.forEach(selector => {
-            // Use more flexible selector approach
+        adminSections.forEach(selector => {
             const section = document.querySelector(selector);
             if (section) {
                 section.classList.add('dashboard-visible');
-                section.classList.add('dashboard-visible');
                 section.classList.add('role-visible');
                 section.classList.remove('role-hidden');
-            } else {
-                // Try without the dot prefix in case of selector issues
-                const altSelector = selector.startsWith('.') ? selector.substring(1) : '.' + selector;
-                const altSection = document.querySelector(altSelector);
-                if (altSection) {
-                    altSection.classList.add('dashboard-visible');
-                    altSection.classList.add('dashboard-visible');
-                    altSection.classList.add('role-visible');
-                    altSection.classList.remove('role-hidden');
-                } else {
-                    // Final check: look for class name in any div
-                    const className = selector.replace('.', '');
-                    const classSection = document.querySelector(`div.${className}`);
-                    if (classSection) {
-                        classSection.classList.add('dashboard-visible');
-                        classSection.classList.add('dashboard-visible');
-                        classSection.classList.add('role-visible');
-                        classSection.classList.remove('role-hidden');
-                    } else {
-                        console.log(`ℹ️ AD Section ${selector} not found - likely due to DOM timing or authentication`);
-                    }
-                }
             }
         });
     }
-    
 }
 
 // Apply role-based section visibility for welcome-section without data-role attributes
@@ -1062,18 +1086,41 @@ async function loadPersonalTasks() {
     }
 }
 
-// Initialize Finance Dashboard (Admin only)
+// Initialize Finance Dashboard (Admin only) - fetch real data from API
 async function initializeFinanceDashboard() {
     const monthlyRevenue = document.getElementById('monthlyRevenue');
     const monthlyExpense = document.getElementById('monthlyExpense');
     const monthlyProfit = document.getElementById('monthlyProfit');
     const monthlyPayroll = document.getElementById('monthlyPayroll');
 
-    // Mock data for demo - replace with real API calls
-    if (monthlyRevenue) monthlyRevenue.textContent = '125,000,000 ₫';
-    if (monthlyExpense) monthlyExpense.textContent = '85,000,000 ₫';
-    if (monthlyProfit) monthlyProfit.textContent = '40,000,000 ₫';
-    if (monthlyPayroll) monthlyPayroll.textContent = '35,000,000 ₫';
+    try {
+        // Fetch real financial data from API
+        const financeData = await utils.fetchAPI('?action=getFinancialSummary');
+        
+        if (financeData && financeData.success) {
+            if (monthlyRevenue) monthlyRevenue.textContent = financeData.monthlyRevenue || '0 ₫';
+            if (monthlyExpense) monthlyExpense.textContent = financeData.monthlyExpense || '0 ₫';
+            if (monthlyProfit) monthlyProfit.textContent = financeData.monthlyProfit || '0 ₫';
+            if (monthlyPayroll) monthlyPayroll.textContent = financeData.monthlyPayroll || '0 ₫';
+            
+            console.log('✅ Financial dashboard loaded with real data');
+        } else {
+            // Fallback to default values if API fails
+            if (monthlyRevenue) monthlyRevenue.textContent = '0 ₫';
+            if (monthlyExpense) monthlyExpense.textContent = '0 ₫';
+            if (monthlyProfit) monthlyProfit.textContent = '0 ₫';
+            if (monthlyPayroll) monthlyPayroll.textContent = '0 ₫';
+            
+            console.warn('⚠️ Financial API returned no data, using defaults');
+        }
+    } catch (error) {
+        console.error('❌ Error loading financial dashboard:', error);
+        // Error fallback
+        if (monthlyRevenue) monthlyRevenue.textContent = '0 ₫';
+        if (monthlyExpense) monthlyExpense.textContent = '0 ₫';
+        if (monthlyProfit) monthlyProfit.textContent = '0 ₫';
+        if (monthlyPayroll) monthlyPayroll.textContent = '0 ₫';
+    }
 }
 
 // GitHub-Style Mobile Menu Dialog Handler
@@ -2162,1538 +2209,8 @@ function initializeNotificationAndChatManagers() {
     }
 }
 
-// Inject professional CSS styles for enhanced interfaces - will be handled by main-init.js
-const professionalStyles = `
-<style>
-/* Rich Text Editor Styles */
-.text-editor-container {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    overflow: hidden;
-    background: white;
-}
-
-.enhanced-editor {
-    border: 2px solid #e1e5e9;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-}
-
-.enhanced-editor:focus-within {
-    border-color: var(--primary);
-    box-shadow: 0 6px 25px rgba(103, 126, 234, 0.15);
-}
-
-.editor-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px 10px 0 0;
-}
-
-.editor-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.editor-tools {
-    display: flex;
-    gap: 8px;
-}
-
-.tool-btn {
-    background: rgba(255,255,255,0.15);
-    border: none;
-    color: white;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.tool-btn:hover {
-    background: rgba(255,255,255,0.25);
-    transform: translateY(-1px);
-}
-
-.enhanced-toolbar {
-    display: flex;
-    padding: 12px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
-    gap: 8px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.toolbar-group {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    padding: 4px;
-    border-radius: 6px;
-    background: white;
-    border: 1px solid #e9ecef;
-}
-
-.toolbar-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.toolbar-btn:hover {
-    background: #e9ecef;
-    transform: translateY(-1px);
-}
-
-.toolbar-btn:active {
-    background: #dee2e6;
-    transform: translateY(0);
-}
-
-.toolbar-select {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 0.85rem;
-    background: white;
-}
-
-.toolbar-color-picker {
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.editor-workspace {
-    position: relative;
-}
-
-.enhanced-rich-editor {
-    padding: 16px;
-    border: none;
-    outline: none;
-    font-family: inherit;
-    line-height: 1.6;
-    resize: vertical;
-    overflow-y: auto;
-}
-
-.enhanced-rich-editor:empty:before {
-    content: attr(placeholder);
-    color: #999;
-    font-style: italic;
-}
-
-.resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    cursor: se-resize;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8f9fa;
-    border-top-left-radius: 4px;
-    color: #666;
-}
-
-.resize-handle:hover {
-    background: #e9ecef;
-}
-
-.editor-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: #f8f9fa;
-    border-top: 1px solid #e0e0e0;
-    border-radius: 0 0 10px 10px;
-}
-
-.editor-stats {
-    display: flex;
-    gap: 16px;
-    font-size: 0.85rem;
-    color: #666;
-}
-
-.editor-actions {
-    display: flex;
-    gap: 8px;
-}
-
-/* Modern Container Styles */
-.modern-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0;
-}
-
-.professional-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 24px;
-    border-radius: 12px;
-    margin-bottom: 24px;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.header-title {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.title-icon-wrapper {
-    background: rgba(255,255,255,0.15);
-    padding: 12px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.header-icon {
-    font-size: 2rem;
-}
-
-.title-text h1 {
-    margin: 0;
-    font-size: 1.8rem;
-    font-weight: 700;
-}
-
-.header-subtitle {
-    margin: 4px 0 0 0;
-    opacity: 0.9;
-    font-size: 0.95rem;
-}
-
-.header-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.modern-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.action-btn {
-    background: rgba(255,255,255,0.15);
-    color: white;
-    border: 2px solid rgba(255,255,255,0.3);
-}
-
-.action-btn:hover {
-    background: rgba(255,255,255,0.25);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.secondary-btn {
-    background: #6c757d;
-    color: white;
-}
-
-.secondary-btn:hover {
-    background: #5a6268;
-    transform: translateY(-1px);
-}
-
-.success-btn {
-    background: #28a745;
-    color: white;
-}
-
-.success-btn:hover {
-    background: #218838;
-    transform: translateY(-1px);
-}
-
-.warning-btn {
-    background: #ffc107;
-    color: #212529;
-}
-
-.warning-btn:hover {
-    background: #e0a800;
-    transform: translateY(-1px);
-}
-
-/* Enhanced Cards */
-.modern-card {
-    background: var(--card-bg, white);
-    border: 1px solid var(--border-color, #e1e5e9);
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    margin-bottom: 24px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-.modern-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-}
-
-.modern-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-bottom: 1px solid var(--border-color, #e1e5e9);
-}
-
-.modern-header h3 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    color: var(--text-primary, #2d3748);
-}
-
-.header-tools {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.header-tools .tool-btn {
-    background: white;
-    color: var(--text-secondary, #64748b);
-    border: 1px solid var(--border-color, #e1e5e9);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.header-tools .tool-btn.active {
-    background: var(--primary, #667eea);
-    color: white;
-    border-color: var(--primary, #667eea);
-}
-
-/* Enhanced Controls */
-.modern-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 20px 0;
-}
-
-.control-section {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-
-.enhanced-filter {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.filter-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: var(--text-primary, #2d3748);
-    font-size: 0.9rem;
-}
-
-.modern-input, .modern-select {
-    padding: 12px 16px;
-    border: 2px solid var(--border-color, #e1e5e9);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    background: white;
-}
-
-.modern-input:focus, .modern-select:focus {
-    outline: none;
-    border-color: var(--primary, #667eea);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.action-section {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-/* Analytics Styles */
-.analytics-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.period-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 24px;
-    padding: 24px;
-}
-
-.period-selector {
-    flex: 1;
-    min-width: 300px;
-}
-
-.control-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 12px;
-}
-
-.period-buttons {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-}
-
-.period-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    border: 2px solid var(--border-color);
-    background: white;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.period-btn.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.period-btn:hover:not(.active) {
-    background: #f8f9fa;
-    transform: translateY(-1px);
-}
-
-.date-range-picker {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.date-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.date-input-group label {
-    font-weight: 600;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-}
-
-/* KPI Dashboard */
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 24px;
-}
-
-.kpi-card {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border-left: 4px solid var(--primary);
-    transition: all 0.3s ease;
-}
-
-.kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-}
-
-.kpi-icon {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    margin-bottom: 16px;
-}
-
-.kpi-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.kpi-value {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1;
-}
-
-.kpi-label {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.kpi-trend {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-top: 4px;
-}
-
-.kpi-trend.positive {
-    color: #28a745;
-}
-
-.kpi-trend.negative {
-    color: #dc3545;
-}
-
-/* Charts and Analytics */
-.analytics-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
-    margin-top: 24px;
-}
-
-.charts-section .card-body {
-    padding: 24px;
-}
-
-.chart-container {
-    height: 400px;
-    position: relative;
-    background: #f8f9fa;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.mock-chart {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-}
-
-.chart-legend {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.legend-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
-}
-
-.attendance-color { background: #28a745; }
-.productivity-color { background: #ffc107; }
-.performance-color { background: #667eea; }
-
-.chart-area {
-    flex: 1;
-    display: flex;
-    align-items: end;
-    justify-content: center;
-}
-
-.trend-bars {
-    display: flex;
-    gap: 12px;
-    align-items: end;
-    height: 200px;
-}
-
-.trend-bar {
-    width: 40px;
-    background: linear-gradient(to top, var(--primary), #764ba2);
-    border-radius: 4px 4px 0 0;
-    position: relative;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.trend-bar:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-}
-
-.trend-bar span {
-    position: absolute;
-    bottom: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-}
-
-/* Analysis Panels */
-.analysis-content {
-    position: relative;
-    min-height: 400px;
-}
-
-.analysis-panel {
-    display: none;
-    padding: 24px;
-}
-
-.analysis-panel.active {
-    display: block;
-}
-
-.analysis-summary h4 {
-    margin: 0 0 16px 0;
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.summary-stats {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-}
-
-.summary-item {
-    text-align: center;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    flex: 1;
-    min-width: 120px;
-}
-
-.summary-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--primary);
-    display: block;
-}
-
-.summary-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
-
-/* Metrics Section */
-.metrics-grid {
-    display: grid;
-    gap: 16px;
-    padding: 24px;
-}
-
-.metric-card {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.3s ease;
-}
-
-.metric-card:hover {
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.metric-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.metric-title {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.metric-score {
-    font-weight: 700;
-    color: var(--primary);
-}
-
-.metric-bar {
-    height: 8px;
-    background: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.metric-fill {
-    height: 100%;
-    background: linear-gradient(to right, var(--primary), #764ba2);
-    border-radius: 4px;
-    transition: width 0.8s ease;
-}
-
-.metric-description {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-/* Insights Section */
-.insights-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 24px;
-}
-
-.insight-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border-left: 4px solid #dee2e6;
-    transition: all 0.3s ease;
-}
-
-.insight-card.positive {
-    border-left-color: #28a745;
-}
-
-.insight-card.positive .insight-icon {
-    color: #28a745;
-}
-
-.insight-card.warning {
-    border-left-color: #ffc107;
-}
-
-.insight-card.warning .insight-icon {
-    color: #ffc107;
-}
-
-.insight-card.recommendation {
-    border-left-color: #667eea;
-}
-
-.insight-card.recommendation .insight-icon {
-    color: #667eea;
-}
-
-.insight-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-}
-
-.insight-icon {
-    font-size: 2rem;
-    margin-bottom: 12px;
-}
-
-.insight-content h4 {
-    margin: 0 0 12px 0;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.insight-content p {
-    margin: 0;
-    line-height: 1.5;
-    color: var(--text-secondary);
-}
-
-/* Loading and Utility Styles */
-.loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    gap: 16px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading-state p {
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-/* Mini Stats */
-.mini-stats {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-}
-
-.mini-stat-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 16px;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 8px;
-    min-width: 80px;
-}
-
-.mini-stat-value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.mini-stat-label {
-    font-size: 0.8rem;
-    opacity: 0.9;
-    margin-top: 4px;
-    text-align: center;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .analytics-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .professional-header {
-        padding: 20px;
-    }
-    
-    .header-content {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-    
-    .header-title {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .title-icon-wrapper {
-        align-self: center;
-    }
-    
-    .header-actions {
-        align-self: stretch;
-        justify-content: center;
-    }
-    
-    .modern-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-    }
-    
-    .control-section {
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    .period-controls {
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .period-selector {
-        min-width: auto;
-    }
-    
-    .period-buttons {
-        justify-content: center;
-    }
-    
-    .date-range-picker {
-        justify-content: center;
-    }
-    
-    .kpi-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .insights-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .mini-stats {
-        justify-content: center;
-    }
-}
-
-/* Enhanced Statistics Styles */
-.stats-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 8px 8px 0 0;
-}
-
-.stats-header h3 {
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.stats-toggle-btn {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.stats-toggle-btn:hover {
-    background: rgba(255,255,255,0.3);
-}
-
-.stats-content {
-    padding: 16px;
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-}
-
-.stats-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-}
-
-.stats-row:last-child {
-    margin-bottom: 0;
-}
-
-.primary-stats .stat-card {
-    flex: 1;
-    min-width: 150px;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.stat-card.highlight {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    color: white;
-    border-color: transparent;
-}
-
-.stat-icon {
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.stat-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    opacity: 0.9;
-    margin-top: 4px;
-}
-
-.secondary-stats, .details-stats {
-    justify-content: space-around;
-}
-
-.stat-mini {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    min-width: 80px;
-    text-align: center;
-    border: 1px solid #e9ecef;
-    transition: all 0.2s;
-}
-
-.stat-mini:hover {
-    background: #e9ecef;
-}
-
-.stat-mini.warning {
-    background: #fff3cd;
-    border-color: #ffeaa7;
-}
-
-.stat-mini.danger {
-    background: #f8d7da;
-    border-color: #f5c6cb;
-}
-
-.stat-mini .stat-value {
-    font-size: 1.25rem;
-    font-weight: 600;
-    line-height: 1;
-}
-
-.stat-mini .stat-label {
-    font-size: 0.75rem;
-    margin-top: 4px;
-    opacity: 0.8;
-}
-
-.details-stats.collapsed {
-    display: none;
-}
-
-/* Timesheet Container Improvements */
-.timesheet-container {
-    max-width: 100%;
-    overflow: hidden;
-}
-
-.timesheet-main-content {
-    margin-top: 24px;
-}
-
-.content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
-}
-
-.calendar-section, .stats-section {
-    background: white;
-}
-
-.modern-calendar {
-    min-height: 400px;
-}
-
-.modern-stats {
-    min-height: 400px;
-}
-
-.primary-kpis {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-}
-
-.modern-stat-card {
-    background: white;
-    border: 1px solid #e1e5e9;
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.3s ease;
-    border-left: 4px solid #dee2e6;
-}
-
-.attendance-card { border-left-color: #28a745; }
-.hours-card { border-left-color: #007bff; }
-.overtime-card { border-left-color: #ffc107; }
-.efficiency-card { border-left-color: #667eea; }
-
-.modern-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.stat-content {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.stat-trend {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-top: 8px;
-}
-
-.trend-icon {
-    font-size: 1rem;
-}
-
-.trend-value {
-    color: inherit;
-}
-
-.detailed-analytics {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.analytics-chart, .performance-metrics {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 16px;
-}
-
-.analytics-chart h4, .performance-metrics h4 {
-    margin: 0 0 16px 0;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.performance-metrics .metric-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.performance-metrics .metric-item:last-child {
-    margin-bottom: 0;
-}
-
-.performance-metrics .metric-label {
-    font-weight: 500;
-}
-
-.performance-metrics .metric-bar {
-    flex: 1;
-    height: 6px;
-    background: #e9ecef;
-    border-radius: 3px;
-    margin: 0 12px;
-    overflow: hidden;
-}
-
-.performance-metrics .metric-fill {
-    height: 100%;
-    background: linear-gradient(to right, var(--primary), #764ba2);
-    border-radius: 3px;
-    transition: width 0.8s ease;
-}
-
-.performance-metrics .metric-value {
-    font-weight: 600;
-    color: var(--primary);
-}
-
-@media (max-width: 1024px) {
-    .content-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .detailed-analytics {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .stats-row {
-        flex-direction: column;
-    }
-    
-    .stat-card {
-        min-width: auto;
-    }
-    
-    .secondary-stats, .details-stats {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
-    .stat-mini {
-        flex: 1;
-        min-width: 70px;
-    }
-    
-    .primary-kpis {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* Enhanced Color Visibility and UI Improvements */
-:root {
-    --text-primary: #1a202c;
-    --text-secondary: #4a5568;
-    --text-muted: #718096;
-    --bg-overlay: rgba(255, 255, 255, 0.95);
-    --border-color: #e2e8f0;
-    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Ensure text visibility on all backgrounds */
-.card, .modern-card {
-    background: var(--bg-overlay);
-    color: var(--text-primary);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color);
-}
-
-.card-header, .modern-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.card-header h3, .modern-header h3 {
-    color: white !important;
-    font-weight: 600;
-}
-
-/* Button text visibility */
-.btn, .modern-btn {
-    font-weight: 500;
-    text-shadow: none;
-}
-
-.btn-primary, .modern-btn.primary-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-}
-
-.btn-secondary, .modern-btn.secondary-btn {
-    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
-    color: white;
-    border: none;
-}
-
-.btn-success, .modern-btn.success-btn {
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
-    border: none;
-}
-
-.btn-danger, .modern-btn.danger-btn {
-    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-    color: white;
-    border: none;
-}
-
-.btn-warning, .modern-btn.warning-btn {
-    background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-    color: white;
-    border: none;
-}
-
-/* Form elements visibility */
-.form-control, .modern-input, .modern-select {
-    background: white;
-    color: var(--text-primary);
-    border: 2px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.form-control:focus, .modern-input:focus, .modern-select:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    background: white;
-    color: var(--text-primary);
-}
-
-/* Status and badge text visibility */
-.status, .badge {
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.85em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status.present, .badge.success {
-    background: #c6f6d5;
-    color: #22543d;
-    border: 1px solid #9ae6b4;
-}
-
-.status.absent, .badge.danger {
-    background: #fed7d7;
-    color: #742a2a;
-    border: 1px solid #fc8181;
-}
-
-.status.late, .badge.warning {
-    background: #fefcbf;
-    color: #744210;
-    border: 1px solid #f6e05e;
-}
-
-.status.pending, .badge.info {
-    background: #bee3f8;
-    color: #2a4365;
-    border: 1px solid #90cdf4;
-}
-
-/* Table text visibility */
-.table {
-    background: white;
-    color: var(--text-primary);
-}
-
-.table th {
-    background: #f7fafc;
-    color: var(--text-primary);
-    font-weight: 600;
-    border-bottom: 2px solid var(--border-color);
-}
-
-.table td {
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
-}
-
-/* Shift assignment improvements */
-.shift-cell {
-    background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 8px;
-}
-
-.time-input {
-    background: white;
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 0.9em;
-}
-
-.shift-status.working {
-    background: #c6f6d5;
-    color: #22543d;
-    font-weight: 600;
-}
-
-.shift-status.off {
-    background: #fed7d7;
-    color: #742a2a;
-    font-weight: 600;
-}
-
-/* Employee grid visibility */
-.employee-card {
-    background: white;
-    color: var(--text-primary);
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.employee-card:hover {
-    border-color: #667eea;
-    box-shadow: var(--shadow-medium);
-}
-
-.employee-card h4 {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.employee-card p {
-    color: var(--text-secondary);
-}
-
-/* Modal text visibility */
-.modal-content {
-    background: white;
-    color: var(--text-primary);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}
-
-.modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px 12px 0 0;
-}
-
-.modal-header h3, .modal-header h4 {
-    color: white !important;
-}
-
-/* Analytics and stats visibility */
-.stat-card, .modern-stat-card {
-    background: white;
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: var(--shadow-light);
-}
-
-.stat-value {
-    color: var(--text-primary);
-    font-weight: 700;
-    font-size: 1.8em;
-}
-
-.stat-label {
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-/* Text editor enhancements */
-.text-editor-container.fullscreen-editor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    background: white;
-    padding: 20px;
-}
-
-.editor-workspace {
-    background: white;
-    color: var(--text-primary);
-    min-height: 200px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 12px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    resize: vertical;
-}
-
-.editor-workspace:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* Hide window.location.href redirects during testing */
-.testing-mode {
-    display: none !important;
-}
-</style>
-`;
-
-// Apply professional styles
-document.head.insertAdjacentHTML('beforeend', professionalStyles);
+// Professional styles are now properly separated in dashboard-handler.css
+// This improves performance and maintainability by avoiding JavaScript CSS injection
 
 /**
  * Initialize accordion menu functionality for sidebar navigation

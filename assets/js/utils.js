@@ -608,20 +608,32 @@ const utils = {
     },
 
     // Map position names to role codes for dashboard compatibility
+    // Updated to match Enhanced HR Database Schema v3.1
     mapPositionToRoles(position, roleCode) {
-        // Position to role code mapping based on Enhanced Database Schema v3.0
+        // Position to role code mapping based on Enhanced Database Schema v3.1
         const positionRoleMap = {
-            'System Administrator': ['SUPER_ADMIN', 'ADMIN', 'AD'],
-            'Admin': ['ADMIN', 'AD'],
-            'HR Manager': ['HR_MANAGER', 'ADMIN', 'AD'],
-            'Store Manager': ['STORE_MANAGER', 'QL'],
-            'Area Manager': ['AREA_MANAGER', 'AM'],
-            'Department Head': ['DEPT_HEAD'],
+            // Administrative positions
+            'System Administrator': ['SUPER_ADMIN', 'ADMIN'],
+            'Admin': ['ADMIN'],
+            'HR Manager': ['HR_MANAGER', 'ADMIN'],
+            
+            // Management positions  
+            'Store Manager': ['STORE_MANAGER', 'MANAGER'],
+            'Area Manager': ['AREA_MANAGER', 'MANAGER'],
+            'Department Head': ['DEPT_HEAD', 'MANAGER'],
             'Team Leader': ['TEAM_LEADER'],
-            'Senior Employee': ['SENIOR_EMP', 'EMPLOYEE', 'NV'],
-            'Employee': ['EMPLOYEE', 'NV'],
-            'Intern': ['INTERN', 'NV'],
-            'Customer Support': ['CUST_SUPPORT', 'NV']
+            
+            // Employee positions
+            'Senior Employee': ['SENIOR_EMP', 'EMPLOYEE'],
+            'Employee': ['EMPLOYEE'],
+            'Intern': ['INTERN', 'EMPLOYEE'],
+            'Customer Support': ['CUST_SUPPORT', 'EMPLOYEE'],
+            
+            // Legacy compatibility (old role codes still supported)
+            'AD': ['ADMIN', 'AD'],
+            'QL': ['MANAGER', 'QL'], 
+            'AM': ['AREA_MANAGER', 'AM'],
+            'NV': ['EMPLOYEE', 'NV']
         };
 
         // Start with role codes from database if available
@@ -659,6 +671,26 @@ const utils = {
 
         // Remove duplicates and return
         return [...new Set(roles)];
+    },
+
+    // Check if user has access based on role (supports both new and legacy role codes)
+    checkRoleAccess(userPosition, allowedRoles) {
+        if (!userPosition || !allowedRoles || allowedRoles.length === 0) {
+            return false;
+        }
+
+        // Convert to array if string
+        const allowedRolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+        
+        // Get all user roles based on position
+        const userRoles = this.mapPositionToRoles(userPosition);
+        
+        // Check if user has any of the allowed roles
+        return allowedRolesArray.some(allowedRole => {
+            const trimmedRole = allowedRole.trim();
+            // Direct position match or role match
+            return userPosition === trimmedRole || userRoles.includes(trimmedRole);
+        });
     },
 
     mapTaskDataFromEnhancedSchema(taskData) {
