@@ -294,6 +294,108 @@
     }
 }
 
+/* Element Display States */
+.element-visible {
+    display: block !important;
+}
+
+.element-hidden {
+    display: none !important;
+}
+
+/* Section Management */
+.section-hidden {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+.section-visible {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Body Overflow Control */
+.body-no-scroll {
+    overflow: hidden !important;
+}
+
+.body-scroll-restore {
+    overflow: auto !important;
+}
+
+/* Mobile Dialog States */
+.mobile-dialog-visible {
+    opacity: 1 !important;
+    transform: translateX(0) !important;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mobile-dialog-hidden {
+    opacity: 0 !important;
+    transform: translateX(-100%) !important;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Loading Screen States */
+.loading-screen-visible {
+    display: flex !important;
+}
+
+.loading-screen-hidden {
+    display: none !important;
+}
+
+/* Dashboard Loader Enhanced */
+.dashboard-loader-active {
+    display: flex !important;
+    pointer-events: all !important;
+    z-index: 999999 !important;
+}
+
+.dashboard-loader-inactive {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Animation Delays */
+.animation-delay-1 {
+    animation-delay: 0.1s;
+}
+
+.animation-delay-2 {
+    animation-delay: 0.2s;
+}
+
+.animation-delay-3 {
+    animation-delay: 0.3s;
+}
+
+/* Button Flex Display */
+.button-flex {
+    display: flex !important;
+}
+
+/* Modal Display States */
+.modal-flex {
+    display: flex !important;
+}
+
+.modal-none {
+    display: none !important;
+}
+
+/* Submenu Animation States */
+.submenu-collapsed {
+    max-height: 0 !important;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.submenu-expanded {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
 /* Accessibility Improvements */
 @media (prefers-reduced-motion: reduce) {
     .dashboard-hidden,
@@ -304,7 +406,11 @@
     .slide-out-down,
     .card-enter-active,
     .card-exit-active,
-    .content-loading::after {
+    .content-loading::after,
+    .mobile-dialog-visible,
+    .mobile-dialog-hidden,
+    .submenu-collapsed,
+    .submenu-expanded {
         animation: none !important;
         transition: none !important;
     }

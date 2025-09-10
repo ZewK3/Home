@@ -609,7 +609,8 @@ async function initializeRoleBasedUI() {
         
         if (hasAccess) {
             element.classList.add('role-visible');
-            element.style.display = '';
+            element.classList.add('element-visible');
+            element.classList.remove('element-hidden');
             element.classList.add('dashboard-visible');
             
             // Special tracking for AD role debugging
@@ -618,7 +619,8 @@ async function initializeRoleBasedUI() {
             }
         } else {
             element.classList.remove('role-visible');
-            element.style.display = 'none';
+            element.classList.add('element-hidden');
+            element.classList.remove('element-visible');
         }
     });
     
@@ -777,8 +779,8 @@ async function applyRoleBasedSectionVisibility() {
                 section.classList.remove('role-hidden');
                 section.classList.add('role-visible');
             } else {
-                section.style.display = 'none';
-                section.style.visibility = 'hidden';
+                section.classList.add('section-hidden');
+                section.classList.remove('section-visible');
                 section.classList.add('role-hidden');
                 section.classList.remove('role-visible');
                 console.log(`❌ Section hidden for ${userRole}: ${selector}`);
@@ -972,7 +974,7 @@ async function refreshUserRoleAndPermissions() {
                     setTimeout(async () => {
                         const adElements = document.querySelectorAll('[data-role*="AD"]');
                         const visibleADElements = Array.from(adElements).filter(el => 
-                            el.style.display !== 'none' && !el.classList.contains('role-hidden')
+                            !el.classList.contains('element-hidden') && !el.classList.contains('role-hidden')
                         );
                         
                         if (visibleADElements.length < adElements.length) {
@@ -1108,13 +1110,13 @@ function setupMobileMenu() {
             menuToggle.classList.add('active');
             
             mobileDialog.showModal();
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('body-no-scroll');
             isMenuOpen = true;
             
             // Add animation class
             requestAnimationFrame(() => {
-                mobileDialog.style.opacity = '1';
-                mobileDialog.style.transform = 'translateX(0)';
+                mobileDialog.classList.add('mobile-dialog-visible');
+                mobileDialog.classList.remove('mobile-dialog-hidden');
             });
         }
     }
@@ -1125,12 +1127,12 @@ function setupMobileMenu() {
             // Remove professional toggle animation
             menuToggle.classList.remove('active');
             
-            mobileDialog.style.opacity = '0';
-            mobileDialog.style.transform = 'translateX(-100%)';
+            mobileDialog.classList.add('mobile-dialog-hidden');
+            mobileDialog.classList.remove('mobile-dialog-visible');
             
             setTimeout(() => {
                 mobileDialog.close();
-                document.body.style.overflow = '';
+                document.body.classList.remove('body-no-scroll');
                 isMenuOpen = false;
             }, 300);
         }
@@ -1362,7 +1364,8 @@ function showDashboardContent() {
 function showLoadingScreen() {
     const loadingScreen = document.getElementById('loadingScreen');
     if (loadingScreen) {
-        loadingScreen.style.display = 'flex';
+        loadingScreen.classList.add('loading-screen-visible');
+        loadingScreen.classList.remove('loading-screen-hidden');
         loadingScreen.classList.add('loading-fade-in');
         
         // Animate loading content
@@ -1380,7 +1383,7 @@ function showLoadingScreen() {
         // Apply bounce animation to dots
         const dots = loadingScreen.querySelectorAll('.loading-dot');
         dots.forEach((dot, index) => {
-            dot.style.animationDelay = `${index * 0.1}s`;
+            dot.classList.add(`animation-delay-${index + 1}`);
             dot.classList.add('loading-dot-bounce');
         });
     }
@@ -1399,7 +1402,8 @@ function hideLoadingScreen() {
         
         // Hide after animation completes
         setTimeout(() => {
-            loadingScreen.style.display = 'none';
+            loadingScreen.classList.add('loading-screen-hidden');
+            loadingScreen.classList.remove('loading-screen-visible');
             loadingScreen.classList.remove('loading-fade-in', 'loading-fade-out');
             
             const loadingContent = loadingScreen.querySelector('.loading-content');
@@ -1420,12 +1424,11 @@ function showDashboardLoader() {
     const dashboardLoader = document.getElementById('dashboardLoader');
     if (dashboardLoader) {
         dashboardLoader.classList.remove('hidden');
-        dashboardLoader.style.display = 'flex';
-        dashboardLoader.style.pointerEvents = 'all'; // Block all pointer events on underlying elements
-        dashboardLoader.style.zIndex = '999999'; // Ensure highest z-index
+        dashboardLoader.classList.add('dashboard-loader-active');
+        dashboardLoader.classList.remove('dashboard-loader-inactive');
         
         // Also disable all interactive elements behind the loader
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('body-no-scroll');
         
         console.log('✅ Dashboard loader shown with complete interaction blocking');
     }
@@ -1443,13 +1446,12 @@ async function hideDashboardLoader() {
         dashboardLoader.classList.add('fade-out');
         
         setTimeout(() => {
-            dashboardLoader.style.display = 'none';
-            dashboardLoader.classList.remove('fade-out');
+            dashboardLoader.classList.add('dashboard-loader-inactive');
+            dashboardLoader.classList.remove('dashboard-loader-active');
             dashboardLoader.classList.add('hidden'); // Ensure hidden class is added
-            dashboardLoader.style.pointerEvents = 'none'; // Disable pointer events completely
             
             // Re-enable body scroll
-            document.body.style.overflow = '';
+            document.body.classList.remove('body-no-scroll');
         }, 400);
         
         console.log('✅ Dashboard loader hidden (optimized for LCP)');
@@ -1649,7 +1651,7 @@ async function initializeEnhancedDashboard() {
             // Special handling for quick action buttons
             const quickActionBtns = document.querySelectorAll('.quick-action-btn[data-role*="AD"]');
             quickActionBtns.forEach((btn, index) => {
-                btn.style.display = 'flex';
+                btn.classList.add('button-flex');
                 btn.classList.add('role-visible');
                 console.log(`AD Quick Action ${index + 1}: ${btn.dataset.action} - Made visible`);
             });
@@ -1657,7 +1659,7 @@ async function initializeEnhancedDashboard() {
             // Verification check after a short delay
             setTimeout(() => {
                 const visibleADElements = Array.from(adElements).filter(el => 
-                    el.style.display !== 'none' && !el.classList.contains('role-hidden')
+                    !el.classList.contains('element-hidden') && !el.classList.contains('role-hidden')
                 );
                 console.log('AD elements visibility check:', {
                     total: adElements.length,
@@ -1732,18 +1734,20 @@ function openChangeRequestModal(field, currentValue) {
     newValueInput.value = '';
     reasonTextarea.value = '';
     
-    modal.style.display = 'flex';
+    modal.classList.add('modal-flex');
     newValueInput.focus();
 }
 
 function closeChangeRequestModal() {
     const modal = document.getElementById('changeRequestModal');
-    modal.style.display = 'none';
+    modal.classList.add('modal-none');
+    modal.classList.remove('modal-flex');
 }
 
 function closePasswordModal() {
     const modal = document.getElementById('passwordConfirmModal');
-    modal.style.display = 'none';
+    modal.classList.add('modal-none');
+    modal.classList.remove('modal-flex');
     document.getElementById('confirmPassword').value = '';
 }
 
@@ -3713,7 +3717,8 @@ function initializeAccordionMenu() {
             
             // Set initial state - collapse all submenus by default
             toggle.classList.remove('expanded');
-            submenu.style.maxHeight = '0';
+            submenu.classList.add('submenu-collapsed');
+            submenu.classList.remove('submenu-expanded');
             
             // Add click handler
             navTitle.addEventListener('click', (e) => {
@@ -3725,11 +3730,15 @@ function initializeAccordionMenu() {
                 if (isExpanded) {
                     // Collapse
                     toggle.classList.remove('expanded');
-                    submenu.style.maxHeight = '0';
+                    submenu.classList.add('submenu-collapsed');
+                    submenu.classList.remove('submenu-expanded');
                     console.log(`Collapsed menu: ${menuId}`);
                 } else {
                     // Expand
                     toggle.classList.add('expanded');
+                    submenu.classList.remove('submenu-collapsed');
+                    submenu.classList.add('submenu-expanded');
+                    // Set dynamic height for smooth animation
                     submenu.style.maxHeight = submenu.scrollHeight + 'px';
                     console.log(`Expanded menu: ${menuId}`);
                 }
@@ -3753,7 +3762,8 @@ function initializeAccordionMenu() {
             
             // Set initial state - collapse all mobile submenus by default
             toggle.classList.remove('expanded');
-            submenu.style.maxHeight = '0';
+            submenu.classList.add('submenu-collapsed');
+            submenu.classList.remove('submenu-expanded');
             
             // Add click handler
             navTitle.addEventListener('click', (e) => {
@@ -3765,11 +3775,15 @@ function initializeAccordionMenu() {
                 if (isExpanded) {
                     // Collapse
                     toggle.classList.remove('expanded');
-                    submenu.style.maxHeight = '0';
+                    submenu.classList.add('submenu-collapsed');
+                    submenu.classList.remove('submenu-expanded');
                     console.log(`Collapsed mobile menu: ${menuId}`);
                 } else {
                     // Expand
                     toggle.classList.add('expanded');
+                    submenu.classList.remove('submenu-collapsed');
+                    submenu.classList.add('submenu-expanded');
+                    // Set dynamic height for smooth animation
                     submenu.style.maxHeight = submenu.scrollHeight + 'px';
                     console.log(`Expanded mobile menu: ${menuId}`);
                 }
