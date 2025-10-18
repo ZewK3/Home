@@ -364,29 +364,4 @@ const DashboardAPI = {
         }
     },
 
-    /**
-     * Messages/Chat
-     */
-    async getMessages(employeeId, limit = 50) {
-        try {
-            const response = await utils.fetchAPI(`?action=getMessages&employeeId=${employeeId}&limit=${limit}`);
-            return response.success ? response.data : null;
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-            return null;
-        }
-    },
-
-    async sendMessage(messageData) {
-        try {
-            const response = await utils.fetchAPI('?action=sendMessage', {
-                method: 'POST',
-                body: JSON.stringify(messageData)
-            });
-            return response;
-        } catch (error) {
-            console.error('Error sending message:', error);
-            return { success: false, message: error.message };
-        }
-    }
 };
