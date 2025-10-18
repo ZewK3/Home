@@ -1,616 +1,275 @@
+
 <!DOCTYPE html>
 <html lang="vi" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Professional HR Management System</title>
-    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp với công nghệ hiện đại, AI thông minh và cloud-native">
-    <meta name="theme-color" content="#3b82f6">
-    <link rel="icon" type="image/x-icon" href="public/favicon.ico">
-    
-    <!-- Preload critical resources -->
-    <link rel="preload" href="assets/css/home-modern.css" as="style">
-    
-    <!-- Modern Home CSS -->
-    <link rel="stylesheet" href="assets/css/home-modern.css">
-    
-    <!-- Prefetch likely navigation targets -->
-    <link rel="prefetch" href="pages/auth/index.html">
-    
-    <!-- Material Icons for better performance -->
-    <link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap"></noscript>
+    <meta name="description" content="Hệ thống đăng nhập và đăng ký - ZewK Management System">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ZewK Management System - Đăng nhập</title>
+    <link rel="stylesheet" href="../../assets/css/reg&log.css">
+    <link rel="icon" type="image/png" href="../../assets/icons/favicon-32x32.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header" role="banner">
-        <nav class="nav" aria-label="Main navigation">
-            <div class="nav-container">
-                <a href="#" class="nav-brand" aria-label="Professional HR Home">
-                    <img src="public/images/logo.png" alt="HR Logo" class="nav-logo" width="32" height="32">
-                    <span class="nav-title">Professional HR</span>
-                </a>
-                
-                <div class="nav-menu" id="nav-menu" role="menu">
-                    <a href="#features" class="nav-link" role="menuitem">Tính năng</a>
-                    <a href="#benefits" class="nav-link" role="menuitem">Lợi ích</a>
-                    <a href="#contact" class="nav-link" role="menuitem">Liên hệ</a>
-                    <a href="pages/auth/index.html" class="nav-link nav-cta" role="menuitem">
-                        <span class="material-icons-round">login</span>
-                        Đăng nhập
-                    </a>
+    <div class='flag-vn'></div>
+    <div class="glass-bg">
+        <div class="glass-circle circle-1"></div>
+        <div class="glass-circle circle-2"></div>
+        <div class="glass-circle circle-3"></div>
+    </div>
+
+    <div class="aurora"></div>
+    <div class="stars"></div>
+    <div class="light-streaks"></div>
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container active">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng nhập</h2>
                 </div>
-                
-                <div class="nav-actions">
-                    <!-- Theme Toggle -->
-                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Chuyển đổi chế độ tối">
-                        <span class="material-icons-round" id="themeIcon">light_mode</span>
-                    </button>
-                    
-                    <!-- Language Toggle -->
-                    <div class="lang-toggle">
-                        <button class="lang-btn active" data-lang="vi" id="currentLangBtn" aria-label="Language selector">
-                            <span class="flag-emoji">🇻🇳</span>
-                            VI
+            </div>
+
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
+                        <label for="loginEmployeeId">Mã nhân viên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
                         </button>
-                        <div class="lang-dropdown" id="langDropdown" style="display: none;">
-                            <button class="lang-btn" data-lang="en">
-                                <span class="flag-emoji">🇺🇸</span>
-                                EN
-                            </button>
-                        </div>
+                        <div class="input-border"></div>
                     </div>
-                    
-                    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle mobile menu" aria-expanded="false" aria-controls="nav-menu">
-                        <span class="nav-toggle-line"></span>
-                        <span class="nav-toggle-line"></span>
-                        <span class="nav-toggle-line"></span>
-                    </button>
                 </div>
-            </div>
-        </nav>
-    </header>
 
-    <!-- Hero Section -->
-    <section class="hero" id="hero" role="main">
-        <div class="hero-background" aria-hidden="true">
-            <div class="floating-elements">
-                <div class="floating-element" data-speed="2"></div>
-                <div class="floating-element" data-speed="3"></div>
-                <div class="floating-element" data-speed="1.5"></div>
-                <div class="floating-element" data-speed="2.5"></div>
-            </div>
-        </div>
-        
-        <div class="hero-container">
-            <div class="hero-content">
-                <div class="hero-badge">
-                    <span class="badge-text">✨ Phiên bản mới 2024</span>
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
                 </div>
-                
-                <h1 class="hero-title animate-fade-in">
-                    Hệ thống quản lý <span class="hero-highlight">nhân sự</span> 
-                    chuyên nghiệp
-                </h1>
-                
-                <p class="hero-description animate-slide-up">
-                    Giải pháp toàn diện cho quản lý nhân sự, chấm công, tính lương 
-                    và báo cáo với công nghệ cloud hiện đại, AI thông minh và trải nghiệm người dùng đỉnh cao
-                </p>
-                
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="10000">0+</div>
-                        <div class="stat-label">Người dùng</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="500">0+</div>
-                        <div class="stat-label">Công ty</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number" data-count="99">0%</div>
-                        <div class="stat-label">Uptime</div>
-                    </div>
-                </div>
-                
-                <div class="hero-actions">
-                    <a href="pages/auth/index.html" class="btn btn-primary" role="button">
-                        <span class="btn-icon material-icons-round">rocket_launch</span>
-                        Bắt đầu miễn phí
-                        <span class="btn-arrow material-icons-round">arrow_forward</span>
-                    </a>
-                    <a href="#features" class="btn btn-secondary" role="button">
-                        <span class="btn-icon material-icons-round">play_circle</span>
-                        Xem demo
-                    </a>
-                </div>
-                
-                <div class="hero-testimonial">
-                    <p class="testimonial-text">
-                        "Giải pháp HR tốt nhất chúng tôi từng sử dụng. Tiết kiệm 70% thời gian quản lý nhân sự."
-                    </p>
-                    <div class="testimonial-author">
-                        <strong>Nguyễn Văn A</strong> - CEO, TechCorp Vietnam
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="features-container">
-            <div class="features-header">
-                <h2 class="features-title">Tính năng nổi bật</h2>
-                <p class="features-description">
-                    Tất cả những gì bạn cần để quản lý nhân sự hiệu quả, được thiết kế với trải nghiệm GitHub-inspired
-                </p>
-            </div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <span class="material-icons-round">people</span>
-                    </div>
-                    <h3 class="feature-title">Quản lý nhân sự</h3>
-                    <p class="feature-description">
-                        Quản lý thông tin nhân viên, hợp đồng và sự nghiệp một cách hiệu quả với AI hỗ trợ
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <span class="material-icons-round">schedule</span>
-                    </div>
-                    <h3 class="feature-title">Chấm công thông minh</h3>
-                    <p class="feature-description">
-                        Chấm công GPS, QR code, sinh trắc học và theo dõi giờ làm việc real-time
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <span class="material-icons-round">payments</span>
-                    </div>
-                    <h3 class="feature-title">Tính lương tự động</h3>
-                    <p class="feature-description">
-                        Tính toán lương, thuế, bảo hiểm và các khoản phụ cấp hoàn toàn tự động
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <span class="material-icons-round">analytics</span>
-                    </div>
-                    <h3 class="feature-title">Báo cáo thông minh</h3>
-                    <p class="feature-description">
-                        Dashboard trực quan, báo cáo tự động và phân tích dữ liệu với AI
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <span class="material-icons-round">security</span>
-                    </div>
-                    <h3 class="feature-title">Bảo mật Enterprise</h3>
-                    <p class="feature-description">
-                        Bảo mật cấp enterprise với mã hóa AES-256 và tuân thủ GDPR, ISO 27001
-                    </p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <span class="material-icons-round">phone_android</span>
-                    </div>
-                    <h3 class="feature-title">Ứng dụng di động</h3>
-                    <p class="feature-description">
-                        Ứng dụng mobile responsive với tất cả tính năng của web, hoạt động offline
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Statistics Section -->
-    <section class="stats-section" id="benefits">
-        <div class="features-container">
-            <h2 class="features-title">Tin cậy bởi hàng nghìn doanh nghiệp</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number">99.9%</div>
-                    <div class="stat-label">Uptime</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">10,000+</div>
-                    <div class="stat-label">Nhân viên được quản lý</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">500+</div>
-                    <div class="stat-label">Công ty đang sử dụng</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Hỗ trợ khách hàng</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Customer Support Chat Widget -->
-    <div class="chat-widget" id="chatWidget">
-        <button class="chat-toggle" id="chatToggle" aria-label="Open customer support chat">
-            <span class="material-icons-round">support_agent</span>
-        </button>
-        
-        <div class="chat-panel" id="chatPanel">
-            <div class="chat-header">
-                <h3>Hỗ trợ khách hàng</h3>
-                <button class="chat-close" id="chatClose" aria-label="Close chat">
-                    <span class="material-icons-round">close</span>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">login</span>
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loader"></span>
                 </button>
-            </div>
-            
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-message assistant">
-                    Xin chào! Tôi có thể giúp gì cho bạn hôm nay?
+
+                <div class="form-footer">
+                    <div class="footer-row">
+                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng ký</h2>
                 </div>
             </div>
-            
-            <div class="chat-input-container">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Nhập tin nhắn..." maxlength="500">
-                <button class="chat-send" id="chatSend" aria-label="Send message">
-                    <span class="material-icons-round">send</span>
+
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
+                        <label for="fullName">Họ và tên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">phone</span>
+                        <input type="tel" id="phone" name="phone" placeholder=" " required autocomplete="tel">
+                        <label for="phone">Số điện thoại</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+                        <label for="email">Email</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">store</span>
+                        <select id="storeName" name="storeName" required>
+                            <option value="">Chọn cửa hàng</option>
+                        </select>
+                        <label for="storeName">Cửa hàng</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
+                        <label for="password">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="terms-container">
+                        <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Tôi đồng ý với <a href="#" class="terms-link" onclick="showTermsModal()">điều khoản sử dụng</a> và <a href="#" class="terms-link" onclick="showPrivacyModal()">chính sách bảo mật</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">person_add</span>
+                    <span class="btn-text">Tạo tài khoản</span>
+                    <span class="btn-loader"></span>
                 </button>
+
+                <div class="form-footer">
+                    <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Quên mật khẩu</h2>
+                </div>
             </div>
+
+            <form id="forgotPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="forgotEmail" name="forgotEmail" placeholder=" " required autocomplete="email">
+                        <label for="forgotEmail">Email tài khoản</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">send</span>
+                    <span class="btn-text">Lấy mã đổi mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Nhớ lại mật khẩu? <a href="#" id="goToLoginFromForgot" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="resetPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đặt lại mật khẩu</h2>
+                </div>
+            </div>
+
+            <form id="resetPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">vpn_key</span>
+                        <input type="text" id="resetCode" name="resetCode" placeholder=" " required maxlength="6">
+                        <label for="resetCode">Mã xác thực (6 số)</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="newPassword" name="newPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">lock_reset</span>
+                    <span class="btn-text">Đặt lại mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Chưa nhận được mã? <a href="#" id="goToForgotFromReset" class="form-link">Gửi lại mã</a></p>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer" id="contact">
-        <div class="footer-container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Sản phẩm</h3>
-                    <ul class="footer-links">
-                        <li><a href="#features">Tính năng</a></li>
-                        <li><a href="#pricing">Bảng giá</a></li>
-                        <li><a href="#integrations">Tích hợp</a></li>
-                        <li><a href="#security">Bảo mật</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Hỗ trợ</h3>
-                    <ul class="footer-links">
-                        <li><a href="#docs">Tài liệu</a></li>
-                        <li><a href="#help">Trợ giúp</a></li>
-                        <li><a href="#contact">Liên hệ</a></li>
-                        <li><a href="#status">Trạng thái hệ thống</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Công ty</h3>
-                    <ul class="footer-links">
-                        <li><a href="#about">Về chúng tôi</a></li>
-                        <li><a href="#careers">Tuyển dụng</a></li>
-                        <li><a href="#blog">Blog</a></li>
-                        <li><a href="#press">Báo chí</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Pháp lý</h3>
-                    <ul class="footer-links">
-                        <li><a href="#privacy">Chính sách bảo mật</a></li>
-                        <li><a href="#terms">Điều khoản sử dụng</a></li>
-                        <li><a href="#gdpr">GDPR</a></li>
-                        <li><a href="#compliance">Tuân thủ</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2024 Professional HR Management System. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- JavaScript -->
-    <script>
-        // Modern Home Page JavaScript - Mobile-First & Performance Optimized
-        class ModernHomePage {
-            constructor() {
-                this.themeToggle = document.getElementById('themeToggle');
-                this.themeIcon = document.getElementById('themeIcon');
-                this.navToggle = document.getElementById('nav-toggle');
-                this.navMenu = document.getElementById('nav-menu');
-                this.chatToggle = document.getElementById('chatToggle');
-                this.chatPanel = document.getElementById('chatPanel');
-                this.chatClose = document.getElementById('chatClose');
-                this.chatInput = document.getElementById('chatInput');
-                this.chatSend = document.getElementById('chatSend');
-                this.chatMessages = document.getElementById('chatMessages');
-                
-                this.currentTheme = localStorage.getItem('theme') || 'light';
-                this.init();
-            }
-            
-            init() {
-                this.initTheme();
-                this.initNavigation();
-                this.initChat();
-                this.initAnimations();
-                this.initLazyLoading();
-            }
-            
-            initTheme() {
-                // Set initial theme
-                document.documentElement.setAttribute('data-theme', this.currentTheme);
-                this.updateThemeIcon();
-                this.updateMetaThemeColor();
-                
-                // Theme toggle handler
-                this.themeToggle.addEventListener('click', () => {
-                    this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-                    document.documentElement.setAttribute('data-theme', this.currentTheme);
-                    localStorage.setItem('theme', this.currentTheme);
-                    this.updateThemeIcon();
-                    this.updateMetaThemeColor();
-                    
-                    // Add ripple effect
-                    this.addRippleEffect(this.themeToggle);
-                });
-            }
-            
-            updateThemeIcon() {
-                this.themeIcon.textContent = this.currentTheme === 'light' ? 'dark_mode' : 'light_mode';
-            }
-            
-            updateMetaThemeColor() {
-                const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-                const color = this.currentTheme === 'light' ? '#3b82f6' : '#1f2937';
-                metaThemeColor.setAttribute('content', color);
-            }
-            
-            initNavigation() {
-                // Mobile navigation toggle
-                this.navToggle.addEventListener('click', () => {
-                    const isExpanded = this.navToggle.getAttribute('aria-expanded') === 'true';
-                    this.navToggle.setAttribute('aria-expanded', !isExpanded);
-                    this.navMenu.classList.toggle('active');
-                    
-                    // Animate hamburger
-                    this.navToggle.classList.toggle('active');
-                });
-                
-                // Close mobile menu when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!this.navToggle.contains(e.target) && !this.navMenu.contains(e.target)) {
-                        this.navMenu.classList.remove('active');
-                        this.navToggle.setAttribute('aria-expanded', 'false');
-                        this.navToggle.classList.remove('active');
-                    }
-                });
-                
-                // Smooth scroll for internal links
-                document.querySelectorAll('a[href^="#"]').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const target = document.querySelector(link.getAttribute('href'));
-                        if (target) {
-                            const headerHeight = document.querySelector('.header').offsetHeight;
-                            const targetPosition = target.offsetTop - headerHeight;
-                            window.scrollTo({
-                                top: targetPosition,
-                                behavior: 'smooth'
-                            });
-                        }
-                    });
-                });
-            }
-            
-            initChat() {
-                const autoResponses = {
-                    'giá': 'Chúng tôi có các gói từ 99k/tháng. Bạn muốn tìm hiểu gói nào?',
-                    'tính năng': 'Hệ thống có đầy đủ tính năng HR: quản lý nhân sự, chấm công, tính lương, báo cáo...',
-                    'demo': 'Bạn có thể xem demo tại link: /pages/auth/index.html hoặc liên hệ 0123456789',
-                    'hỗ trợ': 'Chúng tôi hỗ trợ 24/7 qua chat, email và hotline: support@hr-system.com',
-                    'xin chào': 'Xin chào! Cảm ơn bạn đã quan tâm đến hệ thống HR của chúng tôi. Tôi có thể giúp gì?'
-                };
-                
-                // Chat toggle
-                this.chatToggle.addEventListener('click', () => {
-                    this.chatPanel.classList.toggle('active');
-                    if (this.chatPanel.classList.contains('active')) {
-                        this.chatInput.focus();
-                    }
-                });
-                
-                // Chat close
-                this.chatClose.addEventListener('click', () => {
-                    this.chatPanel.classList.remove('active');
-                });
-                
-                // Send message
-                const sendMessage = () => {
-                    const message = this.chatInput.value.trim();
-                    if (!message) return;
-                    
-                    // Add user message
-                    this.addChatMessage(message, 'user');
-                    this.chatInput.value = '';
-                    
-                    // Auto response
-                    setTimeout(() => {
-                        const response = this.getAutoResponse(message, autoResponses);
-                        this.addChatMessage(response, 'assistant');
-                    }, 500);
-                };
-                
-                this.chatSend.addEventListener('click', sendMessage);
-                this.chatInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        sendMessage();
-                    }
-                });
-                
-                // Close chat when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!this.chatToggle.contains(e.target) && 
-                        !this.chatPanel.contains(e.target) && 
-                        this.chatPanel.classList.contains('active')) {
-                        this.chatPanel.classList.remove('active');
-                    }
-                });
-            }
-            
-            addChatMessage(message, sender) {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('chat-message', sender);
-                messageDiv.textContent = message;
-                this.chatMessages.appendChild(messageDiv);
-                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-            }
-            
-            getAutoResponse(message, responses) {
-                const lowerMessage = message.toLowerCase();
-                for (const [key, response] of Object.entries(responses)) {
-                    if (lowerMessage.includes(key)) {
-                        return response;
-                    }
-                }
-                return 'Cảm ơn bạn đã liên hệ! Để được hỗ trợ tốt nhất, vui lòng gọi 0123456789 hoặc email: support@hr-system.com';
-            }
-            
-            initAnimations() {
-                // Counter animation for stats
-                const observerOptions = {
-                    threshold: 0.5,
-                    rootMargin: '0px 0px -50px 0px'
-                };
-                
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            this.animateCounter(entry.target);
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, observerOptions);
-                
-                document.querySelectorAll('.stat-number').forEach(stat => {
-                    observer.observe(stat);
-                });
-                
-                // Parallax effect for floating elements
-                this.initParallax();
-            }
-            
-            animateCounter(element) {
-                const target = parseInt(element.dataset.count) || 0;
-                const duration = 1500;
-                const start = performance.now();
-                
-                const animate = (currentTime) => {
-                    const elapsed = currentTime - start;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const current = Math.floor(progress * target);
-                    
-                    if (element.textContent.includes('+')) {
-                        element.textContent = current + '+';
-                    } else if (element.textContent.includes('%')) {
-                        element.textContent = current + '%';
-                    } else {
-                        element.textContent = current.toLocaleString();
-                    }
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    }
-                };
-                
-                requestAnimationFrame(animate);
-            }
-            
-            initParallax() {
-                let ticking = false;
-                
-                const updateParallax = () => {
-                    const scrolled = window.pageYOffset;
-                    const parallaxElements = document.querySelectorAll('.floating-element');
-                    
-                    parallaxElements.forEach((element, index) => {
-                        const speed = element.dataset.speed || 1;
-                        const yPos = -(scrolled * speed * 0.5);
-                        element.style.transform = `translate3d(0, ${yPos}px, 0)`;
-                    });
-                    
-                    ticking = false;
-                };
-                
-                const requestTick = () => {
-                    if (!ticking) {
-                        requestAnimationFrame(updateParallax);
-                        ticking = true;
-                    }
-                };
-                
-                window.addEventListener('scroll', requestTick, { passive: true });
-            }
-            
-            initLazyLoading() {
-                // Lazy load images
-                const imageObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const img = entry.target;
-                            img.src = img.dataset.src;
-                            img.classList.remove('lazy');
-                            imageObserver.unobserve(img);
-                        }
-                    });
-                });
-                
-                document.querySelectorAll('img[data-src]').forEach(img => {
-                    imageObserver.observe(img);
-                });
-            }
-            
-            addRippleEffect(element) {
-                const ripple = document.createElement('span');
-                ripple.classList.add('ripple');
-                element.appendChild(ripple);
-                
-                setTimeout(() => {
-                    ripple.remove();
-                }, 300);
-            }
-        }
-        
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => new ModernHomePage());
-        } else {
-            new ModernHomePage();
-        }
-        
-        // Performance monitoring
-        window.addEventListener('load', () => {
-            if ('performance' in window) {
-                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-                console.log(`Page load time: ${loadTime}ms`);
-            }
-        });
-        
-        // Service Worker registration for PWA capabilities
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
-            });
-        }
-    </script>
+    <!-- Authentication JavaScript -->
+    <script src="../../assets/js/script.js"></script>
 </body>
 </html>
