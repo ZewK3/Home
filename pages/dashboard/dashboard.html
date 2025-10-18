@@ -223,22 +223,22 @@
                     </ul>
                 </div>
                 
-                <div class="menu-section">
+                <div class="menu-section" data-role-section="admin">
                     <h3 class="menu-section-title">Quản trị</h3>
                     <ul class="menu-list">
-                        <li>
+                        <li data-min-role="QL">
                             <button class="menu-item" data-function="process-requests">
                                 <span class="material-icons-round">pending_actions</span>
                                 <span>Xử lý yêu cầu</span>
                             </button>
                         </li>
-                        <li>
+                        <li data-min-role="AD">
                             <button class="menu-item" data-function="approve-registration">
                                 <span class="material-icons-round">how_to_reg</span>
                                 <span>Duyệt đăng ký</span>
                             </button>
                         </li>
-                        <li>
+                        <li data-min-role="AD">
                             <button class="menu-item" data-function="grant-access">
                                 <span class="material-icons-round">admin_panel_settings</span>
                                 <span>Phân quyền</span>
@@ -272,6 +272,9 @@
             setTimeout(() => {
                 document.getElementById('mobileLoader').classList.add('hidden');
             }, 500);
+
+            // Apply role-based menu filtering
+            filterMenuByRole();
 
             // Drawer menu toggle
             const menuBtn = document.getElementById('menuBtn');
@@ -323,6 +326,62 @@
                 loadDashboardData();
             }
         });
+
+        // Role-based menu filtering
+        function filterMenuByRole() {
+            // Get current user data from localStorage
+            const userData = localStorage.getItem('userData');
+            if (!userData) {
+                console.warn('No user data found in localStorage');
+                return;
+            }
+
+            let user;
+            try {
+                user = JSON.parse(userData);
+            } catch (e) {
+                console.error('Failed to parse user data:', e);
+                return;
+            }
+
+            const userPosition = user.position || 'NV'; // Default to NV (Employee)
+            
+            console.log('Filtering menu for role:', userPosition);
+
+            // Role hierarchy: AD > QL > NV
+            const roleHierarchy = {
+                'NV': 0,      // Employee/Worker
+                'EMPLOYEE': 0,
+                'QL': 1,      // Manager
+                'MANAGER': 1,
+                'AD': 2,      // Admin
+                'ADMIN': 2
+            };
+
+            const userLevel = roleHierarchy[userPosition.toUpperCase()] || 0;
+
+            // Hide menu items based on required role
+            const menuItems = document.querySelectorAll('[data-min-role]');
+            menuItems.forEach(item => {
+                const requiredRole = item.getAttribute('data-min-role');
+                const requiredLevel = roleHierarchy[requiredRole] || 0;
+
+                if (userLevel < requiredLevel) {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Hide entire admin section if user is NV (worker)
+            const adminSection = document.querySelector('[data-role-section="admin"]');
+            if (adminSection && userLevel === 0) {
+                adminSection.style.display = 'none';
+            }
+
+            // Log visible menu items for debugging
+            console.log(`User role: ${userPosition} (level ${userLevel})`);
+            console.log(`Visible menu items: ${document.querySelectorAll('.menu-item[data-function]').length - document.querySelectorAll('[data-min-role][style*="display: none"]').length}`);
+        }
+
 
         function handleHashChange() {
             const hash = window.location.hash.substring(1); // Remove #
