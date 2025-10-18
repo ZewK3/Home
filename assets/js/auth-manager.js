@@ -575,4 +575,387 @@ class AuthManager {
     }
 }
 
-// Global authManager instance will be initialized by main-init.js
+// Initialize authentication page handlers when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuthPage);
+} else {
+    initAuthPage();
+}
+
+function initAuthPage() {
+    // Only run on auth page
+    if (!window.location.pathname.includes('/auth/')) return;
+    
+    console.log('Initializing auth page...');
+    
+    // Form switching handlers
+    const goToRegister = document.getElementById('goToRegister');
+    const goToLogin = document.getElementById('goToLogin');
+    const forgotPasswordLink = document.querySelector('.forgot-password');
+    const goToLoginFromForgot = document.getElementById('goToLoginFromForgot');
+    const goToForgotFromReset = document.getElementById('goToForgotFromReset');
+    
+    if (goToRegister) {
+        goToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('register');
+        });
+    }
+    
+    if (goToLogin) {
+        goToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('login');
+        });
+    }
+    
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('forgot');
+        });
+    }
+    
+    if (goToLoginFromForgot) {
+        goToLoginFromForgot.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('login');
+        });
+    }
+    
+    if (goToForgotFromReset) {
+        goToForgotFromReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('forgot');
+        });
+    }
+    
+    // Password toggle handlers
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('.material-icons-round');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        });
+    });
+    
+    // Login form handler
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleLogin(e);
+        });
+    }
+    
+    // Register form handler
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleRegister(e);
+        });
+    }
+    
+    // Forgot password form handler
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleForgotPassword(e);
+        });
+    }
+    
+    // Reset password form handler
+    const resetPasswordForm = document.getElementById('resetPasswordForm');
+    if (resetPasswordForm) {
+        resetPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleResetPassword(e);
+        });
+    }
+    
+    // Load stores for registration
+    loadStores();
+}
+
+function switchForm(formType) {
+    const forms = {
+        login: document.getElementById('loginFormContainer'),
+        register: document.getElementById('registerFormContainer'),
+        forgot: document.getElementById('forgotPasswordFormContainer'),
+        reset: document.getElementById('resetPasswordFormContainer')
+    };
+    
+    // Hide all forms
+    Object.values(forms).forEach(form => form?.classList.remove('active'));
+    
+    // Show requested form
+    forms[formType]?.classList.add('active');
+}
+
+async function handleLogin(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const employeeId = document.getElementById('loginEmployeeId').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    
+    if (!employeeId || !password) {
+        showNotification('Vui lòng nhập đầy đủ thông tin', 'error');
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        console.log('Attempting login with:', employeeId);
+        
+        const response = await utils.fetchAPI('?action=login', {
+            method: 'POST',
+            body: JSON.stringify({
+                employeeId: employeeId,
+                password: password
+            })
+        });
+        
+        console.log('Login response:', response);
+        
+        if (response.success && response.token) {
+            // Store auth data
+            localStorage.setItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.token);
+            localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.userData || response.data));
+            
+            showNotification('Đăng nhập thành công!', 'success');
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = '../dashboard/dashboard.html';
+            }, 1000);
+        } else {
+            showNotification(response.message || 'Đăng nhập thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function handleRegister(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const fullName = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const storeName = document.getElementById('storeName').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const acceptTerms = document.getElementById('acceptTerms').checked;
+    
+    // Validation
+    if (!fullName || !phone || !email || !storeName || !password || !confirmPassword) {
+        showNotification('Vui lòng nhập đầy đủ thông tin', 'error');
+        return;
+    }
+    
+    if (!acceptTerms) {
+        showNotification('Vui lòng đồng ý với điều khoản sử dụng', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showNotification('Mật khẩu xác nhận không khớp', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification('Mật khẩu phải có ít nhất 6 ký tự', 'error');
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        const response = await utils.fetchAPI('?action=register', {
+            method: 'POST',
+            body: JSON.stringify({
+                fullName,
+                phone,
+                email,
+                storeName,
+                password
+            })
+        });
+        
+        if (response.success) {
+            showNotification('Đăng ký thành công! Vui lòng chờ quản trị viên phê duyệt.', 'success');
+            setTimeout(() => {
+                switchForm('login');
+                form.reset();
+            }, 2000);
+        } else {
+            showNotification(response.message || 'Đăng ký thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Register error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function handleForgotPassword(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const email = document.getElementById('forgotEmail').value.trim();
+    
+    if (!email) {
+        showNotification('Vui lòng nhập email', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        const response = await utils.fetchAPI('?action=forgotPassword', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+        
+        if (response.success) {
+            showNotification('Mã xác thực đã được gửi đến email của bạn', 'success');
+            setTimeout(() => {
+                switchForm('reset');
+            }, 1500);
+        } else {
+            showNotification(response.message || 'Gửi mã thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function handleResetPassword(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const resetCode = document.getElementById('resetCode').value.trim();
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+    
+    if (!resetCode || !newPassword || !confirmNewPassword) {
+        showNotification('Vui lòng nhập đầy đủ thông tin', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+        showNotification('Mật khẩu xác nhận không khớp', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showNotification('Mật khẩu phải có ít nhất 6 ký tự', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        const response = await utils.fetchAPI('?action=resetPassword', {
+            method: 'POST',
+            body: JSON.stringify({
+                resetCode,
+                newPassword
+            })
+        });
+        
+        if (response.success) {
+            showNotification('Đặt lại mật khẩu thành công!', 'success');
+            setTimeout(() => {
+                switchForm('login');
+                form.reset();
+            }, 1500);
+        } else {
+            showNotification(response.message || 'Đặt lại mật khẩu thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Reset password error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function loadStores() {
+    try {
+        const stores = await utils.fetchAPI('?action=getStores');
+        const storeSelect = document.getElementById('storeName');
+        
+        if (stores && Array.isArray(stores)) {
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.storeName || store.name;
+                option.textContent = store.storeName || store.name;
+                storeSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading stores:', error);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.remove('hidden');
+    
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
