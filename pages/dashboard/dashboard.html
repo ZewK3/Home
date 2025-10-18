@@ -173,25 +173,25 @@
                     <h3 class="menu-section-title">Quản lý công việc</h3>
                     <ul class="menu-list">
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="work-management">
                                 <span class="material-icons-round">schedule</span>
                                 <span>Quản lý công</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="timesheet">
                                 <span class="material-icons-round">calendar_view_month</span>
                                 <span>Bảng công</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="attendance">
                                 <span class="material-icons-round">location_on</span>
                                 <span>Chấm công</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="tasks">
                                 <span class="material-icons-round">work</span>
                                 <span>Công việc</span>
                             </button>
@@ -203,19 +203,19 @@
                     <h3 class="menu-section-title">Yêu cầu</h3>
                     <ul class="menu-list">
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="submit-request">
                                 <span class="material-icons-round">send</span>
                                 <span>Gửi yêu cầu</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="attendance-request">
                                 <span class="material-icons-round">assignment</span>
                                 <span>Đơn từ</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="task-assignment">
                                 <span class="material-icons-round">task_alt</span>
                                 <span>Nhiệm vụ</span>
                             </button>
@@ -227,19 +227,19 @@
                     <h3 class="menu-section-title">Quản trị</h3>
                     <ul class="menu-list">
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="process-requests">
                                 <span class="material-icons-round">pending_actions</span>
                                 <span>Xử lý yêu cầu</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="approve-registration">
                                 <span class="material-icons-round">how_to_reg</span>
                                 <span>Duyệt đăng ký</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item">
+                            <button class="menu-item" data-function="grant-access">
                                 <span class="material-icons-round">admin_panel_settings</span>
                                 <span>Phân quyền</span>
                             </button>
@@ -292,6 +292,16 @@
                 }
             });
 
+            // Menu item click handling
+            const menuItems = document.querySelectorAll('.menu-item[data-function]');
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const functionName = item.dataset.function;
+                    navigateToFunction(functionName);
+                    drawerOverlay.classList.remove('active');
+                });
+            });
+
             // Bottom navigation
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
@@ -300,10 +310,13 @@
                     item.classList.add('active');
                     
                     const navType = item.dataset.nav;
-                    console.log('Navigate to:', navType);
-                    // Add navigation logic here
+                    navigateToFunction(navType);
                 });
             });
+
+            // Hash-based navigation support
+            window.addEventListener('hashchange', handleHashChange);
+            handleHashChange(); // Handle initial hash
 
             // Load data from API (if utils.fetchAPI is available)
             if (typeof utils !== 'undefined' && utils.fetchAPI) {
@@ -311,31 +324,464 @@
             }
         });
 
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1); // Remove #
+            if (hash) {
+                navigateToFunction(hash);
+            }
+        }
+
+        function navigateToFunction(functionName) {
+            // Update URL hash
+            if (window.location.hash !== `#${functionName}`) {
+                window.location.hash = functionName;
+            }
+
+            // Update header title
+            const headerTitle = document.querySelector('.header-title');
+            const titles = {
+                'home': 'Dashboard',
+                'schedule': 'Lịch làm việc',
+                'tasks': 'Công việc',
+                'chat': 'Tin nhắn',
+                'profile': 'Cá nhân',
+                'work-management': 'Quản lý công',
+                'timesheet': 'Bảng công',
+                'attendance': 'Chấm công',
+                'submit-request': 'Gửi yêu cầu',
+                'attendance-request': 'Đơn từ chấm công',
+                'task-assignment': 'Phân công nhiệm vụ',
+                'process-requests': 'Xử lý yêu cầu',
+                'approve-registration': 'Duyệt đăng ký',
+                'grant-access': 'Phân quyền'
+            };
+            headerTitle.textContent = titles[functionName] || 'Dashboard';
+
+            // Render content
+            renderContent(functionName);
+        }
+
+        function renderContent(functionName) {
+            const mainContent = document.getElementById('mainContent');
+            
+            // Content templates
+            const content = {
+                'home': getHomeContent(),
+                'schedule': getScheduleContent(),
+                'tasks': getTasksContent(),
+                'chat': getChatContent(),
+                'profile': getProfileContent(),
+                'work-management': getWorkManagementContent(),
+                'timesheet': getTimesheetContent(),
+                'attendance': getAttendanceContent(),
+                'submit-request': getSubmitRequestContent(),
+                'attendance-request': getAttendanceRequestContent(),
+                'task-assignment': getTaskAssignmentContent(),
+                'process-requests': getProcessRequestsContent(),
+                'approve-registration': getApproveRegistrationContent(),
+                'grant-access': getGrantAccessContent()
+            };
+
+            mainContent.innerHTML = content[functionName] || content['home'];
+        }
+
+        function getHomeContent() {
+            return `
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalEmployees">248</div>
+                        <div class="stat-label">Nhân viên</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="todayShift">42/43</div>
+                        <div class="stat-label">Ca hôm nay</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pendingTasks">12</div>
+                        <div class="stat-label">Công việc</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="newMessages">24</div>
+                        <div class="stat-label">Tin nhắn</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">bolt</span>
+                            Thao tác nhanh
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('attendance')">
+                            <span class="material-icons-round">check_circle</span>
+                            Chấm công
+                        </button>
+                        <button class="btn btn-secondary btn-full mb-md" onclick="navigateToFunction('submit-request')">
+                            <span class="material-icons-round">request_page</span>
+                            Gửi yêu cầu
+                        </button>
+                        <button class="btn btn-secondary btn-full" onclick="navigateToFunction('schedule')">
+                            <span class="material-icons-round">schedule</span>
+                            Xem ca làm việc
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activities Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">history</span>
+                            Hoạt động gần đây
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list">
+                            <li class="list-item">
+                                <div class="list-item-icon">
+                                    <span class="material-icons-round">person_add</span>
+                                </div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Nhân viên mới</div>
+                                    <div class="list-item-subtitle">Nguyễn Văn A - 2 phút trước</div>
+                                </div>
+                            </li>
+                            <li class="list-item">
+                                <div class="list-item-icon">
+                                    <span class="material-icons-round">schedule</span>
+                                </div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Yêu cầu nghỉ phép</div>
+                                    <div class="list-item-subtitle">Trần Thị B - 15 phút trước</div>
+                                </div>
+                            </li>
+                            <li class="list-item">
+                                <div class="list-item-icon">
+                                    <span class="material-icons-round">check_circle</span>
+                                </div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Chấm công hoàn tất</div>
+                                    <div class="list-item-subtitle">Ca sáng - 1 giờ trước</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getScheduleContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">calendar_month</span>
+                            Lịch làm việc tháng này
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="list">
+                            <div class="list-item">
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Thứ 2, 18/10/2025</div>
+                                    <div class="list-item-subtitle">Ca sáng: 8:00 - 12:00</div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Thứ 3, 19/10/2025</div>
+                                    <div class="list-item-subtitle">Ca chiều: 13:00 - 17:00</div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Thứ 4, 20/10/2025</div>
+                                    <div class="list-item-subtitle">Ca sáng: 8:00 - 12:00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTasksContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">task</span>
+                            Công việc của tôi
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="list">
+                            <div class="list-item">
+                                <div class="list-item-icon">
+                                    <span class="material-icons-round">pending</span>
+                                </div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Hoàn thành báo cáo</div>
+                                    <div class="list-item-subtitle">Hạn: 20/10/2025</div>
+                                </div>
+                            </div>
+                            <div class="list-item">
+                                <div class="list-item-icon">
+                                    <span class="material-icons-round">check_circle</span>
+                                </div>
+                                <div class="list-item-content">
+                                    <div class="list-item-title">Họp nhóm</div>
+                                    <div class="list-item-subtitle">Hoàn thành</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getChatContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">chat</span>
+                            Tin nhắn
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center text-muted">Chức năng chat đang được phát triển</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getProfileContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">person</span>
+                            Thông tin cá nhân
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Họ và tên</label>
+                            <input type="text" class="form-input" value="Nguyễn Văn A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" value="nguyenvana@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-input" value="0123456789">
+                        </div>
+                        <button class="btn btn-primary btn-full">Cập nhật</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getWorkManagementContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">schedule</span>
+                            Quản lý công
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Quản lý lịch làm việc và chấm công</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTimesheetContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">calendar_view_month</span>
+                            Bảng công tháng 10/2025
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Tổng số ngày làm việc: 22 ngày</p>
+                        <p>Số ngày đã làm: 15 ngày</p>
+                        <p>Số ngày nghỉ: 2 ngày</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getAttendanceContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">location_on</span>
+                            Chấm công
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary btn-full mb-md">
+                            <span class="material-icons-round">login</span>
+                            Check In
+                        </button>
+                        <button class="btn btn-secondary btn-full">
+                            <span class="material-icons-round">logout</span>
+                            Check Out
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getSubmitRequestContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">send</span>
+                            Gửi yêu cầu
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Loại yêu cầu</label>
+                            <select class="form-select">
+                                <option>Nghỉ phép</option>
+                                <option>Làm thêm giờ</option>
+                                <option>Điều chỉnh ca</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nội dung</label>
+                            <textarea class="form-textarea"></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-full">Gửi yêu cầu</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getAttendanceRequestContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">assignment</span>
+                            Đơn từ chấm công
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Danh sách đơn từ của bạn</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getTaskAssignmentContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">task_alt</span>
+                            Phân công nhiệm vụ
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Quản lý và phân công nhiệm vụ</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getProcessRequestsContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">pending_actions</span>
+                            Xử lý yêu cầu
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Quản lý và phê duyệt các yêu cầu</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getApproveRegistrationContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">how_to_reg</span>
+                            Duyệt đăng ký
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Phê duyệt đăng ký nhân viên mới</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getGrantAccessContent() {
+            return `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="material-icons-round">admin_panel_settings</span>
+                            Phân quyền
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p>Quản lý quyền truy cập hệ thống</p>
+                    </div>
+                </div>
+            `;
+        }
+
         async function loadDashboardData() {
             try {
                 // Load employee count
                 const empResponse = await utils.fetchAPI('?action=getEmployeeCount');
                 if (empResponse && empResponse.success) {
-                    document.getElementById('totalEmployees').textContent = empResponse.data.count || '248';
+                    const elem = document.getElementById('totalEmployees');
+                    if (elem) elem.textContent = empResponse.data.count || '248';
                 }
 
                 // Load today's shift
                 const shiftResponse = await utils.fetchAPI('?action=getTodayShift');
                 if (shiftResponse && shiftResponse.success) {
                     const data = shiftResponse.data;
-                    document.getElementById('todayShift').textContent = `${data.present}/${data.total}`;
+                    const elem = document.getElementById('todayShift');
+                    if (elem) elem.textContent = `${data.present}/${data.total}`;
                 }
 
                 // Load pending tasks
                 const tasksResponse = await utils.fetchAPI('?action=getPendingTasks');
                 if (tasksResponse && tasksResponse.success) {
-                    document.getElementById('pendingTasks').textContent = tasksResponse.data.count || '12';
+                    const elem = document.getElementById('pendingTasks');
+                    if (elem) elem.textContent = tasksResponse.data.count || '12';
                 }
 
                 // Load messages
                 const msgResponse = await utils.fetchAPI('?action=getRecentMessagesCount');
                 if (msgResponse && msgResponse.success) {
-                    document.getElementById('newMessages').textContent = msgResponse.data.count || '24';
+                    const elem = document.getElementById('newMessages');
+                    if (elem) elem.textContent = msgResponse.data.count || '24';
                 }
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
