@@ -35,13 +35,26 @@
             <div class="header-actions">
                 <button id="notifBtn" class="icon-btn" aria-label="Thông báo">
                     <span class="material-icons-round">notifications</span>
-                    <span class="badge">3</span>
+                    <span class="notification-badge" style="display:none;"></span>
                 </button>
                 <button id="userBtn" class="icon-btn" aria-label="Tài khoản">
                     <span class="material-icons-round">account_circle</span>
                 </button>
             </div>
         </header>
+
+        <!-- Notification Panel -->
+        <div id="notificationPanel" class="notification-panel hidden">
+            <div class="notification-header">
+                <h3>Thông báo</h3>
+                <button id="closeNotifPanel" class="icon-btn-small">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div id="notificationList" class="notification-list">
+                <!-- Notifications will be loaded dynamically -->
+            </div>
+        </div>
 
         <!-- Mobile Content -->
         <main class="mobile-content" id="mainContent">
@@ -70,6 +83,19 @@
                 <span class="nav-label">Cá nhân</span>
             </button>
         </nav>
+    </div>
+
+    <!-- Notification Panel -->
+    <div id="notificationPanel" class="notification-panel hidden">
+        <div class="notification-header">
+            <h3>Thông báo</h3>
+            <button id="markAllRead" class="mark-all-btn">
+                <span class="material-icons-round">done_all</span>
+            </button>
+        </div>
+        <div id="notificationList" class="notification-list">
+            <!-- Notifications will be rendered here -->
+        </div>
     </div>
 
     <!-- Drawer Menu -->
@@ -240,6 +266,25 @@
                 localStorage.clear();
                 window.location.href = '../../pages/auth/index.html';
             });
+
+            // Notification Panel
+            const notifBtn = document.getElementById('notifBtn');
+            const closeNotifPanel = document.getElementById('closeNotifPanel');
+            const notificationPanel = document.getElementById('notificationPanel');
+
+            notifBtn.addEventListener('click', () => {
+                DashboardContent.toggleNotificationPanel();
+            });
+
+            closeNotifPanel.addEventListener('click', () => {
+                notificationPanel.classList.add('hidden');
+            });
+
+            // Update notification badge every 30 seconds
+            DashboardContent.updateNotificationBadge();
+            setInterval(() => {
+                DashboardContent.updateNotificationBadge();
+            }, 30000);
 
             // Hash-based navigation support
             window.addEventListener('hashchange', handleHashChange);

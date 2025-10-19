@@ -356,4 +356,231 @@ const DashboardAPI = {
         }
     },
 
+    /**
+     * Notification System (Phase 3)
+     */
+    async getNotifications() {
+        try {
+            const response = await utils.fetchAPI('?action=getNotifications');
+            return response.success ? response.data : [];
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return [];
+        }
+    },
+
+    async getNotificationCount() {
+        try {
+            const response = await utils.fetchAPI('?action=getNotificationCount');
+            return response.success ? response.count : 0;
+        } catch (error) {
+            console.error('Error fetching notification count:', error);
+            return 0;
+        }
+    },
+
+    async markNotificationRead(notificationId) {
+        try {
+            const response = await utils.fetchAPI('?action=markNotificationRead', {
+                method: 'POST',
+                body: JSON.stringify({ notificationId })
+            });
+            return response;
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async markAllNotificationsRead() {
+        try {
+            const response = await utils.fetchAPI('?action=markAllNotificationsRead', {
+                method: 'POST'
+            });
+            return response;
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    /**
+     * Cloudflare Analytics (Phase 3 - Admin Only)
+     */
+    async getCloudflareStats() {
+        try {
+            const response = await utils.fetchAPI('?action=getCloudflareStats');
+            return response.success ? response.data : null;
+        } catch (error) {
+            console.error('Error fetching Cloudflare stats:', error);
+            return null;
+        }
+    },
+
+    async getSystemMetrics() {
+        try {
+            const response = await utils.fetchAPI('?action=getSystemMetrics');
+            return response.success ? response.data : null;
+        } catch (error) {
+            console.error('Error fetching system metrics:', error);
+            return null;
+        }
+    },
+
+    async getEmployeeCount() {
+        try {
+            const response = await utils.fetchAPI('?action=getEmployeeCount');
+            return response.success ? response.count : 0;
+        } catch (error) {
+            console.error('Error fetching employee count:', error);
+            return 0;
+        }
+    },
+
+    /**
+     * Schedule Management (Phase 4)
+     */
+    async getAvailableShifts(weekStart) {
+        try {
+            const response = await utils.fetchAPI(`?action=getAvailableShifts&weekStart=${weekStart}`);
+            return response.success ? response.data : [];
+        } catch (error) {
+            console.error('Error fetching available shifts:', error);
+            return [];
+        }
+    },
+
+    async registerForShift(shiftId) {
+        try {
+            const response = await utils.fetchAPI('?action=registerForShift', {
+                method: 'POST',
+                body: JSON.stringify({ shiftId })
+            });
+            return response;
+        } catch (error) {
+            console.error('Error registering for shift:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    async assignShift(employeeId, shiftId, date) {
+        try {
+            const response = await utils.fetchAPI('?action=assignShift', {
+                method: 'POST',
+                body: JSON.stringify({ employeeId, shiftId, date })
+            });
+            return response;
+        } catch (error) {
+            console.error('Error assigning shift:', error);
+            return { success: false, message: error.message };
+        }
+    },
+
+    /**
+     * PHASE 3: Notification System APIs
+     */
+    async getNotifications() {
+        try {
+            const response = await utils.fetchAPI('?action=getNotifications');
+            return response.notifications || [];
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return [];
+        }
+    },
+
+    async getNotificationCount() {
+        try {
+            const response = await utils.fetchAPI('?action=getNotificationCount');
+            return response.count || 0;
+        } catch (error) {
+            console.error('Error fetching notification count:', error);
+            return 0;
+        }
+    },
+
+    async markNotificationRead(notificationId) {
+        try {
+            const response = await utils.fetchAPI('?action=markNotificationRead', {
+                method: 'POST',
+                body: JSON.stringify({ notificationId })
+            });
+            return response;
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+            return { success: false };
+        }
+    },
+
+    async markAllNotificationsRead() {
+        try {
+            const response = await utils.fetchAPI('?action=markAllNotificationsRead', {
+                method: 'POST'
+            });
+            return response;
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+            return { success: false };
+        }
+    },
+
+    /**
+     * PHASE 4: Enhanced Schedule Management APIs
+     */
+    async getAvailableShifts(weekStart) {
+        try {
+            const response = await utils.fetchAPI(`?action=getAvailableShifts&weekStart=${encodeURIComponent(weekStart)}`);
+            return response.shifts || [];
+        } catch (error) {
+            console.error('Error fetching available shifts:', error);
+            return [];
+        }
+    },
+
+    async registerForShift(shiftId) {
+        try {
+            const response = await utils.fetchAPI('?action=registerForShift', {
+                method: 'POST',
+                body: JSON.stringify({ shiftId })
+            });
+            return response;
+        } catch (error) {
+            console.error('Error registering for shift:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    async assignShift(employeeId, shiftId, date, shiftType) {
+        try {
+            const response = await utils.fetchAPI('?action=assignShift', {
+                method: 'POST',
+                body: JSON.stringify({ employeeId, shiftId, date, shiftType })
+            });
+            return response;
+        } catch (error) {
+            console.error('Error assigning shift:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    async getWeekSchedule(weekStart) {
+        try {
+            const response = await utils.fetchAPI(`?action=getWeekSchedule&weekStart=${encodeURIComponent(weekStart)}`);
+            return response.schedule || [];
+        } catch (error) {
+            console.error('Error fetching week schedule:', error);
+            return [];
+        }
+    },
+
+    async getTeamSchedule(weekStart) {
+        try {
+            const response = await utils.fetchAPI(`?action=getTeamSchedule&weekStart=${encodeURIComponent(weekStart)}`);
+            return response.teamSchedule || [];
+        } catch (error) {
+            console.error('Error fetching team schedule:', error);
+            return [];
+        }
+    }
+
 };

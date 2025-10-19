@@ -269,60 +269,302 @@ const DashboardContent = {
     /**
      * Work Schedule
      */
+    /**
+     * PHASE 4: Mobile-Optimized Schedule UI (7-day swipe view)
+     */
     async renderSchedule() {
         const today = new Date();
-        const month = today.getMonth() + 1;
-        const year = today.getFullYear();
+        const weekStart = this.getWeekStart(today);
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userRole = this.roleHierarchy[userData?.position?.toUpperCase()] || 0;
+        
+        // Role-specific schedule view
+        if (userRole >= 1) {
+            // Manager/Admin: Team schedule management
+            return this.renderScheduleManagement(weekStart);
+        } else {
+            // Worker: Personal schedule view with registration
+            return this.renderScheduleRegistration(weekStart);
+        }
+    },
 
+    getWeekStart(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start
+        const monday = new Date(d.setDate(diff));
+        return monday.toISOString().split('T')[0];
+    },
+
+    async renderScheduleRegistration(weekStart) {
         const content = `
             <div class="card">
-                <div class="card-header">
+                <div class="card-header schedule-header">
+                    <button id="prevWeek" class="icon-btn-small" aria-label="Tuần trước">
+                        <span class="material-icons-round">chevron_left</span>
+                    </button>
                     <h2 class="card-title">
                         <span class="material-icons-round">calendar_month</span>
-                        Lịch làm việc tháng ${month}/${year}
+                        <span id="weekTitle">Tuần này</span>
                     </h2>
+                    <button id="nextWeek" class="icon-btn-small" aria-label="Tuần sau">
+                        <span class="material-icons-round">chevron_right</span>
+                    </button>
                 </div>
                 <div class="card-body">
-                    <div id="scheduleList">
+                    <div id="weeklySchedule" class="schedule-grid">
                         <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
         `;
 
-        // Load shift assignments
-        setTimeout(() => this.loadShiftAssignments(month, year), 100);
-
+        setTimeout(() => this.loadWeeklySchedule(weekStart), 100);
+        
         return content;
     },
 
-    async loadShiftAssignments(month, year) {
-        const container = document.getElementById('scheduleList');
+    async loadWeeklySchedule(weekStart) {
+        const container = document.getElementById('weeklySchedule');
         if (!container) return;
 
-        const shifts = await DashboardAPI.getShiftAssignments(this.employeeId, month, year);
+        this.currentWeekStart = weekStart;
         
-        if (!shifts || shifts.length === 0) {
-            container.innerHTML = '<div class="message">Không có lịch làm việc</div>';
+        // Update week title
+        const startDate = new Date(weekStart);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        
+        const weekTitle = document.getElementById('weekTitle');
+        if (weekTitle) {
+            weekTitle.textContent = `${startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
+        }
+
+        // Fetch week schedule
+        const schedule = await DashboardAPI.getWeekSchedule(weekStart);
+        
+        // Generate 7-day grid
+        let html = '<div class="week-grid">';
+        
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            const dayName = date.toLocaleDateString('vi-VN', { weekday: 'short' });
+            const dayNum = date.getDate();
+            
+            const daySchedule = schedule.find(s => s.date === dateStr);
+            const shiftClass = daySchedule ? `shift-${daySchedule.shiftType}` : 'no-shift';
+            
+            html += `
+                <div class="day-card ${shiftClass}" data-date="${dateStr}">
+                    <div class="day-header">
+                        <div class="day-name">${dayName}</div>
+                        <div class="day-number">${dayNum}</div>
+                    </div>
+                    <div class="day-content">
+                        ${daySchedule ? `
+                            <div class="shift-info">
+                                <div class="shift-type">${this.getShiftName(daySchedule.shiftType)}</div>
+                                <div class="shift-time">${daySchedule.startTime} - ${daySchedule.endTime}</div>
+                            </div>
+                        ` : `
+                            <button class="btn-register-shift" data-date="${dateStr}">
+                                <span class="material-icons-round">add</span>
+                                Đăng ký
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+
+        // Add swipe navigation listeners
+        const prevBtn = document.getElementById('prevWeek');
+        const nextBtn = document.getElementById('nextWeek');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                const newStart = new Date(this.currentWeekStart);
+                newStart.setDate(newStart.getDate() - 7);
+                this.loadWeeklySchedule(newStart.toISOString().split('T')[0]);
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                const newStart = new Date(this.currentWeekStart);
+                newStart.setDate(newStart.getDate() + 7);
+                this.loadWeeklySchedule(newStart.toISOString().split('T')[0]);
+            });
+        }
+
+        // Add shift registration handlers
+        const registerBtns = container.querySelectorAll('.btn-register-shift');
+        registerBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const date = btn.dataset.date;
+                await this.showShiftRegistrationDialog(date);
+            });
+        });
+    },
+
+    getShiftName(shiftType) {
+        const names = {
+            'morning': '🌅 Sáng',
+            'afternoon': '☀️ Chiều',
+            'night': '🌙 Tối'
+        };
+        return names[shiftType] || shiftType;
+    },
+
+    async showShiftRegistrationDialog(date) {
+        // Simple confirmation for now
+        const shiftTypes = ['morning', 'afternoon', 'night'];
+        const shiftNames = shiftTypes.map(t => this.getShiftName(t));
+        
+        const choice = confirm(`Đăng ký ca làm cho ngày ${new Date(date).toLocaleDateString('vi-VN')}?\n\nChọn OK để tiếp tục`);
+        
+        if (choice) {
+            // For demo, register for morning shift
+            const result = await DashboardAPI.registerForShift({ date, shiftType: 'morning' });
+            
+            if (result.success) {
+                alert('Đã gửi yêu cầu đăng ký ca làm!');
+                this.loadWeeklySchedule(this.currentWeekStart);
+            } else {
+                alert('Không thể đăng ký ca làm. Vui lòng thử lại.');
+            }
+        }
+    },
+
+    async renderScheduleManagement(weekStart) {
+        const content = `
+            <div class="card">
+                <div class="card-header schedule-header">
+                    <button id="prevWeek" class="icon-btn-small" aria-label="Tuần trước">
+                        <span class="material-icons-round">chevron_left</span>
+                    </button>
+                    <h2 class="card-title">
+                        <span class="material-icons-round">calendar_month</span>
+                        <span id="weekTitle">Xếp lịch nhóm</span>
+                    </h2>
+                    <button id="nextWeek" class="icon-btn-small" aria-label="Tuần sau">
+                        <span class="material-icons-round">chevron_right</span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="teamSchedule" class="schedule-grid">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => this.loadTeamSchedule(weekStart), 100);
+        
+        return content;
+    },
+
+    async loadTeamSchedule(weekStart) {
+        const container = document.getElementById('teamSchedule');
+        if (!container) return;
+
+        this.currentWeekStart = weekStart;
+        
+        // Update week title
+        const startDate = new Date(weekStart);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 6);
+        
+        const weekTitle = document.getElementById('weekTitle');
+        if (weekTitle) {
+            weekTitle.textContent = `${startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
+        }
+
+        // Fetch team schedule
+        const teamSchedule = await DashboardAPI.getTeamSchedule(weekStart);
+        
+        if (!teamSchedule || teamSchedule.length === 0) {
+            container.innerHTML = '<div class="message">Chưa có lịch làm việc cho tuần này</div>';
             return;
         }
 
-        let html = '<div class="list">';
-        shifts.forEach(shift => {
-            const date = new Date(shift.date);
-            const dayName = date.toLocaleDateString('vi-VN', { weekday: 'long' });
+        // Group by employee
+        const employeeMap = {};
+        teamSchedule.forEach(entry => {
+            if (!employeeMap[entry.employeeId]) {
+                employeeMap[entry.employeeId] = {
+                    name: entry.employeeName,
+                    schedule: []
+                };
+            }
+            employeeMap[entry.employeeId].schedule.push(entry);
+        });
+
+        // Render team schedule
+        let html = '<div class="team-schedule-list">';
+        Object.values(employeeMap).forEach(employee => {
             html += `
-                <div class="list-item">
-                    <div class="list-item-content">
-                        <div class="list-item-title">${dayName}, ${shift.date}</div>
-                        <div class="list-item-subtitle">${shift.shiftName}: ${shift.startTime} - ${shift.endTime}</div>
+                <div class="team-member-schedule">
+                    <h3 class="employee-name">${employee.name}</h3>
+                    <div class="mini-week-grid">
+            `;
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const dayShift = employee.schedule.find(s => s.date === dateStr);
+                
+                html += `
+                    <div class="mini-day ${dayShift ? 'has-shift shift-' + dayShift.shiftType : ''}">
+                        <div class="mini-day-num">${date.getDate()}</div>
+                        ${dayShift ? `<div class="mini-shift-icon">${this.getShiftIcon(dayShift.shiftType)}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            html += `
                     </div>
                 </div>
             `;
         });
         html += '</div>';
-
+        
         container.innerHTML = html;
+
+        // Add navigation listeners
+        const prevBtn = document.getElementById('prevWeek');
+        const nextBtn = document.getElementById('nextWeek');
+        
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                const newStart = new Date(this.currentWeekStart);
+                newStart.setDate(newStart.getDate() - 7);
+                this.loadTeamSchedule(newStart.toISOString().split('T')[0]);
+            });
+        }
+        
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                const newStart = new Date(this.currentWeekStart);
+                newStart.setDate(newStart.getDate() + 7);
+                this.loadTeamSchedule(newStart.toISOString().split('T')[0]);
+            });
+        }
+    },
+
+    getShiftIcon(shiftType) {
+        const icons = {
+            'morning': '🌅',
+            'afternoon': '☀️',
+            'night': '🌙'
+        };
+        return icons[shiftType] || '•';
     },
 
     /**
@@ -1084,5 +1326,377 @@ const DashboardContent = {
 
     renderTaskAssignment() {
         return '<div class="card"><div class="card-body"><div class="message">Phân công nhiệm vụ</div></div></div>';
+    },
+
+    /**
+     * PHASE 3: Notification System
+     */
+    async renderNotifications() {
+        const content = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">notifications</span>
+                        Thông báo
+                    </h2>
+                    <button class="btn btn-sm" onclick="DashboardContent.markAllRead()">
+                        <span class="material-icons-round">done_all</span>
+                        Đánh dấu tất cả đã đọc
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="notificationsList">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => this.loadNotifications(), 100);
+        return content;
+    },
+
+    async loadNotifications() {
+        const container = document.getElementById('notificationsList');
+        if (!container) return;
+
+        const notifications = await DashboardAPI.getNotifications();
+        
+        if (!notifications || notifications.length === 0) {
+            container.innerHTML = '<div class="message">Không có thông báo</div>';
+            return;
+        }
+
+        let html = '<div class="notification-list">';
+        notifications.forEach(notif => {
+            const iconMap = {
+                'request': 'request_page',
+                'task': 'assignment',
+                'system': 'info',
+                'approval': 'verified'
+            };
+            const icon = iconMap[notif.type] || 'notifications';
+            const unreadClass = notif.read ? '' : 'unread';
+            const timeAgo = this.formatTimeAgo(notif.createdAt);
+
+            html += `
+                <div class="notification-item ${unreadClass}" onclick="DashboardContent.handleNotificationClick('${notif.id}')">
+                    <div class="notification-icon">
+                        <span class="material-icons-round">${icon}</span>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${utils.escapeHtml(notif.title)}</div>
+                        <div class="notification-message">${utils.escapeHtml(notif.message)}</div>
+                        <div class="notification-time">${timeAgo}</div>
+                    </div>
+                    ${!notif.read ? '<div class="notification-badge"></div>' : ''}
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    },
+
+    async handleNotificationClick(notificationId) {
+        await DashboardAPI.markNotificationRead(notificationId);
+        await this.updateNotificationBadge();
+        await this.loadNotifications();
+    },
+
+    async markAllRead() {
+        await DashboardAPI.markAllNotificationsRead();
+        await this.updateNotificationBadge();
+        await this.loadNotifications();
+    },
+
+    async updateNotificationBadge() {
+        const count = await DashboardAPI.getNotificationCount();
+        const badge = document.querySelector('.mobile-header .badge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    },
+
+    formatTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        
+        if (diffMins < 1) return 'Vừa xong';
+        if (diffMins < 60) return `${diffMins} phút trước`;
+        
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours} giờ trước`;
+        
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 7) return `${diffDays} ngày trước`;
+        
+        return date.toLocaleDateString('vi-VN');
+    },
+
+    /**
+     * PHASE 4: Mobile-Optimized Schedule UI
+     */
+    async renderScheduleRegistration() {
+        const today = new Date();
+        const weekStart = this.getMonday(today);
+        
+        const content = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">event_available</span>
+                        Đăng ký ca làm việc
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="schedule-week-nav">
+                        <button class="btn btn-icon" onclick="DashboardContent.changeWeek(-1)">
+                            <span class="material-icons-round">chevron_left</span>
+                        </button>
+                        <span id="weekDisplay">Đang tải...</span>
+                        <button class="btn btn-icon" onclick="DashboardContent.changeWeek(1)">
+                            <span class="material-icons-round">chevron_right</span>
+                        </button>
+                    </div>
+                    <div id="weeklySchedule" data-week-start="${weekStart.toISOString()}">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => this.loadWeeklySchedule(), 100);
+        return content;
+    },
+
+    async loadWeeklySchedule() {
+        const container = document.getElementById('weeklySchedule');
+        if (!container) return;
+
+        const weekStartStr = container.getAttribute('data-week-start');
+        const weekStart = new Date(weekStartStr);
+        
+        // Update week display
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        document.getElementById('weekDisplay').textContent = 
+            `${weekStart.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit'})} - ${weekEnd.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit'})}`;
+
+        const shifts = await DashboardAPI.getAvailableShifts(weekStartStr);
+        
+        if (!shifts || shifts.length === 0) {
+            container.innerHTML = '<div class="message">Không có ca làm việc khả dụng</div>';
+            return;
+        }
+
+        let html = '<div class="schedule-grid">';
+        
+        // Create 7-day grid
+        for (let i = 0; i < 7; i++) {
+            const currentDate = new Date(weekStart);
+            currentDate.setDate(currentDate.getDate() + i);
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const dayName = currentDate.toLocaleDateString('vi-VN', { weekday: 'short' });
+            const dayNum = currentDate.getDate();
+            
+            const dayShifts = shifts.filter(s => s.date === dateStr);
+            
+            html += `
+                <div class="schedule-day">
+                    <div class="schedule-day-header">
+                        <div class="day-name">${dayName}</div>
+                        <div class="day-num">${dayNum}</div>
+                    </div>
+                    <div class="schedule-day-shifts">
+            `;
+            
+            if (dayShifts.length === 0) {
+                html += '<div class="no-shift">Không có ca</div>';
+            } else {
+                dayShifts.forEach(shift => {
+                    const shiftClass = shift.registered ? 'registered' : 
+                                      shift.available ? 'available' : 'full';
+                    const shiftType = shift.shiftName.includes('Sáng') ? 'morning' :
+                                     shift.shiftName.includes('Chiều') ? 'afternoon' : 'night';
+                    
+                    html += `
+                        <div class="shift-card ${shiftClass} ${shiftType}" 
+                             onclick="${shift.available && !shift.registered ? `DashboardContent.registerShift('${shift.id}')` : ''}">
+                            <div class="shift-name">${shift.shiftName}</div>
+                            <div class="shift-time">${shift.startTime} - ${shift.endTime}</div>
+                            ${shift.registered ? '<span class="shift-badge">Đã đăng ký</span>' : ''}
+                            ${!shift.available && !shift.registered ? '<span class="shift-badge">Đầy</span>' : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            html += `
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        container.innerHTML = html;
+    },
+
+    async changeWeek(direction) {
+        const container = document.getElementById('weeklySchedule');
+        if (!container) return;
+
+        const currentWeekStart = new Date(container.getAttribute('data-week-start'));
+        currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+        
+        container.setAttribute('data-week-start', currentWeekStart.toISOString());
+        await this.loadWeeklySchedule();
+    },
+
+    async registerShift(shiftId) {
+        const result = await DashboardAPI.registerForShift(shiftId);
+        if (result.success) {
+            await this.loadWeeklySchedule();
+            // Show success message
+            alert('Đăng ký ca thành công!');
+        } else {
+            alert(result.message || 'Đăng ký thất bại');
+        }
+    },
+
+    getMonday(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    },
+
+    async renderScheduleManagement() {
+        const content = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">calendar_month</span>
+                        Quản lý ca làm việc
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message info">
+                        Chức năng quản lý ca làm việc (chỉ dành cho Quản lý và Admin)
+                    </div>
+                    <div class="schedule-week-nav">
+                        <button class="btn btn-icon" onclick="DashboardContent.changeManagementWeek(-1)">
+                            <span class="material-icons-round">chevron_left</span>
+                        </button>
+                        <span id="managementWeekDisplay">Đang tải...</span>
+                        <button class="btn btn-icon" onclick="DashboardContent.changeManagementWeek(1)">
+                            <span class="material-icons-round">chevron_right</span>
+                        </button>
+                    </div>
+                    <div id="managementSchedule">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => this.loadManagementSchedule(), 100);
+        return content;
+    },
+
+    async loadManagementSchedule() {
+        const container = document.getElementById('managementSchedule');
+        if (!container) return;
+
+        // Placeholder for management schedule
+        container.innerHTML = `
+            <div class="message">
+                Giao diện quản lý ca làm việc - cho phép xếp ca cho nhân viên
+            </div>
+        `;
+    },
+
+    async changeManagementWeek(direction) {
+        // Placeholder for week navigation
+        await this.loadManagementSchedule();
+    },
+
+    /**
+     * PHASE 3: Notification System Rendering
+     */
+    async renderNotifications() {
+        const panel = document.getElementById('notificationPanel');
+        if (!panel) return;
+
+        const notifications = await DashboardAPI.getNotifications();
+        const list = document.getElementById('notificationList');
+        
+        if (notifications.length === 0) {
+            list.innerHTML = `
+                <div class="notification-empty">
+                    <span class="material-icons-round" style="font-size: 48px; color: var(--text-muted);">notifications_none</span>
+                    <p>Không có thông báo mới</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = notifications.map(notif => `
+            <div class="notification-item ${notif.read ? '' : 'unread'}" data-id="${notif.id}">
+                <div class="notification-icon">
+                    <span class="material-icons-round">${this.getNotificationIcon(notif.type)}</span>
+                </div>
+                <div class="notification-title">${utils.escapeHtml(notif.title)}</div>
+                <div class="notification-body">${utils.escapeHtml(notif.body)}</div>
+                <div class="notification-time">${utils.formatTimeAgo(notif.createdAt)}</div>
+            </div>
+        `).join('');
+
+        // Add click handlers
+        list.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const id = item.dataset.id;
+                await DashboardAPI.markNotificationRead(id);
+                item.classList.remove('unread');
+                this.updateNotificationBadge();
+            });
+        });
+    },
+
+    getNotificationIcon(type) {
+        const icons = {
+            'task': 'assignment',
+            'request': 'pending_actions',
+            'schedule': 'calendar_today',
+            'approval': 'approval',
+            'system': 'notifications'
+        };
+        return icons[type] || 'notifications';
+    },
+
+    async updateNotificationBadge() {
+        const count = await DashboardAPI.getNotificationCount();
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            badge.textContent = count > 0 ? count : '';
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+    },
+
+    toggleNotificationPanel() {
+        const panel = document.getElementById('notificationPanel');
+        if (panel) {
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) {
+                this.renderNotifications();
+            }
+        }
     }
 };
