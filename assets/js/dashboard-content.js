@@ -23,16 +23,32 @@ const DashboardContent = {
     },
 
     /**
-     * Home Dashboard with Stats
+     * Home Dashboard with Role-Specific Views
      */
     async renderHome() {
+        const position = this.userData?.position || 'NV';
+        
+        // Render based on role
+        if (position === 'AD' || position === 'ADMIN') {
+            return this.renderAdminDashboard();
+        } else if (position === 'QL' || position === 'MANAGER') {
+            return this.renderManagerDashboard();
+        } else {
+            return this.renderWorkerDashboard();
+        }
+    },
+
+    /**
+     * Worker (NV) Dashboard
+     */
+    async renderWorkerDashboard() {
         const content = `
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-value" id="totalEmployees">
+                    <div class="stat-value" id="hoursWorked">
                         <div class="spinner-sm"></div>
                     </div>
-                    <div class="stat-label">Nhân viên</div>
+                    <div class="stat-label">Giờ làm việc</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="todayShift">
@@ -45,12 +61,6 @@ const DashboardContent = {
                         <div class="spinner-sm"></div>
                     </div>
                     <div class="stat-label">Công việc</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="newMessages">
-                        <div class="spinner-sm"></div>
-                    </div>
-                    <div class="stat-label">Tin nhắn</div>
                 </div>
             </div>
 
@@ -92,36 +102,168 @@ const DashboardContent = {
             </div>
         `;
 
-        // Load stats data
-        this.loadHomeStats();
+        // Load worker stats
+        this.loadWorkerStats();
 
         return content;
     },
 
-    async loadHomeStats() {
-        // Load employee count
-        const empData = await DashboardAPI.getEmployeeCount();
-        if (empData) {
-            document.getElementById('totalEmployees').textContent = empData.count || '0';
-        }
+    /**
+     * Manager (QL) Dashboard
+     */
+    async renderManagerDashboard() {
+        const content = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="teamAttendance">
+                        <div class="spinner-sm"></div>
+                    </div>
+                    <div class="stat-label">Đi làm hôm nay</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingRequests">
+                        <div class="spinner-sm"></div>
+                    </div>
+                    <div class="stat-label">Yêu cầu chờ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="teamTasks">
+                        <div class="spinner-sm"></div>
+                    </div>
+                    <div class="stat-label">Công việc nhóm</div>
+                </div>
+            </div>
 
-        // Load today's shift
-        const shiftData = await DashboardAPI.getTodayShift();
-        if (shiftData) {
-            document.getElementById('todayShift').textContent = `${shiftData.present || 0}/${shiftData.total || 0}`;
-        }
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">bolt</span>
+                        Thao tác nhanh
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('process-requests')">
+                        <span class="material-icons-round">approval</span>
+                        Xử lý yêu cầu
+                    </button>
+                    <button class="btn btn-secondary btn-full mb-md" onclick="navigateToFunction('assign-tasks')">
+                        <span class="material-icons-round">assignment</span>
+                        Giao việc
+                    </button>
+                    <button class="btn btn-secondary btn-full" onclick="navigateToFunction('schedule-management')">
+                        <span class="material-icons-round">calendar_month</span>
+                        Xếp lịch làm việc
+                    </button>
+                </div>
+            </div>
 
-        // Load pending tasks
-        const tasksData = await DashboardAPI.getPendingTasks();
-        if (tasksData) {
-            document.getElementById('pendingTasks').textContent = tasksData.count || '0';
-        }
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">people</span>
+                        Hiệu suất nhóm
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="teamPerformance">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
 
-        // Load messages
-        const msgData = await DashboardAPI.getRecentMessagesCount();
-        if (msgData) {
-            document.getElementById('newMessages').textContent = msgData.count || '0';
-        }
+        // Load manager stats
+        this.loadManagerStats();
+
+        return content;
+    },
+
+    /**
+     * Admin (AD) Dashboard
+     */
+    async renderAdminDashboard() {
+        const content = `
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEmployees">
+                        <div class="spinner-sm"></div>
+                    </div>
+                    <div class="stat-label">Tổng nhân viên</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="dailyQueries">
+                        <div class="spinner-sm"></div>
+                    </div>
+                    <div class="stat-label">Truy vấn hôm nay</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="quotaRemaining">
+                        <div class="spinner-sm"></div>
+                    </div>
+                    <div class="stat-label">Quota còn lại</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">bolt</span>
+                        Thao tác nhanh
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('approve-registration')">
+                        <span class="material-icons-round">person_add</span>
+                        Duyệt đăng ký
+                    </button>
+                    <button class="btn btn-secondary btn-full mb-md" onclick="navigateToFunction('grant-access')">
+                        <span class="material-icons-round">admin_panel_settings</span>
+                        Phân quyền
+                    </button>
+                    <button class="btn btn-secondary btn-full mb-md" onclick="navigateToFunction('view-reports')">
+                        <span class="material-icons-round">assessment</span>
+                        Xem báo cáo
+                    </button>
+                    <button class="btn btn-secondary btn-full" onclick="navigateToFunction('system-settings')">
+                        <span class="material-icons-round">settings</span>
+                        Cài đặt hệ thống
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">cloud</span>
+                        Cloudflare Analytics
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="cloudflareStats">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">storage</span>
+                        Trạng thái hệ thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="systemStatus">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Load admin stats
+        this.loadAdminStats();
+
+        return content;
     },
 
     /**

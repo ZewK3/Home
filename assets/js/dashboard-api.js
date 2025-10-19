@@ -37,15 +37,7 @@ const DashboardAPI = {
         }
     },
 
-    async getRecentMessagesCount() {
-        try {
-            const response = await utils.fetchAPI('?action=getRecentMessagesCount');
-            return response.success ? response.data : null;
-        } catch (error) {
-            console.error('Error fetching messages count:', error);
-            return null;
-        }
-    },
+
 
     /**
      * Attendance Management
