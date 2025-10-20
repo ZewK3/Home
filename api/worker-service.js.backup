@@ -1,22 +1,15 @@
 // =====================================================
-// SERVICE-ORIENTED WORKER ARCHITECTURE - DATABASE V2 COMPATIBLE
+// SERVICE-ORIENTED WORKER ARCHITECTURE - ENHANCED V3.0
 // =====================================================
-// ✅ DATABASE V2 OPTIMIZATIONS (23 → 17 tables, 40-50% faster):
-//   - employee_requests (unified: attendance_requests + shift_requests)
-//   - attendance with GPS (no separate gps_attendance table)
-//   - approval_status in employees (no separate queue table)
-//   - 50+ performance indexes added
-//
-// Complete integration with Tabbel-v2-optimized.sql
-// All functions from original worker.js included with v2 optimizations
+// Complete integration with Enhanced_HR_Database_Schema_v3.sql
+// All functions from original worker.js included with optimizations
 // Features:
 // ✓ Complete API compatibility with original worker
-// ✓ Database schema v2.0 support (optimized unified tables)
+// ✓ Enhanced database schema v3.0 support
 // ✓ Service layer pattern with dependency injection
 // ✓ Advanced caching strategies and performance monitoring
 // ✓ SendGrid email integration
 // ✓ Comprehensive attendance, task, and user management
-// ✓ 40-50% performance improvement on all queries
 // =====================================================
 
 const ALLOWED_ORIGIN = "*";
@@ -1630,7 +1623,7 @@ async function handleCreateAttendanceRequest(body, db, origin) {
     const requestId = `ATR_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
 
     const stmt = await db.prepare(`
-      INSERT INTO employee_requests 
+      INSERT INTO attendance_requests 
       (request_id, employeeId, request_type, date, start_time, end_time, reason, status, requested_by, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)
     `);
@@ -1820,7 +1813,7 @@ async function handleApproveShiftRequest(body, db, origin) {
     const currentTime = TimezoneUtils.toHanoiISOString();
     
     const stmt = await db.prepare(`
-      UPDATE employee_requests 
+      UPDATE shift_requests 
       SET status = 'approved', approved_by = ?, approved_at = ?, approval_notes = ?, updated_at = ?
       WHERE request_id = ?
     `);
@@ -1852,7 +1845,7 @@ async function handleRejectShiftRequest(body, db, origin) {
     const currentTime = TimezoneUtils.toHanoiISOString();
     
     const stmt = await db.prepare(`
-      UPDATE employee_requests 
+      UPDATE shift_requests 
       SET status = 'rejected', rejected_by = ?, rejected_at = ?, rejection_reason = ?, updated_at = ?
       WHERE request_id = ?
     `);
@@ -1884,7 +1877,7 @@ async function handleApproveAttendanceRequest(body, db, origin, token) {
     const currentTime = TimezoneUtils.toHanoiISOString();
     
     const stmt = await db.prepare(`
-      UPDATE employee_requests 
+      UPDATE attendance_requests 
       SET status = 'approved', approved_by = ?, approved_at = ?, approval_notes = ?, updated_at = ?
       WHERE request_id = ?
     `);
@@ -1916,7 +1909,7 @@ async function handleRejectAttendanceRequest(body, db, origin, token) {
     const currentTime = TimezoneUtils.toHanoiISOString();
     
     const stmt = await db.prepare(`
-      UPDATE employee_requests 
+      UPDATE attendance_requests 
       SET status = 'rejected', rejected_by = ?, rejected_at = ?, rejection_reason = ?, updated_at = ?
       WHERE request_id = ?
     `);
@@ -2284,7 +2277,7 @@ async function handleGetShiftRequests(url, db, origin) {
         e.name as employee_name,
         e.department_id,
         e.position
-      FROM employee_requests sr
+      FROM shift_requests sr
       LEFT JOIN employees e ON sr.employeeId = e.employeeId
       ${whereClause}
       ORDER BY sr.created_at DESC
@@ -2332,7 +2325,7 @@ async function handleGetAttendanceRequests(url, db, origin) {
         e.name as employee_name,
         e.department_id,
         e.position
-      FROM employee_requests ar
+      FROM attendance_requests ar
       LEFT JOIN employees e ON ar.employeeId = e.employeeId
       ${whereClause}
       ORDER BY ar.created_at DESC
@@ -2486,10 +2479,10 @@ async function handleCompleteRequest(body, db, origin) {
     let tableName;
     switch (requestType) {
       case 'attendance':
-        tableName = 'employee_requests';
+        tableName = 'attendance_requests';
         break;
       case 'shift':
-        tableName = 'employee_requests';
+        tableName = 'shift_requests';
         break;
       default:
         return jsonResponse({ message: "Invalid request type" }, 400, origin);
@@ -2552,11 +2545,11 @@ async function handleGetPendingRequestsCount(url, db, origin) {
     }
 
     // Count pending attendance requests
-    const attendanceStmt = await db.prepare("SELECT COUNT(*) as count FROM employee_requests WHERE employeeId = ? AND status = 'pending'");
+    const attendanceStmt = await db.prepare("SELECT COUNT(*) as count FROM attendance_requests WHERE employeeId = ? AND status = 'pending'");
     const attendanceResult = await attendanceStmt.bind(employeeId).first();
     
     // Count pending shift requests
-    const shiftStmt = await db.prepare("SELECT COUNT(*) as count FROM employee_requests WHERE employeeId = ? AND status = 'pending'");
+    const shiftStmt = await db.prepare("SELECT COUNT(*) as count FROM shift_requests WHERE employeeId = ? AND status = 'pending'");
     const shiftResult = await shiftStmt.bind(employeeId).first();
     
     // Count pending tasks
