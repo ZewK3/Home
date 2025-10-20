@@ -445,7 +445,7 @@ async function handleLogin(event) {
                 elements.loginContainer.style.display = "none";
             }
             
-            setTimeout(() => window.location.href = "../dashboard/dashboard.html", 1500);
+            setTimeout(() => window.location.href = "../pages/dashboard.html", 1500);
         } else {
             const errorData = await response.json().catch(() => ({}));
             
@@ -582,11 +582,11 @@ async function handleVerification(event) {
     }
 
     try {
-        const response = await fetch(`${API_URL}?action=register`, {
+        const response = await fetch(`${API_URL}?action=verifyEmail`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                ...registrationData,
+                employeeId: registrationData.employeeId,
                 verificationCode: verificationCode
             })
         });

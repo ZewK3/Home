@@ -1,79 +1,3 @@
--- =====================================================
--- COMPLETE D1 DATABASE SCHEMA FOR HR MANAGEMENT SYSTEM
--- =====================================================
--- This file contains ALL tables currently being used in the HR Management System
--- Updated to reflect actual implementation and database queries
--- 
--- Last Updated: January 2025 - Fixed table consistency issues
--- Features Included:
--- ✓ Core authentication and user management
--- ✓ Business operations (orders, stores)  
--- ✓ HR management (schedules, task assignments, permissions)
--- ✓ GPS-based attendance tracking system
--- ✓ Professional timesheet with monthly calendar
--- ✓ Advanced request system (attendance requests using attendance_requests table)
--- ✓ System notifications and settings
--- ✓ Comprehensive analytics and reporting
--- =====================================================
-
--- CURRENT TABLES IN USE (Updated August 2025):
--- ✅ employees - Employee data and authentication  
--- ✅ sessions - Authentication sessions
--- ✅ stores - Store locations with GPS coordinates
--- ✅ attendance - GPS attendance tracking
--- ✅ timesheets - Monthly timesheet data
--- ✅ shift_assignments - Required for attendance validation
--- ✅ attendance_requests - Attendance-related requests (Đơn Từ) - PRIMARY TABLE FOR REQUESTS
--- ✅ shift_requests - Shift change requests (Store management)
--- ✅ tasks - Work tasks and assignments (Updated schema with foreign key fixes)
--- ✅ task_assignments - Task assignment relationships (Fixed foreign key to reference tasks.id)
--- ✅ task_comments - Task comments and discussions (Fixed foreign key to reference tasks.id)
--- ✅ comment_replies - Comment replies for task discussions
--- ✅ notifications - System notifications
--- ✅ hr_settings - System configuration
--- ✅ users - Customer user accounts (for order system)
--- ✅ queue - Employee registration queue
--- ✅ email_verification - Email verification during registration
--- ✅ workSchedules - Employee work schedules
--- ✅ permissions - Role-based permissions
--- ✅ attendance_summary - Monthly attendance statistics
--- ✅ gps_attendance - Detailed GPS attendance logs
--- ✅ requests - General requests (backward compatibility - DEPRECATED, use attendance_requests)
--- ✅ history_logs - Action history tracking
--- ✅ messages - Chat messages
--- ✅ payment - Payment records
--- ✅ transaction - Transaction records
--- ✅ orders - Customer orders
-
--- DEPRECATED TABLES (No longer used):
--- ❌ rewards - Replaced with Work Tasks system (tasks/task_assignments)
-
--- SCHEMA FIXES APPLIED:
--- ✅ task_assignments.taskId now references tasks.id (not tasks.taskId)
--- ✅ task_comments.taskId now references tasks.id (not tasks.taskId)  
--- ✅ All attendance request functions use attendance_requests table consistently
--- ✅ Tasks table includes both id (primary key) and taskId (legacy compatibility)
--- ✅ Foreign key constraints aligned with actual database structure
--- =====================================================
-
--- D1 Database Table Creation SQL Scripts
--- Created for HR Management System
--- All tables required for the application
-
--- =====================================================
--- AUTHENTICATION & USER MANAGEMENT
--- =====================================================
-
--- Table for customer users (people who place orders)
-CREATE TABLE users (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    createdAt TEXT NOT NULL,
-    exp INTEGER DEFAULT 0,
-    rank TEXT DEFAULT 'Đồng'
-);
 
 -- Table for authentication sessions
 CREATE TABLE sessions (
@@ -145,18 +69,6 @@ CREATE TABLE stores (
 );
 
 -- Table for customer orders
-CREATE TABLE orders (
-    orderId TEXT PRIMARY KEY,
-    userId TEXT NOT NULL,
-    cart TEXT NOT NULL,  -- JSON string
-    status TEXT NOT NULL,
-    total REAL NOT NULL,
-    createdAt TEXT NOT NULL,
-    deliveryAddress TEXT,
-    distance REAL,
-    duration REAL,
-    FOREIGN KEY (userId) REFERENCES users(id)
-);
 
 -- =====================================================
 -- HR MANAGEMENT
@@ -178,17 +90,6 @@ CREATE TABLE workSchedules (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
--- Table for rewards and penalties (REMOVED - replaced with Work Tasks system)
--- CREATE TABLE rewards (
---     id TEXT PRIMARY KEY,
---     employeeId TEXT NOT NULL,
---     employeeName TEXT NOT NULL,
---     type TEXT NOT NULL CHECK (type IN ('reward', 'penalty')),
---     amount REAL NOT NULL,
---     reason TEXT NOT NULL,
---     createdAt TEXT NOT NULL,
---     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
--- );
 
 -- Enhanced table for task/request management (legacy format)
 CREATE TABLE tasks (
@@ -313,9 +214,6 @@ CREATE TABLE gps_attendance (
     FOREIGN KEY (storeId) REFERENCES stores(storeId)
 );
 
--- =====================================================
--- PROFESSIONAL REQUEST SYSTEM
--- =====================================================
 
 -- Table for shift change requests (Store management)
 CREATE TABLE shift_requests (
@@ -467,30 +365,6 @@ CREATE TABLE messages (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
--- =====================================================
--- FINANCIAL MANAGEMENT
--- =====================================================
-
--- Table for payment records
-CREATE TABLE payment (
-    extractedID TEXT PRIMARY KEY,
-    "transaction" REAL NOT NULL,  -- Amount
-    accountNumber TEXT,
-    dateTime TEXT NOT NULL,
-    description TEXT
-);
-
--- Table for transaction records
-CREATE TABLE "transaction" (
-    id TEXT PRIMARY KEY,
-    amount REAL NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('success', 'failed')),
-    date TEXT NOT NULL
-);
-
--- =====================================================
--- INDEXES FOR PERFORMANCE
--- =====================================================
 
 -- Core system indexes
 CREATE INDEX idx_sessions_employee ON sessions(employeeId);
@@ -506,9 +380,6 @@ CREATE INDEX idx_tasks_employee ON tasks(employeeId);
 CREATE INDEX idx_tasks_status ON tasks(status);
 CREATE INDEX idx_tasks_created ON tasks(createdAt);
 CREATE INDEX idx_permissions_employee ON permissions(employeeId);
-CREATE INDEX idx_payment_datetime ON payment(dateTime);
-CREATE INDEX idx_transaction_date ON transaction(date);
-CREATE INDEX idx_transaction_status ON transaction(status);
 
 -- Attendance system indexes
 CREATE INDEX idx_attendance_employee ON attendance(employeeId);
@@ -556,36 +427,6 @@ CREATE INDEX idx_history_logs_created ON history_logs(created_at);
 -- SAMPLE DATA (OPTIONAL)
 -- =====================================================
 
--- Sample store data (enhanced with GPS coordinates for attendance verification)
-INSERT OR IGNORE INTO stores (storeId, storeName, region, address) VALUES 
--- Khu vực 1 (TP.HCM)
-('MC001', 'MayCha Quận 1', '1', '123 Đường Nguyễn Du, Quận 1, TP.HCM'),
-('MC002', 'MayCha Quận 3', '1', '456 Đường Võ Văn Tần, Quận 3, TP.HCM'),
-('MC003', 'MayCha Bình Thạnh', '1', '789 Đường Xô Viết Nghệ Tĩnh, Bình Thạnh, TP.HCM'),
-('MC004', 'MayCha Tân Bình', '1', '321 Đường Cộng Hòa, Tân Bình, TP.HCM'),
-('MC005', 'MayCha Thủ Đức', '1', '654 Đường Võ Văn Ngân, Thủ Đức, TP.HCM'),
-
--- Khu vực 2 (Miền Bắc) 
-('MC006', 'MayCha Hà Nội - Ba Đình', '2', '987 Đường Hoàng Diệu, Ba Đình, Hà Nội'),
-('MC007', 'MayCha Hà Nội - Đống Đa', '2', '147 Đường Láng, Đống Đa, Hà Nội'),
-('MC008', 'MayCha Hà Nội - Cầu Giấy', '2', '258 Đường Xuân Thủy, Cầu Giấy, Hà Nội'),
-('MC009', 'MayCha Hải Phòng', '2', '369 Đường Lê Thánh Tông, Ngô Quyền, Hải Phòng'),
-('MC010', 'MayCha Thái Nguyên', '2', '741 Đường Hoàng Văn Thụ, Thái Nguyên'),
-
--- Khu vực 3 (Miền Trung)
-('MC011', 'MayCha Đà Nẵng - Hải Châu', '3', '852 Đường Trần Phú, Hải Châu, Đà Nẵng'),
-('MC012', 'MayCha Đà Nẵng - Thanh Khê', '3', '963 Đường Nguyễn Lương Bằng, Thanh Khê, Đà Nẵng'),
-('MC013', 'MayCha Huế', '3', '159 Đường Lê Lợi, Thành phố Huế, Thừa Thiên Huế'),
-('MC014', 'MayCha Quảng Nam', '3', '753 Đường Phan Chu Trinh, Hội An, Quảng Nam'),
-('MC015', 'MayCha Nha Trang', '3', '486 Đường Trần Phú, Nha Trang, Khánh Hòa'),
-
--- Khu vực 4 (Miền Nam)
-('MC016', 'MayCha Cần Thơ', '4', '357 Đường 3 Tháng 2, Ninh Kiều, Cần Thơ'),
-('MC017', 'MayCha An Giang', '4', '951 Đường Tôn Đức Thắng, Long Xuyên, An Giang'),
-('MC018', 'MayCha Vũng Tàu', '4', '624 Đường Hạ Long, Vũng Tàu, Bà Rịa - Vũng Tàu'),
-('MC019', 'MayCha Đồng Tháp', '4', '735 Đường Nguyễn Huệ, Cao Lãnh, Đồng Tháp'),
-('MC020', 'MayCha Tiền Giang', '4', '148 Đường Đinh Bộ Lĩnh, Mỹ Tho, Tiền Giang');
-
 -- Sample employee positions and default permissions
 -- Admin permissions
 INSERT OR IGNORE INTO permissions (employeeId, permission, granted, createdAt) 
@@ -627,120 +468,6 @@ INSERT OR IGNORE INTO notifications (employeeId, title, message, type, relatedTy
 ('SYSTEM', 'Hệ thống chấm công GPS', 'Hệ thống chấm công GPS đã được kích hoạt. Vui lòng chấm công trong bán kính 50m từ cửa hàng.', 'info', 'attendance'),
 ('SYSTEM', 'Bảng công mới', 'Bảng công điện tử đã được triển khai. Xem chi tiết thống kê công việc hàng tháng.', 'success', 'timesheet'),
 ('SYSTEM', 'Hệ thống đơn từ', 'Hệ thống đơn từ chuyên nghiệp đã sẵn sàng. Gửi yêu cầu nghỉ phép, đổi ca qua menu Gửi Yêu Cầu.', 'info', 'requests');
-
--- =====================================================
--- INITIAL DATA SETUP PROCEDURES  
--- =====================================================
-
--- Create default attendance summary for current month (run for existing employees)
--- INSERT OR IGNORE INTO attendance_summary (employeeId, month, totalWorkDays, totalWorkHours)
--- SELECT employeeId, strftime('%Y-%m', 'now'), 0, 0 FROM employees;
-
--- Create sample timesheet data for testing (optional)
--- INSERT OR IGNORE INTO timesheets (employeeId, date, checkIn, checkOut, workHours, status)
--- VALUES ('ADMIN001', date('now'), '08:00', '17:00', 8.0, 'present');
-
--- =====================================================
--- DATABASE MAINTENANCE PROCEDURES
--- =====================================================
-
--- Clean up expired sessions (run this periodically)
--- DELETE FROM sessions WHERE datetime(expiresAt) < datetime('now');
-
--- Clean up old notifications (keep only last 30 days)
--- DELETE FROM notifications WHERE datetime(createdAt) < datetime('now', '-30 days');
-
--- Clean up old GPS attendance logs (keep only last 90 days)
--- DELETE FROM gps_attendance WHERE datetime(createdAt) < datetime('now', '-90 days');
-
--- Update attendance summary for current month (run monthly)
--- This should be automated via worker.js functions
-
--- Archive old completed tasks (keep only last 6 months)
--- DELETE FROM tasks WHERE status = 'completed' AND datetime(createdAt) < datetime('now', '-6 months');
-
--- Archive old orders (move to archive table if needed)
--- You can create an archive_orders table and move old completed orders there
-
--- =====================================================
--- NOTES & DOCUMENTATION
--- =====================================================
-
--- ROLE CODES:
--- AD = Admin (Administrator) - Full system access
--- QL = Quản lý (Manager) - Store management, employee oversight  
--- NV = Nhân viên (Employee) - Basic employee access
--- AM = Assistant Manager - Regional management capabilities
-
--- PERMISSION TYPES:
--- schedule = Manage work schedules and shift assignments
--- tasks = Handle task requests and assignments  
--- rewards = Manage rewards/penalties system
--- admin = Administrative functions and user management
--- finance = Financial management and payment processing
--- attendance = Attendance system management
-
--- ATTENDANCE SYSTEM:
--- GPS Verification: 50-meter radius from registered store locations
--- Check-in/out tracked in 'attendance' table with location data
--- Monthly statistics calculated in 'attendance_summary' table
--- Detailed timesheet view in 'timesheets' table
-
--- REQUEST SYSTEM TYPES:
--- Attendance Requests (attendance_requests table):
---   - forgot_checkin: Forgotten check-in requests
---   - forgot_checkout: Forgotten check-out requests  
---   - shift_change: Shift change requests
---   - absence: Absence notification
---   - leave: Leave/vacation requests
--- 
--- Task Assignments (task_assignments table):
---   - participant: Primary task participants
---   - supporter: Task supporters/helpers
---   - assigner: Task assigners/managers
-
--- TASK MANAGEMENT:
--- Tasks support multi-user assignments with visibility controls
--- Only involved users (participants, supporters, assigners) can see tasks
--- Priority levels: Low, Medium, High, Urgent
--- Status tracking: active, completed, cancelled
-
--- TIMESHEET FEATURES:
--- Monthly calendar view with daily work hours
--- Comprehensive statistics (15+ metrics)
--- Real-time data loading with month/year selection
--- Responsive design for mobile and desktop
-
--- SCHEDULE TIME FORMAT: 
--- "HH:MM-HH:MM" (e.g., "08:00-17:00")
--- Days: T2=Monday, T3=Tuesday, T4=Wednesday, T5=Thursday, T6=Friday, T7=Saturday, CN=Sunday
-
--- GPS ATTENDANCE VALIDATION:
--- Location must be within 50 meters of registered store
--- Coordinates stored in JSON format in 'location' field
--- Distance calculation performed on server-side
--- Invalid locations marked with isValid=0
-
--- NOTIFICATION SYSTEM:
--- System-wide notifications for important updates
--- User-specific notifications for task/request updates  
--- Auto-cleanup after retention period (default 30 days)
--- Different types: info, warning, success, error
-
--- HR SETTINGS:
--- Configurable system parameters in hr_settings table
--- Settings categories: attendance, schedule, tasks, requests, system
--- Active/inactive setting control with isActive flag
-
--- DATA RETENTION POLICIES:
--- Sessions: Clean up expired automatically
--- Notifications: 30 days (configurable)
--- GPS logs: 90 days recommended
--- Task history: 6 months for completed tasks
-
--- =====================================================
--- SAMPLE DATA FOR TESTING
--- =====================================================
 
 -- Sample store data with GPS coordinates (Ho Chi Minh City locations)
 INSERT INTO stores (storeId, storeName, region, address, latitude, longitude, managerEmployeeId) VALUES

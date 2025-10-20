@@ -1,268 +1,275 @@
+
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional HR Management System</title>
-    <meta name="description" content="Hệ thống quản lý nhân sự chuyên nghiệp với công nghệ hiện đại">
-    <link rel="icon" type="image/x-icon" href="public/favicon.ico">
-    <link rel="stylesheet" href="assets/css/landing.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hệ thống đăng nhập và đăng ký - ZewK Management System">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ZewK Management System - Đăng nhập</title>
+    <link rel="stylesheet" href="../../assets/css/reg&log.css">
+    <link rel="icon" type="image/png" href="../../assets/icons/favicon-32x32.png">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <style>
+        body {
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <nav class="nav">
-            <div class="nav-container">
-                <div class="nav-brand">
-                    <img src="public/images/logo.png" alt="HR Logo" class="nav-logo">
-                    <span class="nav-title">Professional HR</span>
+    <div class='flag-vn'></div>
+    <div class="glass-bg">
+        <div class="glass-circle circle-1"></div>
+        <div class="glass-circle circle-2"></div>
+        <div class="glass-circle circle-3"></div>
+    </div>
+
+    <div class="aurora"></div>
+    <div class="stars"></div>
+    <div class="light-streaks"></div>
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container active">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng nhập</h2>
                 </div>
-                <div class="nav-menu" id="nav-menu">
-                    <a href="#features" class="nav-link">Tính năng</a>
-                    <a href="#benefits" class="nav-link">Lợi ích</a>
-                    <a href="#contact" class="nav-link">Liên hệ</a>
-                    <a href="pages/auth/index.html" class="nav-link nav-cta">Đăng nhập</a>
+            </div>
+
+            <form id="loginForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">badge</span>
+                        <input type="text" id="loginEmployeeId" name="loginEmployeeId" placeholder=" " required autocomplete="username">
+                        <label for="loginEmployeeId">Mã nhân viên</label>
+                        <div class="input-border"></div>
+                    </div>
                 </div>
-                <div class="nav-actions">
-                    <!-- Language Toggle -->
-                    <div class="lang-toggle">
-                        <button class="lang-btn active" data-lang="vi" id="currentLangBtn">
-                            <span class="flag-emoji">🇻🇳</span>
-                            VI
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="loginPassword" name="loginPassword" placeholder=" " required autocomplete="current-password">
+                        <label for="loginPassword">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
                         </button>
-                        <div class="lang-dropdown" id="langDropdown" style="display: none;">
-                            <button class="lang-btn" data-lang="en">
-                                <span class="flag-emoji">🇺🇸</span>
-                                EN
-                            </button>
-                        </div>
-                    </div>
-                    <div class="nav-toggle" id="nav-toggle">
-                        <span class="nav-toggle-line"></span>
-                        <span class="nav-toggle-line"></span>
-                        <span class="nav-toggle-line"></span>
+                        <div class="input-border"></div>
                     </div>
                 </div>
-            </div>
-        </nav>
-    </header>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    Hệ thống quản lý <span class="hero-highlight">nhân sự</span> 
-                    chuyên nghiệp
-                </h1>
-                <p class="hero-description">
-                    Giải pháp toàn diện cho quản lý nhân sự, chấm công, tính lương 
-                    và báo cáo với công nghệ cloud hiện đại
-                </p>
-                <div class="hero-actions">
-                    <a href="pages/auth/index.html" class="btn btn-primary">
-                        Bắt đầu ngay
-                    </a>
-                    <a href="#features" class="btn btn-secondary">
-                        Tìm hiểu thêm
-                    </a>
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
                 </div>
-                <!-- Test Account Info -->
-                <div class="test-account-info">
-                    <div class="demo-card">
-                        <h3>🎯 Tài khoản Demo</h3>
-                        <p>Dùng thông tin sau để trải nghiệm hệ thống:</p>
-                        <div class="demo-credentials">
-                            <div class="credential-item">
-                                <span class="label">Tài khoản:</span>
-                                <span class="value">ADMIN</span>
-                            </div>
-                            <div class="credential-item">
-                                <span class="label">Mật khẩu:</span>
-                                <span class="value">ADMIN123</span>
-                            </div>
-                        </div>
-                        <a href="pages/auth/index.html" class="btn btn-demo">
-                            Trải nghiệm ngay
-                        </a>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">login</span>
+                    <span class="btn-text">Đăng nhập</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <div class="footer-row">
+                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
                     </div>
                 </div>
-            </div>
-            <div class="hero-visual">
-                <div class="hero-image">
-                    <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 600; box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);">
-                        <div style="font-size: 2rem; margin-bottom: 1rem;">📊</div>
-                        <div>HR Dashboard Preview</div>
-                        <div style="font-size: 1rem; opacity: 0.8; margin-top: 0.5rem;">Giao diện quản lý hiện đại</div>
-                    </div>
-                </div>
-            </div>
+            </form>
         </div>
-    </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <h2 class="section-title">Tính năng nổi bật</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg class="icon">
-                            <use href="#icon-users"></use>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Quản lý nhân sự</h3>
-                    <p class="feature-description">
-                        Quản lý thông tin nhân viên, hợp đồng và sự nghiệp một cách hiệu quả
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg class="icon">
-                            <use href="#icon-clock"></use>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Chấm công thông minh</h3>
-                    <p class="feature-description">
-                        Chấm công GPS, theo dõi giờ làm việc và quản lý ca làm việc tự động
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg class="icon">
-                            <use href="#icon-money"></use>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Tính lương tự động</h3>
-                    <p class="feature-description">
-                        Tính toán lương, thưởng, phụ cấp và các khoản khấu trừ một cách chính xác
-                    </p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg class="icon">
-                            <use href="#icon-chart"></use>
-                        </svg>
-                    </div>
-                    <h3 class="feature-title">Báo cáo chi tiết</h3>
-                    <p class="feature-description">
-                        Phân tích dữ liệu và tạo báo cáo chuyên nghiệp cho quản lý
-                    </p>
+        <!-- Register Form -->
+        <div id="registerFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đăng ký</h2>
                 </div>
             </div>
+
+            <form id="registerForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">person</span>
+                        <input type="text" id="fullName" name="fullName" placeholder=" " required autocomplete="name">
+                        <label for="fullName">Họ và tên</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">phone</span>
+                        <input type="tel" id="phone" name="phone" placeholder=" " required autocomplete="tel">
+                        <label for="phone">Số điện thoại</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="email" name="email" placeholder=" " required autocomplete="email">
+                        <label for="email">Email</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">store</span>
+                        <select id="storeName" name="storeName" required>
+                            <option value="">Chọn cửa hàng</option>
+                        </select>
+                        <label for="storeName">Cửa hàng</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="password" name="password" placeholder=" " required autocomplete="new-password">
+                        <label for="password">Mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="terms-container">
+                        <input type="checkbox" id="acceptTerms" name="acceptTerms" required>
+                        <span class="checkmark">
+                            <span class="material-icons-round">check</span>
+                        </span>
+                        <span>Tôi đồng ý với <a href="#" class="terms-link" onclick="showTermsModal()">điều khoản sử dụng</a> và <a href="#" class="terms-link" onclick="showPrivacyModal()">chính sách bảo mật</a></span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">person_add</span>
+                    <span class="btn-text">Tạo tài khoản</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Đã có tài khoản? <a href="#" id="goToLogin" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
         </div>
-    </section>
 
-    <!-- Statistics Section -->
-    <section class="stats">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number">99.9%</div>
-                    <div class="stat-label">Uptime</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">1000+</div>
-                    <div class="stat-label">Nhân viên được quản lý</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Hỗ trợ</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">5 ⭐</div>
-                    <div class="stat-label">Đánh giá người dùng</div>
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Quên mật khẩu</h2>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Benefits Section -->
-    <section id="benefits" class="benefits">
-        <div class="container">
-            <div class="benefits-content">
-                <div class="benefits-text">
-                    <h2 class="section-title">Tại sao chọn chúng tôi?</h2>
-                    <ul class="benefits-list">
-                        <li class="benefit-item">
-                            <span class="benefit-icon">✓</span>
-                            <span>Giao diện hiện đại, dễ sử dụng</span>
-                        </li>
-                        <li class="benefit-item">
-                            <span class="benefit-icon">✓</span>
-                            <span>Bảo mật cao với công nghệ Cloudflare</span>
-                        </li>
-                        <li class="benefit-item">
-                            <span class="benefit-icon">✓</span>
-                            <span>Tích hợp đa nền tảng</span>
-                        </li>
-                        <li class="benefit-item">
-                            <span class="benefit-icon">✓</span>
-                            <span>Hỗ trợ 24/7</span>
-                        </li>
-                    </ul>
-                </div>
-                <div class="benefits-visual">
-                    <div style="width: 100%; height: 300px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; font-weight: 600;">
-                        System Benefits
+            <form id="forgotPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">email</span>
+                        <input type="email" id="forgotEmail" name="forgotEmail" placeholder=" " required autocomplete="email">
+                        <label for="forgotEmail">Email tài khoản</label>
+                        <div class="input-border"></div>
                     </div>
                 </div>
-            </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">send</span>
+                    <span class="btn-text">Lấy mã đổi mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Nhớ lại mật khẩu? <a href="#" id="goToLoginFromForgot" class="form-link">Đăng nhập ngay</a></p>
+                </div>
+            </form>
         </div>
-    </section>
 
-    <!-- Footer -->
-    <footer id="contact" class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3 class="footer-title">Professional HR</h3>
-                    <p class="footer-description">
-                        Hệ thống quản lý nhân sự chuyên nghiệp
-                    </p>
-                </div>
-                <div class="footer-section">
-                    <h3 class="footer-title">Liên hệ</h3>
-                    <ul class="footer-links">
-                        <li><a href="mailto:support@hr-system.com">support@hr-system.com</a></li>
-                        <li><a href="tel:+84123456789">+84 123 456 789</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h3 class="footer-title">Hỗ trợ</h3>
-                    <ul class="footer-links">
-                        <li><a href="#help">Trợ giúp</a></li>
-                        <li><a href="#privacy">Bảo mật</a></li>
-                        <li><a href="#terms">Điều khoản</a></li>
-                    </ul>
+        <!-- Reset Password Form -->
+        <div id="resetPasswordFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Đặt lại mật khẩu</h2>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Professional HR Management System. All rights reserved.</p>
-            </div>
+
+            <form id="resetPasswordForm" class="form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">vpn_key</span>
+                        <input type="text" id="resetCode" name="resetCode" placeholder=" " required maxlength="6">
+                        <label for="resetCode">Mã xác thực (6 số)</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="newPassword" name="newPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="newPassword">Mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">lock</span>
+                        <input type="password" id="confirmNewPassword" name="confirmNewPassword" placeholder=" " required autocomplete="new-password">
+                        <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
+                        <button type="button" class="password-toggle">
+                            <span class="material-icons-round">visibility</span>
+                        </button>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">lock_reset</span>
+                    <span class="btn-text">Đặt lại mật khẩu</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <p>Chưa nhận được mã? <a href="#" id="goToForgotFromReset" class="form-link">Gửi lại mã</a></p>
+                </div>
+            </form>
         </div>
-    </footer>
+    </div>
 
-    <!-- SVG Icons -->
-    <svg style="display: none;">
-        <defs>
-            <symbol id="icon-users" viewBox="0 0 24 24">
-                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </symbol>
-            <symbol id="icon-clock" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12,6 12,12 16,14"/>
-            </symbol>
-            <symbol id="icon-money" viewBox="0 0 24 24">
-                <line x1="12" y1="1" x2="12" y2="23"/>
-                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-            </symbol>
-            <symbol id="icon-chart" viewBox="0 0 24 24">
-                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
-            </symbol>
-        </defs>
-    </svg>
-
-    <script src="assets/js/landing.js"></script>
+    <!-- Authentication JavaScript -->
+    <script src="../../assets/js/script.js"></script>
 </body>
 </html>

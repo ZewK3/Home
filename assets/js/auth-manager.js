@@ -14,10 +14,12 @@ class AuthManager {
         
         // Get token from storage (secure or regular)
         this.token = this.getFromStorage(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        console.log('AuthManager initialized - Token found:', !!this.token);
         
         // Safely parse user data from storage
         try {
             this.userData = this.getFromStorage(CONFIG.STORAGE_KEYS.USER_DATA);
+            console.log('AuthManager initialized - User data found:', !!this.userData);
         } catch (error) {
             console.warn('Failed to parse user data from storage:', error);
             this.userData = null;
@@ -195,14 +197,20 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh user data from API');
-                const user = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}`);
-                if (user && user.employeeId) {
-                    this.cachedUser = user;
+                const response = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${this.token}`);
+                
+                // Extract user data from API response structure
+                const userData = response.data || response;
+                
+                if (userData && userData.employeeId) {
+                    // Map Enhanced Database Schema v3.0 fields
+                    const mappedUser = utils.mapUserDataFromEnhancedSchema(userData);
+                    this.cachedUser = mappedUser;
                     this.cacheTimestamp.user = Date.now();
                     // Update storage
-                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, user);
-                    this.userData = user;
-                    return user;
+                    this.setToStorage(CONFIG.STORAGE_KEYS.USER_DATA, mappedUser);
+                    this.userData = mappedUser;
+                    return mappedUser;
                 }
                 throw new Error("Invalid user data received from API");
             } catch (error) {
@@ -295,9 +303,14 @@ class AuthManager {
             try {
                 console.log('Fetching fresh work tasks data');
                 const workTasks = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${employeeId}&token=${this.token}&page=1&limit=15`);
-                this.cachedWorkTasks = workTasks;
+                
+                // Map Enhanced Database Schema v3.0 fields for each task
+                const mappedTasks = Array.isArray(workTasks) ? 
+                    workTasks.map(task => utils.mapTaskDataFromEnhancedSchema(task)) : [];
+                
+                this.cachedWorkTasks = mappedTasks;
                 this.cacheTimestamp.workTasks = Date.now();
-                return workTasks;
+                return mappedTasks;
             } catch (error) {
                 console.error('Error fetching work tasks:', error);
                 return this.cachedWorkTasks || [];
@@ -338,16 +351,32 @@ class AuthManager {
         return await this.safeAPICall(endpoint, async () => {
             try {
                 console.log('Fetching fresh personal stats data');
-                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}`);
-                this.cachedPersonalStats = personalStats;
+                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}&token=${this.token}`);
+                
+                // Enhanced Database Schema v3.0 personal stats mapping
+                const mappedStats = {
+                    workDaysThisMonth: personalStats.work_days_this_month || personalStats.workDaysThisMonth || 0,
+                    totalHoursThisMonth: personalStats.total_hours_this_month || personalStats.totalHoursThisMonth || 0,
+                    attendanceRate: personalStats.attendance_rate || personalStats.attendanceRate || 0,
+                    overtimeHours: personalStats.overtime_hours || personalStats.overtimeHours || 0,
+                    tasksCompleted: personalStats.tasks_completed || personalStats.tasksCompleted || 0,
+                    pendingTasks: personalStats.pending_tasks || personalStats.pendingTasks || 0,
+                    averageRating: personalStats.average_rating || personalStats.averageRating || 0
+                };
+                
+                this.cachedPersonalStats = mappedStats;
                 this.cacheTimestamp.personalStats = Date.now();
-                return personalStats;
+                return mappedStats;
             } catch (error) {
                 console.error('Error fetching personal stats:', error);
                 return this.cachedPersonalStats || {
                     workDaysThisMonth: 0,
                     totalHoursThisMonth: 0,
-                    attendanceRate: 0
+                    attendanceRate: 0,
+                    overtimeHours: 0,
+                    tasksCompleted: 0,
+                    pendingTasks: 0,
+                    averageRating: 0
                 };
             }
         });
@@ -454,7 +483,8 @@ class AuthManager {
 
     async checkAuthentication() {
         if (!this.token) {
-            // window.location.href = "index.html"; // Commented for testing
+            console.log('No token found, redirecting to login');
+            window.location.href = "../../index.html";
             return null;
         }
 
@@ -467,7 +497,9 @@ class AuthManager {
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
                 }
-                MenuManager.updateMenuByRole(user.position);
+                if (typeof MenuManager !== 'undefined') {
+                    MenuManager.updateMenuByRole(user.roles || [user.position]);
+                }
                 return user;
             }
 
@@ -483,7 +515,9 @@ class AuthManager {
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${userData.fullName} - ${userData.employeeId}`;
                 }
-                MenuManager.updateMenuByRole(userData.position);
+                if (typeof MenuManager !== 'undefined') {
+                    MenuManager.updateMenuByRole(userData.roles || [userData.position]);
+                }
                 return userData;
             }
 
@@ -501,18 +535,24 @@ class AuthManager {
                 if (userInfoElement) {
                     userInfoElement.textContent = `Chào ${user.fullName} - ${user.employeeId}`;
                 }
-                MenuManager.updateMenuByRole(user.position);
+                if (typeof MenuManager !== 'undefined') {
+                    MenuManager.updateMenuByRole(user.roles || [user.position]);
+                }
                 return user;
             }
 
             throw new Error("No valid user data found in cache, localStorage, or API");
         } catch (error) {
             console.error('Authentication check failed:', error);
-            utils.showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning");
+            if (typeof utils !== 'undefined') {
+                utils.showNotification("Phiên hết hạn, vui lòng đăng nhập lại", "warning");
+            }
             this.logout();
             return null;
         }
     }
+
+
 
     setupLogoutHandler() {
         document.getElementById("logout")?.addEventListener("click", () => this.logout());
@@ -530,8 +570,392 @@ class AuthManager {
             this.secureStorage.clearAllData();
         }
         
-        // window.location.href = "index.html"; // Commented for testing
+        console.log('Logout completed, redirecting to login');
+        window.location.href = "../../index.html";
     }
 }
 
-// Global authManager instance will be initialized by main-init.js
+// Initialize authentication page handlers when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuthPage);
+} else {
+    initAuthPage();
+}
+
+function initAuthPage() {
+    // Only run on auth page
+    if (!window.location.pathname.includes('/auth/')) return;
+    
+    console.log('Initializing auth page...');
+    
+    // Form switching handlers
+    const goToRegister = document.getElementById('goToRegister');
+    const goToLogin = document.getElementById('goToLogin');
+    const forgotPasswordLink = document.querySelector('.forgot-password');
+    const goToLoginFromForgot = document.getElementById('goToLoginFromForgot');
+    const goToForgotFromReset = document.getElementById('goToForgotFromReset');
+    
+    if (goToRegister) {
+        goToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('register');
+        });
+    }
+    
+    if (goToLogin) {
+        goToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('login');
+        });
+    }
+    
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('forgot');
+        });
+    }
+    
+    if (goToLoginFromForgot) {
+        goToLoginFromForgot.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('login');
+        });
+    }
+    
+    if (goToForgotFromReset) {
+        goToForgotFromReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchForm('forgot');
+        });
+    }
+    
+    // Password toggle handlers
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('.material-icons-round');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        });
+    });
+    
+    // Login form handler
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleLogin(e);
+        });
+    }
+    
+    // Register form handler
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleRegister(e);
+        });
+    }
+    
+    // Forgot password form handler
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleForgotPassword(e);
+        });
+    }
+    
+    // Reset password form handler
+    const resetPasswordForm = document.getElementById('resetPasswordForm');
+    if (resetPasswordForm) {
+        resetPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await handleResetPassword(e);
+        });
+    }
+    
+    // Load stores for registration
+    loadStores();
+}
+
+function switchForm(formType) {
+    const forms = {
+        login: document.getElementById('loginFormContainer'),
+        register: document.getElementById('registerFormContainer'),
+        forgot: document.getElementById('forgotPasswordFormContainer'),
+        reset: document.getElementById('resetPasswordFormContainer')
+    };
+    
+    // Hide all forms
+    Object.values(forms).forEach(form => form?.classList.remove('active'));
+    
+    // Show requested form
+    forms[formType]?.classList.add('active');
+}
+
+async function handleLogin(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const employeeId = document.getElementById('loginEmployeeId').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+    
+    if (!employeeId || !password) {
+        showNotification('Vui lòng nhập đầy đủ thông tin', 'error');
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        console.log('Attempting login with:', employeeId);
+        
+        const response = await utils.fetchAPI('?action=login', {
+            method: 'POST',
+            body: JSON.stringify({
+                employeeId: employeeId,
+                password: password
+            })
+        });
+        
+        console.log('Login response:', response);
+        
+        if (response.success && response.token) {
+            // Store auth data
+            localStorage.setItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.token);
+            localStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.userData || response.data));
+            
+            showNotification('Đăng nhập thành công!', 'success');
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = '../dashboard/dashboard.html';
+            }, 1000);
+        } else {
+            showNotification(response.message || 'Đăng nhập thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function handleRegister(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const fullName = document.getElementById('fullName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const storeName = document.getElementById('storeName').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const acceptTerms = document.getElementById('acceptTerms').checked;
+    
+    // Validation
+    if (!fullName || !phone || !email || !storeName || !password || !confirmPassword) {
+        showNotification('Vui lòng nhập đầy đủ thông tin', 'error');
+        return;
+    }
+    
+    if (!acceptTerms) {
+        showNotification('Vui lòng đồng ý với điều khoản sử dụng', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showNotification('Mật khẩu xác nhận không khớp', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification('Mật khẩu phải có ít nhất 6 ký tự', 'error');
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        const response = await utils.fetchAPI('?action=register', {
+            method: 'POST',
+            body: JSON.stringify({
+                fullName,
+                phone,
+                email,
+                storeName,
+                password
+            })
+        });
+        
+        if (response.success) {
+            showNotification('Đăng ký thành công! Vui lòng chờ quản trị viên phê duyệt.', 'success');
+            setTimeout(() => {
+                switchForm('login');
+                form.reset();
+            }, 2000);
+        } else {
+            showNotification(response.message || 'Đăng ký thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Register error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function handleForgotPassword(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const email = document.getElementById('forgotEmail').value.trim();
+    
+    if (!email) {
+        showNotification('Vui lòng nhập email', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        const response = await utils.fetchAPI('?action=forgotPassword', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
+        
+        if (response.success) {
+            showNotification('Mã xác thực đã được gửi đến email của bạn', 'success');
+            setTimeout(() => {
+                switchForm('reset');
+            }, 1500);
+        } else {
+            showNotification(response.message || 'Gửi mã thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function handleResetPassword(e) {
+    const form = e.target;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoader = submitBtn.querySelector('.btn-loader');
+    
+    const resetCode = document.getElementById('resetCode').value.trim();
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+    
+    if (!resetCode || !newPassword || !confirmNewPassword) {
+        showNotification('Vui lòng nhập đầy đủ thông tin', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmNewPassword) {
+        showNotification('Mật khẩu xác nhận không khớp', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        showNotification('Mật khẩu phải có ít nhất 6 ký tự', 'error');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    btnText.style.display = 'none';
+    btnLoader.style.display = 'block';
+    
+    try {
+        const response = await utils.fetchAPI('?action=resetPassword', {
+            method: 'POST',
+            body: JSON.stringify({
+                resetCode,
+                newPassword
+            })
+        });
+        
+        if (response.success) {
+            showNotification('Đặt lại mật khẩu thành công!', 'success');
+            setTimeout(() => {
+                switchForm('login');
+                form.reset();
+            }, 1500);
+        } else {
+            showNotification(response.message || 'Đặt lại mật khẩu thất bại', 'error');
+        }
+    } catch (error) {
+        console.error('Reset password error:', error);
+        showNotification('Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+    }
+}
+
+async function loadStores() {
+    try {
+        const stores = await utils.fetchAPI('?action=getStores');
+        const storeSelect = document.getElementById('storeName');
+        
+        if (stores && Array.isArray(stores)) {
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = store.storeName || store.name;
+                option.textContent = store.storeName || store.name;
+                storeSelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading stores:', error);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.getElementById('notification');
+    if (!notification) return;
+    
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.remove('hidden');
+    
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
