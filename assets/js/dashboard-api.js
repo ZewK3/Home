@@ -1,6 +1,12 @@
 /**
  * Dashboard API Integration
  * Handles all API calls for dashboard functionality
+ * 
+ * DATABASE v2 COMPATIBLE:
+ * - Works with optimized schema (17 tables instead of 23)
+ * - Attendance includes GPS data (no separate gps_attendance table)
+ * - All requests go to employee_requests table (unified)
+ * - Employee approval_status in employees table (no queue table)
  */
 
 const DashboardAPI = {
@@ -54,6 +60,8 @@ const DashboardAPI = {
 
     async clockIn(employeeId, latitude, longitude) {
         try {
+            // DATABASE v2: GPS data stored directly in attendance table
+            // No separate gps_attendance insert needed
             const response = await utils.fetchAPI('?action=clockIn', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -72,6 +80,8 @@ const DashboardAPI = {
 
     async clockOut(employeeId, latitude, longitude) {
         try {
+            // DATABASE v2: GPS data stored directly in attendance table
+            // checkOutLatitude, checkOutLongitude columns used
             const response = await utils.fetchAPI('?action=clockOut', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -170,13 +180,19 @@ const DashboardAPI = {
     },
 
     /**
-     * Request Management
+     * Request Management - DATABASE v2 COMPATIBLE
+     * All requests now go to unified employee_requests table
+     * Request types: LEAVE, OVERTIME, FORGOT_CHECKIN, FORGOT_CHECKOUT, SHIFT_CHANGE, OTHER
      */
     async submitAttendanceRequest(requestData) {
         try {
-            const response = await utils.fetchAPI('?action=submitAttendanceRequest', {
+            // DATABASE v2: Submits to employee_requests table with requestType field
+            const response = await utils.fetchAPI('?action=submitEmployeeRequest', {
                 method: 'POST',
-                body: JSON.stringify(requestData)
+                body: JSON.stringify({
+                    ...requestData,
+                    requestType: requestData.requestType || 'LEAVE' // Default to LEAVE if not specified
+                })
             });
             return response;
         } catch (error) {
@@ -187,7 +203,8 @@ const DashboardAPI = {
 
     async getAttendanceRequests(employeeId) {
         try {
-            const response = await utils.fetchAPI(`?action=getAttendanceRequests&employeeId=${employeeId}`);
+            // DATABASE v2: Queries employee_requests table filtering by requestType
+            const response = await utils.fetchAPI(`?action=getEmployeeRequests&employeeId=${employeeId}`);
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching attendance requests:', error);
@@ -197,6 +214,7 @@ const DashboardAPI = {
 
     async getPendingRequests() {
         try {
+            // DATABASE v2: Gets all pending requests from employee_requests table
             const response = await utils.fetchAPI('?action=getPendingRequests');
             return response.success ? response.data : null;
         } catch (error) {
@@ -279,10 +297,13 @@ const DashboardAPI = {
     },
 
     /**
-     * Registration Management (Admin only)
+     * Registration Management (Admin only) - DATABASE v2 COMPATIBLE
+     * No separate queue table - approval_status field in employees table
      */
     async getPendingRegistrations() {
         try {
+            // DATABASE v2: Queries employees WHERE approval_status = 'PENDING'
+            // No separate queue table needed
             const response = await utils.fetchAPI('?action=getPendingRegistrations');
             return response.success ? response.data : null;
         } catch (error) {
@@ -293,11 +314,14 @@ const DashboardAPI = {
 
     async approveRegistration(employeeId) {
         try {
+            // DATABASE v2: Updates approval_status to 'APPROVED' in employees table
             const response = await utils.fetchAPI('?action=approveRegistration', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
-                    status: 'approved'
+                    status: 'APPROVED', // Updated to match schema
+                    approved_by: JSON.parse(localStorage.getItem('userData'))?.employeeId,
+                    approved_at: new Date().toISOString()
                 })
             });
             return response;
@@ -309,12 +333,13 @@ const DashboardAPI = {
 
     async rejectRegistration(employeeId, reason) {
         try {
+            // DATABASE v2: Updates approval_status to 'REJECTED' in employees table
             const response = await utils.fetchAPI('?action=approveRegistration', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
-                    status: 'rejected',
-                    reason
+                    status: 'REJECTED', // Updated to match schema
+                    rejected_reason: reason
                 })
             });
             return response;
