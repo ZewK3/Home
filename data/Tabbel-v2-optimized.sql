@@ -1,37 +1,49 @@
 -- =====================================================
--- OPTIMIZED DATABASE SCHEMA V2
+-- OPTIMIZED DATABASE SCHEMA V2.1 (Enhanced v3.0 Compatible)
 -- Professional HR Management System
--- Optimized for performance: Fewer tables, better indexes
+-- Optimized for performance: Enhanced tables, better indexes
+-- Compatible with worker-service.js Enhanced Database Schema v3.0
 -- =====================================================
 
 -- =====================================================
 -- CORE TABLES
 -- =====================================================
 
--- Sessions table (unchanged - needed for auth)
+-- Sessions table - for authentication
 CREATE TABLE sessions (
-    sessionId TEXT PRIMARY KEY,
-    employeeId TEXT NOT NULL,
-    token TEXT NOT NULL,
-    createdAt TEXT DEFAULT (datetime('now')),
-    expiresAt TEXT NOT NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    session_token TEXT UNIQUE NOT NULL,
+    expires_at TEXT NOT NULL,
+    last_activity TEXT,
+    is_active INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
 );
 
 -- Employees table - ENHANCED with approval_status (merged from queue)
 CREATE TABLE employees (
-    employeeId TEXT PRIMARY KEY,
-    fullName TEXT NOT NULL,
-    storeName TEXT NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT UNIQUE NOT NULL,
+    fullName TEXT,
+    name TEXT,
+    storeName TEXT,
+    storeId TEXT,
     position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
+    department_id INTEGER,
     joinDate TEXT,
+    hire_date TEXT,
     phone TEXT,
     email TEXT UNIQUE,
     password TEXT NOT NULL,
-    salt TEXT NOT NULL,
+    salt TEXT,
     approval_status TEXT DEFAULT 'pending' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
     approved_by TEXT,
     approved_at TEXT,
     rejection_reason TEXT,
+    employment_status TEXT DEFAULT 'active',
+    is_active INTEGER DEFAULT 1,
+    last_login_at TEXT,
     created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -68,11 +80,14 @@ CREATE TABLE stores (
 
 -- Attendance table - MERGED with gps_attendance (GPS columns added)
 CREATE TABLE attendance (
-    attendanceId INTEGER PRIMARY KEY AUTOINCREMENT,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    attendanceId INTEGER,
     employeeId TEXT NOT NULL,
     date TEXT NOT NULL,
     checkIn TEXT,
     checkOut TEXT,
+    check_in_time TEXT,
+    check_out_time TEXT,
     hoursWorked REAL DEFAULT 0,
     status TEXT DEFAULT 'absent' CHECK(status IN ('present', 'absent', 'late', 'half-day')),
     notes TEXT,
@@ -169,6 +184,79 @@ INSERT INTO shifts (name, startTime, endTime, timeName) VALUES
 ('Ca 8 Tiếng 8-16', 8, 16, '08:00-16:00');
 
 -- =====================================================
+-- USER MANAGEMENT & REGISTRATION
+-- =====================================================
+
+-- Pending registrations table
+CREATE TABLE pending_registrations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    name TEXT,
+    fullName TEXT,
+    phone TEXT,
+    storeId TEXT,
+    storeName TEXT,
+    department TEXT,
+    position TEXT DEFAULT 'NV',
+    verification_code TEXT,
+    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'verified', 'approved', 'rejected')),
+    created_at TEXT DEFAULT (datetime('now')),
+    verified_at TEXT,
+    approved_at TEXT,
+    approved_by TEXT
+);
+
+-- User change history
+CREATE TABLE user_change_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    field_name TEXT NOT NULL,
+    old_value TEXT,
+    new_value TEXT,
+    changed_by TEXT,
+    changed_at TEXT DEFAULT (datetime('now')),
+    change_date TEXT,
+    reason TEXT,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
+);
+
+-- Roles table
+CREATE TABLE roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    role_code TEXT UNIQUE NOT NULL,
+    role_name TEXT NOT NULL,
+    description TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- User roles mapping
+CREATE TABLE user_roles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_id INTEGER NOT NULL,
+    role_id INTEGER NOT NULL,
+    is_primary_role INTEGER DEFAULT 0,
+    assigned_at TEXT DEFAULT (datetime('now')),
+    assigned_by INTEGER,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(id),
+    FOREIGN KEY (assigned_by) REFERENCES employees(id),
+    UNIQUE(employee_id, role_id)
+);
+
+-- Departments table
+CREATE TABLE departments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    department_code TEXT UNIQUE NOT NULL,
+    department_name TEXT NOT NULL,
+    description TEXT,
+    manager_id INTEGER,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (manager_id) REFERENCES employees(id)
+);
+
+-- =====================================================
 -- SYSTEM MANAGEMENT
 -- =====================================================
 
@@ -245,15 +333,18 @@ CREATE TABLE messages (
 -- =====================================================
 
 -- Authentication & Session indexes
-CREATE INDEX idx_sessions_employee ON sessions(employeeId);
-CREATE INDEX idx_sessions_token ON sessions(token);
-CREATE INDEX idx_sessions_expires ON sessions(expiresAt);
+CREATE INDEX idx_sessions_employee_id ON sessions(employee_id);
+CREATE INDEX idx_sessions_token ON sessions(session_token);
+CREATE INDEX idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX idx_sessions_is_active ON sessions(is_active);
 
 -- Employee indexes
+CREATE INDEX idx_employees_employeeId ON employees(employeeId);
 CREATE INDEX idx_employees_email ON employees(email);
 CREATE INDEX idx_employees_position ON employees(position);
 CREATE INDEX idx_employees_approval_status ON employees(approval_status);
 CREATE INDEX idx_employees_storeName ON employees(storeName);
+CREATE INDEX idx_employees_is_active ON employees(is_active);
 
 -- Attendance indexes (optimized for queries)
 CREATE INDEX idx_attendance_employee_date ON attendance(employeeId, date DESC);
@@ -299,6 +390,27 @@ CREATE INDEX idx_messages_receiver ON messages(receiverId);
 CREATE INDEX idx_messages_read ON messages(isRead);
 CREATE INDEX idx_messages_sent ON messages(sentAt DESC);
 
+-- Pending registrations indexes
+CREATE INDEX idx_pending_reg_employeeId ON pending_registrations(employeeId);
+CREATE INDEX idx_pending_reg_email ON pending_registrations(email);
+CREATE INDEX idx_pending_reg_status ON pending_registrations(status);
+
+-- User change history indexes
+CREATE INDEX idx_user_change_employeeId ON user_change_history(employeeId);
+CREATE INDEX idx_user_change_changed_at ON user_change_history(changed_at DESC);
+
+-- Roles indexes
+CREATE INDEX idx_roles_code ON roles(role_code);
+
+-- User roles indexes
+CREATE INDEX idx_user_roles_employee ON user_roles(employee_id);
+CREATE INDEX idx_user_roles_role ON user_roles(role_id);
+CREATE INDEX idx_user_roles_primary ON user_roles(is_primary_role);
+
+-- Departments indexes
+CREATE INDEX idx_departments_code ON departments(department_code);
+CREATE INDEX idx_departments_manager ON departments(manager_id);
+
 -- =====================================================
 -- SAMPLE DATA
 -- =====================================================
@@ -338,14 +450,25 @@ VALUES
 --
 -- ADDED:
 -- 1. shifts table - predefined work shifts for better shift management
+-- 2. pending_registrations - user registration workflow
+-- 3. user_change_history - audit trail for user changes
+-- 4. roles - role definitions
+-- 5. user_roles - role assignments
+-- 6. departments - organizational structure
+--
+-- ENHANCED:
+-- 1. employees table - added id INTEGER for internal foreign keys, keeping employeeId TEXT for business logic
+-- 2. sessions table - updated to use employee_id INTEGER, session_token, is_active for better session management
+-- 3. attendance table - added both checkIn/checkOut and check_in_time/check_out_time for compatibility
 --
 -- BENEFITS:
--- - 39% fewer tables (23 → 14)
--- - Simpler joins (no need to join attendance + gps_attendance)
--- - Better index coverage (composite indexes on common query patterns)
--- - Reduced data duplication
--- - Improved query performance (40-50% faster on common queries)
--- - Easier maintenance and backups
--- - Streamlined shift management with predefined shifts
+-- - Enhanced authentication with proper session management
+-- - Better user management with registration workflow
+-- - Audit trail with user_change_history
+-- - Role-based access control with roles and user_roles
+-- - Organizational structure with departments
+-- - Dual-column approach for backward compatibility (employeeId TEXT + id INTEGER)
+-- - Improved query performance with optimized indexes
+-- - Better foreign key relationships
 --
 -- =====================================================
