@@ -55,16 +55,17 @@ const DashboardAPI = {
 
     async checkGPS(employeeId, latitude, longitude) {
         try {
-            // DATABASE v2.2: GPS validation on backend
-            // Frontend only needs to provide current GPS coordinates
-            // Backend validates location and generates checkDate/checkTime
+            // DATABASE v2.2: GPS validation on backend with full date/time from frontend
+            // Frontend sends: employeeId, checkDate, checkTime, latitude, longitude
             const now = new Date();
+            const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY
             const checkTime = now.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS
             
             const response = await utils.fetchAPI('?action=checkGPS', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
+                    checkDate,
                     checkTime,
                     latitude,
                     longitude

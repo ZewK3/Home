@@ -738,12 +738,12 @@ async function handleRegister(body, db, origin, env) {
 // Handle GPS check (merged checkIn/checkOut)
 async function handleCheckGPS(body, db, origin) {
   try {
-    const { employeeId, checkTime, latitude, longitude } = body;
+    const { employeeId, checkDate, checkTime, latitude, longitude } = body;
 
-    if (!employeeId || !checkTime || latitude === undefined || longitude === undefined) {
+    if (!employeeId || !checkDate || !checkTime || latitude === undefined || longitude === undefined) {
       return jsonResponse({ 
         success: false, 
-        message: "employeeId, checkTime, latitude, và longitude là bắt buộc!" 
+        message: "employeeId, checkDate, checkTime, latitude, và longitude là bắt buộc!" 
       }, 400, origin);
     }
 
@@ -797,10 +797,8 @@ async function handleCheckGPS(body, db, origin) {
       }, 400, origin);
     }
 
-    // Create attendance record - system generates checkDate
-    const now = new Date();
-    const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY format
-    const createdAt = now.toISOString();
+    // Create attendance record - uses checkDate from frontend
+    const createdAt = new Date().toISOString();
     
     await db
       .prepare(`
