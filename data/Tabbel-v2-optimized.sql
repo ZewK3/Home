@@ -291,7 +291,7 @@ CREATE INDEX idx_sessions_is_active ON sessions(is_active);
 CREATE INDEX idx_employees_email ON employees(email);
 CREATE INDEX idx_employees_position ON employees(position);
 CREATE INDEX idx_employees_approval_status ON employees(approval_status);
-CREATE INDEX idx_employees_storeName ON employees(storeName);
+CREATE INDEX idx_employees_storeId ON employees(storeId);
 CREATE INDEX idx_employees_is_active ON employees(is_active);
 
 -- Attendance indexes (simplified)
