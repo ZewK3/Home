@@ -1,10 +1,12 @@
 // =====================================================
 // SERVICE-ORIENTED WORKER ARCHITECTURE - DATABASE V2 COMPATIBLE
 // =====================================================
-// ✅ DATABASE V2 OPTIMIZATIONS (23 → 17 tables, 40-50% faster):
+// ✅ DATABASE V2 OPTIMIZATIONS (23 → 14 tables, 40-50% faster):
 //   - employee_requests (unified: attendance_requests + shift_requests)
 //   - attendance with GPS (no separate gps_attendance table)
 //   - approval_status in employees (no separate queue table)
+//   - tasks removed (task, task_assignments, task_comments, comment_replies)
+//   - shifts table added for predefined work shifts
 //   - 50+ performance indexes added
 //
 // Complete integration with Tabbel-v2-optimized.sql
@@ -15,7 +17,7 @@
 // ✓ Service layer pattern with dependency injection
 // ✓ Advanced caching strategies and performance monitoring
 // ✓ SendGrid email integration
-// ✓ Comprehensive attendance, task, and user management
+// ✓ Comprehensive attendance, shift, and user management
 // ✓ 40-50% performance improvement on all queries
 // =====================================================
 
@@ -869,11 +871,6 @@ async function handleGetDashboardStats(db, origin) {
       .bind(today)
       .first();
 
-    // Get pending tasks
-    const pendingTasks = await db
-      .prepare("SELECT COUNT(*) as count FROM tasks WHERE status = 'pending'")
-      .first();
-
     // Get pending registrations
     const pendingRegistrations = await db
       .prepare("SELECT COUNT(*) as count FROM pending_registrations WHERE status = 'pending'")
@@ -884,7 +881,6 @@ async function handleGetDashboardStats(db, origin) {
       data: {
         totalEmployees: totalEmployees?.count || 0,
         todayAttendance: todayAttendance?.count || 0,
-        pendingTasks: pendingTasks?.count || 0,
         pendingRegistrations: pendingRegistrations?.count || 0
       }
     }, 200, origin);
@@ -973,20 +969,25 @@ async function handleGetShiftAssignments(url, db, origin) {
     const employeeId = url.searchParams.get("employeeId");
     const date = url.searchParams.get("date");
 
-    let query = "SELECT * FROM shift_assignments WHERE 1=1";
+    let query = `
+      SELECT sa.*, s.name, s.startTime, s.endTime, s.timeName
+      FROM shift_assignments sa
+      JOIN shifts s ON sa.shiftId = s.shiftId
+      WHERE 1=1
+    `;
     const params = [];
 
     if (employeeId) {
-      query += " AND employeeId = ?";
+      query += " AND sa.employeeId = ?";
       params.push(employeeId);
     }
 
     if (date) {
-      query += " AND date = ?";
+      query += " AND sa.date = ?";
       params.push(date);
     }
 
-    query += " ORDER BY date DESC";
+    query += " ORDER BY sa.date DESC";
 
     const shifts = await db
       .prepare(query)
@@ -1010,40 +1011,61 @@ async function handleGetShiftAssignments(url, db, origin) {
 // Handle assigning shifts
 async function handleAssignShift(body, db, origin) {
   try {
-    const { employeeId, date, shiftName, startTime, endTime } = body;
+    const { employeeId, date, shiftId, shiftName } = body;
 
-    if (!employeeId || !date || !shiftName) {
+    if (!employeeId || !date) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu thông tin ca làm việc!" 
       }, 400, origin);
     }
 
-    // Check if shift already exists
+    // Get shift by ID or name
+    let shift;
+    if (shiftId) {
+      shift = await db
+        .prepare("SELECT shiftId FROM shifts WHERE shiftId = ?")
+        .bind(shiftId)
+        .first();
+    } else if (shiftName) {
+      shift = await db
+        .prepare("SELECT shiftId FROM shifts WHERE name = ?")
+        .bind(shiftName)
+        .first();
+    }
+
+    if (!shift) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Ca làm việc không tồn tại!" 
+      }, 400, origin);
+    }
+
+    // Check if shift assignment already exists
     const existing = await db
-      .prepare("SELECT id FROM shift_assignments WHERE employeeId = ? AND date = ?")
+      .prepare("SELECT assignmentId FROM shift_assignments WHERE employeeId = ? AND date = ?")
       .bind(employeeId, date)
       .first();
 
     if (existing) {
-      // Update existing shift
+      // Update existing shift assignment
       await db
         .prepare(`
           UPDATE shift_assignments 
-          SET shiftName = ?, startTime = ?, endTime = ?, updated_at = ?
+          SET shiftId = ?, createdAt = ?
           WHERE employeeId = ? AND date = ?
         `)
-        .bind(shiftName, startTime, endTime, new Date().toISOString(), employeeId, date)
+        .bind(shift.shiftId, new Date().toISOString(), employeeId, date)
         .run();
     } else {
-      // Create new shift
+      // Create new shift assignment
       await db
         .prepare(`
           INSERT INTO shift_assignments 
-          (employeeId, date, shiftName, startTime, endTime, created_at) 
-          VALUES (?, ?, ?, ?, ?, ?)
+          (employeeId, shiftId, date, createdAt) 
+          VALUES (?, ?, ?, ?)
         `)
-        .bind(employeeId, date, shiftName, startTime, endTime, new Date().toISOString())
+        .bind(employeeId, shift.shiftId, date, new Date().toISOString())
         .run();
     }
 
@@ -1077,8 +1099,10 @@ async function handleGetCurrentShift(url, db, origin, authenticatedUserId = null
 
     const shift = await db
       .prepare(`
-        SELECT * FROM shift_assignments 
-        WHERE employeeId = ? AND date = ?
+        SELECT sa.*, s.name, s.startTime, s.endTime, s.timeName
+        FROM shift_assignments sa
+        JOIN shifts s ON sa.shiftId = s.shiftId
+        WHERE sa.employeeId = ? AND sa.date = ?
       `)
       .bind(employeeId, today)
       .first();
@@ -1116,9 +1140,11 @@ async function handleGetWeeklyShifts(url, db, origin) {
 
     const shifts = await db
       .prepare(`
-        SELECT * FROM shift_assignments 
-        WHERE employeeId = ? AND date >= ? AND date <= ?
-        ORDER BY date
+        SELECT sa.*, s.name, s.startTime, s.endTime, s.timeName
+        FROM shift_assignments sa
+        JOIN shifts s ON sa.shiftId = s.shiftId
+        WHERE sa.employeeId = ? AND sa.date >= ? AND sa.date <= ?
+        ORDER BY sa.date
       `)
       .bind(employeeId, weekStart, endDate.toISOString().split('T')[0])
       .all();
@@ -1132,6 +1158,27 @@ async function handleGetWeeklyShifts(url, db, origin) {
     console.error("Get weekly shifts error:", error);
     return jsonResponse({ 
       message: "Lỗi khi lấy ca trong tuần", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle getting all available shifts
+async function handleGetShifts(url, db, origin) {
+  try {
+    const shifts = await db
+      .prepare("SELECT * FROM shifts ORDER BY startTime")
+      .all();
+
+    return jsonResponse({
+      success: true,
+      data: shifts.results || []
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Get shifts error:", error);
+    return jsonResponse({ 
+      message: "Lỗi khi lấy danh sách ca", 
       error: error.message 
     }, 500, origin);
   }
@@ -1220,60 +1267,7 @@ async function handleGetPendingRequests(db, origin) {
   }
 }
 
-// Handle getting tasks
-async function handleGetTasks(url, db, origin) {
-  try {
-    const employeeId = url.searchParams.get("employeeId");
-    const status = url.searchParams.get("status");
-    const page = parseInt(url.searchParams.get("page")) || 1;
-    const limit = parseInt(url.searchParams.get("limit")) || 20;
-    const offset = (page - 1) * limit;
 
-    let query = `
-      SELECT t.*, e.name as createdByName, a.name as assignedToName
-      FROM tasks t
-      LEFT JOIN employees e ON t.createdBy = e.id
-      LEFT JOIN employees a ON t.assignedTo = a.id
-      WHERE 1=1
-    `;
-    const params = [];
-
-    if (employeeId) {
-      query += " AND (t.assignedTo = ? OR t.createdBy = ?)";
-      params.push(employeeId, employeeId);
-    }
-
-    if (status) {
-      query += " AND t.status = ?";
-      params.push(status);
-    }
-
-    query += " ORDER BY t.created_at DESC LIMIT ? OFFSET ?";
-    params.push(limit, offset);
-
-    const tasks = await db
-      .prepare(query)
-      .bind(...params)
-      .all();
-
-    return jsonResponse({
-      success: true,
-      data: tasks.results || [],
-      pagination: {
-        page,
-        limit,
-        hasMore: (tasks.results || []).length === limit
-      }
-    }, 200, origin);
-
-  } catch (error) {
-    console.error("Get tasks error:", error);
-    return jsonResponse({ 
-      message: "Lỗi khi lấy danh sách công việc", 
-      error: error.message 
-    }, 500, origin);
-  }
-}
 
 // Handle getting permissions (simplified role-based approach)
 async function handleGetPermissions(url, db, origin) {
@@ -1367,69 +1361,7 @@ async function updateUser(body, userId, db, origin) {
   return jsonResponse({ message: "Update user function not yet implemented" }, 501, origin);
 }
 
-async function handleApproveTask(body, db, origin) {
-  try {
-    const { taskId, approvedBy } = body;
-    
-    if (!taskId || !approvedBy) {
-      return jsonResponse({ message: "Task ID and approver are required" }, 400, origin);
-    }
 
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    
-    const stmt = await db.prepare(`
-      UPDATE tasks 
-      SET status = 'approved', approved_by = ?, approved_at = ?, updated_at = ?
-      WHERE id = ?
-    `);
-    
-    const result = await stmt.bind(approvedBy, currentTime, currentTime, taskId).run();
-    
-    if (result.changes === 0) {
-      return jsonResponse({ message: "Task not found" }, 404, origin);
-    }
-
-    return jsonResponse({ 
-      message: "Task approved successfully",
-      taskId: taskId 
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error approving task:", error);
-    return jsonResponse({ message: "Failed to approve task", error: error.message }, 500, origin);
-  }
-}
-
-async function handleRejectTask(body, db, origin) {
-  try {
-    const { taskId, rejectedBy, reason } = body;
-    
-    if (!taskId || !rejectedBy) {
-      return jsonResponse({ message: "Task ID and rejector are required" }, 400, origin);
-    }
-
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    
-    const stmt = await db.prepare(`
-      UPDATE tasks 
-      SET status = 'rejected', rejected_by = ?, rejection_reason = ?, rejected_at = ?, updated_at = ?
-      WHERE id = ?
-    `);
-    
-    const result = await stmt.bind(rejectedBy, reason || '', currentTime, currentTime, taskId).run();
-    
-    if (result.changes === 0) {
-      return jsonResponse({ message: "Task not found" }, 404, origin);
-    }
-
-    return jsonResponse({ 
-      message: "Task rejected successfully",
-      taskId: taskId 
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error rejecting task:", error);
-    return jsonResponse({ message: "Failed to reject task", error: error.message }, 500, origin);
-  }
-}
 
 // Function removed - not used by client
 // handleCreateTaskFromMessage was not called by any client code
@@ -1648,67 +1580,7 @@ async function handleCreateAttendanceRequest(body, db, origin) {
   }
 }
 
-async function handleCreateTaskAssignment(body, db, origin) {
-  try {
-    const { title, description, assignee, assigned_to, priority, dueDate, createdBy, projectId } = body;
-    const assignedTo = assignee || assigned_to; // Support both field names
 
-    if (!title || !assignedTo || !createdBy) {
-      return jsonResponse({ message: "Title, assigned_to, and createdBy are required" }, 400, origin);
-    }
-
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    const taskId = `TASK_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-
-    const stmt = await db.prepare(`
-      INSERT INTO tasks 
-      (task_id, title, description, assigned_to, priority, due_date, status, created_by, project_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
-    `);
-
-    await stmt.bind(taskId, title, description || '', assignedTo, priority || 'medium', dueDate || null, createdBy, projectId || null, currentTime, currentTime).run();
-
-    return jsonResponse({ 
-      message: "Task assigned successfully",
-      taskId: taskId,
-      assignee: assignedTo,
-      assigned_to: assignedTo
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error creating task assignment:", error);
-    return jsonResponse({ message: "Failed to create task assignment", error: error.message }, 500, origin);
-  }
-}
-
-async function handleAddTaskComment(body, db, origin) {
-  try {
-    const { taskId, comment, commentedBy } = body;
-    
-    if (!taskId || !comment || !commentedBy) {
-      return jsonResponse({ message: "Task ID, comment, and commentedBy are required" }, 400, origin);
-    }
-
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    const commentId = `COMMENT_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-
-    const stmt = await db.prepare(`
-      INSERT INTO task_comments 
-      (comment_id, task_id, comment_text, commented_by, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
-    
-    await stmt.bind(commentId, taskId, comment, commentedBy, currentTime, currentTime).run();
-
-    return jsonResponse({ 
-      message: "Comment added successfully",
-      commentId: commentId,
-      taskId: taskId
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error adding task comment:", error);
-    return jsonResponse({ message: "Failed to add task comment", error: error.message }, 500, origin);
-  }
-}
 
 async function handleReplyToComment(body, db, origin) {
   try {
@@ -2077,23 +1949,9 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
     `);
     const attendanceStats = await attendanceStmt.bind(employeeId, currentMonth).first();
 
-    // Get task stats
-    const taskStmt = await db.prepare(`
-      SELECT 
-        COUNT(*) as total_tasks,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_tasks,
-        SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks
-      FROM tasks 
-      WHERE assigned_to = ? OR assignedTo = ?
-    `);
-    const taskStats = await taskStmt.bind(employeeId, employeeId).first();
-
     // Calculate performance metrics
     const attendanceRate = attendanceStats.total_days > 0 ? 
       (attendanceStats.present_days / attendanceStats.total_days * 100).toFixed(1) : 0;
-    const taskCompletionRate = taskStats.total_tasks > 0 ? 
-      (taskStats.completed_tasks / taskStats.total_tasks * 100).toFixed(1) : 0;
 
       return jsonResponse({
         employeeId,
@@ -2105,14 +1963,7 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
           presentDays: attendanceStats.present_days || 0,
           lateDays: attendanceStats.late_days || 0,
           absentDays: attendanceStats.absent_days || 0,
-          attendanceRate: Number(attendanceRate ?? 0),      // ✅ thay parseFloat
-        },
-        tasks: {
-          totalTasks: taskStats.total_tasks || 0,
-          completedTasks: taskStats.completed_tasks || 0,
-          pendingTasks: taskStats.pending_tasks || 0,
-          inProgressTasks: taskStats.in_progress_tasks || 0,
-          completionRate: Number(taskCompletionRate ?? 0),   // ✅ thay parseFloat
+          attendanceRate: Number(attendanceRate ?? 0)
         }
       }, 200, origin);
       
@@ -2122,111 +1973,7 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
   }
 }
 
-async function handleGetWorkTasks(url, db, origin) {
-  try {
-    const urlParams = new URLSearchParams(url.search);
-    const employeeId = urlParams.get("employeeId");
-    const page = parseInt(urlParams.get("page")) || 1;
-    const limit = parseInt(urlParams.get("limit")) || 15;
-    const status = urlParams.get("status") || "";
-    
-    if (!employeeId) {
-      return jsonResponse({ message: "Employee ID is required" }, 400, origin);
-    }
 
-    const offset = (page - 1) * limit;
-    
-    let whereClause = "WHERE (assigned_to = ? OR assignedTo = ?)";
-    let params = [employeeId, employeeId];
-    
-    if (status) {
-      whereClause += " AND status = ?";
-      params.push(status);
-    }
-
-    // Get total count
-    const countStmt = await db.prepare(`SELECT COUNT(*) as total FROM tasks ${whereClause}`);
-    const countResult = await countStmt.bind(...params).first();
-    const totalTasks = countResult.total;
-
-    // Get tasks with pagination
-    const tasksStmt = await db.prepare(`
-      SELECT 
-        id, title, description, status, priority, assigned_to, assignedTo, created_by, 
-        due_date, created_at, updated_at
-      FROM tasks 
-      ${whereClause}
-      ORDER BY created_at DESC 
-      LIMIT ? OFFSET ?
-    `);
-    
-    const tasks = await tasksStmt.bind(...params, limit, offset).all();
-
-    const totalPages = Math.ceil(totalTasks / limit);
-
-    return jsonResponse({
-      tasks: tasks,
-      pagination: {
-        currentPage: page,
-        totalPages: totalPages,
-        totalTasks: totalTasks,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error getting work tasks:", error);
-    return jsonResponse({ message: "Failed to get work tasks", error: error.message }, 500, origin);
-  }
-}
-
-async function handleGetTaskDetail(url, db, origin) {
-  try {
-    const urlParams = new URLSearchParams(url.search);
-    const taskId = urlParams.get("taskId");
-    
-    if (!taskId) {
-      return jsonResponse({ message: "Task ID is required" }, 400, origin);
-    }
-
-    // Get task details
-    const taskStmt = await db.prepare(`
-      SELECT 
-        t.*, 
-        e1.name as assignee_name,
-        e2.name as creator_name
-      FROM tasks t
-      LEFT JOIN employees e1 ON (t.assigned_to = e1.employeeId OR t.assignedTo = e1.employeeId)
-      LEFT JOIN employees e2 ON t.created_by = e2.employeeId
-      WHERE t.id = ?
-    `);
-    const task = await taskStmt.bind(taskId).first();
-    
-    if (!task) {
-      return jsonResponse({ message: "Task not found" }, 404, origin);
-    }
-
-    // Get task comments
-    const commentsStmt = await db.prepare(`
-      SELECT 
-        tc.*,
-        e.name as commenter_name
-      FROM task_comments tc
-      LEFT JOIN employees e ON tc.commented_by = e.employeeId
-      WHERE tc.task_id = ?
-      ORDER BY tc.created_at ASC
-    `);
-    const comments = await commentsStmt.bind(taskId).all();
-
-    return jsonResponse({
-      task: task,
-      comments: comments
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error getting task detail:", error);
-    return jsonResponse({ message: "Failed to get task detail", error: error.message }, 500, origin);
-  }
-}
 
 async function handleGetEmployeesByStore(url, db, origin) {
   try {
@@ -2381,97 +2128,7 @@ async function handleGetAllUsers(url, db, origin) {
   }
 }
 
-async function handleGetApprovalTasks(url, db, origin) {
-  try {
-    const stmt = await db.prepare(`
-      SELECT 
-        t.*,
-        e1.name as assignee_name,
-        e2.name as creator_name
-      FROM tasks t
-      LEFT JOIN employees e1 ON (t.assigned_to = e1.employeeId OR t.assignedTo = e1.employeeId)
-      LEFT JOIN employees e2 ON t.created_by = e2.employeeId
-      WHERE t.status = 'pending' OR t.status = 'submitted'
-      ORDER BY t.created_at DESC
-    `);
-    
-    const tasks = await stmt.all();
 
-    return jsonResponse({
-      tasks: tasks
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error getting approval tasks:", error);
-    return jsonResponse({ message: "Failed to get approval tasks", error: error.message }, 500, origin);
-  }
-}
-
-async function handleFinalApproveTask(url, db, origin) {
-  try {
-    const urlParams = new URLSearchParams(url.search);
-    const taskId = urlParams.get("taskId");
-    
-    if (!taskId) {
-      return jsonResponse({ message: "Task ID is required" }, 400, origin);
-    }
-
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    
-    const stmt = await db.prepare(`
-      UPDATE tasks 
-      SET status = 'completed', final_approved_at = ?, updated_at = ?
-      WHERE id = ?
-    `);
-    
-    const result = await stmt.bind(currentTime, currentTime, taskId).run();
-    
-    if (result.changes === 0) {
-      return jsonResponse({ message: "Task not found" }, 404, origin);
-    }
-
-    return jsonResponse({ 
-      message: "Task finally approved",
-      taskId: taskId 
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error final approving task:", error);
-    return jsonResponse({ message: "Failed to final approve task", error: error.message }, 500, origin);
-  }
-}
-
-async function handleFinalRejectTask(url, db, origin) {
-  try {
-    const urlParams = new URLSearchParams(url.search);
-    const taskId = urlParams.get("taskId");
-    const reason = urlParams.get("reason");
-    
-    if (!taskId) {
-      return jsonResponse({ message: "Task ID is required" }, 400, origin);
-    }
-
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    
-    const stmt = await db.prepare(`
-      UPDATE tasks 
-      SET status = 'final_rejected', final_rejection_reason = ?, final_rejected_at = ?, updated_at = ?
-      WHERE id = ?
-    `);
-    
-    const result = await stmt.bind(reason || '', currentTime, currentTime, taskId).run();
-    
-    if (result.changes === 0) {
-      return jsonResponse({ message: "Task not found" }, 404, origin);
-    }
-
-    return jsonResponse({ 
-      message: "Task finally rejected",
-      taskId: taskId 
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error final rejecting task:", error);
-    return jsonResponse({ message: "Failed to final reject task", error: error.message }, 500, origin);
-  }
-}
 
 async function handleCompleteRequest(body, db, origin) {
   try {
@@ -2957,10 +2614,6 @@ export default {
             return await loginUser(body, db, ALLOWED_ORIGIN);
           case "updateUser":
             return await updateUser(body, request.userId, db, ALLOWED_ORIGIN);
-          case "approveTask":
-            return await handleApproveTask(body, db, ALLOWED_ORIGIN);
-          case "rejectTask":
-            return await handleRejectTask(body, db, ALLOWED_ORIGIN);
           case "updatePersonalInfo":
             return await handleUpdatePersonalInfo(body, db, ALLOWED_ORIGIN);
           case "updateUserWithHistory":
@@ -2971,10 +2624,6 @@ export default {
             return await handleProcessAttendance(body, db, ALLOWED_ORIGIN);
           case "createAttendanceRequest":
             return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
-          case "createTaskAssignment":
-            return await handleCreateTaskAssignment(body, db, ALLOWED_ORIGIN);
-          case "addTaskComment":
-            return await handleAddTaskComment(body, db, ALLOWED_ORIGIN);
           case "replyToComment":
             return await handleReplyToComment(body, db, ALLOWED_ORIGIN);
           case "saveShiftAssignments":
@@ -3030,8 +2679,6 @@ export default {
             return await handleGetAttendanceData(url, db, ALLOWED_ORIGIN);
           case "getPendingRequests":
             return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
-          case "getTasks":
-            return await handleGetTasks(url, db, ALLOWED_ORIGIN);
           case "getPermissions":
             return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
           case "getPendingRegistrations":
@@ -3042,12 +2689,10 @@ export default {
             return await handleGetAttendanceHistory(url, db, ALLOWED_ORIGIN);
           case "getShiftAssignments":
             return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
+          case "getShifts":
+            return await handleGetShifts(url, db, ALLOWED_ORIGIN);
           case "getPersonalStats":
             return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN, request.userId);
-          case "getWorkTasks":
-            return await handleGetWorkTasks(url, db, ALLOWED_ORIGIN);
-          case "getTaskDetail":
-            return await handleGetTaskDetail(url, db, ALLOWED_ORIGIN);
           case "getEmployeesByStore":
             return await handleGetEmployeesByStore(url, db, ALLOWED_ORIGIN);
           case "getShiftRequests":
@@ -3056,12 +2701,6 @@ export default {
             return await handleGetAttendanceRequests(url, db, ALLOWED_ORIGIN);
           case "getAllUsers":
             return await handleGetAllUsers(url, db, ALLOWED_ORIGIN);
-          case "getApprovalTasks":
-            return await handleGetApprovalTasks(url, db, ALLOWED_ORIGIN);
-          case "finalApproveTask":
-            return await handleFinalApproveTask(url, db, ALLOWED_ORIGIN);
-          case "finalRejectTask":
-            return await handleFinalRejectTask(url, db, ALLOWED_ORIGIN);
           case "checkdk":
             return await handleCheckDk(url, db, ALLOWED_ORIGIN);
           case "getPendingRequestsCount":

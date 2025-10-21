@@ -109,17 +109,16 @@ CREATE TABLE timesheets (
     UNIQUE(employeeId, month, year)
 );
 
--- Shift assignments (unchanged)
+-- Shift assignments - Links employees to shifts
 CREATE TABLE shift_assignments (
     assignmentId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
+    shiftId INTEGER NOT NULL,
     date TEXT NOT NULL,
-    shiftType TEXT DEFAULT 'morning' CHECK(shiftType IN ('morning', 'afternoon', 'night')),
-    startTime TEXT NOT NULL,
-    endTime TEXT NOT NULL,
     assignedBy TEXT,
     createdAt TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
+    FOREIGN KEY (shiftId) REFERENCES shifts(shiftId) ON DELETE CASCADE,
     FOREIGN KEY (assignedBy) REFERENCES employees(employeeId)
 );
 
@@ -152,59 +151,22 @@ CREATE TABLE employee_requests (
 );
 
 -- =====================================================
--- TASK MANAGEMENT
+-- SHIFT MANAGEMENT
 -- =====================================================
 
--- Tasks table (unchanged)
-CREATE TABLE tasks (
-    taskId INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
-    priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'urgent')),
-    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'in_progress', 'completed', 'cancelled')),
-    dueDate TEXT,
-    createdBy TEXT NOT NULL,
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now')),
-    completedAt TEXT,
-    FOREIGN KEY (createdBy) REFERENCES employees(employeeId)
+-- Shifts table - Predefined work shifts
+CREATE TABLE shifts (
+    shiftId INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    startTime INTEGER NOT NULL,
+    endTime INTEGER NOT NULL,
+    timeName TEXT NOT NULL,
+    createdAt TEXT DEFAULT (datetime('now'))
 );
 
--- Task assignments (unchanged)
-CREATE TABLE task_assignments (
-    assignmentId INTEGER PRIMARY KEY AUTOINCREMENT,
-    taskId INTEGER NOT NULL,
-    employeeId TEXT NOT NULL,
-    role TEXT DEFAULT 'assigned' CHECK(role IN ('assigned', 'reviewer', 'observer')),
-    assignedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE,
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    UNIQUE(taskId, employeeId)
-);
-
--- Task comments (unchanged)
-CREATE TABLE task_comments (
-    commentId INTEGER PRIMARY KEY AUTOINCREMENT,
-    taskId INTEGER NOT NULL,
-    authorId TEXT NOT NULL,
-    comment TEXT NOT NULL,
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (taskId) REFERENCES tasks(taskId) ON DELETE CASCADE,
-    FOREIGN KEY (authorId) REFERENCES employees(employeeId)
-);
-
--- Comment replies (unchanged)
-CREATE TABLE comment_replies (
-    replyId INTEGER PRIMARY KEY AUTOINCREMENT,
-    commentId INTEGER NOT NULL,
-    authorId TEXT NOT NULL,
-    reply TEXT NOT NULL,
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (commentId) REFERENCES task_comments(commentId) ON DELETE CASCADE,
-    FOREIGN KEY (authorId) REFERENCES employees(employeeId)
-);
+-- Insert default shift data
+INSERT INTO shifts (name, startTime, endTime, timeName) VALUES 
+('Ca 8 Tiếng 8-16', 8, 16, '08:00-16:00');
 
 -- =====================================================
 -- SYSTEM MANAGEMENT
@@ -305,7 +267,7 @@ CREATE INDEX idx_timesheets_employee_period ON timesheets(employeeId, year DESC,
 -- Shift assignment indexes
 CREATE INDEX idx_shift_assignments_employee_date ON shift_assignments(employeeId, date DESC);
 CREATE INDEX idx_shift_assignments_date ON shift_assignments(date);
-CREATE INDEX idx_shift_assignments_type ON shift_assignments(shiftType);
+CREATE INDEX idx_shift_assignments_shift ON shift_assignments(shiftId);
 
 -- Employee requests indexes (covers all request types)
 CREATE INDEX idx_employee_requests_employee ON employee_requests(employeeId);
@@ -313,25 +275,9 @@ CREATE INDEX idx_employee_requests_type ON employee_requests(requestType);
 CREATE INDEX idx_employee_requests_status ON employee_requests(status);
 CREATE INDEX idx_employee_requests_date ON employee_requests(createdAt DESC);
 
--- Task indexes
-CREATE INDEX idx_tasks_status ON tasks(status);
-CREATE INDEX idx_tasks_priority ON tasks(priority);
-CREATE INDEX idx_tasks_created_by ON tasks(createdBy);
-CREATE INDEX idx_tasks_due_date ON tasks(dueDate);
-
--- Task assignment indexes
-CREATE INDEX idx_task_assignments_task ON task_assignments(taskId);
-CREATE INDEX idx_task_assignments_employee ON task_assignments(employeeId);
-CREATE INDEX idx_task_assignments_role ON task_assignments(role);
-
--- Task comment indexes
-CREATE INDEX idx_task_comments_task ON task_comments(taskId);
-CREATE INDEX idx_task_comments_author ON task_comments(authorId);
-CREATE INDEX idx_task_comments_created ON task_comments(createdAt);
-
--- Comment reply indexes
-CREATE INDEX idx_comment_replies_comment ON comment_replies(commentId);
-CREATE INDEX idx_comment_replies_author ON comment_replies(authorId);
+-- Shift indexes
+CREATE INDEX idx_shifts_start_time ON shifts(startTime);
+CREATE INDEX idx_shifts_end_time ON shifts(endTime);
 
 -- Notification indexes
 CREATE INDEX idx_notifications_employee_read ON notifications(employeeId, isRead);
@@ -361,7 +307,6 @@ CREATE INDEX idx_messages_sent ON messages(sentAt DESC);
 INSERT OR IGNORE INTO permissions (employeeId, permission, granted) 
 VALUES 
     ('ADMIN001', 'schedule', 1),
-    ('ADMIN001', 'tasks', 1),
     ('ADMIN001', 'rewards', 1),
     ('ADMIN001', 'admin', 1),
     ('ADMIN001', 'finance', 1);
@@ -379,7 +324,7 @@ VALUES
 -- OPTIMIZATION SUMMARY
 -- =====================================================
 -- 
--- TABLES REDUCED FROM 23 TO 17:
+-- TABLES REDUCED FROM 23 TO 14:
 -- 
 -- MERGED:
 -- 1. attendance + gps_attendance → attendance (GPS columns added)
@@ -389,13 +334,18 @@ VALUES
 -- REMOVED:
 -- 1. attendance_summary (calculate real-time from attendance table)
 -- 2. workSchedules (functionality covered by shift_assignments)
+-- 3. tasks, task_assignments, task_comments, comment_replies (task management removed)
+--
+-- ADDED:
+-- 1. shifts table - predefined work shifts for better shift management
 --
 -- BENEFITS:
--- - 26% fewer tables (23 → 17)
+-- - 39% fewer tables (23 → 14)
 -- - Simpler joins (no need to join attendance + gps_attendance)
 -- - Better index coverage (composite indexes on common query patterns)
 -- - Reduced data duplication
 -- - Improved query performance (40-50% faster on common queries)
 -- - Easier maintenance and backups
+-- - Streamlined shift management with predefined shifts
 --
 -- =====================================================
