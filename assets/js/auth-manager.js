@@ -480,7 +480,7 @@ class AuthManager {
     async checkAuthentication() {
         if (!this.token) {
             console.log('No token found, redirecting to login');
-            // window.location.href = "../../index.html";
+            window.location.href = "../../index.html";
             return null;
         }
 
@@ -567,7 +567,7 @@ class AuthManager {
         }
         
         console.log('Logout completed, redirecting to login');
-        // window.location.href = "../../index.html";
+        window.location.href = "../../index.html";
     }
 }
 
