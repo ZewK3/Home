@@ -1615,5 +1615,176 @@ const DashboardContent = {
                 this.renderNotifications();
             }
         }
+    },
+
+    // Additional render methods for admin dashboard
+    async renderEmployeeManagement() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">groups</span>
+                        Quản lý nhân viên
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderAttendanceApproval() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">fact_check</span>
+                        Duyệt chấm công
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderShiftManagement() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">schedule</span>
+                        Quản lý ca làm việc
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="shiftsList">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderReports() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">assessment</span>
+                        Báo cáo tổng hợp
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderAnalytics() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">analytics</span>
+                        Phân tích dữ liệu
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSystemSettings() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">settings</span>
+                        Cài đặt hệ thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSystemLogs() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">history</span>
+                        Nhật ký hệ thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderWorkManagement() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">work</span>
+                        Quản lý công việc
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">info</span>
+                        <p>Xem thông tin công việc của bạn</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSubmitRequest() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">send</span>
+                        Gửi yêu cầu
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 };

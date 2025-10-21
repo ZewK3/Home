@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hệ thống quản trị HR - Admin Dashboard">
+    <meta name="theme-color" content="#0f1419">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" href="../assets/icons/favicon-32x32.png" sizes="32x32">
+    <title>Admin Dashboard - HR System</title>
+    
+    <!-- Single Mobile CSS File -->
+    <link rel="stylesheet" href="../assets/css/mobile-dashboard.css">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+</head>
+<body>
+    <!-- Mobile Loader -->
+    <div id="mobileLoader" class="mobile-loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Mobile Container -->
+    <div class="mobile-container">
+        <!-- Mobile Header -->
+        <header class="mobile-header">
+            <div class="header-left">
+                <button id="menuBtn" class="menu-btn" aria-label="Menu">
+                    <span class="material-icons-round">menu</span>
+                </button>
+                <h1 class="header-title">Admin Dashboard</h1>
+            </div>
+            <div class="header-actions">
+                <button id="notifBtn" class="icon-btn" aria-label="Thông báo">
+                    <span class="material-icons-round">notifications</span>
+                    <span class="notification-badge" style="display:none;"></span>
+                </button>
+                <button id="userBtn" class="icon-btn" aria-label="Tài khoản">
+                    <span class="material-icons-round">account_circle</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Notification Panel -->
+        <div id="notificationPanel" class="notification-panel hidden">
+            <div class="notification-header">
+                <h3>Thông báo</h3>
+                <button id="closeNotifPanel" class="icon-btn-small">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div id="notificationList" class="notification-list">
+                <!-- Notifications will be rendered here -->
+            </div>
+        </div>
+
+        <!-- Drawer Menu -->
+        <div id="drawerOverlay" class="drawer-overlay">
+            <div class="drawer">
+                <div class="drawer-header">
+                    <h2 class="drawer-title">Menu Quản trị</h2>
+                    <button id="closeDrawer" class="close-drawer">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+                <div class="drawer-menu">
+                    <div class="menu-section">
+                        <h3 class="menu-section-title">Quản lý nhân sự</h3>
+                        <ul class="menu-list">
+                            <li>
+                                <button class="menu-item" data-function="approve-registration">
+                                    <span class="material-icons-round">how_to_reg</span>
+                                    <span>Duyệt đăng ký</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="menu-item" data-function="grant-access">
+                                    <span class="material-icons-round">admin_panel_settings</span>
+                                    <span>Phân quyền</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="menu-item" data-function="employee-management">
+                                    <span class="material-icons-round">groups</span>
+                                    <span>Quản lý nhân viên</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="menu-section">
+                        <h3 class="menu-section-title">Yêu cầu & Duyệt</h3>
+                        <ul class="menu-list">
+                            <li>
+                                <button class="menu-item" data-function="process-requests">
+                                    <span class="material-icons-round">pending_actions</span>
+                                    <span>Xử lý yêu cầu</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="menu-item" data-function="attendance-approval">
+                                    <span class="material-icons-round">fact_check</span>
+                                    <span>Duyệt chấm công</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="menu-section">
+                        <h3 class="menu-section-title">Lịch làm việc</h3>
+                        <ul class="menu-list">
+                            <li>
+                                <button class="menu-item" data-function="schedule-management">
+                                    <span class="material-icons-round">calendar_month</span>
+                                    <span>Xếp lịch toàn công ty</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="menu-item" data-function="shift-management">
+                                    <span class="material-icons-round">schedule</span>
+                                    <span>Quản lý ca làm</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-section">
+                        <h3 class="menu-section-title">Báo cáo & Thống kê</h3>
+                        <ul class="menu-list">
+                            <li>
+                                <button class="menu-item" data-function="view-reports">
+                                    <span class="material-icons-round">assessment</span>
+                                    <span>Báo cáo tổng hợp</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="menu-item" data-function="analytics">
+                                    <span class="material-icons-round">analytics</span>
+                                    <span>Phân tích dữ liệu</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-section">
+                        <h3 class="menu-section-title">Hệ thống</h3>
+                        <ul class="menu-list">
+                            <li>
+                                <button class="menu-item" data-function="system-settings">
+                                    <span class="material-icons-round">settings</span>
+                                    <span>Cài đặt hệ thống</span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="menu-item" data-function="system-logs">
+                                    <span class="material-icons-round">history</span>
+                                    <span>Nhật ký hệ thống</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="menu-section">
+                        <ul class="menu-list">
+                            <li>
+                                <button class="menu-item" id="logoutBtn">
+                                    <span class="material-icons-round">logout</span>
+                                    <span>Đăng xuất</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main id="mainContent" class="main-content">
+            <!-- Content will be rendered here dynamically -->
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-nav="home">
+                <span class="material-icons-round">dashboard</span>
+                <span class="nav-label">Trang chủ</span>
+            </button>
+            <button class="nav-item" data-nav="manage">
+                <span class="material-icons-round">groups</span>
+                <span class="nav-label">Quản lý</span>
+            </button>
+            <button class="nav-item" data-nav="reports">
+                <span class="material-icons-round">assessment</span>
+                <span class="nav-label">Báo cáo</span>
+            </button>
+            <button class="nav-item" data-nav="settings">
+                <span class="material-icons-round">settings</span>
+                <span class="nav-label">Cài đặt</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/utils.js"></script>
+    <script src="../assets/js/secure-storage.js"></script>
+    <script src="../assets/js/theme-manager.js"></script>
+    <script src="../assets/js/dashboard-api.js"></script>
+    <script src="../assets/js/dashboard-content.js"></script>
+    <script src="../assets/js/menu-manager.js"></script>
+
+    <script>
+        // Admin Dashboard Logic
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication and admin role
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            
+            if (!token || !userData) {
+                console.log('No authentication found, redirecting to login...');
+                window.location.href = '../index.html';
+                return;
+            }
+
+            // Check if user is admin
+            const user = JSON.parse(userData);
+            const isAdmin = user.position === 'AD' || user.position === 'ADMIN';
+            
+            if (!isAdmin) {
+                console.log('User is not admin, redirecting to regular dashboard...');
+                window.location.href = './dashboard.html';
+                return;
+            }
+
+            // Initialize Dashboard Content
+            await DashboardContent.init();
+
+            // Hide loader
+            setTimeout(() => {
+                document.getElementById('mobileLoader').classList.add('hidden');
+            }, 500);
+
+            // Drawer menu toggle
+            const menuBtn = document.getElementById('menuBtn');
+            const drawerOverlay = document.getElementById('drawerOverlay');
+            const closeDrawer = document.getElementById('closeDrawer');
+
+            menuBtn.addEventListener('click', () => {
+                drawerOverlay.classList.add('active');
+            });
+
+            closeDrawer.addEventListener('click', () => {
+                drawerOverlay.classList.remove('active');
+            });
+
+            drawerOverlay.addEventListener('click', (e) => {
+                if (e.target === drawerOverlay) {
+                    drawerOverlay.classList.remove('active');
+                }
+            });
+
+            // Menu item click handling
+            const menuItems = document.querySelectorAll('.menu-item[data-function]');
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const functionName = item.dataset.function;
+                    navigateToFunction(functionName);
+                    drawerOverlay.classList.remove('active');
+                });
+            });
+
+            // Bottom navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    const navType = item.dataset.nav;
+                    handleNavigation(navType);
+                });
+            });
+
+            // User menu
+            const userBtn = document.getElementById('userBtn');
+            userBtn.addEventListener('click', () => {
+                navigateToFunction('profile');
+            });
+
+            // Notification button
+            const notifBtn = document.getElementById('notifBtn');
+            const notificationPanel = document.getElementById('notificationPanel');
+            const closeNotifPanel = document.getElementById('closeNotifPanel');
+
+            notifBtn.addEventListener('click', () => {
+                notificationPanel.classList.toggle('hidden');
+            });
+
+            closeNotifPanel.addEventListener('click', () => {
+                notificationPanel.classList.add('hidden');
+            });
+
+            // Logout
+            const logoutBtn = document.getElementById('logoutBtn');
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Bạn có chắc muốn đăng xuất?')) {
+                    localStorage.clear();
+                    window.location.href = '../index.html';
+                }
+            });
+
+            // Check for hash on load
+            if (window.location.hash) {
+                handleHashChange();
+            } else {
+                navigateToFunction('home');
+            }
+
+            // Listen for hash changes
+            window.addEventListener('hashchange', handleHashChange);
+        });
+
+        function handleNavigation(navType) {
+            switch(navType) {
+                case 'home':
+                    navigateToFunction('home');
+                    break;
+                case 'manage':
+                    navigateToFunction('approve-registration');
+                    break;
+                case 'reports':
+                    navigateToFunction('view-reports');
+                    break;
+                case 'settings':
+                    navigateToFunction('system-settings');
+                    break;
+            }
+        }
+
+        function handleHashChange() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                navigateToFunction(hash);
+            }
+        }
+
+        function navigateToFunction(functionName) {
+            // Update URL hash
+            if (window.location.hash !== `#${functionName}`) {
+                window.location.hash = functionName;
+            }
+
+            // Update header title
+            const headerTitle = document.querySelector('.header-title');
+            const titles = {
+                'home': 'Admin Dashboard',
+                'approve-registration': 'Duyệt đăng ký',
+                'grant-access': 'Phân quyền',
+                'employee-management': 'Quản lý nhân viên',
+                'process-requests': 'Xử lý yêu cầu',
+                'attendance-approval': 'Duyệt chấm công',
+                'schedule-management': 'Xếp lịch',
+                'shift-management': 'Quản lý ca',
+                'view-reports': 'Báo cáo',
+                'analytics': 'Phân tích',
+                'system-settings': 'Cài đặt hệ thống',
+                'system-logs': 'Nhật ký',
+                'profile': 'Thông tin cá nhân'
+            };
+            headerTitle.textContent = titles[functionName] || 'Admin Dashboard';
+
+            // Render content
+            renderContent(functionName);
+        }
+
+        async function renderContent(functionName) {
+            const mainContent = document.getElementById('mainContent');
+            
+            // Content mapping to DashboardContent methods
+            const contentMethods = {
+                'home': 'renderAdminDashboard',
+                'approve-registration': 'renderApproveRegistration',
+                'grant-access': 'renderGrantAccess',
+                'employee-management': 'renderEmployeeManagement',
+                'process-requests': 'renderProcessRequests',
+                'attendance-approval': 'renderAttendanceApproval',
+                'schedule-management': 'renderScheduleManagement',
+                'shift-management': 'renderShiftManagement',
+                'view-reports': 'renderReports',
+                'analytics': 'renderAnalytics',
+                'system-settings': 'renderSystemSettings',
+                'system-logs': 'renderSystemLogs',
+                'profile': 'renderProfile'
+            };
+
+            const methodName = contentMethods[functionName] || 'renderAdminDashboard';
+            
+            if (typeof DashboardContent[methodName] === 'function') {
+                const content = await DashboardContent[methodName]();
+                mainContent.innerHTML = content;
+            } else {
+                // Fallback for missing methods
+                mainContent.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="message">
+                                <span class="material-icons-round">construction</span>
+                                <p>Chức năng "${functionName}" đang được phát triển</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+    </script>
+</body>
+</html>

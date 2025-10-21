@@ -203,6 +203,20 @@
                 return;
             }
 
+            // Check if user is admin and redirect to admin dashboard
+            try {
+                const user = JSON.parse(userData);
+                const isAdmin = user.position === 'AD' || user.position === 'ADMIN';
+                
+                if (isAdmin) {
+                    console.log('Admin user detected, redirecting to admin dashboard...');
+                    window.location.href = './admin.html';
+                    return;
+                }
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+
             // Initialize Dashboard Content
             await DashboardContent.init();
 
