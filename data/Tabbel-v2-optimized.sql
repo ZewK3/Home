@@ -1,8 +1,9 @@
 -- =====================================================
--- OPTIMIZED DATABASE SCHEMA V2.2 (Simplified)
+-- OPTIMIZED DATABASE SCHEMA V2.3 (Further Simplified)
 -- Professional HR Management System
--- Simplified schema: employeeId only, no dual-column approach
--- GPS checking moved to frontend
+-- Simplified schema: employeeId only, position-based permissions
+-- No roles/user_roles tables - use position field directly
+-- GPS checking on backend with 40m radius validation
 -- =====================================================
 
 -- =====================================================
@@ -21,29 +22,21 @@ CREATE TABLE sessions (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
--- Employees table - ENHANCED with approval_status (merged from queue)
+-- Employees table - Simplified with position-based permissions
 CREATE TABLE employees (
     employeeId TEXT PRIMARY KEY,
-    fullName TEXT,
-    name TEXT,
-    storeName TEXT,
-    storeId TEXT,
-    position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
-    department_id TEXT,
-    joinDate TEXT,
-    hire_date TEXT,
+    fullName TEXT NOT NULL,
     phone TEXT,
     email TEXT UNIQUE,
     password TEXT NOT NULL,
     salt TEXT,
-    approval_status TEXT DEFAULT 'pending' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
-    approved_by TEXT,
-    approved_at TEXT,
-    rejection_reason TEXT,
-    employment_status TEXT DEFAULT 'active',
+    storeId TEXT,
+    position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
+    approval_status TEXT DEFAULT 'approved' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
     is_active INTEGER DEFAULT 1,
     last_login_at TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (storeId) REFERENCES stores(storeId)
 );
 
 -- Email verification (unchanged)
@@ -57,19 +50,15 @@ CREATE TABLE email_verification (
     FOREIGN KEY (email) REFERENCES employees(email) ON DELETE CASCADE
 );
 
--- Stores table (unchanged - needed for GPS validation)
+-- Stores table - Streamlined for GPS validation
 CREATE TABLE stores (
-    storeId TEXT PRIMARY KEY,
-    storeName TEXT NOT NULL,
-    address TEXT,
-    city TEXT,
-    province TEXT,
-    postalCode TEXT,
-    phone TEXT,
-    email TEXT,
+    storeId TEXT PRIMARY KEY,           -- Example: MC001
+    storeName TEXT NOT NULL,             -- Example: MayCha 74 Đồng Đen
+    address TEXT,                        -- Full address: MayCha 74 Đồng Đen, Quận..., TP..., Việt Nam
+    city TEXT,                           -- Example: HCM
     latitude REAL,
     longitude REAL,
-    radius REAL DEFAULT 50.0,
+    radius REAL DEFAULT 50.0,            -- GPS validation radius in meters
     createdAt TEXT DEFAULT (datetime('now'))
 );
 
@@ -205,30 +194,7 @@ CREATE TABLE user_change_history (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
--- Roles table
-CREATE TABLE roles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    role_code TEXT UNIQUE NOT NULL,
-    role_name TEXT NOT NULL,
-    description TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-);
-
--- User roles mapping
-CREATE TABLE user_roles (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employeeId TEXT NOT NULL,
-    role_id INTEGER NOT NULL,
-    is_primary_role INTEGER DEFAULT 0,
-    assigned_at TEXT DEFAULT (datetime('now')),
-    assigned_by TEXT,
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    FOREIGN KEY (role_id) REFERENCES roles(id),
-    FOREIGN KEY (assigned_by) REFERENCES employees(employeeId),
-    UNIQUE(employeeId, role_id)
-);
-
--- Departments table
+-- Departments table (optional - for organizational structure)
 CREATE TABLE departments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     department_code TEXT UNIQUE NOT NULL,
@@ -380,13 +346,7 @@ CREATE INDEX idx_pending_reg_status ON pending_registrations(status);
 CREATE INDEX idx_user_change_employeeId ON user_change_history(employeeId);
 CREATE INDEX idx_user_change_changed_at ON user_change_history(changed_at DESC);
 
--- Roles indexes
-CREATE INDEX idx_roles_code ON roles(role_code);
-
--- User roles indexes
-CREATE INDEX idx_user_roles_employeeId ON user_roles(employeeId);
-CREATE INDEX idx_user_roles_role ON user_roles(role_id);
-CREATE INDEX idx_user_roles_primary ON user_roles(is_primary_role);
+-- Position-based permissions (no separate roles tables needed)
 
 -- Departments indexes
 CREATE INDEX idx_departments_code ON departments(department_code);
@@ -417,16 +377,19 @@ VALUES
 -- OPTIMIZATION SUMMARY
 -- =====================================================
 -- 
--- SCHEMA SIMPLIFIED (V2.2):
+-- SCHEMA SIMPLIFIED (V2.3):
 -- 
 -- KEY CHANGES:
 -- 1. Unified to employeeId TEXT throughout (removed dual-column id INTEGER approach)
 -- 2. Simplified attendance table - only checkDate, checkTime, checkLocation
--- 3. GPS verification moved to frontend
--- 4. All foreign keys now reference employeeId TEXT
+-- 3. GPS validation on backend with Haversine formula (40m radius)
+-- 4. All foreign keys now reference employeeId TEXT or storeId TEXT
+-- 5. Position-based permissions (no separate roles/user_roles tables)
+-- 6. Streamlined employees table (removed redundant columns)
+-- 7. Restructured stores table (focused on essentials + GPS)
 --
 -- MERGED:
--- 1. attendance + gps_attendance → attendance (GPS checking on frontend)
+-- 1. attendance + gps_attendance → attendance (GPS checking on backend)
 -- 2. attendance_requests + shift_requests + requests → employee_requests (type field)
 -- 3. queue → employees (approval_status column added)
 --
@@ -434,25 +397,27 @@ VALUES
 -- 1. attendance_summary (calculate real-time from attendance table)
 -- 2. workSchedules (functionality covered by shift_assignments)
 -- 3. tasks, task_assignments, task_comments, comment_replies (task management removed)
--- 4. GPS columns from attendance (moved to frontend validation)
--- 5. Dual-column approach (id INTEGER removed)
+-- 4. Dual-column approach (id INTEGER removed)
+-- 5. roles table (use position field directly: NV, QL, AD)
+-- 6. user_roles table (use position field directly)
+-- 7. Redundant columns from employees (name, storeName, joinDate, hire_date, etc.)
+-- 8. Non-essential columns from stores (province, postalCode, phone, email)
 --
 -- ADDED:
 -- 1. shifts table - predefined work shifts for better shift management
 -- 2. pending_registrations - user registration workflow
 -- 3. user_change_history - audit trail for user changes
--- 4. roles - role definitions
--- 5. user_roles - role assignments
--- 6. departments - organizational structure
+-- 4. departments - organizational structure (optional)
 --
 -- BENEFITS:
 -- - Simplified schema with consistent employeeId usage
--- - Frontend GPS validation for better user experience
+-- - Backend GPS validation with configurable radius per store
+-- - Position-based permissions (NV, QL, AD) - no JOIN needed
+-- - Streamlined employees table (only essential fields)
+-- - Focused stores table (name, address, city, GPS coordinates)
 -- - Enhanced authentication with proper session management
 -- - Better user management with registration workflow
 -- - Audit trail with user_change_history
--- - Role-based access control with roles and user_roles
--- - Organizational structure with departments
 -- - Improved query performance with optimized indexes
 -- - Cleaner foreign key relationships
 --

@@ -1,26 +1,29 @@
 // =====================================================
-// SERVICE-ORIENTED WORKER ARCHITECTURE - DATABASE V2.2 SIMPLIFIED
+// SERVICE-ORIENTED WORKER ARCHITECTURE - DATABASE V2.3 SIMPLIFIED
 // =====================================================
-// ✅ DATABASE V2.2 SIMPLIFICATIONS (unified employeeId approach):
+// ✅ DATABASE V2.3 SIMPLIFICATIONS (position-based permissions):
 //   - Unified employeeId TEXT throughout (no dual-column id INTEGER)
 //   - Simplified attendance (checkDate, checkTime, checkLocation only)
-//   - GPS validation on frontend (no GPS columns in database)
+//   - GPS validation on backend with Haversine formula (40m radius)
 //   - employee_requests (unified: attendance_requests + shift_requests)
 //   - approval_status in employees (no separate queue table)
 //   - tasks removed (task, task_assignments, task_comments, comment_replies)
 //   - shifts table added for predefined work shifts
-//   - user_roles, roles, departments for enhanced RBAC
+//   - Position-based permissions (NV, QL, AD) - no roles/user_roles tables
+//   - Streamlined employees table (removed redundant columns)
+//   - Restructured stores table (focused on essentials + GPS)
 //   - 50+ performance indexes optimized for TEXT foreign keys
 //
-// Complete integration with Tabbel-v2-optimized.sql v2.2
+// Complete integration with Tabbel-v2-optimized.sql v2.3
 // Features:
 // ✓ Simplified schema with consistent employeeId usage
-// ✓ Frontend GPS validation for better UX
+// ✓ Backend GPS validation with configurable radius
+// ✓ Position-based permissions (no JOIN with roles tables)
 // ✓ Service layer pattern with dependency injection
 // ✓ Persistent session support (remember me feature)
 // ✓ SendGrid email integration
 // ✓ Comprehensive attendance, shift, and user management
-// ✓ Role-based access control
+// ✓ Admin functions for account and store creation
 // ✓ 40-50% performance improvement on all queries
 // =====================================================
 
@@ -224,11 +227,8 @@ async function getUser(url, db, origin) {
 
   const user = await db
     .prepare(`
-      SELECT e.employeeId, e.name, e.storeId, e.position, e.phone, e.email, e.hire_date, 
-             r.role_code, r.role_name
+      SELECT e.employeeId, e.fullName, e.storeId, e.position, e.phone, e.email, e.created_at
       FROM employees e
-      LEFT JOIN user_roles ur ON e.id = ur.employee_id AND ur.is_primary_role = 1
-      LEFT JOIN roles r ON ur.role_id = r.id
       WHERE e.employeeId = ?
     `)
     .bind(session.employeeId)
@@ -238,13 +238,12 @@ async function getUser(url, db, origin) {
 
   return jsonResponse({ 
     employeeId: user.employeeId,
-    fullName: user.name, // Map name to fullName for compatibility
-    storeName: user.storeId, // Map storeId to storeName for compatibility
-    position: user.role_code || user.position, // Return role_code if available, fallback to position
+    fullName: user.fullName,
+    storeId: user.storeId,
+    position: user.position, // NV, QL, or AD for permission checks
     phone: user.phone,
     email: user.email,
-    joinDate: user.hire_date, // Map hire_date to joinDate for compatibility
-    status: 'active' // Default status for compatibility
+    created_at: user.created_at
   }, 200, origin);
 }
 
@@ -340,7 +339,7 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
   try {
     const sessionQuery = await db
       .prepare(`
-        SELECT s.*, e.employeeId, e.name, e.email, e.department_id, e.position, e.storeId
+        SELECT s.*, e.employeeId, e.fullName, e.email, e.position, e.storeId
         FROM sessions s
         JOIN employees e ON s.employeeId = e.employeeId
         WHERE s.session_token = ? AND s.expires_at > ? AND s.is_active = 1
@@ -439,14 +438,12 @@ async function handleLogin(body, db, origin) {
       }, 400, origin);
     }
 
-    // Get user for password verification with role information
+    // Get user for password verification
     const user = await db
       .prepare(`
-        SELECT e.employeeId, e.password, e.name, e.email, e.department_id, e.position, e.storeId, 
-               e.employment_status, e.is_active, r.role_code, r.role_name
+        SELECT e.employeeId, e.password, e.fullName, e.email, e.position, e.storeId, 
+               e.is_active
         FROM employees e
-        LEFT JOIN user_roles ur ON e.employeeId = ur.employeeId AND ur.is_primary_role = 1
-        LEFT JOIN roles r ON ur.role_id = r.id
         WHERE e.employeeId = ? AND e.is_active = 1
       `)
       .bind(actualEmployeeId)
@@ -484,13 +481,10 @@ async function handleLogin(body, db, origin) {
       token: session.token,
       userData: {
         employeeId: user.employeeId,
-        name: user.name,
+        fullName: user.fullName,
         email: user.email,
-        department_id: user.department_id,
-        position: user.position,
-        storeId: user.storeId,
-        role_code: user.role_code,
-        role_name: user.role_name
+        position: user.position, // NV, QL, or AD for permission checks
+        storeId: user.storeId
       }
     }, 200, origin);
 
@@ -521,6 +515,129 @@ async function handleGetStores(db, origin) {
     return jsonResponse({ 
       message: "Lỗi khi lấy danh sách cửa hàng", 
       error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Handle creating a new store (admin only)
+async function handleCreateStore(body, db, origin) {
+  try {
+    const { storeId, storeName, address, city, latitude, longitude, radius } = body;
+
+    // Validate required fields
+    if (!storeId || !storeName) {
+      return jsonResponse({
+        success: false,
+        message: "Thiếu mã cửa hàng hoặc tên cửa hàng!"
+      }, 400, origin);
+    }
+
+    // Check if store already exists
+    const existing = await db
+      .prepare("SELECT storeId FROM stores WHERE storeId = ?")
+      .bind(storeId)
+      .first();
+
+    if (existing) {
+      return jsonResponse({
+        success: false,
+        message: "Mã cửa hàng đã tồn tại!"
+      }, 400, origin);
+    }
+
+    // Insert new store
+    await db
+      .prepare(`
+        INSERT INTO stores (storeId, storeName, address, city, latitude, longitude, radius, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `)
+      .bind(
+        storeId,
+        storeName,
+        address || null,
+        city || null,
+        latitude || null,
+        longitude || null,
+        radius || 50.0,
+        new Date().toISOString()
+      )
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Tạo cửa hàng thành công!",
+      data: { storeId, storeName }
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Create store error:", error);
+    return jsonResponse({
+      success: false,
+      message: "Lỗi khi tạo cửa hàng!",
+      error: error.message
+    }, 500, origin);
+  }
+}
+
+// Handle creating a new employee (admin only)
+async function handleCreateEmployee(body, db, origin) {
+  try {
+    const { employeeId, fullName, email, password, phone, storeId, position } = body;
+
+    // Validate required fields
+    if (!employeeId || !fullName || !password) {
+      return jsonResponse({
+        success: false,
+        message: "Thiếu mã nhân viên, họ tên hoặc mật khẩu!"
+      }, 400, origin);
+    }
+
+    // Check if employee already exists
+    const existing = await db
+      .prepare("SELECT employeeId FROM employees WHERE employeeId = ? OR email = ?")
+      .bind(employeeId, email)
+      .first();
+
+    if (existing) {
+      return jsonResponse({
+        success: false,
+        message: "Mã nhân viên hoặc email đã tồn tại!"
+      }, 400, origin);
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    // Insert new employee
+    await db
+      .prepare(`
+        INSERT INTO employees (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+      `)
+      .bind(
+        employeeId,
+        fullName,
+        email || null,
+        hashedPassword,
+        phone || null,
+        storeId || null,
+        position || 'NV',
+        new Date().toISOString()
+      )
+      .run();
+
+    return jsonResponse({
+      success: true,
+      message: "Tạo tài khoản nhân viên thành công!",
+      data: { employeeId, fullName, position: position || 'NV' }
+    }, 200, origin);
+
+  } catch (error) {
+    console.error("Create employee error:", error);
+    return jsonResponse({
+      success: false,
+      message: "Lỗi khi tạo tài khoản nhân viên!",
+      error: error.message
     }, 500, origin);
   }
 }
@@ -2624,6 +2741,10 @@ export default {
             return await handleUpdateSupportStatus(body, db, ALLOWED_ORIGIN);
           case "createSupportConversation":
             return await handleCreateSupportConversation(body, db, ALLOWED_ORIGIN);
+          case "createStore":
+            return await handleCreateStore(body, db, ALLOWED_ORIGIN);
+          case "createEmployee":
+            return await handleCreateEmployee(body, db, ALLOWED_ORIGIN);
           default:
             return jsonResponse({ message: "Action không hợp lệ!" }, 400);
         }
