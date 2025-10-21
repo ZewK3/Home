@@ -121,18 +121,7 @@ const DashboardAPI = {
         }
     },
 
-    /**
-     * Task Management
-     */
-    async getUserTasks(employeeId) {
-        try {
-            const response = await utils.fetchAPI(`?action=getUserTasks&employeeId=${employeeId}`);
-            return response.success ? response.data : null;
-        } catch (error) {
-            console.error('Error fetching user tasks:', error);
-            return null;
-        }
-    },
+
 
     async updateTaskStatus(taskId, status) {
         try {

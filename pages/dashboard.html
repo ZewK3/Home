@@ -74,10 +74,6 @@
                 <span class="material-icons-round">calendar_month</span>
                 <span class="nav-label">Lịch làm</span>
             </button>
-            <button class="nav-item" data-nav="tasks">
-                <span class="material-icons-round">task</span>
-                <span class="nav-label">Công việc</span>
-            </button>
             <button class="nav-item" data-nav="profile">
                 <span class="material-icons-round">person</span>
                 <span class="nav-label">Cá nhân</span>
@@ -129,12 +125,6 @@
                                 <span>Chấm công</span>
                             </button>
                         </li>
-                        <li>
-                            <button class="menu-item" data-function="tasks">
-                                <span class="material-icons-round">work</span>
-                                <span>Công việc</span>
-                            </button>
-                        </li>
                     </ul>
                 </div>
                 
@@ -151,12 +141,6 @@
                             <button class="menu-item" data-function="attendance-request">
                                 <span class="material-icons-round">assignment</span>
                                 <span>Đơn từ</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="menu-item" data-function="task-assignment">
-                                <span class="material-icons-round">task_alt</span>
-                                <span>Nhiệm vụ</span>
                             </button>
                         </li>
                     </ul>
@@ -365,14 +349,12 @@
             const titles = {
                 'home': 'Dashboard',
                 'schedule': 'Lịch làm việc',
-                'tasks': 'Công việc',
                 'profile': 'Cá nhân',
                 'work-management': 'Quản lý công',
                 'timesheet': 'Bảng công',
                 'attendance': 'Chấm công',
                 'submit-request': 'Gửi yêu cầu',
                 'attendance-request': 'Đơn từ chấm công',
-                'task-assignment': 'Phân công nhiệm vụ',
                 'process-requests': 'Xử lý yêu cầu',
                 'approve-registration': 'Duyệt đăng ký',
                 'grant-access': 'Phân quyền'
@@ -390,14 +372,12 @@
             const contentMethods = {
                 'home': 'renderHome',
                 'schedule': 'renderSchedule',
-                'tasks': 'renderTasks',
                 'profile': 'renderProfile',
                 'work-management': 'renderWorkManagement',
                 'timesheet': 'renderTimesheet',
                 'attendance': 'renderAttendance',
                 'submit-request': 'renderSubmitRequest',
                 'attendance-request': 'renderAttendanceRequest',
-                'task-assignment': 'renderTaskAssignment',
                 'process-requests': 'renderProcessRequests',
                 'approve-registration': 'renderApproveRegistration',
                 'grant-access': 'renderGrantAccess'
