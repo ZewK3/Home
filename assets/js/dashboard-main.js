@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (!token || !userData) {
         console.log('No authentication found, redirecting to login...');
-        window.location.href = '../../index.html';
+        // window.location.href = '../../index.html';
         return;
     }
 
