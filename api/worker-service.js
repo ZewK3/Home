@@ -489,7 +489,7 @@ async function handleLogin(body, db, origin) {
       success: true,
       message: "Đăng nhập thành công!",
       token: session.token,
-      user: {
+      userData: {
         employeeId: user.employeeId,
         name: user.name,
         email: user.email,
