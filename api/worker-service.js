@@ -1,23 +1,26 @@
 // =====================================================
-// SERVICE-ORIENTED WORKER ARCHITECTURE - DATABASE V2 COMPATIBLE
+// SERVICE-ORIENTED WORKER ARCHITECTURE - DATABASE V2.2 SIMPLIFIED
 // =====================================================
-// ✅ DATABASE V2 OPTIMIZATIONS (23 → 14 tables, 40-50% faster):
+// ✅ DATABASE V2.2 SIMPLIFICATIONS (unified employeeId approach):
+//   - Unified employeeId TEXT throughout (no dual-column id INTEGER)
+//   - Simplified attendance (checkDate, checkTime, checkLocation only)
+//   - GPS validation on frontend (no GPS columns in database)
 //   - employee_requests (unified: attendance_requests + shift_requests)
-//   - attendance with GPS (no separate gps_attendance table)
 //   - approval_status in employees (no separate queue table)
 //   - tasks removed (task, task_assignments, task_comments, comment_replies)
 //   - shifts table added for predefined work shifts
-//   - 50+ performance indexes added
+//   - user_roles, roles, departments for enhanced RBAC
+//   - 50+ performance indexes optimized for TEXT foreign keys
 //
-// Complete integration with Tabbel-v2-optimized.sql
-// All functions from original worker.js included with v2 optimizations
+// Complete integration with Tabbel-v2-optimized.sql v2.2
 // Features:
-// ✓ Complete API compatibility with original worker
-// ✓ Database schema v2.0 support (optimized unified tables)
+// ✓ Simplified schema with consistent employeeId usage
+// ✓ Frontend GPS validation for better UX
 // ✓ Service layer pattern with dependency injection
-// ✓ Advanced caching strategies and performance monitoring
+// ✓ Persistent session support (remember me feature)
 // ✓ SendGrid email integration
 // ✓ Comprehensive attendance, shift, and user management
+// ✓ Role-based access control
 // ✓ 40-50% performance improvement on all queries
 // =====================================================
 
@@ -734,47 +737,34 @@ async function handleRegister(body, db, origin, env) {
 // Handle check-in
 async function handleCheckIn(body, db, origin) {
   try {
-    const { employeeId, latitude, longitude, location } = body;
+    const { employeeId, checkDate, checkTime, checkLocation } = body;
 
-    if (!employeeId) {
+    if (!employeeId || !checkDate || !checkTime) {
       return jsonResponse({ 
         success: false, 
-        message: "employeeId là bắt buộc!" 
+        message: "employeeId, checkDate, và checkTime là bắt buộc!" 
       }, 400, origin);
     }
 
-    // Check if already checked in today
-    const today = new Date().toISOString().split('T')[0];
-    const existingAttendance = await db
-      .prepare(`
-        SELECT id FROM attendance 
-        WHERE employeeId = ? AND DATE(check_in_time) = ? AND check_out_time IS NULL
-      `)
-      .bind(employeeId, today)
-      .first();
-
-    if (existingAttendance) {
-      return jsonResponse({ 
-        success: false, 
-        message: "Bạn đã check-in hôm nay!" 
-      }, 400, origin);
-    }
+    // GPS validation is done on frontend
+    // Only store checkDate (DD/MM/YYYY), checkTime (HH:MM:SS), checkLocation (store ID)
 
     // Create attendance record
     const now = new Date().toISOString();
     await db
       .prepare(`
         INSERT INTO attendance 
-        (employeeId, check_in_time, check_in_location, gps_latitude, gps_longitude, status, created_at) 
-        VALUES (?, ?, ?, ?, ?, 'active', ?)
+        (employeeId, checkDate, checkTime, checkLocation, createdAt, updatedAt) 
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
-      .bind(employeeId, now, location || '', latitude || null, longitude || null, now)
+      .bind(employeeId, checkDate, checkTime, checkLocation || '', now, now)
       .run();
 
     return jsonResponse({
       success: true,
       message: "Check-in thành công!",
-      checkInTime: now
+      checkDate: checkDate,
+      checkTime: checkTime
     }, 200, origin);
 
   } catch (error) {
@@ -790,56 +780,32 @@ async function handleCheckIn(body, db, origin) {
 // Handle check-out
 async function handleCheckOut(body, db, origin) {
   try {
-    const { employeeId, latitude, longitude, location } = body;
+    const { employeeId, checkDate, checkTime, checkLocation } = body;
 
-    if (!employeeId) {
+    if (!employeeId || !checkDate || !checkTime) {
       return jsonResponse({ 
         success: false, 
-        message: "employeeId là bắt buộc!" 
+        message: "employeeId, checkDate, và checkTime là bắt buộc!" 
       }, 400, origin);
     }
 
-    // Find today's attendance record
-    const today = new Date().toISOString().split('T')[0];
-    const attendance = await db
-      .prepare(`
-        SELECT id, check_in_time FROM attendance 
-        WHERE employeeId = ? AND DATE(check_in_time) = ? AND check_out_time IS NULL
-      `)
-      .bind(employeeId, today)
-      .first();
-
-    if (!attendance) {
-      return jsonResponse({ 
-        success: false, 
-        message: "Không tìm thấy bản ghi check-in hôm nay!" 
-      }, 400, origin);
-    }
-
-    // Calculate work hours
-    const checkIn = new Date(attendance.check_in_time);
-    const checkOut = new Date(); // thời điểm hiện tại
-    const workHours = (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60);
-
-
-    // Update attendance record
+    // GPS validation is done on frontend
+    // Create another attendance record for check-out
+    const now = new Date().toISOString();
     await db
       .prepare(`
-        UPDATE attendance 
-        SET check_out_time = ?, check_out_location = ?, checkout_gps_latitude = ?, 
-            checkout_gps_longitude = ?, total_hours = ?, 
-            status = 'completed', updated_at = ?
-        WHERE id = ?
+        INSERT INTO attendance 
+        (employeeId, checkDate, checkTime, checkLocation, createdAt, updatedAt) 
+        VALUES (?, ?, ?, ?, ?, ?)
       `)
-      .bind(checkOut.toISOString(), location || '', latitude || null, 
-            longitude || null, workHours.toFixed(2), checkOut.toISOString(), attendance.id)
+      .bind(employeeId, checkDate, checkTime, checkLocation || '', now, now)
       .run();
 
     return jsonResponse({
       success: true,
       message: "Check-out thành công!",
-      checkOutTime: checkOut.toISOString(),
-      workHours: workHours.toFixed(2)
+      checkDate: checkDate,
+      checkTime: checkTime
     }, 200, origin);
 
   } catch (error) {
