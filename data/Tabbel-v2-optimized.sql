@@ -1,8 +1,8 @@
 -- =====================================================
--- OPTIMIZED DATABASE SCHEMA V2.1 (Enhanced v3.0 Compatible)
+-- OPTIMIZED DATABASE SCHEMA V2.2 (Simplified)
 -- Professional HR Management System
--- Optimized for performance: Enhanced tables, better indexes
--- Compatible with worker-service.js Enhanced Database Schema v3.0
+-- Simplified schema: employeeId only, no dual-column approach
+-- GPS checking moved to frontend
 -- =====================================================
 
 -- =====================================================
@@ -12,25 +12,24 @@
 -- Sessions table - for authentication
 CREATE TABLE sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
+    employeeId TEXT NOT NULL,
     session_token TEXT UNIQUE NOT NULL,
     expires_at TEXT NOT NULL,
     last_activity TEXT,
     is_active INTEGER DEFAULT 1,
     created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
 -- Employees table - ENHANCED with approval_status (merged from queue)
 CREATE TABLE employees (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employeeId TEXT UNIQUE NOT NULL,
+    employeeId TEXT PRIMARY KEY,
     fullName TEXT,
     name TEXT,
     storeName TEXT,
     storeId TEXT,
     position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
-    department_id INTEGER,
+    department_id TEXT,
     joinDate TEXT,
     hire_date TEXT,
     phone TEXT,
@@ -79,32 +78,16 @@ CREATE TABLE stores (
 -- =====================================================
 
 -- Attendance table - MERGED with gps_attendance (GPS columns added)
+-- Attendance table - Simplified (GPS checking moved to frontend)
 CREATE TABLE attendance (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    attendanceId INTEGER,
+    attendanceId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
-    date TEXT NOT NULL,
-    checkIn TEXT,
-    checkOut TEXT,
-    check_in_time TEXT,
-    check_out_time TEXT,
-    hoursWorked REAL DEFAULT 0,
-    status TEXT DEFAULT 'absent' CHECK(status IN ('present', 'absent', 'late', 'half-day')),
-    notes TEXT,
-    -- GPS columns (merged from gps_attendance)
-    checkInLatitude REAL,
-    checkInLongitude REAL,
-    checkInAccuracy REAL,
-    checkOutLatitude REAL,
-    checkOutLongitude REAL,
-    checkOutAccuracy REAL,
-    checkInLocation TEXT,
-    checkOutLocation TEXT,
-    gpsVerified INTEGER DEFAULT 0,
+    checkDate TEXT NOT NULL,
+    checkTime TEXT NOT NULL,
+    checkLocation TEXT,
     createdAt TEXT DEFAULT (datetime('now')),
     updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    UNIQUE(employeeId, date)
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
 -- Timesheets table (unchanged - monthly summaries)
@@ -234,15 +217,15 @@ CREATE TABLE roles (
 -- User roles mapping
 CREATE TABLE user_roles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id INTEGER NOT NULL,
+    employeeId TEXT NOT NULL,
     role_id INTEGER NOT NULL,
     is_primary_role INTEGER DEFAULT 0,
     assigned_at TEXT DEFAULT (datetime('now')),
-    assigned_by INTEGER,
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
+    assigned_by TEXT,
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES roles(id),
-    FOREIGN KEY (assigned_by) REFERENCES employees(id),
-    UNIQUE(employee_id, role_id)
+    FOREIGN KEY (assigned_by) REFERENCES employees(employeeId),
+    UNIQUE(employeeId, role_id)
 );
 
 -- Departments table
@@ -251,9 +234,9 @@ CREATE TABLE departments (
     department_code TEXT UNIQUE NOT NULL,
     department_name TEXT NOT NULL,
     description TEXT,
-    manager_id INTEGER,
+    managerEmployeeId TEXT,
     created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (manager_id) REFERENCES employees(id)
+    FOREIGN KEY (managerEmployeeId) REFERENCES employees(employeeId)
 );
 
 -- =====================================================
@@ -333,24 +316,22 @@ CREATE TABLE messages (
 -- =====================================================
 
 -- Authentication & Session indexes
-CREATE INDEX idx_sessions_employee_id ON sessions(employee_id);
+CREATE INDEX idx_sessions_employeeId ON sessions(employeeId);
 CREATE INDEX idx_sessions_token ON sessions(session_token);
 CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 CREATE INDEX idx_sessions_is_active ON sessions(is_active);
 
 -- Employee indexes
-CREATE INDEX idx_employees_employeeId ON employees(employeeId);
 CREATE INDEX idx_employees_email ON employees(email);
 CREATE INDEX idx_employees_position ON employees(position);
 CREATE INDEX idx_employees_approval_status ON employees(approval_status);
 CREATE INDEX idx_employees_storeName ON employees(storeName);
 CREATE INDEX idx_employees_is_active ON employees(is_active);
 
--- Attendance indexes (optimized for queries)
-CREATE INDEX idx_attendance_employee_date ON attendance(employeeId, date DESC);
-CREATE INDEX idx_attendance_date ON attendance(date);
-CREATE INDEX idx_attendance_status ON attendance(status);
-CREATE INDEX idx_attendance_gps_verified ON attendance(gpsVerified);
+-- Attendance indexes (simplified)
+CREATE INDEX idx_attendance_employeeId ON attendance(employeeId);
+CREATE INDEX idx_attendance_checkDate ON attendance(checkDate);
+CREATE INDEX idx_attendance_checkLocation ON attendance(checkLocation);
 
 -- Timesheet indexes
 CREATE INDEX idx_timesheets_employee_period ON timesheets(employeeId, year DESC, month DESC);
@@ -403,13 +384,13 @@ CREATE INDEX idx_user_change_changed_at ON user_change_history(changed_at DESC);
 CREATE INDEX idx_roles_code ON roles(role_code);
 
 -- User roles indexes
-CREATE INDEX idx_user_roles_employee ON user_roles(employee_id);
+CREATE INDEX idx_user_roles_employeeId ON user_roles(employeeId);
 CREATE INDEX idx_user_roles_role ON user_roles(role_id);
 CREATE INDEX idx_user_roles_primary ON user_roles(is_primary_role);
 
 -- Departments indexes
 CREATE INDEX idx_departments_code ON departments(department_code);
-CREATE INDEX idx_departments_manager ON departments(manager_id);
+CREATE INDEX idx_departments_manager ON departments(managerEmployeeId);
 
 -- =====================================================
 -- SAMPLE DATA
@@ -436,10 +417,16 @@ VALUES
 -- OPTIMIZATION SUMMARY
 -- =====================================================
 -- 
--- TABLES REDUCED FROM 23 TO 14:
+-- SCHEMA SIMPLIFIED (V2.2):
 -- 
+-- KEY CHANGES:
+-- 1. Unified to employeeId TEXT throughout (removed dual-column id INTEGER approach)
+-- 2. Simplified attendance table - only checkDate, checkTime, checkLocation
+-- 3. GPS verification moved to frontend
+-- 4. All foreign keys now reference employeeId TEXT
+--
 -- MERGED:
--- 1. attendance + gps_attendance → attendance (GPS columns added)
+-- 1. attendance + gps_attendance → attendance (GPS checking on frontend)
 -- 2. attendance_requests + shift_requests + requests → employee_requests (type field)
 -- 3. queue → employees (approval_status column added)
 --
@@ -447,6 +434,8 @@ VALUES
 -- 1. attendance_summary (calculate real-time from attendance table)
 -- 2. workSchedules (functionality covered by shift_assignments)
 -- 3. tasks, task_assignments, task_comments, comment_replies (task management removed)
+-- 4. GPS columns from attendance (moved to frontend validation)
+-- 5. Dual-column approach (id INTEGER removed)
 --
 -- ADDED:
 -- 1. shifts table - predefined work shifts for better shift management
@@ -456,19 +445,15 @@ VALUES
 -- 5. user_roles - role assignments
 -- 6. departments - organizational structure
 --
--- ENHANCED:
--- 1. employees table - added id INTEGER for internal foreign keys, keeping employeeId TEXT for business logic
--- 2. sessions table - updated to use employee_id INTEGER, session_token, is_active for better session management
--- 3. attendance table - added both checkIn/checkOut and check_in_time/check_out_time for compatibility
---
 -- BENEFITS:
+-- - Simplified schema with consistent employeeId usage
+-- - Frontend GPS validation for better user experience
 -- - Enhanced authentication with proper session management
 -- - Better user management with registration workflow
 -- - Audit trail with user_change_history
 -- - Role-based access control with roles and user_roles
 -- - Organizational structure with departments
--- - Dual-column approach for backward compatibility (employeeId TEXT + id INTEGER)
 -- - Improved query performance with optimized indexes
--- - Better foreign key relationships
+-- - Cleaner foreign key relationships
 --
 -- =====================================================

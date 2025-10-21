@@ -339,7 +339,7 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
       .prepare(`
         SELECT s.*, e.employeeId, e.name, e.email, e.department_id, e.position, e.storeId
         FROM sessions s
-        JOIN employees e ON s.employee_id = e.id
+        JOIN employees e ON s.employeeId = e.employeeId
         WHERE s.session_token = ? AND s.expires_at > ? AND s.is_active = 1
       `)
       .bind(token, new Date().toISOString())
@@ -378,26 +378,16 @@ async function createSession(employeeId, db, allowedOrigin, rememberMe = false) 
       expiresAt.setHours(expiresAt.getHours() + 8);
     }
 
-    // First get the employee.id to use as foreign key
-    const employee = await db
-      .prepare("SELECT id FROM employees WHERE employeeId = ?")
-      .bind(employeeId)
-      .first();
-
-    if (!employee) {
-      return jsonResponse({ message: "Không tìm thấy nhân viên!" }, 404, allowedOrigin);
-    }
-
     // Delete existing sessions for this user
     await db
-      .prepare("DELETE FROM sessions WHERE employee_id = ?")
-      .bind(employee.id)
+      .prepare("DELETE FROM sessions WHERE employeeId = ?")
+      .bind(employeeId)
       .run();
 
-    // Create new session using Enhanced Database Schema v3.0 column names
+    // Create new session
     await db
-      .prepare("INSERT INTO sessions (employee_id, session_token, expires_at, last_activity) VALUES (?, ?, ?, ?)")
-      .bind(employee.id, token, expiresAt.toISOString(), now)
+      .prepare("INSERT INTO sessions (employeeId, session_token, expires_at, last_activity) VALUES (?, ?, ?, ?)")
+      .bind(employeeId, token, expiresAt.toISOString(), now)
       .run();
 
     return {
@@ -452,7 +442,7 @@ async function handleLogin(body, db, origin) {
         SELECT e.employeeId, e.password, e.name, e.email, e.department_id, e.position, e.storeId, 
                e.employment_status, e.is_active, r.role_code, r.role_name
         FROM employees e
-        LEFT JOIN user_roles ur ON e.id = ur.employee_id AND ur.is_primary_role = 1
+        LEFT JOIN user_roles ur ON e.employeeId = ur.employeeId AND ur.is_primary_role = 1
         LEFT JOIN roles r ON ur.role_id = r.id
         WHERE e.employeeId = ? AND e.is_active = 1
       `)
