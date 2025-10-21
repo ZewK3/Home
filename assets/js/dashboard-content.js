@@ -96,9 +96,6 @@ const DashboardContent = {
             </div>
         `;
 
-        // Load worker stats
-        this.loadWorkerStats();
-
         return content;
     },
 
@@ -155,9 +152,6 @@ const DashboardContent = {
                 </div>
             </div>
         `;
-
-        // Load manager stats
-        this.loadManagerStats();
 
         return content;
     },
