@@ -13,13 +13,9 @@ const DashboardContent = {
     },
 
     getUserData() {
-        const data = localStorage.getItem('userData');
-        try {
-            return JSON.parse(data);
-        } catch (e) {
-            console.error('Failed to parse user data:', e);
-            return null;
-        }
+        const data = SecureStorage.get('userData');
+        if (!data) return null;
+        return typeof data === 'string' ? JSON.parse(data) : data;
     },
 
     /**
@@ -253,7 +249,7 @@ const DashboardContent = {
     async renderSchedule() {
         const today = new Date();
         const weekStart = this.getWeekStart(today);
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = SecureStorage.get('userData');
         const userRole = this.roleHierarchy[userData?.position?.toUpperCase()] || 0;
         
         // Role-specific schedule view

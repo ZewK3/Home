@@ -246,7 +246,7 @@ const DashboardAPI = {
                 body: JSON.stringify({
                     employeeId,
                     status: 'APPROVED', // Updated to match schema
-                    approved_by: JSON.parse(localStorage.getItem('userData'))?.employeeId,
+                    approved_by: SecureStorage.get('userData')?.employeeId,
                     approved_at: new Date().toISOString()
                 })
             });

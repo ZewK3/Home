@@ -15,12 +15,8 @@ const AdminContent = {
 
     getUserData() {
         const data = SecureStorage.get('userData') || localStorage.getItem('userData');
-        try {
-            return JSON.parse(data);
-        } catch (e) {
-            console.error('Failed to parse user data:', e);
-            return null;
-        }
+        if (!data) return null;
+        return typeof data === 'string' ? JSON.parse(data) : data;
     },
 
     /**

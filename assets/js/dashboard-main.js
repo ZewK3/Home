@@ -3,15 +3,15 @@
  * Handles initialization, navigation, and real-time notifications
  */
 
-// Notification cache management
+// Notification cache management with encrypted storage
 const NotificationCache = {
     CACHE_KEY: 'notifications_cache',
     LAST_CHECK_KEY: 'notifications_last_check',
     
     saveCache(notifications) {
         try {
-            localStorage.setItem(this.CACHE_KEY, JSON.stringify(notifications));
-            localStorage.setItem(this.LAST_CHECK_KEY, Date.now().toString());
+            SecureStorage.set(this.CACHE_KEY, notifications);
+            SecureStorage.set(this.LAST_CHECK_KEY, Date.now());
         } catch (e) {
             console.error('Failed to save notification cache:', e);
         }
@@ -19,8 +19,7 @@ const NotificationCache = {
     
     getCache() {
         try {
-            const cached = localStorage.getItem(this.CACHE_KEY);
-            return cached ? JSON.parse(cached) : null;
+            return SecureStorage.get(this.CACHE_KEY);
         } catch (e) {
             console.error('Failed to get notification cache:', e);
             return null;
@@ -28,7 +27,7 @@ const NotificationCache = {
     },
     
     getLastCheck() {
-        const lastCheck = localStorage.getItem(this.LAST_CHECK_KEY);
+        const lastCheck = SecureStorage.get(this.LAST_CHECK_KEY);
         return lastCheck ? parseInt(lastCheck) : 0;
     }
 };
@@ -143,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Logout button
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
-        localStorage.clear();
+        SecureStorage.clear();
         window.location.href = '../../index.html';
     });
 
@@ -172,22 +171,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Role-based menu filtering
 function filterMenuByRole() {
-    // Get current user data from localStorage
-    const userData = localStorage.getItem('userData');
+    // Get current user data from encrypted localStorage
+    const userData = SecureStorage.get('userData');
     if (!userData) {
         console.warn('No user data found in localStorage');
         return;
     }
 
-    let user;
-    try {
-        user = JSON.parse(userData);
-    } catch (e) {
-        console.error('Failed to parse user data:', e);
-        return;
-    }
-
-    const userPosition = user.position || 'NV'; // Default to NV (Employee)
+    const userPosition = userData.position || 'NV'; // Default to NV (Employee)
     
     console.log('Filtering menu for role:', userPosition);
 
