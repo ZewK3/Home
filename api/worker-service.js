@@ -735,84 +735,95 @@ async function handleRegister(body, db, origin, env) {
 }
 
 // Handle check-in
-async function handleCheckIn(body, db, origin) {
+// Handle GPS check (merged checkIn/checkOut)
+async function handleCheckGPS(body, db, origin) {
   try {
-    const { employeeId, checkDate, checkTime, checkLocation } = body;
+    const { employeeId, checkTime, latitude, longitude } = body;
 
-    if (!employeeId || !checkDate || !checkTime) {
+    if (!employeeId || !checkTime || latitude === undefined || longitude === undefined) {
       return jsonResponse({ 
         success: false, 
-        message: "employeeId, checkDate, và checkTime là bắt buộc!" 
+        message: "employeeId, checkTime, latitude, và longitude là bắt buộc!" 
       }, 400, origin);
     }
 
-    // GPS validation is done on frontend
-    // Only store checkDate (DD/MM/YYYY), checkTime (HH:MM:SS), checkLocation (store ID)
+    // Get employee's store location
+    const employee = await db
+      .prepare("SELECT storeId FROM employees WHERE employeeId = ?")
+      .bind(employeeId)
+      .first();
 
-    // Create attendance record
-    const now = new Date().toISOString();
+    if (!employee || !employee.storeId) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Không tìm thấy thông tin cửa hàng của nhân viên!" 
+      }, 404, origin);
+    }
+
+    // Get store location and radius
+    const store = await db
+      .prepare("SELECT latitude, longitude, radius FROM stores WHERE storeId = ?")
+      .bind(employee.storeId)
+      .first();
+
+    if (!store || !store.latitude || !store.longitude) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Không tìm thấy vị trí cửa hàng!" 
+      }, 404, origin);
+    }
+
+    // Calculate distance using Haversine formula
+    const R = 6371000; // Earth's radius in meters
+    const φ1 = latitude * Math.PI / 180;
+    const φ2 = store.latitude * Math.PI / 180;
+    const Δφ = (store.latitude - latitude) * Math.PI / 180;
+    const Δλ = (store.longitude - longitude) * Math.PI / 180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c; // Distance in meters
+
+    // Check if within radius (default 40m if not set)
+    const allowedRadius = store.radius || 40;
+    if (distance > allowedRadius) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Không nằm trong phạm vi quán",
+        distance: Math.round(distance),
+        allowedRadius: allowedRadius
+      }, 400, origin);
+    }
+
+    // Create attendance record - system generates checkDate
+    const now = new Date();
+    const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY format
+    const createdAt = now.toISOString();
+    
     await db
       .prepare(`
         INSERT INTO attendance 
         (employeeId, checkDate, checkTime, checkLocation, createdAt, updatedAt) 
         VALUES (?, ?, ?, ?, ?, ?)
       `)
-      .bind(employeeId, checkDate, checkTime, checkLocation || '', now, now)
+      .bind(employeeId, checkDate, checkTime, employee.storeId, createdAt, createdAt)
       .run();
 
     return jsonResponse({
       success: true,
-      message: "Check-in thành công!",
+      message: "Chấm công thành công!",
       checkDate: checkDate,
-      checkTime: checkTime
+      checkTime: checkTime,
+      distance: Math.round(distance)
     }, 200, origin);
 
   } catch (error) {
-    console.error("Check-in error:", error);
+    console.error("GPS check error:", error);
     return jsonResponse({ 
       success: false, 
-      message: "Lỗi check-in!", 
-      error: error.message 
-    }, 500, origin);
-  }
-}
-
-// Handle check-out
-async function handleCheckOut(body, db, origin) {
-  try {
-    const { employeeId, checkDate, checkTime, checkLocation } = body;
-
-    if (!employeeId || !checkDate || !checkTime) {
-      return jsonResponse({ 
-        success: false, 
-        message: "employeeId, checkDate, và checkTime là bắt buộc!" 
-      }, 400, origin);
-    }
-
-    // GPS validation is done on frontend
-    // Create another attendance record for check-out
-    const now = new Date().toISOString();
-    await db
-      .prepare(`
-        INSERT INTO attendance 
-        (employeeId, checkDate, checkTime, checkLocation, createdAt, updatedAt) 
-        VALUES (?, ?, ?, ?, ?, ?)
-      `)
-      .bind(employeeId, checkDate, checkTime, checkLocation || '', now, now)
-      .run();
-
-    return jsonResponse({
-      success: true,
-      message: "Check-out thành công!",
-      checkDate: checkDate,
-      checkTime: checkTime
-    }, 200, origin);
-
-  } catch (error) {
-    console.error("Check-out error:", error);
-    return jsonResponse({ 
-      success: false, 
-      message: "Lỗi check-out!", 
+      message: "Lỗi chấm công!", 
       error: error.message 
     }, 500, origin);
   }
@@ -2567,10 +2578,8 @@ export default {
             return await handleLogin(body, db, ALLOWED_ORIGIN);
           case "register":
             return await handleRegister(body, db, ALLOWED_ORIGIN, env);
-          case "checkIn":
-            return await handleCheckIn(body, db, ALLOWED_ORIGIN);
-          case "checkOut":
-            return await handleCheckOut(body, db, ALLOWED_ORIGIN);
+          case "checkGPS":
+            return await handleCheckGPS(body, db, ALLOWED_ORIGIN);
           case "update":
             return await handleUpdate(body, db, ALLOWED_ORIGIN);
           case "assignShift":

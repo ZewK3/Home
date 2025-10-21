@@ -53,50 +53,26 @@ const DashboardAPI = {
         }
     },
 
-    async clockIn(employeeId, checkLocation) {
+    async checkGPS(employeeId, latitude, longitude) {
         try {
-            // DATABASE v2.2: Simplified attendance - GPS validation on frontend
-            // Stores only: checkDate, checkTime, checkLocation (store ID)
+            // DATABASE v2.2: GPS validation on backend
+            // Frontend only needs to provide current GPS coordinates
+            // Backend validates location and generates checkDate/checkTime
             const now = new Date();
-            const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY
             const checkTime = now.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS
             
-            const response = await utils.fetchAPI('?action=checkIn', {
+            const response = await utils.fetchAPI('?action=checkGPS', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
-                    checkDate,
                     checkTime,
-                    checkLocation
+                    latitude,
+                    longitude
                 })
             });
             return response;
         } catch (error) {
-            console.error('Error clocking in:', error);
-            return { success: false, message: error.message };
-        }
-    },
-
-    async clockOut(employeeId, checkLocation) {
-        try {
-            // DATABASE v2.2: Simplified attendance - GPS validation on frontend
-            // Stores only: checkDate, checkTime, checkLocation (store ID)
-            const now = new Date();
-            const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY
-            const checkTime = now.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS
-            
-            const response = await utils.fetchAPI('?action=checkOut', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    checkDate,
-                    checkTime,
-                    checkLocation
-                })
-            });
-            return response;
-        } catch (error) {
-            console.error('Error clocking out:', error);
+            console.error('Error checking GPS:', error);
             return { success: false, message: error.message };
         }
     },
