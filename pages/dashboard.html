@@ -72,11 +72,19 @@
             </button>
             <button class="nav-item" data-nav="schedule">
                 <span class="material-icons-round">calendar_month</span>
-                <span class="nav-label">Lịch làm</span>
+                <span class="nav-label">Lịch Làm</span>
+            </button>
+            <button class="nav-item" data-nav="timesheet">
+                <span class="material-icons-round">calendar_view_month</span>
+                <span class="nav-label">Bảng Công</span>
+            </button>
+            <button class="nav-item" data-nav="salary">
+                <span class="material-icons-round">payments</span>
+                <span class="nav-label">Bảng Lương</span>
             </button>
             <button class="nav-item" data-nav="profile">
                 <span class="material-icons-round">person</span>
-                <span class="nav-label">Cá nhân</span>
+                <span class="nav-label">Cá Nhân</span>
             </button>
         </nav>
     </div>
@@ -105,18 +113,12 @@
             </div>
             <div class="drawer-menu">
                 <div class="menu-section">
-                    <h3 class="menu-section-title">Quản lý công việc</h3>
+                    <h3 class="menu-section-title">Công việc</h3>
                     <ul class="menu-list">
                         <li>
-                            <button class="menu-item" data-function="work-management">
+                            <button class="menu-item" data-function="shifts">
                                 <span class="material-icons-round">schedule</span>
-                                <span>Quản lý công</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="menu-item" data-function="timesheet">
-                                <span class="material-icons-round">calendar_view_month</span>
-                                <span>Bảng công</span>
+                                <span>Ca làm</span>
                             </button>
                         </li>
                         <li>
@@ -132,15 +134,33 @@
                     <h3 class="menu-section-title">Yêu cầu</h3>
                     <ul class="menu-list">
                         <li>
-                            <button class="menu-item" data-function="submit-request">
-                                <span class="material-icons-round">send</span>
-                                <span>Gửi yêu cầu</span>
+                            <button class="menu-item" data-function="schedule-registration">
+                                <span class="material-icons-round">event_available</span>
+                                <span>Đăng ký lịch</span>
                             </button>
                         </li>
                         <li>
-                            <button class="menu-item" data-function="attendance-request">
+                            <button class="menu-item" data-function="leave-request">
                                 <span class="material-icons-round">assignment</span>
-                                <span>Đơn từ</span>
+                                <span>Đơn Từ</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="menu-section">
+                    <h3 class="menu-section-title">Lương</h3>
+                    <ul class="menu-list">
+                        <li>
+                            <button class="menu-item" data-function="timesheet">
+                                <span class="material-icons-round">calendar_view_month</span>
+                                <span>Bảng công</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="menu-item" data-function="salary">
+                                <span class="material-icons-round">payments</span>
+                                <span>Bảng Lương</span>
                             </button>
                         </li>
                     </ul>
@@ -190,233 +210,6 @@
     <script src="../../assets/js/secure-storage.js"></script>
     <script src="../../assets/js/dashboard-api.js"></script>
     <script src="../../assets/js/dashboard-content.js"></script>
-    <script>
-        // Mobile Dashboard Logic
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Check authentication
-            const token = localStorage.getItem('authToken');
-            const userData = localStorage.getItem('userData');
-            
-            // if (!token || !userData) {
-            //     console.log('No authentication found, redirecting to login...');
-            //     window.location.href = '../../index.html';
-            //     return;
-            // }
-
-            // Check if user is admin and redirect to admin dashboard
-            try {
-                const user = JSON.parse(userData);
-                const isAdmin = user.position === 'AD' || user.position === 'ADMIN';
-                
-                if (isAdmin) {
-                    console.log('Admin user detected, redirecting to admin dashboard...');
-                    window.location.href = './admin.html';
-                    return;
-                }
-            } catch (e) {
-                console.error('Error parsing user data:', e);
-            }
-
-            // Initialize Dashboard Content
-            await DashboardContent.init();
-
-            // Hide loader
-            setTimeout(() => {
-                document.getElementById('mobileLoader').classList.add('hidden');
-            }, 500);
-
-            // Apply role-based menu filtering
-            filterMenuByRole();
-
-            // Drawer menu toggle
-            const menuBtn = document.getElementById('menuBtn');
-            const drawerOverlay = document.getElementById('drawerOverlay');
-            const closeDrawer = document.getElementById('closeDrawer');
-
-            menuBtn.addEventListener('click', () => {
-                drawerOverlay.classList.add('active');
-            });
-
-            closeDrawer.addEventListener('click', () => {
-                drawerOverlay.classList.remove('active');
-            });
-
-            drawerOverlay.addEventListener('click', (e) => {
-                if (e.target === drawerOverlay) {
-                    drawerOverlay.classList.remove('active');
-                }
-            });
-
-            // Menu item click handling
-            const menuItems = document.querySelectorAll('.menu-item[data-function]');
-            menuItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const functionName = item.dataset.function;
-                    navigateToFunction(functionName);
-                    drawerOverlay.classList.remove('active');
-                });
-            });
-
-            // Bottom navigation
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    item.classList.add('active');
-                    
-                    const navType = item.dataset.nav;
-                    navigateToFunction(navType);
-                });
-            });
-
-            // Logout button
-            document.getElementById('logoutBtn')?.addEventListener('click', () => {
-                localStorage.clear();
-                window.location.href = '../../pages/auth/index.html';
-            });
-
-            // Notification Panel
-            const notifBtn = document.getElementById('notifBtn');
-            const closeNotifPanel = document.getElementById('closeNotifPanel');
-            const notificationPanel = document.getElementById('notificationPanel');
-
-            notifBtn.addEventListener('click', () => {
-                DashboardContent.toggleNotificationPanel();
-            });
-
-            closeNotifPanel.addEventListener('click', () => {
-                notificationPanel.classList.add('hidden');
-            });
-
-            // Update notification badge every 30 seconds
-            DashboardContent.updateNotificationBadge();
-            setInterval(() => {
-                DashboardContent.updateNotificationBadge();
-            }, 30000);
-
-            // Hash-based navigation support
-            window.addEventListener('hashchange', handleHashChange);
-            handleHashChange(); // Handle initial hash
-        });
-
-        // Role-based menu filtering
-        function filterMenuByRole() {
-            // Get current user data from localStorage
-            const userData = localStorage.getItem('userData');
-            if (!userData) {
-                console.warn('No user data found in localStorage');
-                return;
-            }
-
-            let user;
-            try {
-                user = JSON.parse(userData);
-            } catch (e) {
-                console.error('Failed to parse user data:', e);
-                return;
-            }
-
-            const userPosition = user.position || 'NV'; // Default to NV (Employee)
-            
-            console.log('Filtering menu for role:', userPosition);
-
-            // Role hierarchy: AD > QL > NV
-            const roleHierarchy = {
-                'NV': 0,      // Employee/Worker
-                'EMPLOYEE': 0,
-                'QL': 1,      // Manager
-                'MANAGER': 1,
-                'AD': 2,      // Admin
-                'ADMIN': 2
-            };
-
-            const userLevel = roleHierarchy[userPosition.toUpperCase()] || 0;
-
-            // Hide menu items based on required role
-            const menuItems = document.querySelectorAll('[data-min-role]');
-            menuItems.forEach(item => {
-                const requiredRole = item.getAttribute('data-min-role');
-                const requiredLevel = roleHierarchy[requiredRole] || 0;
-
-                if (userLevel < requiredLevel) {
-                    item.style.display = 'none';
-                }
-            });
-
-            // Hide entire admin section if user is NV (worker)
-            const adminSection = document.querySelector('[data-role-section="admin"]');
-            if (adminSection && userLevel === 0) {
-                adminSection.style.display = 'none';
-            }
-
-            // Log visible menu items for debugging
-            console.log(`User role: ${userPosition} (level ${userLevel})`);
-            console.log(`Visible menu items: ${document.querySelectorAll('.menu-item[data-function]').length - document.querySelectorAll('[data-min-role][style*="display: none"]').length}`);
-        }
-
-
-        function handleHashChange() {
-            const hash = window.location.hash.substring(1); // Remove #
-            if (hash) {
-                navigateToFunction(hash);
-            }
-        }
-
-        function navigateToFunction(functionName) {
-            // Update URL hash
-            if (window.location.hash !== `#${functionName}`) {
-                window.location.hash = functionName;
-            }
-
-            // Update header title
-            const headerTitle = document.querySelector('.header-title');
-            const titles = {
-                'home': 'Dashboard',
-                'schedule': 'Lịch làm việc',
-                'profile': 'Cá nhân',
-                'work-management': 'Quản lý công',
-                'timesheet': 'Bảng công',
-                'attendance': 'Chấm công',
-                'submit-request': 'Gửi yêu cầu',
-                'attendance-request': 'Đơn từ chấm công',
-                'process-requests': 'Xử lý yêu cầu',
-                'approve-registration': 'Duyệt đăng ký',
-                'grant-access': 'Phân quyền'
-            };
-            headerTitle.textContent = titles[functionName] || 'Dashboard';
-
-            // Render content
-            renderContent(functionName);
-        }
-
-        async function renderContent(functionName) {
-            const mainContent = document.getElementById('mainContent');
-            
-            // Content mapping to DashboardContent methods
-            const contentMethods = {
-                'home': 'renderHome',
-                'schedule': 'renderSchedule',
-                'profile': 'renderProfile',
-                'work-management': 'renderWorkManagement',
-                'timesheet': 'renderTimesheet',
-                'attendance': 'renderAttendance',
-                'submit-request': 'renderSubmitRequest',
-                'attendance-request': 'renderAttendanceRequest',
-                'process-requests': 'renderProcessRequests',
-                'approve-registration': 'renderApproveRegistration',
-                'grant-access': 'renderGrantAccess'
-            };
-
-            const methodName = contentMethods[functionName] || 'renderHome';
-            
-            if (typeof DashboardContent[methodName] === 'function') {
-                const content = await DashboardContent[methodName]();
-                mainContent.innerHTML = content;
-            } else {
-                mainContent.innerHTML = await DashboardContent.renderHome();
-            }
-        }
-
-    </script>
+    <script src="../../assets/js/dashboard-main.js"></script>
 </body>
 </html>

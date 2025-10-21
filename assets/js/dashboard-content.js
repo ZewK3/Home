@@ -1786,5 +1786,61 @@ const DashboardContent = {
                 </div>
             </div>
         `;
+    },
+
+    async renderShifts() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">schedule</span>
+                        Ca làm
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="shiftsContent">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSalary() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">payments</span>
+                        Bảng Lương
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderLeaveRequest() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">assignment</span>
+                        Đơn Từ
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 };

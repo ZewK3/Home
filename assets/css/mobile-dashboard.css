@@ -873,6 +873,57 @@ body {
     display: none;
 }
 
+/* New Notification Animation */
+.has-new-notification {
+    animation: pulse-notification 2s ease-in-out;
+}
+
+@keyframes pulse-notification {
+    0%, 100% {
+        transform: scale(1);
+    }
+    25%, 75% {
+        transform: scale(1.1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    animation: badge-appear 0.3s ease-out;
+}
+
+@keyframes badge-appear {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.notification-badge:empty {
+    display: none;
+}
+
 /* Notification Panel */
 .notification-panel {
     position: fixed;
