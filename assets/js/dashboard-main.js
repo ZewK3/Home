@@ -33,77 +33,35 @@ const NotificationCache = {
     }
 };
 
-// Real-time notification polling
-const NotificationPoller = {
-    pollInterval: null,
-    POLL_INTERVAL_MS: 30000, // Check every 30 seconds
-    
-    start() {
-        // Load cached notifications first
-        this.loadCachedNotifications();
-        
-        // Start polling for new notifications
-        this.checkForNewNotifications();
-        this.pollInterval = setInterval(() => {
-            this.checkForNewNotifications();
-        }, this.POLL_INTERVAL_MS);
-    },
-    
-    stop() {
-        if (this.pollInterval) {
-            clearInterval(this.pollInterval);
-            this.pollInterval = null;
+// Load notifications on page load only
+async function loadNotifications() {
+    try {
+        const notifications = await DashboardAPI.getNotifications();
+        if (notifications) {
+            // Save to cache
+            NotificationCache.saveCache(notifications);
+            
+            // Update UI
+            updateNotificationUI(notifications);
         }
-    },
-    
-    async loadCachedNotifications() {
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        // Try to load from cache
         const cached = NotificationCache.getCache();
         if (cached && Array.isArray(cached)) {
-            this.updateUI(cached);
-        }
-    },
-    
-    async checkForNewNotifications() {
-        try {
-            const notifications = await DashboardAPI.getNotifications();
-            if (notifications) {
-                // Save to cache
-                NotificationCache.saveCache(notifications);
-                
-                // Update UI
-                this.updateUI(notifications);
-                
-                // Check for new unread notifications
-                const unreadCount = notifications.filter(n => !n.read).length;
-                if (unreadCount > 0) {
-                    this.showNewNotificationIndicator(unreadCount);
-                }
-            }
-        } catch (error) {
-            console.error('Error checking notifications:', error);
-        }
-    },
-    
-    updateUI(notifications) {
-        const unreadCount = notifications.filter(n => !n.read).length;
-        const badge = document.querySelector('.notification-badge');
-        if (badge) {
-            badge.textContent = unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : '';
-            badge.style.display = unreadCount > 0 ? 'flex' : 'none';
-        }
-    },
-    
-    showNewNotificationIndicator(count) {
-        // Show a subtle animation on notification icon
-        const notifBtn = document.getElementById('notifBtn');
-        if (notifBtn) {
-            notifBtn.classList.add('has-new-notification');
-            setTimeout(() => {
-                notifBtn.classList.remove('has-new-notification');
-            }, 2000);
+            updateNotificationUI(cached);
         }
     }
-};
+}
+
+function updateNotificationUI(notifications) {
+    const unreadCount = notifications.filter(n => !n.read).length;
+    const badge = document.querySelector('.notification-badge');
+    if (badge) {
+        badge.textContent = unreadCount > 0 ? (unreadCount > 99 ? '99+' : unreadCount) : '';
+        badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+    }
+}
 
 // Mobile Dashboard Logic
 document.addEventListener('DOMContentLoaded', async () => {
@@ -185,7 +143,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Logout button
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
-        NotificationPoller.stop(); // Stop polling before logout
         localStorage.clear();
         window.location.href = '../../index.html';
     });
@@ -205,21 +162,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Start notification polling
-    NotificationPoller.start();
+    // Load notifications once on page load
+    loadNotifications();
 
     // Hash-based navigation support
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange(); // Handle initial hash
-    
-    // Stop polling when page is hidden (user switches tabs)
-    document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-            NotificationPoller.stop();
-        } else {
-            NotificationPoller.start();
-        }
-    });
 });
 
 // Role-based menu filtering
