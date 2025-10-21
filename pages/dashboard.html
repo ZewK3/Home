@@ -193,6 +193,16 @@
     <script>
         // Mobile Dashboard Logic
         document.addEventListener('DOMContentLoaded', async () => {
+            // Check authentication
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            
+            if (!token || !userData) {
+                console.log('No authentication found, redirecting to login...');
+                window.location.href = '../../index.html';
+                return;
+            }
+
             // Initialize Dashboard Content
             await DashboardContent.init();
 

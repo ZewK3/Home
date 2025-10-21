@@ -725,7 +725,8 @@ async function handleLogin(e) {
             method: 'POST',
             body: JSON.stringify({
                 employeeId: employeeId,
-                password: password
+                password: password,
+                rememberMe: rememberMe
             })
         });
         

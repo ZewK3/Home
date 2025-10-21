@@ -362,13 +362,21 @@ async function checkSessionMiddleware(token, db, allowedOrigin) {
   }
 }
 
-// Create session
-async function createSession(employeeId, db, allowedOrigin) {
+// Create session with optional persistent mode (no expiration)
+async function createSession(employeeId, db, allowedOrigin, rememberMe = false) {
   try {
     const token = crypto.randomUUID();
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 8);
     const now = new Date().toISOString();
+    
+    // Set expiration based on rememberMe flag
+    // If rememberMe is true, set expiration to 10 years in the future (effectively persistent)
+    // If false, set to 8 hours
+    const expiresAt = new Date();
+    if (rememberMe) {
+      expiresAt.setFullYear(expiresAt.getFullYear() + 10);
+    } else {
+      expiresAt.setHours(expiresAt.getHours() + 8);
+    }
 
     // First get the employee.id to use as foreign key
     const employee = await db
@@ -397,6 +405,7 @@ async function createSession(employeeId, db, allowedOrigin) {
       employeeId,
       expiresAt: expiresAt.toISOString(),
       lastAccess: now,
+      rememberMe: rememberMe,
       success: true
     };
   } catch (error) {
@@ -425,7 +434,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 async function handleLogin(body, db, origin) {
   try {
     // Support both old and new field names for backward compatibility
-    const { employeeId, password, loginEmployeeId, loginPassword } = body;
+    const { employeeId, password, loginEmployeeId, loginPassword, rememberMe } = body;
     
     const actualEmployeeId = employeeId || loginEmployeeId;
     const actualPassword = password || loginPassword;
@@ -466,8 +475,8 @@ async function handleLogin(body, db, origin) {
       }, 401, origin);
     }
 
-    // Create session
-    const session = await createSession(actualEmployeeId, db, origin);
+    // Create session with rememberMe flag
+    const session = await createSession(actualEmployeeId, db, origin, rememberMe || false);
     if (session instanceof Response) return session;
 
     // Update last login
