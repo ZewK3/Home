@@ -20,32 +20,51 @@
     --space-xl: 20px;
     --space-2xl: 24px;
     
-    /* Mobile Colors - Dark Theme */
+    /* Mobile Colors - Enhanced Professional Dark Theme */
     --bg-primary: #0a0e1a;
     --bg-secondary: #0f1419;
     --bg-elevated: #161b22;
     --bg-card: #1c2128;
+    --bg-card-hover: #21262d;
     
     --text-primary: #f0f6fc;
     --text-secondary: #c9d1d9;
     --text-muted: #8b949e;
     
+    /* Enhanced Brand Colors with Gradients */
     --brand: #4493f8;
     --brand-dark: #2563eb;
+    --brand-light: #60a5fa;
     --brand-glow: rgba(68, 147, 248, 0.3);
+    --brand-gradient: linear-gradient(135deg, #4493f8 0%, #2563eb 100%);
+    --brand-gradient-hover: linear-gradient(135deg, #60a5fa 0%, #4493f8 100%);
     
+    /* Status Colors */
     --success: #3fb950;
+    --success-light: #4ade80;
+    --success-glow: rgba(63, 185, 80, 0.2);
     --warning: #f0883e;
+    --warning-light: #fbbf24;
+    --warning-glow: rgba(240, 136, 62, 0.2);
     --danger: #f85149;
+    --danger-light: #f87171;
+    --danger-glow: rgba(248, 81, 73, 0.2);
     --info: #58a6ff;
+    --info-light: #7dd3fc;
+    --info-glow: rgba(88, 166, 255, 0.2);
     
     --border: #30363d;
     --border-light: #21262d;
+    --border-accent: rgba(68, 147, 248, 0.3);
     
-    /* Mobile Shadows */
+    /* Enhanced Shadows */
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
+    --shadow-brand: 0 8px 16px -4px rgba(68, 147, 248, 0.4);
+    --shadow-success: 0 8px 16px -4px rgba(63, 185, 80, 0.3);
+    --shadow-danger: 0 8px 16px -4px rgba(248, 81, 73, 0.3);
     
     /* Mobile Typography */
     --font-xs: 0.75rem;    /* 12px */
@@ -123,7 +142,7 @@ body {
 }
 
 /* ========================================
-   MOBILE HEADER
+   MOBILE HEADER - Enhanced Professional Design
    ======================================== */
 .mobile-header {
     position: sticky;
@@ -134,9 +153,10 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 var(--space-lg);
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    box-shadow: var(--shadow-md);
+    background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-elevated) 100%);
+    border-bottom: 1px solid var(--border-accent);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
 }
 
 .header-left {
@@ -156,17 +176,29 @@ body {
     color: var(--text-primary);
     cursor: pointer;
     border-radius: var(--radius-sm);
-    transition: background var(--transition);
+    transition: all var(--transition);
 }
 
 .menu-btn:active {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--brand-glow);
+    transform: scale(0.95);
+}
+
+.menu-btn .material-icons-round {
+    transition: transform var(--transition);
+}
+
+.menu-btn:hover .material-icons-round {
+    transform: rotate(90deg);
 }
 
 .header-title {
     font-size: var(--font-lg);
     font-weight: 700;
-    color: var(--text-primary);
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .header-actions {
@@ -238,6 +270,31 @@ body {
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
     margin: var(--space-md);
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--brand-gradient);
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -256,13 +313,18 @@ body {
     gap: var(--space-sm);
 }
 
+.card-title .material-icons-round {
+    color: var(--brand);
+}
+
 .card-body {
     color: var(--text-secondary);
     font-size: var(--font-sm);
+    line-height: 1.6;
 }
 
 /* ========================================
-   MOBILE STATS
+   MOBILE STATS - Enhanced Professional Design
    ======================================== */
 .stats-grid {
     display: grid;
@@ -277,18 +339,50 @@ body {
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--brand-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.stat-card:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-brand);
+}
+
+.stat-card:hover::before {
+    opacity: 1;
 }
 
 .stat-value {
     font-size: var(--font-2xl);
     font-weight: 700;
-    color: var(--brand);
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: var(--space-xs);
+    position: relative;
+    z-index: 1;
 }
 
 .stat-label {
     font-size: var(--font-sm);
     color: var(--text-muted);
+    position: relative;
+    z-index: 1;
 }
 
 /* ========================================
@@ -446,11 +540,39 @@ body {
     transition: all var(--transition);
     text-align: left;
     font-size: var(--font-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--brand-gradient);
+    transform: scaleY(0);
+    transition: transform var(--transition);
+}
+
+.menu-item:hover::before {
+    transform: scaleY(1);
 }
 
 .menu-item:active {
-    background: rgba(255, 255, 255, 0.05);
-    transform: translateX(4px);
+    background: rgba(68, 147, 248, 0.1);
+    transform: scale(0.98);
+}
+
+.menu-item .material-icons-round {
+    transition: transform var(--transition);
+    color: var(--text-muted);
+}
+
+.menu-item:hover .material-icons-round {
+    transform: scale(1.1);
+    color: var(--brand);
 }
 
 .menu-item.active {
@@ -458,8 +580,16 @@ body {
     color: var(--brand);
 }
 
+.menu-item.active::before {
+    transform: scaleY(1);
+}
+
+.menu-item.active .material-icons-round {
+    color: var(--brand);
+}
+
 /* ========================================
-   MOBILE BUTTONS
+   MOBILE BUTTONS - Enhanced Professional Design
    ======================================== */
 .btn {
     display: flex;
@@ -475,6 +605,26 @@ body {
     cursor: pointer;
     transition: all var(--transition);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn:active {
@@ -482,15 +632,38 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+    background: var(--brand-gradient);
     color: white;
-    box-shadow: 0 4px 12px var(--brand-glow);
+    box-shadow: var(--shadow-brand);
+}
+
+.btn-primary:hover {
+    background: var(--brand-gradient-hover);
+    box-shadow: 0 12px 20px -4px rgba(68, 147, 248, 0.5);
+    transform: translateY(-2px);
 }
 
 .btn-secondary {
     background: var(--bg-elevated);
     color: var(--text-primary);
     border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-accent);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+    color: white;
+    box-shadow: var(--shadow-success);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
+    color: white;
+    box-shadow: var(--shadow-danger);
 }
 
 .btn-full {
