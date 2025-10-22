@@ -30,6 +30,165 @@
 const ALLOWED_ORIGIN = "*";
 
 // =====================================================
+// PHASE 3: ADVANCED PERFORMANCE OPTIMIZATIONS
+// =====================================================
+
+// =====================================================
+// 1. DATABASE QUERY BATCHING UTILITY
+// =====================================================
+
+/**
+ * Batch multiple database queries and execute in parallel
+ * @param {Array} queries - Array of query objects { query, params }
+ * @param {Database} db - Database instance
+ * @returns {Promise<Array>} Results array
+ */
+async function batchQueries(queries, db) {
+  return await Promise.all(
+    queries.map(({ query, params }) => 
+      db.prepare(query).bind(...(params || [])).first()
+    )
+  );
+}
+
+/**
+ * Execute queries in parallel with error handling
+ * @param {Object} queryMap - Object with named queries
+ * @param {Database} db - Database instance
+ * @returns {Promise<Object>} Results object with same keys
+ */
+async function parallelQueries(queryMap, db) {
+  const entries = Object.entries(queryMap);
+  const promises = entries.map(([key, { query, params }]) =>
+    db.prepare(query).bind(...(params || [])).first()
+      .then(result => [key, result])
+      .catch(error => [key, { error: error.message }])
+  );
+  
+  const results = await Promise.all(promises);
+  return Object.fromEntries(results);
+}
+
+// =====================================================
+// 2. PREPARED STATEMENT CACHE
+// =====================================================
+
+const statementCache = new Map();
+
+/**
+ * Get cached prepared statement
+ * @param {Database} db - Database instance
+ * @param {string} query - SQL query string
+ * @returns {PreparedStatement} Prepared statement
+ */
+function getCachedStatement(db, query) {
+  if (!statementCache.has(query)) {
+    statementCache.set(query, db.prepare(query));
+  }
+  return statementCache.get(query);
+}
+
+// =====================================================
+// 3. KV-BASED CACHING LAYER
+// =====================================================
+
+/**
+ * Cache manager with TTL support
+ */
+class CacheManager {
+  constructor(kvStore) {
+    this.kv = kvStore;
+    this.defaultTTL = 300; // 5 minutes
+  }
+  
+  /**
+   * Get from cache or execute function
+   */
+  async getOrSet(key, fetchFn, ttl = this.defaultTTL) {
+    if (!this.kv) {
+      // Fallback if KV not available
+      return await fetchFn();
+    }
+    
+    try {
+      // Try to get from cache
+      const cached = await this.kv.get(key, { type: 'json' });
+      if (cached) {
+        console.log(`✅ Cache HIT: ${key}`);
+        return cached;
+      }
+      
+      console.log(`❌ Cache MISS: ${key}`);
+      
+      // Execute function and cache result
+      const result = await fetchFn();
+      await this.kv.put(key, JSON.stringify(result), {
+        expirationTtl: ttl
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Cache error:', error);
+      // Fallback to direct execution
+      return await fetchFn();
+    }
+  }
+  
+  /**
+   * Invalidate cache by key or pattern
+   */
+  async invalidate(keyOrPattern) {
+    if (!this.kv) return;
+    
+    try {
+      if (keyOrPattern.includes('*')) {
+        // Pattern-based invalidation
+        const prefix = keyOrPattern.replace('*', '');
+        const list = await this.kv.list({ prefix });
+        await Promise.all(
+          list.keys.map(key => this.kv.delete(key.name))
+        );
+      } else {
+        await this.kv.delete(keyOrPattern);
+      }
+    } catch (error) {
+      console.error('Cache invalidation error:', error);
+    }
+  }
+}
+
+// =====================================================
+// 4. PERFORMANCE MONITORING
+// =====================================================
+
+class PerformanceMonitor {
+  static logRequest(endpoint, duration, cached = false, method = 'GET') {
+    const log = {
+      endpoint,
+      method,
+      duration: `${duration}ms`,
+      cached,
+      timestamp: new Date().toISOString()
+    };
+    console.log('📊 Performance:', JSON.stringify(log));
+  }
+  
+  static async measureAsync(name, fn) {
+    const start = Date.now();
+    try {
+      const result = await fn();
+      const duration = Date.now() - start;
+      console.log(`⏱️  ${name}: ${duration}ms`);
+      return result;
+    } catch (error) {
+      const duration = Date.now() - start;
+      console.log(`❌ ${name} failed: ${duration}ms`);
+      throw error;
+    }
+  }
+}
+
+// =====================================================
 // TIMEZONE AND EMAIL UTILITIES
 // =====================================================
 

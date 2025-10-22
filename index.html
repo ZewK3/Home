@@ -276,7 +276,23 @@
     <script src="../../assets/js/api-client.js"></script>
     <script src="../../assets/js/utils.js"></script>
     
+    <!-- Phase 3: Advanced Optimizations -->
+    <script src="../../assets/js/state-management.js"></script>
+    <script src="../../assets/js/lazy-loading.js"></script>
+    
     <!-- Authentication JavaScript -->
     <script src="../../assets/js/script.js"></script>
+    
+    <!-- Phase 3: Service Worker Registration -->
+    <script>
+        // Register service worker for offline support
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                swManager.register('/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker ready for offline support'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
