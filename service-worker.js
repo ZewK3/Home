@@ -143,34 +143,42 @@ async function handleAPIRequest(request) {
  * Handle static assets with cache-first strategy
  */
 async function handleStaticRequest(request) {
+  const url = new URL(request.url);
+
+  // ⚠️ Bỏ qua các request không phải http(s)
+  if (!url.protocol.startsWith('http')) {
+    return fetch(request);
+  }
+
   // Try cache first
   const cached = await caches.match(request);
   if (cached) {
     return cached;
   }
-  
+
   // Fallback to network
   try {
     const response = await fetch(request);
-    
+
     // Cache successful responses
     if (response.ok) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }
-    
+
     return response;
   } catch (error) {
     console.error('[ServiceWorker] Fetch failed:', error);
-    
+
     // Return offline page for HTML requests
-    if (request.headers.get('accept').includes('text/html')) {
+    if (request.headers.get('accept')?.includes('text/html')) {
       return caches.match('/offline.html');
     }
-    
+
     return new Response('Offline', { status: 503 });
   }
 }
+
 
 /**
  * Background sync for offline actions
