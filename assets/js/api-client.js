@@ -329,6 +329,11 @@ class APIClient {
 // Create singleton instance
 const apiClient = new APIClient();
 
+// Make it globally available
+if (typeof window !== 'undefined') {
+    window.apiClient = apiClient;
+}
+
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = APIClient;
