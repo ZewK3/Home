@@ -1,7 +1,7 @@
 // Constants and Configuration
 const CONFIG = {
-    API_URL: "https://zewk.tocotoco.workers.dev/",
-    API_BASE_URL: "https://zewk.tocotoco.workers.dev/",
+    API_URL: "https://hrm-api.tocotoco.workers.dev/",
+    API_BASE_URL: "https://hrm-api.tocotoco.workers.dev/",
     STORAGE_KEYS: {
         AUTH_TOKEN: "authToken",
         USER_DATA: "loggedInUser",
