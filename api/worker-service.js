@@ -247,8 +247,8 @@ async function getUser(url, db, origin) {
   }, 200, origin);
 }
 
-// Handle email verification
-async function handleVerifyEmail(body, db, origin, env) {
+// Authentication Controller - Verify email
+async function authController_verifyEmail(body, db, origin, env) {
   const { employeeId, verificationCode } = body;
   
   if (!employeeId || !verificationCode) {
@@ -276,8 +276,8 @@ async function handleVerifyEmail(body, db, origin, env) {
   }, 200, origin);
 }
 
-// Handle registration approval with history tracking
-async function handleApproveRegistrationWithHistory(body, db, origin) {
+// Registration Controller - Approve with history tracking
+async function registrationController_approveWithHistory(body, db, origin) {
   const { employeeId, approved, reason, actionBy } = body;
   
   if (!employeeId || approved === undefined || !actionBy) {
@@ -419,11 +419,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 // =====================================================
-// ALL HANDLER FUNCTIONS FROM ORIGINAL WORKER
+// RESTFUL API CONTROLLERS
+// Naming Convention: {resource}Controller_{action}
 // =====================================================
 
-// Handle login
-async function handleLogin(body, db, origin) {
+// Authentication Controller - Login
+async function authController_login(body, db, origin) {
   try {
     // Support both old and new field names for backward compatibility
     const { employeeId, password, loginEmployeeId, loginPassword, rememberMe } = body;
@@ -498,8 +499,8 @@ async function handleLogin(body, db, origin) {
   }
 }
 
-// Handle getting stores
-async function handleGetStores(db, origin) {
+// Store Controller - Get all stores
+async function storeController_list(db, origin) {
   try {
     const stores = await db
       .prepare("SELECT * FROM stores ORDER BY storeName")
@@ -519,8 +520,8 @@ async function handleGetStores(db, origin) {
   }
 }
 
-// Handle creating a new store (admin only)
-async function handleCreateStore(body, db, origin) {
+// Store Controller - Create new store
+async function storeController_create(body, db, origin) {
   try {
     const { storeId, storeName, address, city, latitude, longitude, radius } = body;
 
@@ -579,8 +580,8 @@ async function handleCreateStore(body, db, origin) {
   }
 }
 
-// Handle creating a new employee (admin only)
-async function handleCreateEmployee(body, db, origin) {
+// Employee Controller - Create new employee
+async function employeeController_create(body, db, origin) {
   try {
     const { employeeId, fullName, email, password, phone, storeId, position } = body;
 
@@ -642,8 +643,8 @@ async function handleCreateEmployee(body, db, origin) {
   }
 }
 
-// Handle getting users
-async function handleGetUsers(url, db, origin) {
+// Employee Controller - Get all employees
+async function employeeController_list(url, db, origin) {
   try {
     const page = parseInt(url.searchParams.get("page")) || 1;
     const limit = parseInt(url.searchParams.get("limit")) || 50;
@@ -690,8 +691,8 @@ async function handleGetUsers(url, db, origin) {
   }
 }
 
-// Handle getting user by ID
-async function handleGetUser(url, db, origin) {
+// Employee Controller - Get employee by ID
+async function employeeController_getById(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     
@@ -731,8 +732,8 @@ async function handleGetUser(url, db, origin) {
   }
 }
 
-// Handle user registration
-async function handleRegister(body, db, origin, env) {
+// Authentication Controller - Register new user
+async function authController_register(body, db, origin, env) {
   try {
     // Map client field names to database field names
     const { 
@@ -838,9 +839,8 @@ async function handleRegister(body, db, origin, env) {
   }
 }
 
-// Handle check-in
-// Handle GPS check (merged checkIn/checkOut)
-async function handleCheckGPS(body, db, origin) {
+// Attendance Controller - GPS check-in/check-out
+async function attendanceController_checkGPS(body, db, origin) {
   try {
     const { employeeId, checkDate, checkTime, latitude, longitude } = body;
 
@@ -931,8 +931,8 @@ async function handleCheckGPS(body, db, origin) {
   }
 }
 
-// Handle getting dashboard stats
-async function handleGetDashboardStats(db, origin) {
+// Dashboard Controller - Get statistics
+async function dashboardController_getStats(db, origin) {
   try {
     // Get total employees
     const totalEmployees = await db
@@ -976,8 +976,8 @@ async function handleGetDashboardStats(db, origin) {
 // ADDITIONAL HANDLER FUNCTIONS FROM ORIGINAL WORKER
 // =====================================================
 
-// Handle checking if ID exists
-async function handleCheckId(url, db, origin) {
+// Employee Controller - Check if ID exists
+async function employeeController_checkIdExists(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     
@@ -1006,8 +1006,8 @@ async function handleCheckId(url, db, origin) {
   }
 }
 
-// Handle getting user history
-async function handleGetUserHistory(url, db, origin) {
+// Employee Controller - Get user history
+async function employeeController_getHistory(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     
@@ -1041,8 +1041,8 @@ async function handleGetUserHistory(url, db, origin) {
   }
 }
 
-// Handle getting shift assignments
-async function handleGetShiftAssignments(url, db, origin) {
+// Shift Controller - Get assignments
+async function shiftController_getAssignments(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const date = url.searchParams.get("date");
@@ -1086,8 +1086,8 @@ async function handleGetShiftAssignments(url, db, origin) {
   }
 }
 
-// Handle assigning shifts
-async function handleAssignShift(body, db, origin) {
+// Shift Controller - Assign shift
+async function shiftController_assign(body, db, origin) {
   try {
     const { employeeId, date, shiftId, shiftName } = body;
 
@@ -1162,8 +1162,8 @@ async function handleAssignShift(body, db, origin) {
   }
 }
 
-// Handle getting current shift
-async function handleGetCurrentShift(url, db, origin, authenticatedUserId = null) {
+// Shift Controller - Get current shift
+async function shiftController_getCurrent(url, db, origin, authenticatedUserId = null) {
   try {
     // Use authenticated user ID if available, otherwise fall back to URL parameter
     const employeeId = authenticatedUserId || url.searchParams.get("employeeId");
@@ -1199,8 +1199,8 @@ async function handleGetCurrentShift(url, db, origin, authenticatedUserId = null
   }
 }
 
-// Handle getting weekly shifts
-async function handleGetWeeklyShifts(url, db, origin) {
+// Shift Controller - Get weekly shifts
+async function shiftController_getWeekly(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const weekStart = url.searchParams.get("weekStart");
@@ -1241,8 +1241,8 @@ async function handleGetWeeklyShifts(url, db, origin) {
   }
 }
 
-// Handle getting all available shifts
-async function handleGetShifts(url, db, origin) {
+// Shift Controller - Get all shifts
+async function shiftController_list(url, db, origin) {
   try {
     const shifts = await db
       .prepare("SELECT * FROM shifts ORDER BY startTime")
@@ -1262,8 +1262,8 @@ async function handleGetShifts(url, db, origin) {
   }
 }
 
-// Handle getting attendance data
-async function handleGetAttendanceData(url, db, origin) {
+// Attendance Controller - Get attendance data
+async function attendanceController_getData(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const startDate = url.searchParams.get("startDate");
@@ -1313,8 +1313,8 @@ async function handleGetAttendanceData(url, db, origin) {
   }
 }
 
-// Handle getting pending requests
-async function handleGetPendingRequests(db, origin) {
+// Request Controller - Get pending requests
+async function requestController_getPending(db, origin) {
   try {
     const requests = await db
       .prepare(`
@@ -1342,8 +1342,8 @@ async function handleGetPendingRequests(db, origin) {
 
 
 
-// Handle getting permissions (simplified role-based approach)
-async function handleGetPermissions(url, db, origin) {
+// Employee Controller - Get permissions
+async function employeeController_getPermissions(url, db, origin) {
   try {
     const employeeId = url.searchParams.get("employeeId");
 
@@ -1389,8 +1389,8 @@ async function handleGetPermissions(url, db, origin) {
   }
 }
 
-// Handle getting pending registrations
-async function handleGetPendingRegistrations(url, db, origin) {
+// Registration Controller - Get pending registrations
+async function registrationController_getPending(url, db, origin) {
   try {
     const page = parseInt(url.searchParams.get("page")) || 1;
     const limit = parseInt(url.searchParams.get("limit")) || 20;
@@ -1427,19 +1427,19 @@ async function handleGetPendingRegistrations(url, db, origin) {
   }
 }
 
-// Additional handlers that would be implemented similarly...
-async function handleUpdate(body, db, origin) {
+// Employee Controller - Update employee (legacy)
+async function employeeController_update(body, db, origin) {
   // Implementation here
   return jsonResponse({ message: "Update function not yet implemented" }, 501, origin);
 }
 
-async function loginUser(body, db, origin) {
-  // Implementation here - same as handleLogin
-  return await handleLogin(body, db, origin);
+// Authentication Controller - Login user (legacy alias)
+async function authController_loginUser(body, db, origin) {
+  return await authController_login(body, db, origin);
 }
 
-async function updateUser(body, userId, db, origin) {
-  // Implementation here
+// Employee Controller - Update user (legacy)
+async function employeeController_updateUser(body, userId, db, origin) {
   return jsonResponse({ message: "Update user function not yet implemented" }, 501, origin);
 }
 
@@ -1451,7 +1451,8 @@ async function updateUser(body, userId, db, origin) {
 // Function removed - not used by client  
 // handleUpdatePermissions was not called by any client code
 
-async function handleUpdatePersonalInfo(body, db, origin) {
+// Employee Controller - Update personal info
+async function employeeController_updatePersonalInfo(body, db, origin) {
   try {
     const { employeeId, name, phone, position, email } = body;
     
@@ -1482,7 +1483,8 @@ async function handleUpdatePersonalInfo(body, db, origin) {
   }
 }
 
-async function handleUpdateUserWithHistory(body, db, origin) {
+// Employee Controller - Update with history
+async function employeeController_updateWithHistory(body, db, origin) {
   try {
     const { employeeId, field, oldValue, newValue, changedBy } = body;
     
@@ -1529,7 +1531,8 @@ async function handleUpdateUserWithHistory(body, db, origin) {
   }
 }
 
-async function handleApproveRegistration(body, db, origin) {
+// Registration Controller - Approve registration
+async function registrationController_approve(body, db, origin) {
   try {
     const { employeeId, approvedBy } = body;
     
@@ -1580,7 +1583,8 @@ async function handleApproveRegistration(body, db, origin) {
   }
 }
 
-async function handleProcessAttendance(body, db, origin) {
+// Attendance Controller - Process attendance
+async function attendanceController_process(body, db, origin) {
   try {
     const { employeeId, date, checkInTime, checkOutTime, status, notes } = body;
     
@@ -1632,7 +1636,8 @@ async function handleProcessAttendance(body, db, origin) {
   }
 }
 
-async function handleCreateAttendanceRequest(body, db, origin) {
+// Attendance Controller - Create request
+async function attendanceController_createRequest(body, db, origin) {
   try {
     const { employeeId, requestType, date, reason, startTime, endTime, requestedBy } = body;
     
@@ -1664,7 +1669,8 @@ async function handleCreateAttendanceRequest(body, db, origin) {
 
 
 
-async function handleReplyToComment(body, db, origin) {
+// Comment Controller - Reply to comment
+async function commentController_reply(body, db, origin) {
   try {
     const { commentId, replyText, repliedBy } = body;
     
@@ -1702,7 +1708,8 @@ async function handleReplyToComment(body, db, origin) {
   }
 }
 
-async function handleSaveShiftAssignments(body, db, origin) {
+// Shift Controller - Save assignments
+async function shiftController_saveAssignments(body, db, origin) {
   try {
     const { assignments, assignedBy } = body;
     
@@ -1763,7 +1770,8 @@ async function handleSaveShiftAssignments(body, db, origin) {
   }
 }
 
-async function handleApproveShiftRequest(body, db, origin) {
+// Shift Controller - Approve request
+async function shiftController_approveRequest(body, db, origin) {
   try {
     const { requestId, approvedBy, approvalNotes } = body;
     
@@ -1795,7 +1803,8 @@ async function handleApproveShiftRequest(body, db, origin) {
   }
 }
 
-async function handleRejectShiftRequest(body, db, origin) {
+// Shift Controller - Reject request
+async function shiftController_rejectRequest(body, db, origin) {
   try {
     const { requestId, rejectedBy, rejectionReason } = body;
     
@@ -1827,7 +1836,8 @@ async function handleRejectShiftRequest(body, db, origin) {
   }
 }
 
-async function handleApproveAttendanceRequest(body, db, origin, token) {
+// Attendance Controller - Approve request
+async function attendanceController_approveRequest(body, db, origin, token) {
   try {
     const { requestId, approvedBy, approvalNotes } = body;
     
@@ -1859,7 +1869,8 @@ async function handleApproveAttendanceRequest(body, db, origin, token) {
   }
 }
 
-async function handleRejectAttendanceRequest(body, db, origin, token) {
+// Attendance Controller - Reject request
+async function attendanceController_rejectRequest(body, db, origin, token) {
   try {
     const { requestId, rejectedBy, rejectionReason } = body;
     
@@ -1891,7 +1902,8 @@ async function handleRejectAttendanceRequest(body, db, origin, token) {
   }
 }
 
-async function handleGetTimesheet(url, db, origin, authenticatedUserId = null) {
+// Timesheet Controller - Get timesheet
+async function timesheetController_get(url, db, origin, authenticatedUserId = null) {
   try {
     const urlParams = new URLSearchParams(url.search);
     // Use authenticated user ID if available, otherwise fall back to URL parameter
@@ -1955,7 +1967,8 @@ async function handleGetTimesheet(url, db, origin, authenticatedUserId = null) {
   }
 }
 
-async function handleGetAttendanceHistory(url, db, origin) {
+// Attendance Controller - Get history
+async function attendanceController_getHistory(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2000,7 +2013,8 @@ async function handleGetAttendanceHistory(url, db, origin) {
   }
 }
 
-async function handleGetPersonalStats(url, db, origin, authenticatedUserId = null) {
+// Employee Controller - Get personal stats
+async function employeeController_getPersonalStats(url, db, origin, authenticatedUserId = null) {
   try {
     const urlParams = new URLSearchParams(url.search);
     // Use authenticated user ID if available, otherwise fall back to URL parameter
@@ -2057,7 +2071,8 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
 
 
 
-async function handleGetEmployeesByStore(url, db, origin) {
+// Store Controller - Get employees by store
+async function storeController_getEmployees(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const storeId = urlParams.get("storeId");
@@ -2088,7 +2103,8 @@ async function handleGetEmployeesByStore(url, db, origin) {
   }
 }
 
-async function handleGetShiftRequests(url, db, origin) {
+// Shift Controller - Get requests
+async function shiftController_getRequests(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2129,7 +2145,8 @@ async function handleGetShiftRequests(url, db, origin) {
   }
 }
 
-async function handleGetAttendanceRequests(url, db, origin) {
+// Attendance Controller - Get requests
+async function attendanceController_getRequests(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2180,7 +2197,8 @@ async function handleGetAttendanceRequests(url, db, origin) {
 // MISSING FUNCTIONS CALLED BY CLIENT
 // =====================================================
 
-async function handleGetAllUsers(url, db, origin) {
+// Employee Controller - Get all users
+async function employeeController_getAll(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const includeInactive = urlParams.get("includeInactive") === "true";
@@ -2210,7 +2228,8 @@ async function handleGetAllUsers(url, db, origin) {
 
 
 
-async function handleCompleteRequest(body, db, origin) {
+// Request Controller - Complete request
+async function requestController_complete(body, db, origin) {
   try {
     const { requestId, requestType, completedBy } = body;
     
@@ -2254,7 +2273,8 @@ async function handleCompleteRequest(body, db, origin) {
   }
 }
 
-async function handleCheckDk(url, db, origin) {
+// Employee Controller - Check duplicate ID
+async function employeeController_checkDuplicate(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2279,7 +2299,8 @@ async function handleCheckDk(url, db, origin) {
   }
 }
 
-async function handleGetPendingRequestsCount(url, db, origin) {
+// Request Controller - Get pending count
+async function requestController_getPendingCount(url, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2365,228 +2386,258 @@ function initializeRouter() {
   const router = new RestfulRouter();
 
   // =====================================================
-  // AUTHENTICATION & USER MANAGEMENT ROUTES
+  // AUTHENTICATION ROUTES
   // =====================================================
-  router.addRoute('POST', '/api/auth/login', handleLogin, false);
-  router.addRoute('POST', '/api/auth/register', handleRegister, false);
-  router.addRoute('POST', '/api/auth/verify-email', handleVerifyEmail, false);
+  router.addRoute('POST', '/api/auth/login', authController_login, false);
+  router.addRoute('POST', '/api/auth/register', authController_register, false);
+  router.addRoute('POST', '/api/auth/verify-email', authController_verifyEmail, false);
   
   // =====================================================
   // STORE ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/stores', handleGetStores, false);
-  router.addRoute('POST', '/api/stores', handleCreateStore, true);
+  router.addRoute('GET', '/api/stores', storeController_list, false);
+  router.addRoute('POST', '/api/stores', storeController_create, true);
+  router.addRoute('GET', '/api/stores/:storeId/employees', storeController_getEmployees_wrapper, true);
   
   // =====================================================
-  // EMPLOYEE/USER ROUTES
+  // EMPLOYEE ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/employees', handleGetAllUsers, true);
-  router.addRoute('GET', '/api/employees/:employeeId', handleGetUserById, true);
-  router.addRoute('POST', '/api/employees', handleCreateEmployee, true);
-  router.addRoute('PUT', '/api/employees/:employeeId', handleUpdatePersonalInfo, true);
-  router.addRoute('GET', '/api/employees/:employeeId/history', handleGetUserHistoryById, true);
-  router.addRoute('GET', '/api/employees/:employeeId/permissions', handleGetPermissionsById, true);
-  router.addRoute('GET', '/api/employees/:employeeId/stats', handleGetPersonalStatsById, true);
-  router.addRoute('GET', '/api/employees/check/:employeeId', handleCheckIdById, false);
-  
-  // Store-specific employees
-  router.addRoute('GET', '/api/stores/:storeId/employees', handleGetEmployeesByStoreId, true);
+  router.addRoute('GET', '/api/employees', employeeController_getAll, true);
+  router.addRoute('GET', '/api/employees/:employeeId', employeeController_getById_wrapper, true);
+  router.addRoute('POST', '/api/employees', employeeController_create, true);
+  router.addRoute('PUT', '/api/employees/:employeeId', employeeController_updatePersonalInfo, true);
+  router.addRoute('GET', '/api/employees/:employeeId/history', employeeController_getHistory_wrapper, true);
+  router.addRoute('GET', '/api/employees/:employeeId/permissions', employeeController_getPermissions_wrapper, true);
+  router.addRoute('GET', '/api/employees/:employeeId/stats', employeeController_getPersonalStats_wrapper, true);
+  router.addRoute('GET', '/api/employees/check/:employeeId', employeeController_checkIdExists_wrapper, false);
   
   // =====================================================
   // ATTENDANCE ROUTES
   // =====================================================
-  router.addRoute('POST', '/api/attendance/check', handleCheckGPS, true);
-  router.addRoute('GET', '/api/attendance', handleGetAttendanceData, true);
-  router.addRoute('POST', '/api/attendance/process', handleProcessAttendance, true);
-  router.addRoute('GET', '/api/attendance/history', handleGetAttendanceHistory, true);
+  router.addRoute('POST', '/api/attendance/check', attendanceController_checkGPS, true);
+  router.addRoute('GET', '/api/attendance', attendanceController_getData, true);
+  router.addRoute('POST', '/api/attendance/process', attendanceController_process, true);
+  router.addRoute('GET', '/api/attendance/history', attendanceController_getHistory, true);
   
   // Attendance requests
-  router.addRoute('POST', '/api/attendance/requests', handleCreateAttendanceRequest, true);
-  router.addRoute('GET', '/api/attendance/requests', handleGetAttendanceRequests, true);
-  router.addRoute('POST', '/api/attendance/requests/:requestId/approve', handleApproveAttendanceRequestById, true);
-  router.addRoute('POST', '/api/attendance/requests/:requestId/reject', handleRejectAttendanceRequestById, true);
+  router.addRoute('POST', '/api/attendance/requests', attendanceController_createRequest, true);
+  router.addRoute('GET', '/api/attendance/requests', attendanceController_getRequests, true);
+  router.addRoute('POST', '/api/attendance/requests/:requestId/approve', attendanceController_approveRequest_wrapper, true);
+  router.addRoute('POST', '/api/attendance/requests/:requestId/reject', attendanceController_rejectRequest_wrapper, true);
   
   // =====================================================
   // SHIFT ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/shifts', handleGetShifts, true);
-  router.addRoute('GET', '/api/shifts/current', handleGetCurrentShiftForUser, true);
-  router.addRoute('GET', '/api/shifts/weekly', handleGetWeeklyShifts, true);
-  router.addRoute('GET', '/api/shifts/assignments', handleGetShiftAssignments, true);
-  router.addRoute('POST', '/api/shifts/assignments', handleSaveShiftAssignments, true);
-  router.addRoute('POST', '/api/shifts/assign', handleAssignShift, true);
+  // SHIFT ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/shifts', shiftController_list, true);
+  router.addRoute('GET', '/api/shifts/current', shiftController_getCurrent_wrapper, true);
+  router.addRoute('GET', '/api/shifts/weekly', shiftController_getWeekly, true);
+  router.addRoute('GET', '/api/shifts/assignments', shiftController_getAssignments, true);
+  router.addRoute('POST', '/api/shifts/assignments', shiftController_saveAssignments, true);
+  router.addRoute('POST', '/api/shifts/assign', shiftController_assign, true);
   
   // Shift requests
-  router.addRoute('GET', '/api/shifts/requests', handleGetShiftRequests, true);
-  router.addRoute('POST', '/api/shifts/requests/:requestId/approve', handleApproveShiftRequestById, true);
-  router.addRoute('POST', '/api/shifts/requests/:requestId/reject', handleRejectShiftRequestById, true);
+  router.addRoute('GET', '/api/shifts/requests', shiftController_getRequests, true);
+  router.addRoute('POST', '/api/shifts/requests/:requestId/approve', shiftController_approveRequest_wrapper, true);
+  router.addRoute('POST', '/api/shifts/requests/:requestId/reject', shiftController_rejectRequest_wrapper, true);
   
   // =====================================================
   // TIMESHEET ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/timesheet', handleGetTimesheet, true);
+  router.addRoute('GET', '/api/timesheet', timesheetController_get, true);
   
   // =====================================================
-  // REGISTRATION & APPROVAL ROUTES
+  // REGISTRATION ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/registrations/pending', handleGetPendingRegistrations, true);
-  router.addRoute('POST', '/api/registrations/:employeeId/approve', handleApproveRegistrationById, true);
-  router.addRoute('POST', '/api/registrations/approve-with-history', handleApproveRegistrationWithHistory, true);
+  router.addRoute('GET', '/api/registrations/pending', registrationController_getPending, true);
+  router.addRoute('POST', '/api/registrations/:employeeId/approve', registrationController_approve_wrapper, true);
+  router.addRoute('POST', '/api/registrations/approve-with-history', registrationController_approveWithHistory, true);
   
   // =====================================================
   // REQUEST MANAGEMENT ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/requests/pending', handleGetPendingRequests, true);
-  router.addRoute('GET', '/api/requests/pending/count', handleGetPendingRequestsCount, true);
-  router.addRoute('POST', '/api/requests/:requestId/complete', handleCompleteRequestById, true);
+  router.addRoute('GET', '/api/requests/pending', requestController_getPending, true);
+  router.addRoute('GET', '/api/requests/pending/count', requestController_getPendingCount, true);
+  router.addRoute('POST', '/api/requests/:requestId/complete', requestController_complete_wrapper, true);
   
   // =====================================================
-  // DASHBOARD & STATS ROUTES
+  // DASHBOARD ROUTES
   // =====================================================
-  router.addRoute('GET', '/api/dashboard/stats', handleGetDashboardStats, true);
+  router.addRoute('GET', '/api/dashboard/stats', dashboardController_getStats, true);
   
   // =====================================================
-  // LEGACY SUPPORT - Query parameter based (for backward compatibility)
+  // DEPRECATED LEGACY ROUTES (Phase 3: Will be removed)
+  // Use RESTful endpoints instead
   // =====================================================
-  router.addRoute('GET', '/api/legacy', handleLegacyGet, false);
-  router.addRoute('POST', '/api/legacy', handleLegacyPost, false);
+  // Temporarily disabled - use RESTful endpoints only
+  // router.addRoute('GET', '/api/legacy', legacyController_handleGet, false);
+  // router.addRoute('POST', '/api/legacy', legacyController_handlePost, false);
 
   return router;
 }
 
 // =====================================================
-// WRAPPER HANDLERS FOR RESTFUL ROUTES
+// ROUTE WRAPPERS - Connect route params to controllers
 // =====================================================
 
-async function handleGetUserById(url, params, db, origin, userId) {
+// Employee route wrappers
+async function employeeController_getById_wrapper(url, params, db, origin, userId) {
   url.searchParams.set('employeeId', params.employeeId);
-  return await handleGetUser(url, db, origin);
+  return await employeeController_getById(url, db, origin);
 }
 
-async function handleGetUserHistoryById(url, params, db, origin, userId) {
+async function employeeController_getHistory_wrapper(url, params, db, origin, userId) {
   url.searchParams.set('employeeId', params.employeeId);
-  return await handleGetUserHistory(url, db, origin);
+  return await employeeController_getHistory(url, db, origin);
 }
 
-async function handleGetPermissionsById(url, params, db, origin, userId) {
+async function employeeController_getPermissions_wrapper(url, params, db, origin, userId) {
   url.searchParams.set('employeeId', params.employeeId);
-  return await handleGetPermissions(url, db, origin);
+  return await employeeController_getPermissions(url, db, origin);
 }
 
-async function handleGetPersonalStatsById(url, params, db, origin, userId) {
+async function employeeController_getPersonalStats_wrapper(url, params, db, origin, userId) {
   url.searchParams.set('employeeId', params.employeeId);
-  return await handleGetPersonalStats(url, db, origin, userId);
+  return await employeeController_getPersonalStats(url, db, origin, userId);
 }
 
-async function handleCheckIdById(url, params, db, origin, userId) {
+async function employeeController_checkIdExists_wrapper(url, params, db, origin, userId) {
   url.searchParams.set('employeeId', params.employeeId);
-  return await handleCheckId(url, db, origin);
+  return await employeeController_checkIdExists(url, db, origin);
 }
 
-async function handleGetEmployeesByStoreId(url, params, db, origin, userId) {
+// Store route wrappers
+async function storeController_getEmployees_wrapper(url, params, db, origin, userId) {
   url.searchParams.set('storeId', params.storeId);
-  return await handleGetEmployeesByStore(url, db, origin);
+  return await storeController_getEmployees(url, db, origin);
 }
 
-async function handleApproveAttendanceRequestById(url, params, body, db, origin, token) {
+// Attendance route wrappers
+async function attendanceController_approveRequest_wrapper(url, params, body, db, origin, token) {
   const mergedBody = { ...body, requestId: params.requestId };
-  return await handleApproveAttendanceRequest(mergedBody, db, origin, token);
+  return await attendanceController_approveRequest(mergedBody, db, origin, token);
 }
 
-async function handleRejectAttendanceRequestById(url, params, body, db, origin, token) {
+async function attendanceController_rejectRequest_wrapper(url, params, body, db, origin, token) {
   const mergedBody = { ...body, requestId: params.requestId };
-  return await handleRejectAttendanceRequest(mergedBody, db, origin, token);
+  return await attendanceController_rejectRequest(mergedBody, db, origin, token);
 }
 
-async function handleApproveShiftRequestById(url, params, body, db, origin, token) {
+// Shift route wrappers
+async function shiftController_approveRequest_wrapper(url, params, body, db, origin, token) {
   const mergedBody = { ...body, requestId: params.requestId };
-  return await handleApproveShiftRequest(mergedBody, db, origin);
+  return await shiftController_approveRequest(mergedBody, db, origin);
 }
 
-async function handleRejectShiftRequestById(url, params, body, db, origin, token) {
+async function shiftController_rejectRequest_wrapper(url, params, body, db, origin, token) {
   const mergedBody = { ...body, requestId: params.requestId };
-  return await handleRejectShiftRequest(mergedBody, db, origin);
+  return await shiftController_rejectRequest(mergedBody, db, origin);
 }
 
-async function handleApproveRegistrationById(url, params, body, db, origin, token) {
+async function shiftController_getCurrent_wrapper(url, params, db, origin, userId) {
+  return await shiftController_getCurrent(url, db, origin, userId);
+}
+
+// Registration route wrappers
+async function registrationController_approve_wrapper(url, params, body, db, origin, token) {
   const mergedBody = { ...body, employeeId: params.employeeId };
-  return await handleApproveRegistration(mergedBody, db, origin);
+  return await registrationController_approve(mergedBody, db, origin);
 }
 
-async function handleCompleteRequestById(url, params, body, db, origin, token) {
+// Request route wrappers
+async function requestController_complete_wrapper(url, params, body, db, origin, token) {
   const mergedBody = { ...body, requestId: params.requestId };
-  return await handleCompleteRequest(mergedBody, db, origin);
-}
-
-async function handleGetCurrentShiftForUser(url, params, db, origin, userId) {
-  return await handleGetCurrentShift(url, db, origin, userId);
+  return await requestController_complete(mergedBody, db, origin);
 }
 
 // =====================================================
-// LEGACY SUPPORT HANDLERS (backward compatibility)
+// DEPRECATED LEGACY ENDPOINTS
+// These endpoints are deprecated and will be removed in future versions
+// Please migrate to RESTful endpoints
 // =====================================================
 
-async function handleLegacyGet(url, params, db, origin, userId) {
+async function legacyController_handleGet(url, params, db, origin, userId) {
   const action = url.searchParams.get("action");
-  if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400, origin);
+  console.warn(`⚠️ DEPRECATED: Legacy action '${action}' used. Please migrate to RESTful endpoints.`);
+  
+  if (!action) return jsonResponse({ 
+    message: "⚠️ DEPRECATED: Action-based API is deprecated. Please use RESTful endpoints.",
+    deprecated: true
+  }, 400, origin);
 
+  // Map legacy actions to new controllers
   switch (action) {
-    case "getStores": return await handleGetStores(db, origin);
-    case "getUsers": return await handleGetUsers(url, db, origin);
-    case "getUser": return await handleGetUser(url, db, origin);
-    case "getDashboardStats": return await handleGetDashboardStats(db, origin);
-    case "checkId": return await handleCheckId(url, db, origin);
-    case "getUserHistory": return await handleGetUserHistory(url, db, origin);
-    case "getCurrentShift": return await handleGetCurrentShift(url, db, origin, userId);
-    case "getWeeklyShifts": return await handleGetWeeklyShifts(url, db, origin);
-    case "getAttendanceData": return await handleGetAttendanceData(url, db, origin);
-    case "getPendingRequests": return await handleGetPendingRequests(db, origin);
-    case "getPermissions": return await handleGetPermissions(url, db, origin);
-    case "getPendingRegistrations": return await handleGetPendingRegistrations(url, db, origin);
-    case "getTimesheet": return await handleGetTimesheet(url, db, origin, userId);
-    case "getAttendanceHistory": return await handleGetAttendanceHistory(url, db, origin);
-    case "getShiftAssignments": return await handleGetShiftAssignments(url, db, origin);
-    case "getShifts": return await handleGetShifts(url, db, origin);
-    case "getPersonalStats": return await handleGetPersonalStats(url, db, origin, userId);
-    case "getEmployeesByStore": return await handleGetEmployeesByStore(url, db, origin);
-    case "getShiftRequests": return await handleGetShiftRequests(url, db, origin);
-    case "getAttendanceRequests": return await handleGetAttendanceRequests(url, db, origin);
-    case "getAllUsers": return await handleGetAllUsers(url, db, origin);
-    case "checkdk": return await handleCheckDk(url, db, origin);
-    case "getPendingRequestsCount": return await handleGetPendingRequestsCount(url, db, origin);
-    default: return jsonResponse({ message: "Action không hợp lệ!" }, 400, origin);
+    case "getStores": return await storeController_list(db, origin);
+    case "getUsers": return await employeeController_list(url, db, origin);
+    case "getUser": return await employeeController_getById(url, db, origin);
+    case "getDashboardStats": return await dashboardController_getStats(db, origin);
+    case "checkId": return await employeeController_checkIdExists(url, db, origin);
+    case "getUserHistory": return await employeeController_getHistory(url, db, origin);
+    case "getCurrentShift": return await shiftController_getCurrent(url, db, origin, userId);
+    case "getWeeklyShifts": return await shiftController_getWeekly(url, db, origin);
+    case "getAttendanceData": return await attendanceController_getData(url, db, origin);
+    case "getPendingRequests": return await requestController_getPending(db, origin);
+    case "getPermissions": return await employeeController_getPermissions(url, db, origin);
+    case "getPendingRegistrations": return await registrationController_getPending(url, db, origin);
+    case "getTimesheet": return await timesheetController_get(url, db, origin, userId);
+    case "getAttendanceHistory": return await attendanceController_getHistory(url, db, origin);
+    case "getShiftAssignments": return await shiftController_getAssignments(url, db, origin);
+    case "getShifts": return await shiftController_list(url, db, origin);
+    case "getPersonalStats": return await employeeController_getPersonalStats(url, db, origin, userId);
+    case "getEmployeesByStore": return await storeController_getEmployees(url, db, origin);
+    case "getShiftRequests": return await shiftController_getRequests(url, db, origin);
+    case "getAttendanceRequests": return await attendanceController_getRequests(url, db, origin);
+    case "getAllUsers": return await employeeController_getAll(url, db, origin);
+    case "checkdk": return await employeeController_checkDuplicate(url, db, origin);
+    case "getPendingRequestsCount": return await requestController_getPendingCount(url, db, origin);
+    default: return jsonResponse({ 
+      message: "⚠️ DEPRECATED: Unknown action. Please use RESTful endpoints.",
+      deprecated: true,
+      action: action
+    }, 400, origin);
   }
 }
 
-async function handleLegacyPost(url, params, body, db, origin, userId, token, env) {
+async function legacyController_handlePost(url, params, body, db, origin, userId, token, env) {
   const action = url.searchParams.get("action");
-  if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400, origin);
+  console.warn(`⚠️ DEPRECATED: Legacy action '${action}' used. Please migrate to RESTful endpoints.`);
+  
+  if (!action) return jsonResponse({ 
+    message: "⚠️ DEPRECATED: Action-based API is deprecated. Please use RESTful endpoints.",
+    deprecated: true
+  }, 400, origin);
 
+  // Map legacy actions to new controllers
   switch (action) {
-    case "login": return await handleLogin(body, db, origin);
-    case "register": return await handleRegister(body, db, origin, env);
-    case "checkGPS": return await handleCheckGPS(body, db, origin);
-    case "update": return await handleUpdate(body, db, origin);
-    case "assignShift": return await handleAssignShift(body, db, origin);
-    case "loginUser": return await loginUser(body, db, origin);
-    case "updateUser": return await updateUser(body, userId, db, origin);
-    case "updatePersonalInfo": return await handleUpdatePersonalInfo(body, db, origin);
-    case "updateUserWithHistory": return await handleUpdateUserWithHistory(body, db, origin);
-    case "approveRegistration": return await handleApproveRegistration(body, db, origin);
-    case "processAttendance": return await handleProcessAttendance(body, db, origin);
-    case "createAttendanceRequest": return await handleCreateAttendanceRequest(body, db, origin);
-    case "replyToComment": return await handleReplyToComment(body, db, origin);
-    case "saveShiftAssignments": return await handleSaveShiftAssignments(body, db, origin);
-    case "approveShiftRequest": return await handleApproveShiftRequest(body, db, origin);
-    case "rejectShiftRequest": return await handleRejectShiftRequest(body, db, origin);
-    case "approveAttendanceRequest": return await handleApproveAttendanceRequest(body, db, origin, token);
-    case "rejectAttendanceRequest": return await handleRejectAttendanceRequest(body, db, origin, token);
-    case "verifyEmail": return await handleVerifyEmail(body, db, origin, env);
-    case "approveRegistrationWithHistory": return await handleApproveRegistrationWithHistory(body, db, origin);
-    case "completeRequest": return await handleCompleteRequest(body, db, origin);
-    case "createStore": return await handleCreateStore(body, db, origin);
-    case "createEmployee": return await handleCreateEmployee(body, db, origin);
-    default: return jsonResponse({ message: "Action không hợp lệ!" }, 400, origin);
+    case "login": return await authController_login(body, db, origin);
+    case "register": return await authController_register(body, db, origin, env);
+    case "checkGPS": return await attendanceController_checkGPS(body, db, origin);
+    case "update": return await employeeController_update(body, db, origin);
+    case "assignShift": return await shiftController_assign(body, db, origin);
+    case "loginUser": return await authController_loginUser(body, db, origin);
+    case "updateUser": return await employeeController_updateUser(body, userId, db, origin);
+    case "updatePersonalInfo": return await employeeController_updatePersonalInfo(body, db, origin);
+    case "updateUserWithHistory": return await employeeController_updateWithHistory(body, db, origin);
+    case "approveRegistration": return await registrationController_approve(body, db, origin);
+    case "processAttendance": return await attendanceController_process(body, db, origin);
+    case "createAttendanceRequest": return await attendanceController_createRequest(body, db, origin);
+    case "replyToComment": return await commentController_reply(body, db, origin);
+    case "saveShiftAssignments": return await shiftController_saveAssignments(body, db, origin);
+    case "approveShiftRequest": return await shiftController_approveRequest(body, db, origin);
+    case "rejectShiftRequest": return await shiftController_rejectRequest(body, db, origin);
+    case "approveAttendanceRequest": return await attendanceController_approveRequest(body, db, origin, token);
+    case "rejectAttendanceRequest": return await attendanceController_rejectRequest(body, db, origin, token);
+    case "verifyEmail": return await authController_verifyEmail(body, db, origin, env);
+    case "approveRegistrationWithHistory": return await registrationController_approveWithHistory(body, db, origin);
+    case "completeRequest": return await requestController_complete(body, db, origin);
+    case "createStore": return await storeController_create(body, db, origin);
+    case "createEmployee": return await employeeController_create(body, db, origin);
+    default: return jsonResponse({ 
+      message: "⚠️ DEPRECATED: Unknown action. Please use RESTful endpoints.",
+      deprecated: true,
+      action: action
+    }, 400, origin);
   }
 }
 
