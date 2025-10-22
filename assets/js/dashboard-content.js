@@ -13,13 +13,9 @@ const DashboardContent = {
     },
 
     getUserData() {
-        const data = localStorage.getItem('userData');
-        try {
-            return JSON.parse(data);
-        } catch (e) {
-            console.error('Failed to parse user data:', e);
-            return null;
-        }
+        const data = SecureStorage.get('userData');
+        if (!data) return null;
+        return typeof data === 'string' ? JSON.parse(data) : data;
     },
 
     /**
@@ -55,12 +51,6 @@ const DashboardContent = {
                         <div class="spinner-sm"></div>
                     </div>
                     <div class="stat-label">Ca hôm nay</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="pendingTasks">
-                        <div class="spinner-sm"></div>
-                    </div>
-                    <div class="stat-label">Công việc</div>
                 </div>
             </div>
 
@@ -102,9 +92,6 @@ const DashboardContent = {
             </div>
         `;
 
-        // Load worker stats
-        this.loadWorkerStats();
-
         return content;
     },
 
@@ -126,12 +113,6 @@ const DashboardContent = {
                     </div>
                     <div class="stat-label">Yêu cầu chờ</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="teamTasks">
-                        <div class="spinner-sm"></div>
-                    </div>
-                    <div class="stat-label">Công việc nhóm</div>
-                </div>
             </div>
 
             <div class="card">
@@ -145,10 +126,6 @@ const DashboardContent = {
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('process-requests')">
                         <span class="material-icons-round">approval</span>
                         Xử lý yêu cầu
-                    </button>
-                    <button class="btn btn-secondary btn-full mb-md" onclick="navigateToFunction('assign-tasks')">
-                        <span class="material-icons-round">assignment</span>
-                        Giao việc
                     </button>
                     <button class="btn btn-secondary btn-full" onclick="navigateToFunction('schedule-management')">
                         <span class="material-icons-round">calendar_month</span>
@@ -171,9 +148,6 @@ const DashboardContent = {
                 </div>
             </div>
         `;
-
-        // Load manager stats
-        this.loadManagerStats();
 
         return content;
     },
@@ -275,7 +249,7 @@ const DashboardContent = {
     async renderSchedule() {
         const today = new Date();
         const weekStart = this.getWeekStart(today);
-        const userData = JSON.parse(localStorage.getItem('userData'));
+        const userData = SecureStorage.get('userData');
         const userRole = this.roleHierarchy[userData?.position?.toUpperCase()] || 0;
         
         // Role-specific schedule view
@@ -567,65 +541,7 @@ const DashboardContent = {
         return icons[shiftType] || '•';
     },
 
-    /**
-     * Tasks Management
-     */
-    async renderTasks() {
-        const content = `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">task</span>
-                        Công việc của tôi
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <div id="tasksList">
-                        <div class="spinner-sm"></div>
-                    </div>
-                </div>
-            </div>
-        `;
 
-        setTimeout(() => this.loadUserTasks(), 100);
-
-        return content;
-    },
-
-    async loadUserTasks() {
-        const container = document.getElementById('tasksList');
-        if (!container) return;
-
-        const tasks = await DashboardAPI.getUserTasks(this.employeeId);
-        
-        if (!tasks || tasks.length === 0) {
-            container.innerHTML = '<div class="message">Không có công việc</div>';
-            return;
-        }
-
-        let html = '<div class="list">';
-        tasks.forEach(task => {
-            const iconName = task.status === 'completed' ? 'check_circle' : 'pending';
-            const iconColor = task.status === 'completed' ? 'success' : 'warning';
-            
-            html += `
-                <div class="list-item">
-                    <div class="list-item-icon ${iconColor}">
-                        <span class="material-icons-round">${iconName}</span>
-                    </div>
-                    <div class="list-item-content">
-                        <div class="list-item-title">${utils.escapeHtml(task.title)}</div>
-                        <div class="list-item-subtitle">
-                            ${task.dueDate ? 'Hạn: ' + task.dueDate : 'Không có hạn'}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        html += '</div>';
-
-        container.innerHTML = html;
-    },
 
 
 
@@ -1324,9 +1240,7 @@ const DashboardContent = {
         return '<div class="card"><div class="card-body"><div class="message">Quản lý công</div></div></div>';
     },
 
-    renderTaskAssignment() {
-        return '<div class="card"><div class="card-body"><div class="message">Phân công nhiệm vụ</div></div></div>';
-    },
+
 
     /**
      * PHASE 3: Notification System
@@ -1371,7 +1285,6 @@ const DashboardContent = {
         notifications.forEach(notif => {
             const iconMap = {
                 'request': 'request_page',
-                'task': 'assignment',
                 'system': 'info',
                 'approval': 'verified'
             };
@@ -1698,5 +1611,232 @@ const DashboardContent = {
                 this.renderNotifications();
             }
         }
+    },
+
+    // Additional render methods for admin dashboard
+    async renderEmployeeManagement() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">groups</span>
+                        Quản lý nhân viên
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderAttendanceApproval() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">fact_check</span>
+                        Duyệt chấm công
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderShiftManagement() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">schedule</span>
+                        Quản lý ca làm việc
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="shiftsList">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderReports() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">assessment</span>
+                        Báo cáo tổng hợp
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderAnalytics() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">analytics</span>
+                        Phân tích dữ liệu
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSystemSettings() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">settings</span>
+                        Cài đặt hệ thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSystemLogs() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">history</span>
+                        Nhật ký hệ thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderWorkManagement() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">work</span>
+                        Quản lý công việc
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">info</span>
+                        <p>Xem thông tin công việc của bạn</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSubmitRequest() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">send</span>
+                        Gửi yêu cầu
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderShifts() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">schedule</span>
+                        Ca làm
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div id="shiftsContent">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderSalary() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">payments</span>
+                        Bảng Lương
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async renderLeaveRequest() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">assignment</span>
+                        Đơn Từ
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="message">
+                        <span class="material-icons-round">construction</span>
+                        <p>Chức năng đang được phát triển</p>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 };

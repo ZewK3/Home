@@ -1,5 +1,5 @@
 // Constants
-const API_URL = "https://zewk.tocotoco.workers.dev/";
+const API_URL = "https://hrm-api.tocotoco.workers.dev/";
 const TOKEN_KEY = "authToken";
 const REMEMBER_ME_KEY = "rememberedEmployeeId";
 const THEME_KEY = "theme";
@@ -429,13 +429,19 @@ async function handleLogin(event) {
 
         if (response.ok) {
             const result = await response.json();
-            localStorage.setItem(TOKEN_KEY, result.token);
+            
+            // Store authToken encrypted
+            SecureStorage.set(TOKEN_KEY, result.token);
+            
+            // Store userData encrypted (get from response)
+            if (result.userData) {
+                SecureStorage.set('userData', result.userData);
+            }
             
             const rememberMe = elements.loginForm.rememberMe;
             if (rememberMe && rememberMe.checked) {
-                localStorage.setItem(REMEMBER_ME_KEY, formData.loginEmployeeId);
+                SecureStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
             }
-            localStorage.setItem("loggedInUser", JSON.stringify(formData));
             
             showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
             if (buttonText) buttonText.textContent = "Thành công!";
@@ -851,7 +857,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Remember me
-    const rememberedId = localStorage.getItem(REMEMBER_ME_KEY);
+    const rememberedId = SecureStorage.get(REMEMBER_ME_KEY);
     const loginEmployeeIdInput = document.getElementById("loginEmployeeId");
     const rememberMeCheckbox = document.getElementById("rememberMe");
     

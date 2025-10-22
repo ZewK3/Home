@@ -359,8 +359,6 @@ class AuthManager {
                     totalHoursThisMonth: personalStats.total_hours_this_month || personalStats.totalHoursThisMonth || 0,
                     attendanceRate: personalStats.attendance_rate || personalStats.attendanceRate || 0,
                     overtimeHours: personalStats.overtime_hours || personalStats.overtimeHours || 0,
-                    tasksCompleted: personalStats.tasks_completed || personalStats.tasksCompleted || 0,
-                    pendingTasks: personalStats.pending_tasks || personalStats.pendingTasks || 0,
                     averageRating: personalStats.average_rating || personalStats.averageRating || 0
                 };
                 
@@ -374,8 +372,6 @@ class AuthManager {
                     totalHoursThisMonth: 0,
                     attendanceRate: 0,
                     overtimeHours: 0,
-                    tasksCompleted: 0,
-                    pendingTasks: 0,
                     averageRating: 0
                 };
             }
@@ -729,7 +725,8 @@ async function handleLogin(e) {
             method: 'POST',
             body: JSON.stringify({
                 employeeId: employeeId,
-                password: password
+                password: password,
+                rememberMe: rememberMe
             })
         });
         

@@ -2,11 +2,14 @@
  * Dashboard API Integration
  * Handles all API calls for dashboard functionality
  * 
- * DATABASE v2 COMPATIBLE:
- * - Works with optimized schema (17 tables instead of 23)
- * - Attendance includes GPS data (no separate gps_attendance table)
+ * DATABASE v2.2 SIMPLIFIED:
+ * - Unified employeeId TEXT throughout (no dual-column approach)
+ * - Simplified attendance table (checkDate, checkTime, checkLocation)
+ * - GPS validation on frontend only
  * - All requests go to employee_requests table (unified)
  * - Employee approval_status in employees table (no queue table)
+ * - Task management removed completely
+ * - Shift-based scheduling with predefined shifts
  */
 
 const DashboardAPI = {
@@ -33,15 +36,7 @@ const DashboardAPI = {
         }
     },
 
-    async getPendingTasks() {
-        try {
-            const response = await utils.fetchAPI('?action=getPendingTasks');
-            return response.success ? response.data : null;
-        } catch (error) {
-            console.error('Error fetching pending tasks:', error);
-            return null;
-        }
-    },
+
 
 
 
@@ -58,42 +53,27 @@ const DashboardAPI = {
         }
     },
 
-    async clockIn(employeeId, latitude, longitude) {
+    async checkGPS(employeeId, latitude, longitude) {
         try {
-            // DATABASE v2: GPS data stored directly in attendance table
-            // No separate gps_attendance insert needed
-            const response = await utils.fetchAPI('?action=clockIn', {
+            // DATABASE v2.2: GPS validation on backend with full date/time from frontend
+            // Frontend sends: employeeId, checkDate, checkTime, latitude, longitude
+            const now = new Date();
+            const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY
+            const checkTime = now.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS
+            
+            const response = await utils.fetchAPI('?action=checkGPS', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
+                    checkDate,
+                    checkTime,
                     latitude,
-                    longitude,
-                    timestamp: new Date().toISOString()
+                    longitude
                 })
             });
             return response;
         } catch (error) {
-            console.error('Error clocking in:', error);
-            return { success: false, message: error.message };
-        }
-    },
-
-    async clockOut(employeeId, latitude, longitude) {
-        try {
-            // DATABASE v2: GPS data stored directly in attendance table
-            // checkOutLatitude, checkOutLongitude columns used
-            const response = await utils.fetchAPI('?action=clockOut', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    latitude,
-                    longitude,
-                    timestamp: new Date().toISOString()
-                })
-            });
-            return response;
-        } catch (error) {
-            console.error('Error clocking out:', error);
+            console.error('Error checking GPS:', error);
             return { success: false, message: error.message };
         }
     },
@@ -121,72 +101,18 @@ const DashboardAPI = {
         }
     },
 
-    /**
-     * Task Management
-     */
-    async getUserTasks(employeeId) {
-        try {
-            const response = await utils.fetchAPI(`?action=getUserTasks&employeeId=${employeeId}`);
-            return response.success ? response.data : null;
-        } catch (error) {
-            console.error('Error fetching user tasks:', error);
-            return null;
-        }
-    },
 
-    async updateTaskStatus(taskId, status) {
-        try {
-            const response = await utils.fetchAPI('?action=updateTaskStatus', {
-                method: 'POST',
-                body: JSON.stringify({
-                    taskId,
-                    status
-                })
-            });
-            return response;
-        } catch (error) {
-            console.error('Error updating task status:', error);
-            return { success: false, message: error.message };
-        }
-    },
 
-    async createTask(taskData) {
-        try {
-            const response = await utils.fetchAPI('?action=createTask', {
-                method: 'POST',
-                body: JSON.stringify(taskData)
-            });
-            return response;
-        } catch (error) {
-            console.error('Error creating task:', error);
-            return { success: false, message: error.message };
-        }
-    },
 
-    async assignTask(taskId, employeeId) {
-        try {
-            const response = await utils.fetchAPI('?action=assignTask', {
-                method: 'POST',
-                body: JSON.stringify({
-                    taskId,
-                    employeeId
-                })
-            });
-            return response;
-        } catch (error) {
-            console.error('Error assigning task:', error);
-            return { success: false, message: error.message };
-        }
-    },
 
     /**
-     * Request Management - DATABASE v2 COMPATIBLE
+     * Request Management - DATABASE v2.2 SIMPLIFIED
      * All requests now go to unified employee_requests table
      * Request types: LEAVE, OVERTIME, FORGOT_CHECKIN, FORGOT_CHECKOUT, SHIFT_CHANGE, OTHER
      */
     async submitAttendanceRequest(requestData) {
         try {
-            // DATABASE v2: Submits to employee_requests table with requestType field
+            // DATABASE v2.2: Submits to employee_requests table with requestType field
             const response = await utils.fetchAPI('?action=submitEmployeeRequest', {
                 method: 'POST',
                 body: JSON.stringify({
@@ -203,7 +129,7 @@ const DashboardAPI = {
 
     async getAttendanceRequests(employeeId) {
         try {
-            // DATABASE v2: Queries employee_requests table filtering by requestType
+            // DATABASE v2.2: Queries employee_requests table filtering by requestType
             const response = await utils.fetchAPI(`?action=getEmployeeRequests&employeeId=${employeeId}`);
             return response.success ? response.data : null;
         } catch (error) {
@@ -214,7 +140,7 @@ const DashboardAPI = {
 
     async getPendingRequests() {
         try {
-            // DATABASE v2: Gets all pending requests from employee_requests table
+            // DATABASE v2.2: Gets all pending requests from employee_requests table
             const response = await utils.fetchAPI('?action=getPendingRequests');
             return response.success ? response.data : null;
         } catch (error) {
@@ -302,7 +228,7 @@ const DashboardAPI = {
      */
     async getPendingRegistrations() {
         try {
-            // DATABASE v2: Queries employees WHERE approval_status = 'PENDING'
+            // DATABASE v2.2: Queries employees WHERE approval_status = 'PENDING'
             // No separate queue table needed
             const response = await utils.fetchAPI('?action=getPendingRegistrations');
             return response.success ? response.data : null;
@@ -314,13 +240,13 @@ const DashboardAPI = {
 
     async approveRegistration(employeeId) {
         try {
-            // DATABASE v2: Updates approval_status to 'APPROVED' in employees table
+            // DATABASE v2.2: Updates approval_status to 'APPROVED' in employees table
             const response = await utils.fetchAPI('?action=approveRegistration', {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
                     status: 'APPROVED', // Updated to match schema
-                    approved_by: JSON.parse(localStorage.getItem('userData'))?.employeeId,
+                    approved_by: SecureStorage.get('userData')?.employeeId,
                     approved_at: new Date().toISOString()
                 })
             });
@@ -333,7 +259,7 @@ const DashboardAPI = {
 
     async rejectRegistration(employeeId, reason) {
         try {
-            // DATABASE v2: Updates approval_status to 'REJECTED' in employees table
+            // DATABASE v2.2: Updates approval_status to 'REJECTED' in employees table
             const response = await utils.fetchAPI('?action=approveRegistration', {
                 method: 'POST',
                 body: JSON.stringify({

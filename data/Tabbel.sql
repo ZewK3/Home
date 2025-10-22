@@ -91,28 +91,7 @@ CREATE TABLE workSchedules (
 );
 
 
--- Enhanced table for task/request management (legacy format)
-CREATE TABLE tasks (
-    id TEXT PRIMARY KEY,
-    employeeId TEXT NOT NULL,
-    employeeName TEXT NOT NULL,
-    position TEXT DEFAULT 'NV',
-    type TEXT NOT NULL,
-    content TEXT NOT NULL,
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'active')),
-    createdAt TEXT NOT NULL,
-    updatedAt TEXT,
-    note TEXT,
-    -- New fields for enhanced task management
-    taskId TEXT,
-    title TEXT,
-    description TEXT,
-    priority TEXT,
-    deadline TEXT,
-    createdBy TEXT,
-    data TEXT,  -- JSON string for additional data
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
-);
+-- Table removed: tasks (replaced with shift-based system)
 
 -- Table for role-based permissions
 CREATE TABLE permissions (
@@ -269,41 +248,7 @@ CREATE TABLE requests (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
--- Table for task assignments (Nhiệm Vụ) 
-CREATE TABLE task_assignments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    taskId TEXT NOT NULL,
-    employeeId TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('participant', 'supporter', 'assigner')),
-    assignedAt TEXT DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled')),
-    FOREIGN KEY (taskId) REFERENCES tasks(id),
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
-);
-
--- Table for task comments
-CREATE TABLE task_comments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    commentId TEXT UNIQUE NOT NULL,
-    taskId TEXT NOT NULL,
-    authorId TEXT NOT NULL,
-    content TEXT NOT NULL,
-    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (taskId) REFERENCES tasks(id),
-    FOREIGN KEY (authorId) REFERENCES employees(employeeId)
-);
-
--- Table for comment replies
-CREATE TABLE comment_replies (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    replyId TEXT UNIQUE NOT NULL,
-    commentId TEXT NOT NULL,
-    authorId TEXT NOT NULL,
-    content TEXT NOT NULL,
-    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (commentId) REFERENCES task_comments(commentId),
-    FOREIGN KEY (authorId) REFERENCES employees(employeeId)
-);
+-- Tables removed: task_assignments, task_comments, comment_replies (replaced with shift-based system)
 
 -- =====================================================
 -- SYSTEM MANAGEMENT
