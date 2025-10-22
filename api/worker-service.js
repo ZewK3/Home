@@ -2327,6 +2327,273 @@ async function handleGetPendingRequestsCount(url, db, origin) {
 // MAIN EXPORT WITH ALL ROUTES
 // =====================================================
 
+// =====================================================
+// RESTFUL ROUTER - Pattern matching for clean URLs
+// =====================================================
+
+class RestfulRouter {
+  constructor() {
+    this.routes = [];
+  }
+
+  addRoute(method, pattern, handler, requiresAuth = false) {
+    this.routes.push({ method, pattern, handler, requiresAuth });
+  }
+
+  match(method, pathname) {
+    for (const route of this.routes) {
+      if (route.method !== method) continue;
+      
+      const regex = new RegExp('^' + route.pattern.replace(/:\w+/g, '([^/]+)') + '$');
+      const match = pathname.match(regex);
+      
+      if (match) {
+        const paramNames = (route.pattern.match(/:\w+/g) || []).map(p => p.slice(1));
+        const params = {};
+        paramNames.forEach((name, i) => {
+          params[name] = match[i + 1];
+        });
+        return { handler: route.handler, params, requiresAuth: route.requiresAuth };
+      }
+    }
+    return null;
+  }
+}
+
+// Initialize router with RESTful routes
+function initializeRouter() {
+  const router = new RestfulRouter();
+
+  // =====================================================
+  // AUTHENTICATION & USER MANAGEMENT ROUTES
+  // =====================================================
+  router.addRoute('POST', '/api/auth/login', handleLogin, false);
+  router.addRoute('POST', '/api/auth/register', handleRegister, false);
+  router.addRoute('POST', '/api/auth/verify-email', handleVerifyEmail, false);
+  
+  // =====================================================
+  // STORE ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/stores', handleGetStores, false);
+  router.addRoute('POST', '/api/stores', handleCreateStore, true);
+  
+  // =====================================================
+  // EMPLOYEE/USER ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/employees', handleGetAllUsers, true);
+  router.addRoute('GET', '/api/employees/:employeeId', handleGetUserById, true);
+  router.addRoute('POST', '/api/employees', handleCreateEmployee, true);
+  router.addRoute('PUT', '/api/employees/:employeeId', handleUpdatePersonalInfo, true);
+  router.addRoute('GET', '/api/employees/:employeeId/history', handleGetUserHistoryById, true);
+  router.addRoute('GET', '/api/employees/:employeeId/permissions', handleGetPermissionsById, true);
+  router.addRoute('GET', '/api/employees/:employeeId/stats', handleGetPersonalStatsById, true);
+  router.addRoute('GET', '/api/employees/check/:employeeId', handleCheckIdById, false);
+  
+  // Store-specific employees
+  router.addRoute('GET', '/api/stores/:storeId/employees', handleGetEmployeesByStoreId, true);
+  
+  // =====================================================
+  // ATTENDANCE ROUTES
+  // =====================================================
+  router.addRoute('POST', '/api/attendance/check', handleCheckGPS, true);
+  router.addRoute('GET', '/api/attendance', handleGetAttendanceData, true);
+  router.addRoute('POST', '/api/attendance/process', handleProcessAttendance, true);
+  router.addRoute('GET', '/api/attendance/history', handleGetAttendanceHistory, true);
+  
+  // Attendance requests
+  router.addRoute('POST', '/api/attendance/requests', handleCreateAttendanceRequest, true);
+  router.addRoute('GET', '/api/attendance/requests', handleGetAttendanceRequests, true);
+  router.addRoute('POST', '/api/attendance/requests/:requestId/approve', handleApproveAttendanceRequestById, true);
+  router.addRoute('POST', '/api/attendance/requests/:requestId/reject', handleRejectAttendanceRequestById, true);
+  
+  // =====================================================
+  // SHIFT ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/shifts', handleGetShifts, true);
+  router.addRoute('GET', '/api/shifts/current', handleGetCurrentShiftForUser, true);
+  router.addRoute('GET', '/api/shifts/weekly', handleGetWeeklyShifts, true);
+  router.addRoute('GET', '/api/shifts/assignments', handleGetShiftAssignments, true);
+  router.addRoute('POST', '/api/shifts/assignments', handleSaveShiftAssignments, true);
+  router.addRoute('POST', '/api/shifts/assign', handleAssignShift, true);
+  
+  // Shift requests
+  router.addRoute('GET', '/api/shifts/requests', handleGetShiftRequests, true);
+  router.addRoute('POST', '/api/shifts/requests/:requestId/approve', handleApproveShiftRequestById, true);
+  router.addRoute('POST', '/api/shifts/requests/:requestId/reject', handleRejectShiftRequestById, true);
+  
+  // =====================================================
+  // TIMESHEET ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/timesheet', handleGetTimesheet, true);
+  
+  // =====================================================
+  // REGISTRATION & APPROVAL ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/registrations/pending', handleGetPendingRegistrations, true);
+  router.addRoute('POST', '/api/registrations/:employeeId/approve', handleApproveRegistrationById, true);
+  router.addRoute('POST', '/api/registrations/approve-with-history', handleApproveRegistrationWithHistory, true);
+  
+  // =====================================================
+  // REQUEST MANAGEMENT ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/requests/pending', handleGetPendingRequests, true);
+  router.addRoute('GET', '/api/requests/pending/count', handleGetPendingRequestsCount, true);
+  router.addRoute('POST', '/api/requests/:requestId/complete', handleCompleteRequestById, true);
+  
+  // =====================================================
+  // DASHBOARD & STATS ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/dashboard/stats', handleGetDashboardStats, true);
+  
+  // =====================================================
+  // LEGACY SUPPORT - Query parameter based (for backward compatibility)
+  // =====================================================
+  router.addRoute('GET', '/api/legacy', handleLegacyGet, false);
+  router.addRoute('POST', '/api/legacy', handleLegacyPost, false);
+
+  return router;
+}
+
+// =====================================================
+// WRAPPER HANDLERS FOR RESTFUL ROUTES
+// =====================================================
+
+async function handleGetUserById(url, params, db, origin, userId) {
+  url.searchParams.set('employeeId', params.employeeId);
+  return await handleGetUser(url, db, origin);
+}
+
+async function handleGetUserHistoryById(url, params, db, origin, userId) {
+  url.searchParams.set('employeeId', params.employeeId);
+  return await handleGetUserHistory(url, db, origin);
+}
+
+async function handleGetPermissionsById(url, params, db, origin, userId) {
+  url.searchParams.set('employeeId', params.employeeId);
+  return await handleGetPermissions(url, db, origin);
+}
+
+async function handleGetPersonalStatsById(url, params, db, origin, userId) {
+  url.searchParams.set('employeeId', params.employeeId);
+  return await handleGetPersonalStats(url, db, origin, userId);
+}
+
+async function handleCheckIdById(url, params, db, origin, userId) {
+  url.searchParams.set('employeeId', params.employeeId);
+  return await handleCheckId(url, db, origin);
+}
+
+async function handleGetEmployeesByStoreId(url, params, db, origin, userId) {
+  url.searchParams.set('storeId', params.storeId);
+  return await handleGetEmployeesByStore(url, db, origin);
+}
+
+async function handleApproveAttendanceRequestById(url, params, body, db, origin, token) {
+  const mergedBody = { ...body, requestId: params.requestId };
+  return await handleApproveAttendanceRequest(mergedBody, db, origin, token);
+}
+
+async function handleRejectAttendanceRequestById(url, params, body, db, origin, token) {
+  const mergedBody = { ...body, requestId: params.requestId };
+  return await handleRejectAttendanceRequest(mergedBody, db, origin, token);
+}
+
+async function handleApproveShiftRequestById(url, params, body, db, origin, token) {
+  const mergedBody = { ...body, requestId: params.requestId };
+  return await handleApproveShiftRequest(mergedBody, db, origin);
+}
+
+async function handleRejectShiftRequestById(url, params, body, db, origin, token) {
+  const mergedBody = { ...body, requestId: params.requestId };
+  return await handleRejectShiftRequest(mergedBody, db, origin);
+}
+
+async function handleApproveRegistrationById(url, params, body, db, origin, token) {
+  const mergedBody = { ...body, employeeId: params.employeeId };
+  return await handleApproveRegistration(mergedBody, db, origin);
+}
+
+async function handleCompleteRequestById(url, params, body, db, origin, token) {
+  const mergedBody = { ...body, requestId: params.requestId };
+  return await handleCompleteRequest(mergedBody, db, origin);
+}
+
+async function handleGetCurrentShiftForUser(url, params, db, origin, userId) {
+  return await handleGetCurrentShift(url, db, origin, userId);
+}
+
+// =====================================================
+// LEGACY SUPPORT HANDLERS (backward compatibility)
+// =====================================================
+
+async function handleLegacyGet(url, params, db, origin, userId) {
+  const action = url.searchParams.get("action");
+  if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400, origin);
+
+  switch (action) {
+    case "getStores": return await handleGetStores(db, origin);
+    case "getUsers": return await handleGetUsers(url, db, origin);
+    case "getUser": return await handleGetUser(url, db, origin);
+    case "getDashboardStats": return await handleGetDashboardStats(db, origin);
+    case "checkId": return await handleCheckId(url, db, origin);
+    case "getUserHistory": return await handleGetUserHistory(url, db, origin);
+    case "getCurrentShift": return await handleGetCurrentShift(url, db, origin, userId);
+    case "getWeeklyShifts": return await handleGetWeeklyShifts(url, db, origin);
+    case "getAttendanceData": return await handleGetAttendanceData(url, db, origin);
+    case "getPendingRequests": return await handleGetPendingRequests(db, origin);
+    case "getPermissions": return await handleGetPermissions(url, db, origin);
+    case "getPendingRegistrations": return await handleGetPendingRegistrations(url, db, origin);
+    case "getTimesheet": return await handleGetTimesheet(url, db, origin, userId);
+    case "getAttendanceHistory": return await handleGetAttendanceHistory(url, db, origin);
+    case "getShiftAssignments": return await handleGetShiftAssignments(url, db, origin);
+    case "getShifts": return await handleGetShifts(url, db, origin);
+    case "getPersonalStats": return await handleGetPersonalStats(url, db, origin, userId);
+    case "getEmployeesByStore": return await handleGetEmployeesByStore(url, db, origin);
+    case "getShiftRequests": return await handleGetShiftRequests(url, db, origin);
+    case "getAttendanceRequests": return await handleGetAttendanceRequests(url, db, origin);
+    case "getAllUsers": return await handleGetAllUsers(url, db, origin);
+    case "checkdk": return await handleCheckDk(url, db, origin);
+    case "getPendingRequestsCount": return await handleGetPendingRequestsCount(url, db, origin);
+    default: return jsonResponse({ message: "Action không hợp lệ!" }, 400, origin);
+  }
+}
+
+async function handleLegacyPost(url, params, body, db, origin, userId, token, env) {
+  const action = url.searchParams.get("action");
+  if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400, origin);
+
+  switch (action) {
+    case "login": return await handleLogin(body, db, origin);
+    case "register": return await handleRegister(body, db, origin, env);
+    case "checkGPS": return await handleCheckGPS(body, db, origin);
+    case "update": return await handleUpdate(body, db, origin);
+    case "assignShift": return await handleAssignShift(body, db, origin);
+    case "loginUser": return await loginUser(body, db, origin);
+    case "updateUser": return await updateUser(body, userId, db, origin);
+    case "updatePersonalInfo": return await handleUpdatePersonalInfo(body, db, origin);
+    case "updateUserWithHistory": return await handleUpdateUserWithHistory(body, db, origin);
+    case "approveRegistration": return await handleApproveRegistration(body, db, origin);
+    case "processAttendance": return await handleProcessAttendance(body, db, origin);
+    case "createAttendanceRequest": return await handleCreateAttendanceRequest(body, db, origin);
+    case "replyToComment": return await handleReplyToComment(body, db, origin);
+    case "saveShiftAssignments": return await handleSaveShiftAssignments(body, db, origin);
+    case "approveShiftRequest": return await handleApproveShiftRequest(body, db, origin);
+    case "rejectShiftRequest": return await handleRejectShiftRequest(body, db, origin);
+    case "approveAttendanceRequest": return await handleApproveAttendanceRequest(body, db, origin, token);
+    case "rejectAttendanceRequest": return await handleRejectAttendanceRequest(body, db, origin, token);
+    case "verifyEmail": return await handleVerifyEmail(body, db, origin, env);
+    case "approveRegistrationWithHistory": return await handleApproveRegistrationWithHistory(body, db, origin);
+    case "completeRequest": return await handleCompleteRequest(body, db, origin);
+    case "createStore": return await handleCreateStore(body, db, origin);
+    case "createEmployee": return await handleCreateEmployee(body, db, origin);
+    default: return jsonResponse({ message: "Action không hợp lệ!" }, 400, origin);
+  }
+}
+
+// =====================================================
+// MAIN EXPORT WITH RESTFUL ROUTING
+// =====================================================
+
 export default {
   async scheduled(event, env, ctx) {
     try {
@@ -2348,146 +2615,75 @@ export default {
 
     try {
       const url = new URL(request.url);
-      let action = url.searchParams.get("action");
+      const pathname = url.pathname;
+      
+      // Extract token from query or Authorization header
       let token = url.searchParams.get("token");
-
-      // Check token from Authorization header if not in query
       const authHeader = request.headers.get("Authorization");
       if (!token && authHeader && authHeader.startsWith("Bearer ")) {
         token = authHeader.split(" ")[1];
       }
 
-      // Support system removed in v2.3
+      // Initialize router
+      const router = initializeRouter();
+      
+      // Match route
+      const route = router.match(request.method, pathname);
+      
+      if (!route) {
+        return jsonResponse({ message: "Endpoint không tồn tại!", path: pathname }, 404);
+      }
 
-      if (!action) return jsonResponse({ message: "Thiếu action trong query parameters!" }, 400);
-
-      const protectedActions = [
-        "update", "getUser", "getUsers", 
-        "updateUser", "getPendingRegistrations",
-        "getPendingRequests", "getPermissions",
-        "getShiftAssignments", "assignShift", "getCurrentShift", "getWeeklyShifts",
-        "getAttendanceData", "checkGPS", "getTimesheet", "processAttendance",
-        "getAttendanceHistory", "createAttendanceRequest",
-        "getEmployeesByStore", "saveShiftAssignments", "getShiftRequests",
-        "approveShiftRequest", "rejectShiftRequest", "getAttendanceRequests",
-        "approveAttendanceRequest", "rejectAttendanceRequest"
-      ];
-
-      if (protectedActions.includes(action)) {
+      // Check authentication if required
+      if (route.requiresAuth) {
         const session = await checkSessionMiddleware(token, db, ALLOWED_ORIGIN);
         if (session instanceof Response) return session;
         request.userId = session.employeeId;
       }
 
-      if (request.method === "POST") {
+      // Parse body for POST/PUT/PATCH requests
+      let body = {};
+      if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
         const contentType = request.headers.get("Content-Type") || "";
-        if (!contentType.includes("application/json")) {
-          return jsonResponse({ message: "Invalid Content-Type" }, 400);
-        }
-
-        const body = await request.json();
-        switch (action) {
-          case "login":
-            return await handleLogin(body, db, ALLOWED_ORIGIN);
-          case "register":
-            return await handleRegister(body, db, ALLOWED_ORIGIN, env);
-          case "checkGPS":
-            return await handleCheckGPS(body, db, ALLOWED_ORIGIN);
-          case "update":
-            return await handleUpdate(body, db, ALLOWED_ORIGIN);
-          case "assignShift":
-            return await handleAssignShift(body, db, ALLOWED_ORIGIN);
-          case "loginUser":
-            return await loginUser(body, db, ALLOWED_ORIGIN);
-          case "updateUser":
-            return await updateUser(body, request.userId, db, ALLOWED_ORIGIN);
-          case "updatePersonalInfo":
-            return await handleUpdatePersonalInfo(body, db, ALLOWED_ORIGIN);
-          case "updateUserWithHistory":
-            return await handleUpdateUserWithHistory(body, db, ALLOWED_ORIGIN);
-          case "approveRegistration":
-            return await handleApproveRegistration(body, db, ALLOWED_ORIGIN);
-          case "processAttendance":
-            return await handleProcessAttendance(body, db, ALLOWED_ORIGIN);
-          case "createAttendanceRequest":
-            return await handleCreateAttendanceRequest(body, db, ALLOWED_ORIGIN);
-          case "replyToComment":
-            return await handleReplyToComment(body, db, ALLOWED_ORIGIN);
-          case "saveShiftAssignments":
-            return await handleSaveShiftAssignments(body, db, ALLOWED_ORIGIN);
-          case "approveShiftRequest":
-            return await handleApproveShiftRequest(body, db, ALLOWED_ORIGIN);
-          case "rejectShiftRequest":
-            return await handleRejectShiftRequest(body, db, ALLOWED_ORIGIN);
-          case "approveAttendanceRequest":
-            return await handleApproveAttendanceRequest(body, db, ALLOWED_ORIGIN, token);
-          case "rejectAttendanceRequest":
-            return await handleRejectAttendanceRequest(body, db, ALLOWED_ORIGIN, token);
-          case "verifyEmail":
-            return await handleVerifyEmail(body, db, ALLOWED_ORIGIN, env);
-          case "approveRegistrationWithHistory":
-            return await handleApproveRegistrationWithHistory(body, db, ALLOWED_ORIGIN);
-          case "completeRequest":
-            return await handleCompleteRequest(body, db, ALLOWED_ORIGIN);
-          case "createStore":
-            return await handleCreateStore(body, db, ALLOWED_ORIGIN);
-          case "createEmployee":
-            return await handleCreateEmployee(body, db, ALLOWED_ORIGIN);
-          default:
-            return jsonResponse({ message: "Action không hợp lệ!" }, 400);
+        if (contentType.includes("application/json")) {
+          body = await request.json();
         }
       }
 
-      if (request.method === "GET") {
-        switch (action) {
-          case "getStores":
-            return await handleGetStores(db, ALLOWED_ORIGIN);
-          case "getUsers":
-            return await handleGetUsers(url, db, ALLOWED_ORIGIN);
-          case "getUser":
-            return await handleGetUser(url, db, ALLOWED_ORIGIN);
-          case "getDashboardStats":
-            return await handleGetDashboardStats(db, ALLOWED_ORIGIN);
-          case "checkId":
-            return await handleCheckId(url, db, ALLOWED_ORIGIN);
-          case "getUserHistory":
-            return await handleGetUserHistory(url, db, ALLOWED_ORIGIN);
-          case "getCurrentShift":
-            return await handleGetCurrentShift(url, db, ALLOWED_ORIGIN, request.userId);
-          case "getWeeklyShifts":
-            return await handleGetWeeklyShifts(url, db, ALLOWED_ORIGIN);
-          case "getAttendanceData":
-            return await handleGetAttendanceData(url, db, ALLOWED_ORIGIN);
-          case "getPendingRequests":
-            return await handleGetPendingRequests(db, ALLOWED_ORIGIN);
-          case "getPermissions":
-            return await handleGetPermissions(url, db, ALLOWED_ORIGIN);
-          case "getPendingRegistrations":
-            return await handleGetPendingRegistrations(url, db, ALLOWED_ORIGIN);
-          case "getTimesheet":
-            return await handleGetTimesheet(url, db, ALLOWED_ORIGIN, request.userId);
-          case "getAttendanceHistory":
-            return await handleGetAttendanceHistory(url, db, ALLOWED_ORIGIN);
-          case "getShiftAssignments":
-            return await handleGetShiftAssignments(url, db, ALLOWED_ORIGIN);
-          case "getShifts":
-            return await handleGetShifts(url, db, ALLOWED_ORIGIN);
-          case "getPersonalStats":
-            return await handleGetPersonalStats(url, db, ALLOWED_ORIGIN, request.userId);
-          case "getEmployeesByStore":
-            return await handleGetEmployeesByStore(url, db, ALLOWED_ORIGIN);
-          case "getShiftRequests":
-            return await handleGetShiftRequests(url, db, ALLOWED_ORIGIN);
-          case "getAttendanceRequests":
-            return await handleGetAttendanceRequests(url, db, ALLOWED_ORIGIN);
-          case "getAllUsers":
-            return await handleGetAllUsers(url, db, ALLOWED_ORIGIN);
-          case "checkdk":
-            return await handleCheckDk(url, db, ALLOWED_ORIGIN);
-          case "getPendingRequestsCount":
-            return await handleGetPendingRequestsCount(url, db, ALLOWED_ORIGIN);
-          default:
-            return jsonResponse({ message: "Action không hợp lệ!" }, 400);
+      // Execute handler based on method and path
+      if (request.method === 'GET') {
+        return await route.handler(url, route.params, db, ALLOWED_ORIGIN, request.userId);
+      } else if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
+        // Special handling for different POST routes
+        if (pathname === '/api/legacy') {
+          return await route.handler(url, route.params, body, db, ALLOWED_ORIGIN, request.userId, token, env);
+        } else if (pathname === '/api/auth/register') {
+          return await route.handler(body, db, ALLOWED_ORIGIN, env);
+        } else if (pathname === '/api/auth/login') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/auth/verify-email') {
+          return await route.handler(body, db, ALLOWED_ORIGIN, env);
+        } else if (pathname === '/api/stores') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/employees' && request.method === 'POST') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname.match(/^\/api\/employees\/[^\/]+$/)) {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/attendance/check') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/attendance/process') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/attendance/requests' && request.method === 'POST') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/shifts/assignments' && request.method === 'POST') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname === '/api/shifts/assign') {
+          return await route.handler(body, db, ALLOWED_ORIGIN);
+        } else if (pathname.includes('/approve') || pathname.includes('/reject') || pathname.includes('/complete')) {
+          return await route.handler(url, route.params, body, db, ALLOWED_ORIGIN, token);
+        } else {
+          // Default POST handler
+          return await route.handler(body, db, ALLOWED_ORIGIN);
         }
       }
 
