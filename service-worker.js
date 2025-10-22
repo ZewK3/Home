@@ -13,16 +13,15 @@ const STATIC_ASSETS = [
   '/index.html',
   '/pages/dashboard.html',
   '/pages/admin.html',
-  '/assets/css/styles.css',
+  'assets/css/reg&log.css',
+  'assets/css/mobile-dashboard.css',
   '/assets/js/config.js',
   '/assets/js/api-client.js',
   '/assets/js/state-management.js',
-  '/assets/js/auth-manager.js',
   '/assets/js/dashboard-api.js',
   '/assets/js/script.js',
   '/assets/js/secure-storage.js',
   '/assets/js/secure-storage-wrapper.js',
-  '/assets/js/utils.js'
 ];
 
 // API endpoints to cache
