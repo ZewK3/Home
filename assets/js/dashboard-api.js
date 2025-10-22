@@ -252,14 +252,12 @@ const DashboardAPI = {
 
     async rejectRegistration(employeeId, reason) {
         try {
-            // DATABASE v2.2: Updates approval_status to 'REJECTED' in employees table
-            const response = await utils.fetchAPI('?action=approveRegistration', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    status: 'REJECTED', // Updated to match schema
-                    rejected_reason: reason
-                })
+            // DATABASE v2.3: Updates approval_status to 'REJECTED' in employees table
+            const response = await this.getClient().approveRegistrationWithHistory({
+                employeeId,
+                approved: false,
+                reason: reason,
+                actionBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
@@ -273,12 +271,8 @@ const DashboardAPI = {
      */
     async updateEmployeePermissions(employeeId, position) {
         try {
-            const response = await utils.fetchAPI('?action=updatePermissions', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    position
-                })
+            const response = await this.getClient().updateEmployee(employeeId, {
+                position: position
             });
             return response;
         } catch (error) {
@@ -292,7 +286,7 @@ const DashboardAPI = {
      */
     async getStores() {
         try {
-            const response = await utils.fetchAPI('?action=getStores');
+            const response = await this.getClient().getStores();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching stores:', error);
