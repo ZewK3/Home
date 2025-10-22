@@ -741,7 +741,6 @@ async function handleRegister(body, db, origin, env) {
       password, 
       fullName, // Client sends fullName
       name, // Direct name field
-      department, 
       position, 
       storeName, // Client sends storeName
       storeId, // Direct storeId field
@@ -814,11 +813,11 @@ async function handleRegister(body, db, origin, env) {
     await db
       .prepare(`
         INSERT INTO pending_registrations 
-        (employeeId, email, password, name, department, position, storeId, phone,
+        (employeeId, email, password, name, position, storeId, phone,
          verification_code, status, submitted_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
-      .bind(finalEmployeeId, email, hashedPassword, userName, department || 'General', 
+      .bind(finalEmployeeId, email, hashedPassword, userName, 
             position || 'NV', userStoreId, phone || null, verificationCode, new Date().toISOString())
       .run();
 
@@ -1320,13 +1319,8 @@ async function handleGetPendingRequests(db, origin) {
     const requests = await db
       .prepare(`
         SELECT 'registration' as type, id, employeeId, name, email, 
-               department, position, created_at
+               position, created_at
         FROM pending_registrations 
-        WHERE status = 'pending'
-        UNION ALL
-        SELECT 'task' as type, id, title as name, description as email,
-               category as department, status as position, created_at
-        FROM tasks 
         WHERE status = 'pending'
         ORDER BY created_at DESC
       `)
@@ -1404,7 +1398,7 @@ async function handleGetPendingRegistrations(url, db, origin) {
 
     const registrations = await db
       .prepare(`
-        SELECT id, employeeId, email, name, department, position, 
+        SELECT id, employeeId, email, name, position, 
                storeId, status, created_at
         FROM pending_registrations 
         WHERE status = 'pending'
@@ -1459,7 +1453,7 @@ async function updateUser(body, userId, db, origin) {
 
 async function handleUpdatePersonalInfo(body, db, origin) {
   try {
-    const { employeeId, name, phone, position, department, email } = body;
+    const { employeeId, name, phone, position, email } = body;
     
     if (!employeeId) {
       return jsonResponse({ message: "Employee ID is required" }, 400, origin);
@@ -1467,12 +1461,12 @@ async function handleUpdatePersonalInfo(body, db, origin) {
 
     const stmt = await db.prepare(`
       UPDATE employees 
-      SET name = ?, phone = ?, position = ?, department_id = ?, email = ?, updated_at = ?
+      SET fullName = ?, phone = ?, position = ?, email = ?, updated_at = ?
       WHERE employeeId = ?
     `);
     
     const currentTime = TimezoneUtils.toHanoiISOString();
-    const result = await stmt.bind(name, phone, position, department, email, currentTime, employeeId).run();
+    const result = await stmt.bind(name, phone, position, email, currentTime, employeeId).run();
     
     if (result.changes === 0) {
       return jsonResponse({ message: "Employee not found" }, 404, origin);
@@ -2017,7 +2011,7 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
     }
 
     // Get basic employee info
-    const employeeStmt = await db.prepare("SELECT employeeId, name, email, department_id, position, storeId, employment_status, is_active, hire_date, phone FROM employees WHERE employeeId = ?");
+    const employeeStmt = await db.prepare("SELECT employeeId, fullName, email, position, storeId, is_active, phone FROM employees WHERE employeeId = ?");
     const employee = await employeeStmt.bind(employeeId).first();
     
     if (!employee) {
@@ -2043,9 +2037,9 @@ async function handleGetPersonalStats(url, db, origin, authenticatedUserId = nul
 
       return jsonResponse({
         employeeId,
-        name: employee.name,
+        fullName: employee.fullName,
         position: employee.position,
-        department_id: employee.department_id,
+        storeId: employee.storeId,
         attendance: {
           totalDays: attendanceStats.total_days || 0,
           presentDays: attendanceStats.present_days || 0,
@@ -2074,11 +2068,11 @@ async function handleGetEmployeesByStore(url, db, origin) {
 
     const stmt = await db.prepare(`
       SELECT 
-        employeeId, name, email, phone, position, department_id, 
-        employment_status, is_active, hire_date, last_login_at
+        employeeId, fullName, email, phone, position, 
+        is_active, created_at, last_login_at
       FROM employees 
-      WHERE storeId = ? AND employment_status != 'terminated'
-      ORDER BY name ASC
+      WHERE storeId = ? AND is_active = 1
+      ORDER BY fullName ASC
     `);
     
     const employees = await stmt.bind(storeId).all();
@@ -2116,8 +2110,7 @@ async function handleGetShiftRequests(url, db, origin) {
     const stmt = await db.prepare(`
       SELECT 
         sr.*,
-        e.name as employee_name,
-        e.department_id,
+        e.fullName as employee_name,
         e.position
       FROM employee_requests sr
       LEFT JOIN employees e ON sr.employeeId = e.employeeId
@@ -2164,8 +2157,7 @@ async function handleGetAttendanceRequests(url, db, origin) {
     const stmt = await db.prepare(`
       SELECT 
         ar.*,
-        e.name as employee_name,
-        e.department_id,
+        e.fullName as employee_name,
         e.position
       FROM employee_requests ar
       LEFT JOIN employees e ON ar.employeeId = e.employeeId
@@ -2193,15 +2185,15 @@ async function handleGetAllUsers(url, db, origin) {
     const urlParams = new URLSearchParams(url.search);
     const includeInactive = urlParams.get("includeInactive") === "true";
     
-    let whereClause = includeInactive ? "WHERE 1=1" : "WHERE is_active = 1 AND employment_status = 'active'";
+    let whereClause = includeInactive ? "WHERE 1=1" : "WHERE is_active = 1";
 
     const stmt = await db.prepare(`
       SELECT 
-        employeeId, name, email, phone, position, department_id, storeId,
-        employment_status, is_active, hire_date, last_login_at
+        employeeId, fullName, email, phone, position, storeId,
+        is_active, created_at, last_login_at
       FROM employees 
       ${whereClause}
-      ORDER BY name ASC
+      ORDER BY fullName ASC
     `);
     
     const users = await stmt.all();
