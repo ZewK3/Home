@@ -155,8 +155,9 @@ class AuthManager {
         const endpoint = `getStores_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh stores data');
-                const stores = await utils.fetchAPI(`?action=getStores&token=${this.token}`);
+                console.log('Fetching fresh stores data via RESTful API');
+                const response = await apiClient.getStores();
+                const stores = response.data || response;
                 this.cachedStores = stores;
                 this.cacheTimestamp.stores = Date.now();
                 return stores;
@@ -196,8 +197,8 @@ class AuthManager {
         const endpoint = `getUser_${employeeId}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh user data from API');
-                const response = await utils.fetchAPI(`?action=getUser&employeeId=${employeeId}&token=${this.token}`);
+                console.log('Fetching fresh user data via RESTful API');
+                const response = await apiClient.getEmployee(employeeId);
                 
                 // Extract user data from API response structure
                 const userData = response.data || response;
@@ -230,8 +231,9 @@ class AuthManager {
         const endpoint = `getDashboardStats_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh dashboard stats');
-                const stats = await utils.fetchAPI(`?action=getDashboardStats&token=${this.token}`);
+                console.log('Fetching fresh dashboard stats via RESTful API');
+                const response = await apiClient.getDashboardStats();
+                const stats = response.data || response;
                 this.cachedDashboardStats = stats;
                 this.cacheTimestamp.dashboardStats = Date.now();
                 return stats;
@@ -257,8 +259,9 @@ class AuthManager {
         const endpoint = `getTimesheet_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh timesheet data');
-                const timesheet = await utils.fetchAPI(`?action=getTimesheet&token=${this.token}`);
+                console.log('Fetching fresh timesheet data via RESTful API');
+                const response = await apiClient.getTimesheet();
+                const timesheet = response.data || response;
                 this.cachedTimesheet = timesheet;
                 this.cacheTimestamp.timesheet = Date.now();
                 return timesheet;
@@ -279,8 +282,9 @@ class AuthManager {
         const endpoint = `getAttendanceRequests_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh attendance requests data');
-                const attendanceRequests = await utils.fetchAPI(`?action=getAttendanceRequests&token=${this.token}`);
+                console.log('Fetching fresh attendance requests data via RESTful API');
+                const response = await apiClient.getAttendanceRequests();
+                const attendanceRequests = response.data || response;
                 this.cachedAttendanceRequests = attendanceRequests;
                 this.cacheTimestamp.attendanceRequests = Date.now();
                 return attendanceRequests;
@@ -301,8 +305,11 @@ class AuthManager {
         const endpoint = `getWorkTasks_${employeeId}_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh work tasks data');
-                const workTasks = await utils.fetchAPI(`?action=getWorkTasks&employeeId=${employeeId}&token=${this.token}&page=1&limit=15`);
+                console.log('Fetching fresh work tasks data via RESTful API');
+                // Note: Work tasks endpoint may need to be implemented in apiClient
+                // For now, using legacy fallback
+                const response = await apiClient.legacyRequest('getWorkTasks', 'GET', null, { employeeId, page: 1, limit: 15 });
+                const workTasks = response.data || response;
                 
                 // Map Enhanced Database Schema v3.0 fields for each task
                 const mappedTasks = Array.isArray(workTasks) ? 
@@ -328,8 +335,9 @@ class AuthManager {
         const endpoint = `getUsers_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh users data');
-                const users = await utils.fetchAPI(`?action=getUsers&token=${this.token}`);
+                console.log('Fetching fresh users data via RESTful API');
+                const response = await apiClient.getAllEmployees();
+                const users = response.data || response;
                 this.cachedUsers = users;
                 this.cacheTimestamp.users = Date.now();
                 return users;
@@ -350,8 +358,9 @@ class AuthManager {
         const endpoint = `getPersonalStats_${employeeId}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh personal stats data');
-                const personalStats = await utils.fetchAPI(`?action=getPersonalStats&employeeId=${employeeId}&token=${this.token}`);
+                console.log('Fetching fresh personal stats data via RESTful API');
+                const response = await apiClient.getEmployeeStats(employeeId);
+                const personalStats = response.data || response;
                 
                 // Enhanced Database Schema v3.0 personal stats mapping
                 const mappedStats = {
@@ -388,8 +397,9 @@ class AuthManager {
         const endpoint = `getPendingRegistrations_${this.token}`;
         return await this.safeAPICall(endpoint, async () => {
             try {
-                console.log('Fetching fresh pending registrations data');
-                const pendingRegistrations = await utils.fetchAPI(`?action=getPendingRegistrations&token=${this.token}`);
+                console.log('Fetching fresh pending registrations data via RESTful API');
+                const response = await apiClient.getPendingRegistrations();
+                const pendingRegistrations = response.data || response;
                 this.cachedPendingRegistrations = pendingRegistrations;
                 this.cacheTimestamp.pendingRegistrations = Date.now();
                 return pendingRegistrations;
@@ -719,15 +729,12 @@ async function handleLogin(e) {
     btnLoader.style.display = 'block';
     
     try {
-        console.log('Attempting login with:', employeeId);
+        console.log('Attempting login with:', employeeId, 'via RESTful API');
         
-        const response = await utils.fetchAPI('?action=login', {
-            method: 'POST',
-            body: JSON.stringify({
-                employeeId: employeeId,
-                password: password,
-                rememberMe: rememberMe
-            })
+        const response = await apiClient.login({
+            employeeId: employeeId,
+            password: password,
+            rememberMe: rememberMe
         });
         
         console.log('Login response:', response);
@@ -798,15 +805,12 @@ async function handleRegister(e) {
     btnLoader.style.display = 'block';
     
     try {
-        const response = await utils.fetchAPI('?action=register', {
-            method: 'POST',
-            body: JSON.stringify({
-                fullName,
-                phone,
-                email,
-                storeName,
-                password
-            })
+        const response = await apiClient.register({
+            fullName,
+            phone,
+            email,
+            storeName,
+            password
         });
         
         if (response.success) {
@@ -846,10 +850,8 @@ async function handleForgotPassword(e) {
     btnLoader.style.display = 'block';
     
     try {
-        const response = await utils.fetchAPI('?action=forgotPassword', {
-            method: 'POST',
-            body: JSON.stringify({ email })
-        });
+        // Note: forgotPassword endpoint may need to be added to apiClient
+        const response = await apiClient.legacyRequest('forgotPassword', 'POST', { email });
         
         if (response.success) {
             showNotification('Mã xác thực đã được gửi đến email của bạn', 'success');
@@ -899,12 +901,10 @@ async function handleResetPassword(e) {
     btnLoader.style.display = 'block';
     
     try {
-        const response = await utils.fetchAPI('?action=resetPassword', {
-            method: 'POST',
-            body: JSON.stringify({
-                resetCode,
-                newPassword
-            })
+        // Note: resetPassword endpoint may need to be added to apiClient
+        const response = await apiClient.legacyRequest('resetPassword', 'POST', {
+            resetCode,
+            newPassword
         });
         
         if (response.success) {
@@ -928,7 +928,8 @@ async function handleResetPassword(e) {
 
 async function loadStores() {
     try {
-        const stores = await utils.fetchAPI('?action=getStores');
+        const response = await apiClient.getStores();
+        const stores = response.data || response;
         const storeSelect = document.getElementById('storeName');
         
         if (stores && Array.isArray(stores)) {
