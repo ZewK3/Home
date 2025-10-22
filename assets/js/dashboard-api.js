@@ -299,7 +299,7 @@ const DashboardAPI = {
      */
     async getNotifications() {
         try {
-            const response = await utils.fetchAPI('?action=getNotifications');
+            const response = await this.getClient().legacyRequest('?action=getNotifications'.split('=')[1], 'GET');
             return response.success ? response.data : [];
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -309,7 +309,7 @@ const DashboardAPI = {
 
     async getNotificationCount() {
         try {
-            const response = await utils.fetchAPI('?action=getNotificationCount');
+            const response = await this.getClient().legacyRequest('?action=getNotificationCount'.split('=')[1], 'GET');
             return response.success ? response.count : 0;
         } catch (error) {
             console.error('Error fetching notification count:', error);
@@ -319,10 +319,7 @@ const DashboardAPI = {
 
     async markNotificationRead(notificationId) {
         try {
-            const response = await utils.fetchAPI('?action=markNotificationRead', {
-                method: 'POST',
-                body: JSON.stringify({ notificationId })
-            });
+            const response = await this.getClient().legacyRequest('?action=markNotificationRead'.split('=')[1], 'POST', { notificationId });
             return response;
         } catch (error) {
             console.error('Error marking notification as read:', error);
@@ -332,9 +329,7 @@ const DashboardAPI = {
 
     async markAllNotificationsRead() {
         try {
-            const response = await utils.fetchAPI('?action=markAllNotificationsRead', {
-                method: 'POST'
-            });
+            const response = await this.getClient().legacyRequest('markAllNotificationsRead', 'POST');
             return response;
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
@@ -347,7 +342,7 @@ const DashboardAPI = {
      */
     async getCloudflareStats() {
         try {
-            const response = await utils.fetchAPI('?action=getCloudflareStats');
+            const response = await this.getClient().legacyRequest('?action=getCloudflareStats'.split('=')[1], 'GET');
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching Cloudflare stats:', error);
@@ -357,7 +352,7 @@ const DashboardAPI = {
 
     async getSystemMetrics() {
         try {
-            const response = await utils.fetchAPI('?action=getSystemMetrics');
+            const response = await this.getClient().legacyRequest('?action=getSystemMetrics'.split('=')[1], 'GET');
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching system metrics:', error);
@@ -367,7 +362,7 @@ const DashboardAPI = {
 
     async getEmployeeCount() {
         try {
-            const response = await utils.fetchAPI('?action=getEmployeeCount');
+            const response = await this.getClient().legacyRequest('?action=getEmployeeCount'.split('=')[1], 'GET');
             return response.success ? response.count : 0;
         } catch (error) {
             console.error('Error fetching employee count:', error);
@@ -380,7 +375,7 @@ const DashboardAPI = {
      */
     async getAvailableShifts(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getAvailableShifts&weekStart=${weekStart}`);
+            const response = await this.getClient().legacyRequest('getAvailableShifts', 'GET', { weekStart=weekStart });
             return response.success ? response.data : [];
         } catch (error) {
             console.error('Error fetching available shifts:', error);
@@ -390,10 +385,7 @@ const DashboardAPI = {
 
     async registerForShift(shiftId) {
         try {
-            const response = await utils.fetchAPI('?action=registerForShift', {
-                method: 'POST',
-                body: JSON.stringify({ shiftId })
-            });
+            const response = await this.getClient().legacyRequest('?action=registerForShift'.split('=')[1], 'POST', { shiftId });
             return response;
         } catch (error) {
             console.error('Error registering for shift:', error);
@@ -403,10 +395,7 @@ const DashboardAPI = {
 
     async assignShift(employeeId, shiftId, date) {
         try {
-            const response = await utils.fetchAPI('?action=assignShift', {
-                method: 'POST',
-                body: JSON.stringify({ employeeId, shiftId, date })
-            });
+            const response = await this.getClient().legacyRequest('?action=assignShift'.split('=')[1], 'POST', { employeeId, shiftId, date });
             return response;
         } catch (error) {
             console.error('Error assigning shift:', error);
@@ -419,7 +408,7 @@ const DashboardAPI = {
      */
     async getNotifications() {
         try {
-            const response = await utils.fetchAPI('?action=getNotifications');
+            const response = await this.getClient().legacyRequest('?action=getNotifications'.split('=')[1], 'GET');
             return response.notifications || [];
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -429,7 +418,7 @@ const DashboardAPI = {
 
     async getNotificationCount() {
         try {
-            const response = await utils.fetchAPI('?action=getNotificationCount');
+            const response = await this.getClient().legacyRequest('?action=getNotificationCount'.split('=')[1], 'GET');
             return response.count || 0;
         } catch (error) {
             console.error('Error fetching notification count:', error);
@@ -439,10 +428,7 @@ const DashboardAPI = {
 
     async markNotificationRead(notificationId) {
         try {
-            const response = await utils.fetchAPI('?action=markNotificationRead', {
-                method: 'POST',
-                body: JSON.stringify({ notificationId })
-            });
+            const response = await this.getClient().legacyRequest('?action=markNotificationRead'.split('=')[1], 'POST', { notificationId });
             return response;
         } catch (error) {
             console.error('Error marking notification as read:', error);
@@ -452,9 +438,7 @@ const DashboardAPI = {
 
     async markAllNotificationsRead() {
         try {
-            const response = await utils.fetchAPI('?action=markAllNotificationsRead', {
-                method: 'POST'
-            });
+            const response = await this.getClient().legacyRequest('markAllNotificationsRead', 'POST');
             return response;
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
@@ -467,7 +451,7 @@ const DashboardAPI = {
      */
     async getAvailableShifts(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getAvailableShifts&weekStart=${encodeURIComponent(weekStart)}`);
+            const response = await this.getClient().legacyRequest('getAvailableShifts', 'GET', { weekStart=encodeURIComponent(weekStart) });
             return response.shifts || [];
         } catch (error) {
             console.error('Error fetching available shifts:', error);
@@ -477,10 +461,7 @@ const DashboardAPI = {
 
     async registerForShift(shiftId) {
         try {
-            const response = await utils.fetchAPI('?action=registerForShift', {
-                method: 'POST',
-                body: JSON.stringify({ shiftId })
-            });
+            const response = await this.getClient().legacyRequest('?action=registerForShift'.split('=')[1], 'POST', { shiftId });
             return response;
         } catch (error) {
             console.error('Error registering for shift:', error);
@@ -490,10 +471,7 @@ const DashboardAPI = {
 
     async assignShift(employeeId, shiftId, date, shiftType) {
         try {
-            const response = await utils.fetchAPI('?action=assignShift', {
-                method: 'POST',
-                body: JSON.stringify({ employeeId, shiftId, date, shiftType })
-            });
+            const response = await this.getClient().legacyRequest('?action=assignShift'.split('=')[1], 'POST', { employeeId, shiftId, date, shiftType });
             return response;
         } catch (error) {
             console.error('Error assigning shift:', error);
@@ -503,7 +481,7 @@ const DashboardAPI = {
 
     async getWeekSchedule(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getWeekSchedule&weekStart=${encodeURIComponent(weekStart)}`);
+            const response = await this.getClient().legacyRequest('getWeekSchedule', 'GET', { weekStart=encodeURIComponent(weekStart) });
             return response.schedule || [];
         } catch (error) {
             console.error('Error fetching week schedule:', error);
@@ -513,7 +491,7 @@ const DashboardAPI = {
 
     async getTeamSchedule(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getTeamSchedule&weekStart=${encodeURIComponent(weekStart)}`);
+            const response = await this.getClient().legacyRequest('getTeamSchedule', 'GET', { weekStart=encodeURIComponent(weekStart) });
             return response.teamSchedule || [];
         } catch (error) {
             console.error('Error fetching team schedule:', error);
