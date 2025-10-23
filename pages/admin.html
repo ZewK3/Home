@@ -204,14 +204,26 @@
 
     <!-- Scripts -->
     <script src="../assets/js/config.js"></script>
-    <script src="../assets/js/utils.js"></script>
     <script src="../assets/js/secure-storage.js"></script>
+    <script src="../assets/js/api-client.js"></script>
+    
+    <!-- Phase 3: Advanced Optimizations -->
+    <script src="../assets/js/state-management.js"></script>
+    <script src="../assets/js/lazy-loading.js"></script>
+    
     <script src="../assets/js/theme-manager.js"></script>
-    <script src="../assets/js/dashboard-api.js"></script>
     <script src="../assets/js/dashboard-content.js"></script>
     <script src="../assets/js/menu-manager.js"></script>
 
     <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                swManager.register('/service-worker.js')
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+        
         // Admin Dashboard Logic
         document.addEventListener('DOMContentLoaded', async () => {
             // Check authentication and admin role

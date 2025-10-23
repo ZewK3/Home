@@ -1,24 +1,32 @@
 /**
- * Dashboard API Integration
- * Handles all API calls for dashboard functionality
+ * Dashboard API Integration - RESTful Version
+ * Handles all API calls for dashboard functionality using RESTful endpoints
  * 
- * DATABASE v2.2 SIMPLIFIED:
+ * DATABASE v2.3 SIMPLIFIED:
  * - Unified employeeId TEXT throughout (no dual-column approach)
  * - Simplified attendance table (checkDate, checkTime, checkLocation)
- * - GPS validation on frontend only
+ * - GPS validation on backend with Haversine formula
  * - All requests go to employee_requests table (unified)
  * - Employee approval_status in employees table (no queue table)
  * - Task management removed completely
  * - Shift-based scheduling with predefined shifts
+ * - RESTful API architecture
  */
 
 const DashboardAPI = {
+    /**
+     * Get API client instance
+     */
+    getClient() {
+        return window.apiClient || new APIClient();
+    },
+
     /**
      * Dashboard Statistics
      */
     async getEmployeeCount() {
         try {
-            const response = await utils.fetchAPI('?action=getEmployeeCount');
+            const response = await this.getClient().getDashboardStats();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching employee count:', error);
@@ -28,7 +36,7 @@ const DashboardAPI = {
 
     async getTodayShift() {
         try {
-            const response = await utils.fetchAPI('?action=getTodayShift');
+            const response = await this.getClient().getCurrentShift();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching today shift:', error);
@@ -36,16 +44,16 @@ const DashboardAPI = {
         }
     },
 
-
-
-
-
     /**
      * Attendance Management
      */
     async getAttendance(employeeId, startDate, endDate) {
         try {
-            const response = await utils.fetchAPI(`?action=getAttendance&employeeId=${employeeId}&startDate=${startDate}&endDate=${endDate}`);
+            const response = await this.getClient().getAttendance({
+                employeeId,
+                startDate,
+                endDate
+            });
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching attendance:', error);
@@ -55,21 +63,18 @@ const DashboardAPI = {
 
     async checkGPS(employeeId, latitude, longitude) {
         try {
-            // DATABASE v2.2: GPS validation on backend with full date/time from frontend
+            // DATABASE v2.3: GPS validation on backend with full date/time from frontend
             // Frontend sends: employeeId, checkDate, checkTime, latitude, longitude
             const now = new Date();
             const checkDate = now.toLocaleDateString('en-GB'); // DD/MM/YYYY
             const checkTime = now.toLocaleTimeString('en-GB', { hour12: false }); // HH:MM:SS
             
-            const response = await utils.fetchAPI('?action=checkGPS', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    checkDate,
-                    checkTime,
-                    latitude,
-                    longitude
-                })
+            const response = await this.getClient().checkGPS({
+                employeeId,
+                checkDate,
+                checkTime,
+                latitude,
+                longitude
             });
             return response;
         } catch (error) {
@@ -83,7 +88,11 @@ const DashboardAPI = {
      */
     async getShiftAssignments(employeeId, month, year) {
         try {
-            const response = await utils.fetchAPI(`?action=getShiftAssignments&employeeId=${employeeId}&month=${month}&year=${year}`);
+            const response = await this.getClient().getShiftAssignments({
+                employeeId,
+                month,
+                year
+            });
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching shift assignments:', error);
@@ -93,7 +102,11 @@ const DashboardAPI = {
 
     async getTimesheet(employeeId, month, year) {
         try {
-            const response = await utils.fetchAPI(`?action=getTimesheet&employeeId=${employeeId}&month=${month}&year=${year}`);
+            const response = await this.getClient().getTimesheet({
+                employeeId,
+                month,
+                year
+            });
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching timesheet:', error);
@@ -101,24 +114,17 @@ const DashboardAPI = {
         }
     },
 
-
-
-
-
     /**
-     * Request Management - DATABASE v2.2 SIMPLIFIED
+     * Request Management - DATABASE v2.3 SIMPLIFIED
      * All requests now go to unified employee_requests table
      * Request types: LEAVE, OVERTIME, FORGOT_CHECKIN, FORGOT_CHECKOUT, SHIFT_CHANGE, OTHER
      */
     async submitAttendanceRequest(requestData) {
         try {
-            // DATABASE v2.2: Submits to employee_requests table with requestType field
-            const response = await utils.fetchAPI('?action=submitEmployeeRequest', {
-                method: 'POST',
-                body: JSON.stringify({
-                    ...requestData,
-                    requestType: requestData.requestType || 'LEAVE' // Default to LEAVE if not specified
-                })
+            // DATABASE v2.3: Submits to employee_requests table with requestType field
+            const response = await this.getClient().createAttendanceRequest({
+                ...requestData,
+                requestType: requestData.requestType || 'LEAVE' // Default to LEAVE if not specified
             });
             return response;
         } catch (error) {
@@ -129,8 +135,8 @@ const DashboardAPI = {
 
     async getAttendanceRequests(employeeId) {
         try {
-            // DATABASE v2.2: Queries employee_requests table filtering by requestType
-            const response = await utils.fetchAPI(`?action=getEmployeeRequests&employeeId=${employeeId}`);
+            // DATABASE v2.3: Queries employee_requests table filtering by requestType
+            const response = await this.getClient().getAttendanceRequests({ employeeId });
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching attendance requests:', error);
@@ -140,8 +146,8 @@ const DashboardAPI = {
 
     async getPendingRequests() {
         try {
-            // DATABASE v2.2: Gets all pending requests from employee_requests table
-            const response = await utils.fetchAPI('?action=getPendingRequests');
+            // DATABASE v2.3: Gets all pending requests from employee_requests table
+            const response = await this.getClient().getPendingRequests();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching pending requests:', error);
@@ -151,13 +157,10 @@ const DashboardAPI = {
 
     async approveRequest(requestId, approverNotes) {
         try {
-            const response = await utils.fetchAPI('?action=approveRequest', {
-                method: 'POST',
-                body: JSON.stringify({
-                    requestId,
-                    status: 'approved',
-                    approverNotes
-                })
+            const response = await this.getClient().completeRequest(requestId, {
+                status: 'approved',
+                approverNotes,
+                completedBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
@@ -168,13 +171,9 @@ const DashboardAPI = {
 
     async rejectRequest(requestId, approverNotes) {
         try {
-            const response = await utils.fetchAPI('?action=approveRequest', {
-                method: 'POST',
-                body: JSON.stringify({
-                    requestId,
-                    status: 'rejected',
-                    approverNotes
-                })
+            const response = await this.getClient().rejectAttendanceRequest(requestId, {
+                rejectionReason: approverNotes,
+                rejectedBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
@@ -188,7 +187,7 @@ const DashboardAPI = {
      */
     async getEmployeeProfile(employeeId) {
         try {
-            const response = await utils.fetchAPI(`?action=getEmployeeProfile&employeeId=${employeeId}`);
+            const response = await this.getClient().getEmployee(employeeId);
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching employee profile:', error);
@@ -198,13 +197,7 @@ const DashboardAPI = {
 
     async updateEmployeeProfile(employeeId, profileData) {
         try {
-            const response = await utils.fetchAPI('?action=updateEmployeeProfile', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    ...profileData
-                })
-            });
+            const response = await this.getClient().updateEmployee(employeeId, profileData);
             return response;
         } catch (error) {
             console.error('Error updating employee profile:', error);
@@ -214,7 +207,7 @@ const DashboardAPI = {
 
     async getAllEmployees() {
         try {
-            const response = await utils.fetchAPI('?action=getAllEmployees');
+            const response = await this.getClient().getAllEmployees();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching all employees:', error);
@@ -223,14 +216,14 @@ const DashboardAPI = {
     },
 
     /**
-     * Registration Management (Admin only) - DATABASE v2 COMPATIBLE
+     * Registration Management (Admin only) - DATABASE v2.3 COMPATIBLE
      * No separate queue table - approval_status field in employees table
      */
     async getPendingRegistrations() {
         try {
-            // DATABASE v2.2: Queries employees WHERE approval_status = 'PENDING'
+            // DATABASE v2.3: Queries employees WHERE approval_status = 'PENDING'
             // No separate queue table needed
-            const response = await utils.fetchAPI('?action=getPendingRegistrations');
+            const response = await this.getClient().getPendingRegistrations();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching pending registrations:', error);
@@ -240,8 +233,8 @@ const DashboardAPI = {
 
     async approveRegistration(employeeId) {
         try {
-            // DATABASE v2.2: Updates approval_status to 'APPROVED' in employees table
-            const response = await utils.fetchAPI('?action=approveRegistration', {
+            // DATABASE v2.3: Updates approval_status to 'APPROVED' in employees table
+            const response = await this.getClient().approveRegistration(employeeId, {
                 method: 'POST',
                 body: JSON.stringify({
                     employeeId,
@@ -259,14 +252,12 @@ const DashboardAPI = {
 
     async rejectRegistration(employeeId, reason) {
         try {
-            // DATABASE v2.2: Updates approval_status to 'REJECTED' in employees table
-            const response = await utils.fetchAPI('?action=approveRegistration', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    status: 'REJECTED', // Updated to match schema
-                    rejected_reason: reason
-                })
+            // DATABASE v2.3: Updates approval_status to 'REJECTED' in employees table
+            const response = await this.getClient().approveRegistrationWithHistory({
+                employeeId,
+                approved: false,
+                reason: reason,
+                actionBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
@@ -280,12 +271,8 @@ const DashboardAPI = {
      */
     async updateEmployeePermissions(employeeId, position) {
         try {
-            const response = await utils.fetchAPI('?action=updatePermissions', {
-                method: 'POST',
-                body: JSON.stringify({
-                    employeeId,
-                    position
-                })
+            const response = await this.getClient().updateEmployee(employeeId, {
+                position: position
             });
             return response;
         } catch (error) {
@@ -299,7 +286,7 @@ const DashboardAPI = {
      */
     async getStores() {
         try {
-            const response = await utils.fetchAPI('?action=getStores');
+            const response = await this.getClient().getStores();
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching stores:', error);
@@ -312,7 +299,7 @@ const DashboardAPI = {
      */
     async getNotifications() {
         try {
-            const response = await utils.fetchAPI('?action=getNotifications');
+            const response = await this.getClient().legacyRequest('?action=getNotifications'.split('=')[1], 'GET');
             return response.success ? response.data : [];
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -322,7 +309,7 @@ const DashboardAPI = {
 
     async getNotificationCount() {
         try {
-            const response = await utils.fetchAPI('?action=getNotificationCount');
+            const response = await this.getClient().legacyRequest('?action=getNotificationCount'.split('=')[1], 'GET');
             return response.success ? response.count : 0;
         } catch (error) {
             console.error('Error fetching notification count:', error);
@@ -332,10 +319,7 @@ const DashboardAPI = {
 
     async markNotificationRead(notificationId) {
         try {
-            const response = await utils.fetchAPI('?action=markNotificationRead', {
-                method: 'POST',
-                body: JSON.stringify({ notificationId })
-            });
+            const response = await this.getClient().legacyRequest('?action=markNotificationRead'.split('=')[1], 'POST', { notificationId });
             return response;
         } catch (error) {
             console.error('Error marking notification as read:', error);
@@ -345,9 +329,7 @@ const DashboardAPI = {
 
     async markAllNotificationsRead() {
         try {
-            const response = await utils.fetchAPI('?action=markAllNotificationsRead', {
-                method: 'POST'
-            });
+            const response = await this.getClient().legacyRequest('markAllNotificationsRead', 'POST');
             return response;
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
@@ -360,7 +342,7 @@ const DashboardAPI = {
      */
     async getCloudflareStats() {
         try {
-            const response = await utils.fetchAPI('?action=getCloudflareStats');
+            const response = await this.getClient().legacyRequest('?action=getCloudflareStats'.split('=')[1], 'GET');
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching Cloudflare stats:', error);
@@ -370,7 +352,7 @@ const DashboardAPI = {
 
     async getSystemMetrics() {
         try {
-            const response = await utils.fetchAPI('?action=getSystemMetrics');
+            const response = await this.getClient().legacyRequest('?action=getSystemMetrics'.split('=')[1], 'GET');
             return response.success ? response.data : null;
         } catch (error) {
             console.error('Error fetching system metrics:', error);
@@ -380,7 +362,7 @@ const DashboardAPI = {
 
     async getEmployeeCount() {
         try {
-            const response = await utils.fetchAPI('?action=getEmployeeCount');
+            const response = await this.getClient().legacyRequest('?action=getEmployeeCount'.split('=')[1], 'GET');
             return response.success ? response.count : 0;
         } catch (error) {
             console.error('Error fetching employee count:', error);
@@ -393,7 +375,7 @@ const DashboardAPI = {
      */
     async getAvailableShifts(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getAvailableShifts&weekStart=${weekStart}`);
+            const response = await this.getClient().legacyRequest('getAvailableShifts', 'GET', { weekStart=weekStart });
             return response.success ? response.data : [];
         } catch (error) {
             console.error('Error fetching available shifts:', error);
@@ -403,10 +385,7 @@ const DashboardAPI = {
 
     async registerForShift(shiftId) {
         try {
-            const response = await utils.fetchAPI('?action=registerForShift', {
-                method: 'POST',
-                body: JSON.stringify({ shiftId })
-            });
+            const response = await this.getClient().legacyRequest('?action=registerForShift'.split('=')[1], 'POST', { shiftId });
             return response;
         } catch (error) {
             console.error('Error registering for shift:', error);
@@ -416,10 +395,7 @@ const DashboardAPI = {
 
     async assignShift(employeeId, shiftId, date) {
         try {
-            const response = await utils.fetchAPI('?action=assignShift', {
-                method: 'POST',
-                body: JSON.stringify({ employeeId, shiftId, date })
-            });
+            const response = await this.getClient().legacyRequest('?action=assignShift'.split('=')[1], 'POST', { employeeId, shiftId, date });
             return response;
         } catch (error) {
             console.error('Error assigning shift:', error);
@@ -432,7 +408,7 @@ const DashboardAPI = {
      */
     async getNotifications() {
         try {
-            const response = await utils.fetchAPI('?action=getNotifications');
+            const response = await this.getClient().legacyRequest('?action=getNotifications'.split('=')[1], 'GET');
             return response.notifications || [];
         } catch (error) {
             console.error('Error fetching notifications:', error);
@@ -442,7 +418,7 @@ const DashboardAPI = {
 
     async getNotificationCount() {
         try {
-            const response = await utils.fetchAPI('?action=getNotificationCount');
+            const response = await this.getClient().legacyRequest('?action=getNotificationCount'.split('=')[1], 'GET');
             return response.count || 0;
         } catch (error) {
             console.error('Error fetching notification count:', error);
@@ -452,10 +428,7 @@ const DashboardAPI = {
 
     async markNotificationRead(notificationId) {
         try {
-            const response = await utils.fetchAPI('?action=markNotificationRead', {
-                method: 'POST',
-                body: JSON.stringify({ notificationId })
-            });
+            const response = await this.getClient().legacyRequest('?action=markNotificationRead'.split('=')[1], 'POST', { notificationId });
             return response;
         } catch (error) {
             console.error('Error marking notification as read:', error);
@@ -465,9 +438,7 @@ const DashboardAPI = {
 
     async markAllNotificationsRead() {
         try {
-            const response = await utils.fetchAPI('?action=markAllNotificationsRead', {
-                method: 'POST'
-            });
+            const response = await this.getClient().legacyRequest('markAllNotificationsRead', 'POST');
             return response;
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
@@ -480,7 +451,7 @@ const DashboardAPI = {
      */
     async getAvailableShifts(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getAvailableShifts&weekStart=${encodeURIComponent(weekStart)}`);
+            const response = await this.getClient().legacyRequest('getAvailableShifts', 'GET', { weekStart=encodeURIComponent(weekStart) });
             return response.shifts || [];
         } catch (error) {
             console.error('Error fetching available shifts:', error);
@@ -490,10 +461,7 @@ const DashboardAPI = {
 
     async registerForShift(shiftId) {
         try {
-            const response = await utils.fetchAPI('?action=registerForShift', {
-                method: 'POST',
-                body: JSON.stringify({ shiftId })
-            });
+            const response = await this.getClient().legacyRequest('?action=registerForShift'.split('=')[1], 'POST', { shiftId });
             return response;
         } catch (error) {
             console.error('Error registering for shift:', error);
@@ -503,10 +471,7 @@ const DashboardAPI = {
 
     async assignShift(employeeId, shiftId, date, shiftType) {
         try {
-            const response = await utils.fetchAPI('?action=assignShift', {
-                method: 'POST',
-                body: JSON.stringify({ employeeId, shiftId, date, shiftType })
-            });
+            const response = await this.getClient().legacyRequest('?action=assignShift'.split('=')[1], 'POST', { employeeId, shiftId, date, shiftType });
             return response;
         } catch (error) {
             console.error('Error assigning shift:', error);
@@ -516,7 +481,7 @@ const DashboardAPI = {
 
     async getWeekSchedule(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getWeekSchedule&weekStart=${encodeURIComponent(weekStart)}`);
+            const response = await this.getClient().legacyRequest('getWeekSchedule', 'GET', { weekStart=encodeURIComponent(weekStart) });
             return response.schedule || [];
         } catch (error) {
             console.error('Error fetching week schedule:', error);
@@ -526,7 +491,7 @@ const DashboardAPI = {
 
     async getTeamSchedule(weekStart) {
         try {
-            const response = await utils.fetchAPI(`?action=getTeamSchedule&weekStart=${encodeURIComponent(weekStart)}`);
+            const response = await this.getClient().legacyRequest('getTeamSchedule', 'GET', { weekStart=encodeURIComponent(weekStart) });
             return response.teamSchedule || [];
         } catch (error) {
             console.error('Error fetching team schedule:', error);

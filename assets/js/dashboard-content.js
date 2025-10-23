@@ -3,6 +3,23 @@
  * Provides comprehensive content templates with API integration
  */
 
+// Simple notification helper (replaces utils.showNotification)
+function showNotification(message, type = 'info') {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    // You can implement a proper notification UI here if needed
+    // For now, just log to console
+}
+
+// Simple HTML escaping utility (replaces utils.escapeHtml)
+const utils = {
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+};
+
 const DashboardContent = {
     /**
      * Initialize content renderer
@@ -625,9 +642,9 @@ const DashboardContent = {
         });
 
         if (result.success) {
-            utils.showNotification('Cập nhật thông tin thành công', 'success');
+            showNotification('Cập nhật thông tin thành công', 'success');
         } else {
-            utils.showNotification('Không thể cập nhật thông tin', 'error');
+            showNotification('Không thể cập nhật thông tin', 'error');
         }
     },
 
@@ -703,7 +720,7 @@ const DashboardContent = {
 
     async performCheckIn() {
         if (!navigator.geolocation) {
-            utils.showNotification('Trình duyệt không hỗ trợ GPS', 'error');
+            showNotification('Trình duyệt không hỗ trợ GPS', 'error');
             return;
         }
 
@@ -716,14 +733,14 @@ const DashboardContent = {
                 );
 
                 if (result.success) {
-                    utils.showNotification('Check-in thành công!', 'success');
+                    showNotification('Check-in thành công!', 'success');
                     this.loadAttendanceHistory();
                 } else {
-                    utils.showNotification(result.message || 'Check-in thất bại', 'error');
+                    showNotification(result.message || 'Check-in thất bại', 'error');
                 }
             },
             (error) => {
-                utils.showNotification('Không thể lấy vị trí GPS', 'error');
+                showNotification('Không thể lấy vị trí GPS', 'error');
                 console.error('GPS error:', error);
             }
         );
@@ -731,7 +748,7 @@ const DashboardContent = {
 
     async performCheckOut() {
         if (!navigator.geolocation) {
-            utils.showNotification('Trình duyệt không hỗ trợ GPS', 'error');
+            showNotification('Trình duyệt không hỗ trợ GPS', 'error');
             return;
         }
 
@@ -744,14 +761,14 @@ const DashboardContent = {
                 );
 
                 if (result.success) {
-                    utils.showNotification('Check-out thành công!', 'success');
+                    showNotification('Check-out thành công!', 'success');
                     this.loadAttendanceHistory();
                 } else {
-                    utils.showNotification(result.message || 'Check-out thất bại', 'error');
+                    showNotification(result.message || 'Check-out thất bại', 'error');
                 }
             },
             (error) => {
-                utils.showNotification('Không thể lấy vị trí GPS', 'error');
+                showNotification('Không thể lấy vị trí GPS', 'error');
                 console.error('GPS error:', error);
             }
         );
@@ -906,7 +923,7 @@ const DashboardContent = {
         const reason = document.getElementById('requestReason')?.value;
 
         if (!type || !startDate || !endDate || !reason) {
-            utils.showNotification('Vui lòng điền đầy đủ thông tin', 'warning');
+            showNotification('Vui lòng điền đầy đủ thông tin', 'warning');
             return;
         }
 
@@ -920,10 +937,10 @@ const DashboardContent = {
         });
 
         if (result.success) {
-            utils.showNotification('Gửi yêu cầu thành công', 'success');
+            showNotification('Gửi yêu cầu thành công', 'success');
             document.getElementById('requestForm')?.reset();
         } else {
-            utils.showNotification(result.message || 'Không thể gửi yêu cầu', 'error');
+            showNotification(result.message || 'Không thể gửi yêu cầu', 'error');
         }
     },
 
@@ -1052,10 +1069,10 @@ const DashboardContent = {
         const result = await DashboardAPI.approveRequest(requestId, 'Đã duyệt');
         
         if (result.success) {
-            utils.showNotification('Đã duyệt yêu cầu', 'success');
+            showNotification('Đã duyệt yêu cầu', 'success');
             this.loadPendingRequests();
         } else {
-            utils.showNotification('Không thể duyệt yêu cầu', 'error');
+            showNotification('Không thể duyệt yêu cầu', 'error');
         }
     },
 
@@ -1063,10 +1080,10 @@ const DashboardContent = {
         const result = await DashboardAPI.rejectRequest(requestId, 'Không đủ điều kiện');
         
         if (result.success) {
-            utils.showNotification('Đã từ chối yêu cầu', 'success');
+            showNotification('Đã từ chối yêu cầu', 'success');
             this.loadPendingRequests();
         } else {
-            utils.showNotification('Không thể từ chối yêu cầu', 'error');
+            showNotification('Không thể từ chối yêu cầu', 'error');
         }
     },
 
@@ -1138,10 +1155,10 @@ const DashboardContent = {
         const result = await DashboardAPI.approveRegistration(employeeId);
         
         if (result.success) {
-            utils.showNotification('Đã duyệt đăng ký', 'success');
+            showNotification('Đã duyệt đăng ký', 'success');
             this.loadPendingRegistrations();
         } else {
-            utils.showNotification('Không thể duyệt đăng ký', 'error');
+            showNotification('Không thể duyệt đăng ký', 'error');
         }
     },
 
@@ -1149,10 +1166,10 @@ const DashboardContent = {
         const result = await DashboardAPI.rejectRegistration(employeeId, 'Thông tin không đầy đủ');
         
         if (result.success) {
-            utils.showNotification('Đã từ chối đăng ký', 'success');
+            showNotification('Đã từ chối đăng ký', 'success');
             this.loadPendingRegistrations();
         } else {
-            utils.showNotification('Không thể từ chối đăng ký', 'error');
+            showNotification('Không thể từ chối đăng ký', 'error');
         }
     },
 
@@ -1229,9 +1246,9 @@ const DashboardContent = {
         const result = await DashboardAPI.updateEmployeePermissions(employeeId, newPosition);
         
         if (result.success) {
-            utils.showNotification('Đã cập nhật quyền', 'success');
+            showNotification('Đã cập nhật quyền', 'success');
         } else {
-            utils.showNotification('Không thể cập nhật quyền', 'error');
+            showNotification('Không thể cập nhật quyền', 'error');
         }
     },
 
