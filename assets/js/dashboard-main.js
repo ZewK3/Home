@@ -10,8 +10,8 @@ const NotificationCache = {
     
     saveCache(notifications) {
         try {
-            SecureStorage.set(this.CACHE_KEY, notifications);
-            SecureStorage.set(this.LAST_CHECK_KEY, Date.now());
+            SimpleStorage.set(this.CACHE_KEY, notifications);
+            SimpleStorage.set(this.LAST_CHECK_KEY, Date.now());
         } catch (e) {
             console.error('Failed to save notification cache:', e);
         }
@@ -19,7 +19,7 @@ const NotificationCache = {
     
     getCache() {
         try {
-            return SecureStorage.get(this.CACHE_KEY);
+            return SimpleStorage.get(this.CACHE_KEY);
         } catch (e) {
             console.error('Failed to get notification cache:', e);
             return null;
@@ -27,7 +27,7 @@ const NotificationCache = {
     },
     
     getLastCheck() {
-        const lastCheck = SecureStorage.get(this.LAST_CHECK_KEY);
+        const lastCheck = SimpleStorage.get(this.LAST_CHECK_KEY);
         return lastCheck ? parseInt(lastCheck) : 0;
     }
 };
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Logout button
     document.getElementById('logoutBtn')?.addEventListener('click', () => {
-        SecureStorage.clear();
+        SimpleStorage.clear();
         window.location.href = '../../index.html';
     });
 
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Role-based menu filtering
 function filterMenuByRole() {
     // Get current user data from encrypted localStorage
-    const userData = SecureStorage.get('userData');
+    const userData = SimpleStorage.get('userData');
     if (!userData) {
         console.warn('No user data found in localStorage');
         return;

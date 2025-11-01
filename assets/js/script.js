@@ -396,9 +396,13 @@ async function handleLogin(event) {
         buttonText.textContent = "Đang đăng nhập...";
     }
     
+    const rememberMeCheckbox = elements.loginForm.rememberMe;
+    const isRememberMe = rememberMeCheckbox ? rememberMeCheckbox.checked : false;
+    
     const formData = {
         loginEmployeeId: elements.loginForm.loginEmployeeId?.value.trim() || "",
-        loginPassword: elements.loginForm.loginPassword?.value || ""
+        loginPassword: elements.loginForm.loginPassword?.value || "",
+        rememberMe: isRememberMe  // Send rememberMe flag to backend
     };
 
     // Validate form data
@@ -411,20 +415,23 @@ async function handleLogin(event) {
     }
 
     try {
-        // Use RESTful API login endpoint
+        // Use RESTful API login endpoint with rememberMe flag
         const result = await apiClient.login(formData);
         
         // Store authToken encrypted
-        SecureStorage.set(TOKEN_KEY, result.token);
+        SimpleStorage.set(TOKEN_KEY, result.token);
         
         // Store userData encrypted (get from response)
         if (result.userData) {
-            SecureStorage.set('userData', result.userData);
+            SimpleStorage.set('userData', result.userData);
         }
         
-        const rememberMe = elements.loginForm.rememberMe;
-        if (rememberMe && rememberMe.checked) {
-            SecureStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
+        // Store rememberMe preference for UI
+        if (isRememberMe) {
+            SimpleStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
+        } else {
+            // Clear remembered ID if user unchecked rememberMe
+            SimpleStorage.remove(REMEMBER_ME_KEY);
         }
         
         showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
@@ -809,8 +816,41 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Auto-redirect if user has valid session (Remember Me feature)
+    async function checkExistingSession() {
+        const existingToken = SimpleStorage.get(TOKEN_KEY);
+        if (existingToken) {
+            try {
+                // Verify token is still valid by making a test request
+                const response = await fetch(CONFIG.API_BASE_URL + '/api/dashboard/stats', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${existingToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Token is valid, redirect to dashboard
+                    showNotification("Phiên đăng nhập còn hiệu lực. Đang chuyển hướng...", "success");
+                    setTimeout(() => window.location.href = "../pages/dashboard.html", 1000);
+                    return true;
+                }
+            } catch (error) {
+                // Token invalid or expired, clear it
+                console.log("Session expired or invalid:", error);
+                SimpleStorage.remove(TOKEN_KEY);
+                SimpleStorage.remove('userData');
+            }
+        }
+        return false;
+    }
+    
+    // Check for existing session on page load
+    checkExistingSession();
+
     // Remember me
-    const rememberedId = SecureStorage.get(REMEMBER_ME_KEY);
+    const rememberedId = SimpleStorage.get(REMEMBER_ME_KEY);
     const loginEmployeeIdInput = document.getElementById("loginEmployeeId");
     const rememberMeCheckbox = document.getElementById("rememberMe");
     

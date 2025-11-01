@@ -250,4 +250,5 @@ if (typeof module !== 'undefined' && module.exports) {
     window.SecureStorageManager = SecureStorageManager;
     window.SECURITY_COMPARISON = SECURITY_COMPARISON;
     window.IMPLEMENTATION_GUIDE = IMPLEMENTATION_GUIDE;
+    console.log('✅ SecureStorageManager class loaded successfully');
 }
