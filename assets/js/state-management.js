@@ -7,12 +7,13 @@
 
 class AppState {
   constructor() {
-    this.state = this.loadState();
-    this.subscribers = new Set();
+    // Initialize config FIRST before loading state
     this.config = {
       persistKeys: ['user', 'token', 'preferences'],
       storageKey: 'hrm-app-state'
     };
+    this.subscribers = new Set();
+    this.state = this.loadState();
   }
   
   /**

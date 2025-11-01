@@ -30,7 +30,7 @@ const DashboardContent = {
     },
 
     getUserData() {
-        const data = SecureStorage.get('userData');
+        const data = SimpleStorage.get('userData');
         if (!data) return null;
         return typeof data === 'string' ? JSON.parse(data) : data;
     },
@@ -266,7 +266,7 @@ const DashboardContent = {
     async renderSchedule() {
         const today = new Date();
         const weekStart = this.getWeekStart(today);
-        const userData = SecureStorage.get('userData');
+        const userData = SimpleStorage.get('userData');
         const userRole = this.roleHierarchy[userData?.position?.toUpperCase()] || 0;
         
         // Role-specific schedule view

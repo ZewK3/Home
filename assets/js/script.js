@@ -419,19 +419,19 @@ async function handleLogin(event) {
         const result = await apiClient.login(formData);
         
         // Store authToken encrypted
-        SecureStorage.set(TOKEN_KEY, result.token);
+        SimpleStorage.set(TOKEN_KEY, result.token);
         
         // Store userData encrypted (get from response)
         if (result.userData) {
-            SecureStorage.set('userData', result.userData);
+            SimpleStorage.set('userData', result.userData);
         }
         
         // Store rememberMe preference for UI
         if (isRememberMe) {
-            SecureStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
+            SimpleStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
         } else {
             // Clear remembered ID if user unchecked rememberMe
-            SecureStorage.remove(REMEMBER_ME_KEY);
+            SimpleStorage.remove(REMEMBER_ME_KEY);
         }
         
         showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
@@ -818,7 +818,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Auto-redirect if user has valid session (Remember Me feature)
     async function checkExistingSession() {
-        const existingToken = SecureStorage.get(TOKEN_KEY);
+        const existingToken = SimpleStorage.get(TOKEN_KEY);
         if (existingToken) {
             try {
                 // Verify token is still valid by making a test request
@@ -839,8 +839,8 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (error) {
                 // Token invalid or expired, clear it
                 console.log("Session expired or invalid:", error);
-                SecureStorage.remove(TOKEN_KEY);
-                SecureStorage.remove('userData');
+                SimpleStorage.remove(TOKEN_KEY);
+                SimpleStorage.remove('userData');
             }
         }
         return false;
@@ -850,7 +850,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkExistingSession();
 
     // Remember me
-    const rememberedId = SecureStorage.get(REMEMBER_ME_KEY);
+    const rememberedId = SimpleStorage.get(REMEMBER_ME_KEY);
     const loginEmployeeIdInput = document.getElementById("loginEmployeeId");
     const rememberMeCheckbox = document.getElementById("rememberMe");
     
