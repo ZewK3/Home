@@ -2586,13 +2586,7 @@ function initializeRouter() {
   // Note: Database optimization indexes are included in schema file
   
   // =====================================================
-  // DEPRECATED LEGACY ROUTES (Phase 3: Will be removed)
-  // Use RESTful endpoints instead
-  // =====================================================
-  // Temporarily disabled - use RESTful endpoints only
-  // router.addRoute('GET', '/api/legacy', legacyController_handleGet, false);
-  // router.addRoute('POST', '/api/legacy', legacyController_handlePost, false);
-
+  
   return router;
 }
 
@@ -2671,95 +2665,6 @@ async function requestController_complete_wrapper(url, params, body, db, origin,
 }
 
 // =====================================================
-// DEPRECATED LEGACY ENDPOINTS
-// These endpoints are deprecated and will be removed in future versions
-// Please migrate to RESTful endpoints
-// =====================================================
-
-async function legacyController_handleGet(url, params, db, origin, userId) {
-  const action = url.searchParams.get("action");
-  console.warn(`⚠️ DEPRECATED: Legacy action '${action}' used. Please migrate to RESTful endpoints.`);
-  
-  if (!action) return jsonResponse({ 
-    message: "⚠️ DEPRECATED: Action-based API is deprecated. Please use RESTful endpoints.",
-    deprecated: true
-  }, 400, origin);
-
-  // Map legacy actions to new controllers
-  switch (action) {
-    case "getStores": return await storeController_list(db, origin);
-    case "getUsers": return await employeeController_list(url, db, origin);
-    case "getUser": return await employeeController_getById(url, db, origin);
-    case "getDashboardStats": return await dashboardController_getStats(db, origin);
-    case "checkId": return await employeeController_checkIdExists(url, db, origin);
-    case "getUserHistory": return await employeeController_getHistory(url, db, origin);
-    case "getCurrentShift": return await shiftController_getCurrent(url, db, origin, userId);
-    case "getWeeklyShifts": return await shiftController_getWeekly(url, db, origin);
-    case "getAttendanceData": return await attendanceController_getData(url, db, origin);
-    case "getPendingRequests": return await requestController_getPending(db, origin);
-    case "getPermissions": return await employeeController_getPermissions(url, db, origin);
-    case "getPendingRegistrations": return await registrationController_getPending(url, db, origin);
-    case "getTimesheet": return await timesheetController_get(url, db, origin, userId);
-    case "getAttendanceHistory": return await attendanceController_getHistory(url, db, origin);
-    case "getShiftAssignments": return await shiftController_getAssignments(url, db, origin);
-    case "getShifts": return await shiftController_list(url, db, origin);
-    case "getPersonalStats": return await employeeController_getPersonalStats(url, db, origin, userId);
-    case "getEmployeesByStore": return await storeController_getEmployees(url, db, origin);
-    case "getShiftRequests": return await shiftController_getRequests(url, db, origin);
-    case "getAttendanceRequests": return await attendanceController_getRequests(url, db, origin);
-    case "getAllUsers": return await employeeController_getAll(url, db, origin);
-    case "checkdk": return await employeeController_checkDuplicate(url, db, origin);
-    case "getPendingRequestsCount": return await requestController_getPendingCount(url, db, origin);
-    default: return jsonResponse({ 
-      message: "⚠️ DEPRECATED: Unknown action. Please use RESTful endpoints.",
-      deprecated: true,
-      action: action
-    }, 400, origin);
-  }
-}
-
-async function legacyController_handlePost(url, params, body, db, origin, userId, token, env) {
-  const action = url.searchParams.get("action");
-  console.warn(`⚠️ DEPRECATED: Legacy action '${action}' used. Please migrate to RESTful endpoints.`);
-  
-  if (!action) return jsonResponse({ 
-    message: "⚠️ DEPRECATED: Action-based API is deprecated. Please use RESTful endpoints.",
-    deprecated: true
-  }, 400, origin);
-
-  // Map legacy actions to new controllers
-  switch (action) {
-    case "login": return await authController_login(body, db, origin);
-    case "register": return await authController_register(body, db, origin, env);
-    case "checkGPS": return await attendanceController_checkGPS(body, db, origin);
-    case "update": return await employeeController_update(body, db, origin);
-    case "assignShift": return await shiftController_assign(body, db, origin);
-    case "loginUser": return await authController_loginUser(body, db, origin);
-    case "updateUser": return await employeeController_updateUser(body, userId, db, origin);
-    case "updatePersonalInfo": return await employeeController_updatePersonalInfo(body, db, origin);
-    case "updateUserWithHistory": return await employeeController_updateWithHistory(body, db, origin);
-    case "approveRegistration": return await registrationController_approve(body, db, origin);
-    case "processAttendance": return await attendanceController_process(body, db, origin);
-    case "createAttendanceRequest": return await attendanceController_createRequest(body, db, origin);
-    case "saveShiftAssignments": return await shiftController_saveAssignments(body, db, origin);
-    case "approveShiftRequest": return await shiftController_approveRequest(body, db, origin);
-    case "rejectShiftRequest": return await shiftController_rejectRequest(body, db, origin);
-    case "approveAttendanceRequest": return await attendanceController_approveRequest(body, db, origin, token);
-    case "rejectAttendanceRequest": return await attendanceController_rejectRequest(body, db, origin, token);
-    case "verifyEmail": return await authController_verifyEmail(body, db, origin, env);
-    case "approveRegistrationWithHistory": return await registrationController_approveWithHistory(body, db, origin);
-    case "completeRequest": return await requestController_complete(body, db, origin);
-    case "createStore": return await storeController_create(body, db, origin);
-    case "createEmployee": return await employeeController_create(body, db, origin);
-    default: return jsonResponse({ 
-      message: "⚠️ DEPRECATED: Unknown action. Please use RESTful endpoints.",
-      deprecated: true,
-      action: action
-    }, 400, origin);
-  }
-}
-
-// =====================================================
 // MAIN EXPORT WITH RESTFUL ROUTING
 // =====================================================
 
@@ -2824,9 +2729,7 @@ export default {
         return await route.handler(url, route.params, db, ALLOWED_ORIGIN, request.userId);
       } else if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
         // Special handling for different POST routes
-        if (pathname === '/api/legacy') {
-          return await route.handler(url, route.params, body, db, ALLOWED_ORIGIN, request.userId, token, env);
-        } else if (pathname === '/api/auth/register') {
+        if (pathname === '/api/auth/register') {
           return await route.handler(body, db, ALLOWED_ORIGIN, env);
         } else if (pathname === '/api/auth/login') {
           return await route.handler(body, db, ALLOWED_ORIGIN);
