@@ -66,17 +66,20 @@ CREATE TABLE stores (
 -- ATTENDANCE & WORK MANAGEMENT - OPTIMIZED
 -- =====================================================
 
--- Attendance table - MERGED with gps_attendance (GPS columns added)
--- Attendance table - Simplified (GPS checking moved to frontend)
+-- Attendance table - Enhanced to support multiple shifts per day
+-- Now links to shift_assignments to track which shift the check-in belongs to
 CREATE TABLE attendance (
     attendanceId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
     checkDate TEXT NOT NULL,
     checkTime TEXT NOT NULL,
     checkLocation TEXT,
+    shiftId INTEGER,                    -- NEW: Link to shift for per-shift tracking
     createdAt TEXT DEFAULT (datetime('now')),
     updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
+    FOREIGN KEY (shiftId) REFERENCES shifts(shiftId) ON DELETE SET NULL,
+    UNIQUE(employeeId, checkDate, shiftId)  -- Allow multiple check-ins per day (one per shift)
 );
 
 -- Timesheets table (unchanged - monthly summaries)
@@ -144,6 +147,7 @@ CREATE TABLE employee_requests (
 -- Shifts table - Predefined work shifts
 CREATE TABLE shifts (
     shiftId INTEGER PRIMARY KEY AUTOINCREMENT,
+    shiftCode TEXT UNIQUE NOT NULL,     -- NEW: Unique code for easy reference (e.g., 'S4_8-12', 'S8_8-16')
     name TEXT NOT NULL,
     startTime INTEGER NOT NULL,
     endTime INTEGER NOT NULL,
@@ -153,101 +157,66 @@ CREATE TABLE shifts (
 
 -- Insert default shift data with various shift lengths
 -- 4-hour shifts (8:00 to 23:00)
-INSERT INTO shifts (name, startTime, endTime, timeName) VALUES 
-('Ca 4 Tiếng 8-12', 8, 12, '08:00-12:00'),
-('Ca 4 Tiếng 9-13', 9, 13, '09:00-13:00'),
-('Ca 4 Tiếng 10-14', 10, 14, '10:00-14:00'),
-('Ca 4 Tiếng 11-15', 11, 15, '11:00-15:00'),
-('Ca 4 Tiếng 12-16', 12, 16, '12:00-16:00'),
-('Ca 4 Tiếng 13-17', 13, 17, '13:00-17:00'),
-('Ca 4 Tiếng 14-18', 14, 18, '14:00-18:00'),
-('Ca 4 Tiếng 15-19', 15, 19, '15:00-19:00'),
-('Ca 4 Tiếng 16-20', 16, 20, '16:00-20:00'),
-('Ca 4 Tiếng 17-21', 17, 21, '17:00-21:00'),
-('Ca 4 Tiếng 18-22', 18, 22, '18:00-22:00'),
-('Ca 4 Tiếng 19-23', 19, 23, '19:00-23:00'),
+INSERT INTO shifts (shiftCode, name, startTime, endTime, timeName) VALUES 
+('S4_08-12', 'Ca 4 Tiếng 8-12', 8, 12, '08:00-12:00'),
+('S4_09-13', 'Ca 4 Tiếng 9-13', 9, 13, '09:00-13:00'),
+('S4_10-14', 'Ca 4 Tiếng 10-14', 10, 14, '10:00-14:00'),
+('S4_11-15', 'Ca 4 Tiếng 11-15', 11, 15, '11:00-15:00'),
+('S4_12-16', 'Ca 4 Tiếng 12-16', 12, 16, '12:00-16:00'),
+('S4_13-17', 'Ca 4 Tiếng 13-17', 13, 17, '13:00-17:00'),
+('S4_14-18', 'Ca 4 Tiếng 14-18', 14, 18, '14:00-18:00'),
+('S4_15-19', 'Ca 4 Tiếng 15-19', 15, 19, '15:00-19:00'),
+('S4_16-20', 'Ca 4 Tiếng 16-20', 16, 20, '16:00-20:00'),
+('S4_17-21', 'Ca 4 Tiếng 17-21', 17, 21, '17:00-21:00'),
+('S4_18-22', 'Ca 4 Tiếng 18-22', 18, 22, '18:00-22:00'),
+('S4_19-23', 'Ca 4 Tiếng 19-23', 19, 23, '19:00-23:00'),
 
 -- 5-hour shifts
-('Ca 5 Tiếng 8-13', 8, 13, '08:00-13:00'),
-('Ca 5 Tiếng 9-14', 9, 14, '09:00-14:00'),
-('Ca 5 Tiếng 10-15', 10, 15, '10:00-15:00'),
-('Ca 5 Tiếng 11-16', 11, 16, '11:00-16:00'),
-('Ca 5 Tiếng 12-17', 12, 17, '12:00-17:00'),
-('Ca 5 Tiếng 13-18', 13, 18, '13:00-18:00'),
-('Ca 5 Tiếng 14-19', 14, 19, '14:00-19:00'),
-('Ca 5 Tiếng 15-20', 15, 20, '15:00-20:00'),
+('S5_08-13', 'Ca 5 Tiếng 8-13', 8, 13, '08:00-13:00'),
+('S5_09-14', 'Ca 5 Tiếng 9-14', 9, 14, '09:00-14:00'),
+('S5_10-15', 'Ca 5 Tiếng 10-15', 10, 15, '10:00-15:00'),
+('S5_11-16', 'Ca 5 Tiếng 11-16', 11, 16, '11:00-16:00'),
+('S5_12-17', 'Ca 5 Tiếng 12-17', 12, 17, '12:00-17:00'),
+('S5_13-18', 'Ca 5 Tiếng 13-18', 13, 18, '13:00-18:00'),
+('S5_14-19', 'Ca 5 Tiếng 14-19', 14, 19, '14:00-19:00'),
+('S5_15-20', 'Ca 5 Tiếng 15-20', 15, 20, '15:00-20:00'),
 
 -- 6-hour shifts
-('Ca 6 Tiếng 8-14', 8, 14, '08:00-14:00'),
-('Ca 6 Tiếng 9-15', 9, 15, '09:00-15:00'),
-('Ca 6 Tiếng 10-16', 10, 16, '10:00-16:00'),
-('Ca 6 Tiếng 11-17', 11, 17, '11:00-17:00'),
-('Ca 6 Tiếng 12-18', 12, 18, '12:00-18:00'),
-('Ca 6 Tiếng 13-19', 13, 19, '13:00-19:00'),
-('Ca 6 Tiếng 14-20', 14, 20, '14:00-20:00'),
-('Ca 6 Tiếng 15-21', 15, 21, '15:00-21:00'),
+('S6_08-14', 'Ca 6 Tiếng 8-14', 8, 14, '08:00-14:00'),
+('S6_09-15', 'Ca 6 Tiếng 9-15', 9, 15, '09:00-15:00'),
+('S6_10-16', 'Ca 6 Tiếng 10-16', 10, 16, '10:00-16:00'),
+('S6_11-17', 'Ca 6 Tiếng 11-17', 11, 17, '11:00-17:00'),
+('S6_12-18', 'Ca 6 Tiếng 12-18', 12, 18, '12:00-18:00'),
+('S6_13-19', 'Ca 6 Tiếng 13-19', 13, 19, '13:00-19:00'),
+('S6_14-20', 'Ca 6 Tiếng 14-20', 14, 20, '14:00-20:00'),
+('S6_15-21', 'Ca 6 Tiếng 15-21', 15, 21, '15:00-21:00'),
 
 -- 7-hour shifts
-('Ca 7 Tiếng 8-15', 8, 15, '08:00-15:00'),
-('Ca 7 Tiếng 9-16', 9, 16, '09:00-16:00'),
-('Ca 7 Tiếng 10-17', 10, 17, '10:00-17:00'),
-('Ca 7 Tiếng 11-18', 11, 18, '11:00-18:00'),
-('Ca 7 Tiếng 12-19', 12, 19, '12:00-19:00'),
-('Ca 7 Tiếng 13-20', 13, 20, '13:00-20:00'),
-('Ca 7 Tiếng 14-21', 14, 21, '14:00-21:00'),
-('Ca 7 Tiếng 15-22', 15, 22, '15:00-22:00'),
+('S7_08-15', 'Ca 7 Tiếng 8-15', 8, 15, '08:00-15:00'),
+('S7_09-16', 'Ca 7 Tiếng 9-16', 9, 16, '09:00-16:00'),
+('S7_10-17', 'Ca 7 Tiếng 10-17', 10, 17, '10:00-17:00'),
+('S7_11-18', 'Ca 7 Tiếng 11-18', 11, 18, '11:00-18:00'),
+('S7_12-19', 'Ca 7 Tiếng 12-19', 12, 19, '12:00-19:00'),
+('S7_13-20', 'Ca 7 Tiếng 13-20', 13, 20, '13:00-20:00'),
+('S7_14-21', 'Ca 7 Tiếng 14-21', 14, 21, '14:00-21:00'),
+('S7_15-22', 'Ca 7 Tiếng 15-22', 15, 22, '15:00-22:00'),
 
 -- 8-hour shifts (standard full-time)
-('Ca 8 Tiếng 8-16', 8, 16, '08:00-16:00'),
-('Ca 8 Tiếng 9-17', 9, 17, '09:00-17:00'),
-('Ca 8 Tiếng 10-18', 10, 18, '10:00-18:00'),
-('Ca 8 Tiếng 11-19', 11, 19, '11:00-19:00'),
-('Ca 8 Tiếng 12-20', 12, 20, '12:00-20:00'),
-('Ca 8 Tiếng 13-21', 13, 21, '13:00-21:00'),
-('Ca 8 Tiếng 14-22', 14, 22, '14:00-22:00'),
-('Ca 8 Tiếng 15-23', 15, 23, '15:00-23:00'),
-
--- 9-hour shifts
-('Ca 9 Tiếng 8-17', 8, 17, '08:00-17:00'),
-('Ca 9 Tiếng 9-18', 9, 18, '09:00-18:00'),
-('Ca 9 Tiếng 10-19', 10, 19, '10:00-19:00'),
-('Ca 9 Tiếng 11-20', 11, 20, '11:00-20:00'),
-('Ca 9 Tiếng 12-21', 12, 21, '12:00-21:00'),
-('Ca 9 Tiếng 13-22', 13, 22, '13:00-22:00'),
-('Ca 9 Tiếng 14-23', 14, 23, '14:00-23:00'),
-
--- 10-hour shifts
-('Ca 10 Tiếng 8-18', 8, 18, '08:00-18:00'),
-('Ca 10 Tiếng 9-19', 9, 19, '09:00-19:00'),
-('Ca 10 Tiếng 10-20', 10, 20, '10:00-20:00'),
-('Ca 10 Tiếng 11-21', 11, 21, '11:00-21:00'),
-('Ca 10 Tiếng 12-22', 12, 22, '12:00-22:00'),
-('Ca 10 Tiếng 13-23', 13, 23, '13:00-23:00'),
-
--- 11-hour shifts
-('Ca 11 Tiếng 8-19', 8, 19, '08:00-19:00'),
-('Ca 11 Tiếng 9-20', 9, 20, '09:00-20:00'),
-('Ca 11 Tiếng 10-21', 10, 21, '10:00-21:00'),
-('Ca 11 Tiếng 11-22', 11, 22, '11:00-22:00'),
-('Ca 11 Tiếng 12-23', 12, 23, '12:00-23:00'),
-
--- 12-hour shifts
-('Ca 12 Tiếng 8-20', 8, 20, '08:00-20:00'),
-('Ca 12 Tiếng 9-21', 9, 21, '09:00-21:00'),
-('Ca 12 Tiếng 10-22', 10, 22, '10:00-22:00'),
-('Ca 12 Tiếng 11-23', 11, 23, '11:00-23:00'),
-
--- 13-hour shifts
-('Ca 13 Tiếng 8-21', 8, 21, '08:00-21:00'),
-('Ca 13 Tiếng 9-22', 9, 22, '09:00-22:00'),
-('Ca 13 Tiếng 10-23', 10, 23, '10:00-23:00'),
+('S8_08-16', 'Ca 8 Tiếng 8-16', 8, 16, '08:00-16:00'),
+('S8_09-17', 'Ca 8 Tiếng 9-17', 9, 17, '09:00-17:00'),
+('S8_10-18', 'Ca 8 Tiếng 10-18', 10, 18, '10:00-18:00'),
+('S8_11-19', 'Ca 8 Tiếng 11-19', 11, 19, '11:00-19:00'),
+('S8_12-20', 'Ca 8 Tiếng 12-20', 12, 20, '12:00-20:00'),
+('S8_13-21', 'Ca 8 Tiếng 13-21', 13, 21, '13:00-21:00'),
+('S8_14-22', 'Ca 8 Tiếng 14-22', 14, 22, '14:00-22:00'),
+('S8_15-23', 'Ca 8 Tiếng 15-23', 15, 23, '15:00-23:00'),
 
 -- 14-hour shifts
-('Ca 14 Tiếng 8-22', 8, 22, '08:00-22:00'),
-('Ca 14 Tiếng 9-23', 9, 23, '09:00-23:00'),
+('S14_08-22', 'Ca 14 Tiếng 8-22', 8, 22, '08:00-22:00'),
+('S14_09-23', 'Ca 14 Tiếng 9-23', 9, 23, '09:00-23:00'),
 
 -- 15-hour shifts
-('Ca 15 Tiếng 8-23', 8, 23, '08:00-23:00');
+('S15_08-23', 'Ca 15 Tiếng 8-23', 8, 23, '08:00-23:00');
 
 -- =====================================================
 -- USER MANAGEMENT & REGISTRATION
