@@ -295,22 +295,31 @@ async function loadStores() {
     storeSelect.disabled = true;
     
     try {
-        // Loading stores from API using RESTful endpoint
-        const data = await apiClient.getStores();
+        // Loading stores from API silently
+        const response = await fetch(`${API_URL}?action=getStores`, {
+            method: "GET",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        });
         
-        if (data && data.success) {
+        // Store API response received
+        
+        if (response.ok) {
+            const data = await response.json();
             // Stores data processed successfully
             
             // Check multiple possible data formats
             let stores = [];
-            if (Array.isArray(data.data)) {
-                stores = data.data;
+            if (Array.isArray(data)) {
+                stores = data;
             } else if (data.results && Array.isArray(data.results)) {
                 stores = data.results;
             } else if (data.stores && Array.isArray(data.stores)) {
                 stores = data.stores;
-            } else if (Array.isArray(data)) {
-                stores = data;
+            } else if (data.data && Array.isArray(data.data)) {
+                stores = data.data;
             } else if (typeof data === 'object' && data !== null) {
                 // Handle case where data is object with numeric keys
                 stores = Object.values(data).filter(item => 
@@ -411,38 +420,54 @@ async function handleLogin(event) {
     }
 
     try {
-        // Use RESTful API login endpoint
-        const result = await apiClient.login(formData);
-        
-        // Store authToken encrypted
-        SecureStorage.set(TOKEN_KEY, result.token);
-        
-        // Store userData encrypted (get from response)
-        if (result.userData) {
-            SecureStorage.set('userData', result.userData);
-        }
-        
-        const rememberMe = elements.loginForm.rememberMe;
-        if (rememberMe && rememberMe.checked) {
-            SecureStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
-        }
-        
-        showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
-        if (buttonText) buttonText.textContent = "Thành công!";
-        
-        // Hide loginFormContainer to prevent user interaction during redirect
-        if (elements.loginContainer) {
-            elements.loginContainer.style.display = "none";
-        }
-        
-        setTimeout(() => window.location.href = "../pages/dashboard.html", 1500);
-    } catch (error) {
-        // Handle pending approval case
-        if (error.message && error.message.includes('phê duyệt')) {
-            showNotification("Tài khoản của bạn đang chờ phê duyệt từ quản lý cửa hàng. Vui lòng đợi thông báo.", "error");
+        // Production API call
+        const response = await fetch(`${API_URL}?action=login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            
+            // Store authToken encrypted
+            SecureStorage.set(TOKEN_KEY, result.token);
+            
+            // Store userData encrypted (get from response)
+            if (result.userData) {
+                SecureStorage.set('userData', result.userData);
+            }
+            
+            const rememberMe = elements.loginForm.rememberMe;
+            if (rememberMe && rememberMe.checked) {
+                SecureStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
+            }
+            
+            showNotification("Đăng nhập thành công! Đang chuyển hướng...", "success");
+            if (buttonText) buttonText.textContent = "Thành công!";
+            
+            // Hide loginFormContainer to prevent user interaction during redirect
+            if (elements.loginContainer) {
+                elements.loginContainer.style.display = "none";
+            }
+            
+            setTimeout(() => window.location.href = "../pages/dashboard.html", 1500);
         } else {
-            showNotification(error.message || "Đăng nhập thất bại", "error");
+            const errorData = await response.json().catch(() => ({}));
+            
+            // Handle pending approval case
+            if (response.status === 403) {
+                throw new Error("Tài khoản của bạn đang chờ phê duyệt từ quản lý cửa hàng. Vui lòng đợi thông báo.");
+            }
+            
+            throw new Error(
+                response.status === 401 ? "Mật khẩu không chính xác" : 
+                response.status === 404 ? "Mã nhân viên không tồn tại" :
+                errorData.message || "Đăng nhập thất bại"
+            );
         }
+    } catch (error) {
+        showNotification(error.message, "error");
     } finally {
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng nhập";
@@ -493,29 +518,41 @@ async function handleRegister(event) {
     }
 
     try {
-        const data = await apiClient.register(formData);
+        const response = await fetch(`${API_URL}?action=register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formData)
+        });
 
-        if (data.success) {
-            if (data.requiresVerification) {
-                // Store registration data for verification step
-                registrationData = formData;
-                showNotification("Mã xác nhận đã được gửi tới email của bạn!", "success", 5000);
-                showVerificationForm();
-            } else {
-                showNotification("Đăng ký thành công! Yêu cầu của bạn đang chờ phê duyệt từ quản lý cửa hàng.", "success", 5000);
-                if (buttonText) buttonText.textContent = "Chờ phê duyệt";
-                setTimeout(showLoginForm, 2500);
-            }
-        } else {
-            // Handle various error cases
-            if (data.message && data.message.includes("đã tồn tại")) {
-                showNotification(data.message, "warning");
-            } else {
+        const data = await response.json();
+
+        switch (response.status) {
+            case SUCCESS_STATUS:
+                if (data.requiresVerification) {
+                    // Store registration data for verification step
+                    registrationData = formData;
+                    showNotification("Mã xác nhận đã được gửi tới email của bạn!", "success", 5000);
+                    showVerificationForm();
+                } else {
+                    showNotification("Đăng ký thành công! Yêu cầu của bạn đang chờ phê duyệt từ quản lý cửa hàng.", "success", 5000);
+                    if (buttonText) buttonText.textContent = "Chờ phê duyệt";
+                    setTimeout(showLoginForm, 2500);
+                }
+                break;
+            case ACCOUNT_EXISTS_STATUS:
+                showNotification("Mã nhân viên đã tồn tại!", "warning");
+                break;
+            case PHONE_EXISTS_STATUS:
+                showNotification("Số điện thoại đã được sử dụng!", "warning");
+                break;
+            case EMAIL_EXISTS_STATUS:
+                showNotification("Email đã được sử dụng!", "warning");
+                break;
+            default:
                 throw new Error(data.message || "Đăng ký thất bại");
-            }
         }
     } catch (error) {
-        showNotification(error.message || "Đăng ký thất bại", "error");
+        showNotification(error.message, "error");
     } finally {
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng ký";
@@ -551,12 +588,18 @@ async function handleVerification(event) {
     }
 
     try {
-        const data = await apiClient.verifyEmail({
-            employeeId: registrationData.employeeId,
-            verificationCode: verificationCode
+        const response = await fetch(`${API_URL}?action=verifyEmail`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                employeeId: registrationData.employeeId,
+                verificationCode: verificationCode
+            })
         });
 
-        if (data.success || data.message.includes("thành công")) {
+        const data = await response.json();
+
+        if (response.status === SUCCESS_STATUS) {
             elements.verificationContainer?.classList.add('verification-success');
             showNotification("Xác nhận thành công! Tài khoản đang chờ phê duyệt từ quản lý.", "success", 5000);
             
@@ -572,7 +615,7 @@ async function handleVerification(event) {
             throw new Error(data.message || "Xác thực thất bại");
         }
     } catch (error) {
-        showNotification(error.message || "Mã xác nhận không hợp lệ", "error");
+        showNotification(error.message, "error");
     } finally {
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Xác nhận";
@@ -597,9 +640,13 @@ async function resendVerificationCode() {
     }
 
     try {
-        const data = await apiClient.register(registrationData);
+        const response = await fetch(`${API_URL}?action=register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(registrationData)
+        });
 
-        if (data.success) {
+        if (response.status === SUCCESS_STATUS) {
             showNotification("Mã xác nhận mới đã được gửi!", "success");
             
             // Start countdown
@@ -624,7 +671,7 @@ async function resendVerificationCode() {
             throw new Error("Không thể gửi lại mã xác nhận");
         }
     } catch (error) {
-        showNotification(error.message || "Không thể gửi lại mã xác nhận", "error");
+        showNotification(error.message, "error");
         if (button) {
             button.disabled = false;
         }
