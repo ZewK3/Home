@@ -2759,10 +2759,10 @@ export default {
         }
       }
 
-      return jsonResponse({ message: "Phương thức không được hỗ trợ!" }, 405);
+      return jsonResponse({ message: "Phương thức không được hỗ trợ!" }, 405, request.headers.get('Origin'));
     } catch (error) {
       console.error("Lỗi xử lý yêu cầu:", error);
-      return jsonResponse({ message: "Lỗi xử lý yêu cầu!", error: error.message }, 500);
+      return jsonResponse({ message: "Lỗi xử lý yêu cầu!", error: error.message }, 500, request.headers.get('Origin'));
     }
   },
 };
