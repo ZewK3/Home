@@ -197,86 +197,11 @@ class RouteLoader {
 // Global route loader
 const routeLoader = new RouteLoader();
 
-/**
- * Service Worker registration helper
- */
-class ServiceWorkerManager {
-  constructor() {
-    this.registration = null;
-  }
-  
-  /**
-   * Register service worker
-   */
-  async register(swPath = '/service-worker.js') {
-    if (!('serviceWorker' in navigator)) {
-      console.warn('Service Worker not supported');
-      return null;
-    }
-    
-    try {
-      this.registration = await navigator.serviceWorker.register(swPath);
-      console.log('✅ Service Worker registered:', this.registration);
-      
-      // Listen for updates
-      this.registration.addEventListener('updatefound', () => {
-        const newWorker = this.registration.installing;
-        console.log('🔄 Service Worker update found');
-        
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('✅ New Service Worker installed');
-            this.promptUpdate();
-          }
-        });
-      });
-      
-      return this.registration;
-    } catch (error) {
-      console.error('❌ Service Worker registration failed:', error);
-      return null;
-    }
-  }
-  
-  /**
-   * Prompt user to update
-   */
-  promptUpdate() {
-    if (confirm('New version available! Reload to update?')) {
-      window.location.reload();
-    }
-  }
-  
-  /**
-   * Unregister service worker
-   */
-  async unregister() {
-    if (this.registration) {
-      await this.registration.unregister();
-      console.log('🗑️  Service Worker unregistered');
-    }
-  }
-  
-  /**
-   * Clear cache
-   */
-  async clearCache() {
-    if (this.registration && this.registration.active) {
-      this.registration.active.postMessage({ type: 'CLEAR_CACHE' });
-      console.log('🗑️  Cache cleared');
-    }
-  }
-}
-
-// Global service worker manager
-const swManager = new ServiceWorkerManager();
-
 // Make available globally
 if (typeof window !== 'undefined') {
   window.moduleLoader = moduleLoader;
   window.componentLoader = componentLoader;
   window.routeLoader = routeLoader;
-  window.swManager = swManager;
 }
 
 // Export for use in other modules
@@ -285,10 +210,8 @@ if (typeof module !== 'undefined' && module.exports) {
     ModuleLoader,
     ComponentLoader,
     RouteLoader,
-    ServiceWorkerManager,
     moduleLoader,
     componentLoader,
-    routeLoader,
-    swManager
+    routeLoader
   };
 }

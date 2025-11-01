@@ -216,13 +216,8 @@
     <script src="../assets/js/menu-manager.js"></script>
 
     <script>
-        // Register service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                swManager.register('/service-worker.js')
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
-        }
+        // Service Worker removed - Using direct API calls for better reliability
+        console.log('✅ Application ready with direct API access');
         
         // Admin Dashboard Logic
         document.addEventListener('DOMContentLoaded', async () => {

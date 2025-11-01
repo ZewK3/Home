@@ -282,16 +282,10 @@
     <!-- Authentication JavaScript -->
     <script src="../../assets/js/script.js"></script>
     
-    <!-- Phase 3: Service Worker Registration -->
+    <!-- Phase 3: Service Worker Registration - REMOVED for direct API access -->
     <script>
-        // Register service worker for offline support
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                swManager.register('/service-worker.js')
-                    .then(reg => console.log('✅ Service Worker ready for offline support'))
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
-        }
+        // Service Worker removed - Using direct API calls for better reliability
+        console.log('✅ Application ready with direct API access');
     </script>
 </body>
 </html>
