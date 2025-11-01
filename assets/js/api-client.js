@@ -13,7 +13,7 @@ class APIClient {
      * Get authentication token from storage
      */
     getToken() {
-        return SecureStorageWrapper.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+        return SimpleStorage.get(CONFIG.STORAGE_KEYS.AUTH_TOKEN) || SimpleStorage.get('authToken');
     }
 
     /**

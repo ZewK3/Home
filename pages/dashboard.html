@@ -200,8 +200,7 @@
 
     <!-- Mobile Dashboard JavaScript -->
     <script src="../../assets/js/config.js"></script>
-    <script src="../../assets/js/secure-storage.js"></script>
-    <script src="../../assets/js/secure-storage-wrapper.js"></script>
+    <script src="../../assets/js/simple-storage.js"></script>
     <script src="../../assets/js/api-client.js"></script>
     
     <!-- Phase 3: Advanced Optimizations -->
@@ -211,16 +210,10 @@
     <script src="../../assets/js/dashboard-content.js"></script>
     <script src="../../assets/js/dashboard-main.js"></script>
     
-    <!-- Phase 3: Service Worker Registration -->
+    <!-- Phase 3: Service Worker Registration - REMOVED for direct API access -->
     <script>
-        // Register service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                swManager.register('/service-worker.js')
-                    .then(reg => console.log('✅ PWA ready with offline support'))
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
-        }
+        // Service Worker removed - Using direct API calls for better reliability
+        console.log('✅ Application ready with direct API access');
         
         // Initialize app state
         appState.setState({

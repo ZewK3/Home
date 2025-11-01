@@ -1827,46 +1827,6 @@ async function attendanceController_createRequest(body, db, origin) {
 }
 
 
-
-// Comment Controller - Reply to comment
-async function commentController_reply(body, db, origin) {
-  try {
-    const { commentId, replyText, repliedBy } = body;
-    
-    if (!commentId || !replyText || !repliedBy) {
-      return jsonResponse({ message: "Comment ID, reply text, and repliedBy are required" }, 400, origin);
-    }
-
-    const currentTime = TimezoneUtils.toHanoiISOString();
-    const replyId = `REPLY_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-
-    // Get the original comment to find the task ID
-    const originalCommentStmt = await db.prepare("SELECT task_id FROM task_comments WHERE comment_id = ?");
-    const originalComment = await originalCommentStmt.bind(commentId).first();
-    
-    if (!originalComment) {
-      return jsonResponse({ message: "Original comment not found" }, 404, origin);
-    }
-
-    const stmt = await db.prepare(`
-      INSERT INTO task_comments 
-      (comment_id, task_id, comment_text, commented_by, parent_comment_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-    
-    await stmt.bind(replyId, originalComment.task_id, replyText, repliedBy, commentId, currentTime, currentTime).run();
-
-    return jsonResponse({ 
-      message: "Reply added successfully",
-      replyId: replyId,
-      parentCommentId: commentId
-    }, 200, origin);
-  } catch (error) {
-    console.error("Error replying to comment:", error);
-    return jsonResponse({ message: "Failed to reply to comment", error: error.message }, 500, origin);
-  }
-}
-
 // Shift Controller - Save assignments
 async function shiftController_saveAssignments(body, db, origin) {
   try {
@@ -2469,25 +2429,20 @@ async function requestController_getPendingCount(url, db, origin) {
     }
 
     // Count pending attendance requests
-    const attendanceStmt = await db.prepare("SELECT COUNT(*) as count FROM employee_requests WHERE employeeId = ? AND status = 'pending'");
+    const attendanceStmt = await db.prepare("SELECT COUNT(*) as count FROM employee_requests WHERE employeeId = ? AND requestType IN ('leave', 'overtime', 'forgot_checkin', 'forgot_checkout') AND status = 'pending'");
     const attendanceResult = await attendanceStmt.bind(employeeId).first();
     
     // Count pending shift requests
-    const shiftStmt = await db.prepare("SELECT COUNT(*) as count FROM employee_requests WHERE employeeId = ? AND status = 'pending'");
+    const shiftStmt = await db.prepare("SELECT COUNT(*) as count FROM employee_requests WHERE employeeId = ? AND requestType IN ('shift_change', 'shift_swap') AND status = 'pending'");
     const shiftResult = await shiftStmt.bind(employeeId).first();
-    
-    // Count pending tasks
-    const taskStmt = await db.prepare("SELECT COUNT(*) as count FROM tasks WHERE (assigned_to = ? OR assignedTo = ?) AND status = 'pending'");
-    const taskResult = await taskStmt.bind(employeeId, employeeId).first();
 
-    const totalPending = (attendanceResult.count || 0) + (shiftResult.count || 0) + (taskResult.count || 0);
+    const totalPending = (attendanceResult.count || 0) + (shiftResult.count || 0);
 
     return jsonResponse({
       employeeId: employeeId,
       pendingRequests: {
         attendance: attendanceResult.count || 0,
         shift: shiftResult.count || 0,
-        tasks: taskResult.count || 0,
         total: totalPending
       }
     }, 200, origin);
@@ -2626,18 +2581,12 @@ function initializeRouter() {
   router.addRoute('GET', '/api/dashboard/stats', dashboardController_getStats, true);
   
   // =====================================================
-  // ADMIN ROUTES - DATABASE OPTIMIZATION
+  // ADMIN ROUTES
   // =====================================================
-  router.addRoute('POST', '/api/admin/migrate', adminController_runMigrations, true);
+  // Note: Database optimization indexes are included in schema file
   
   // =====================================================
-  // DEPRECATED LEGACY ROUTES (Phase 3: Will be removed)
-  // Use RESTful endpoints instead
-  // =====================================================
-  // Temporarily disabled - use RESTful endpoints only
-  // router.addRoute('GET', '/api/legacy', legacyController_handleGet, false);
-  // router.addRoute('POST', '/api/legacy', legacyController_handlePost, false);
-
+  
   return router;
 }
 
@@ -2716,278 +2665,6 @@ async function requestController_complete_wrapper(url, params, body, db, origin,
 }
 
 // =====================================================
-// DEPRECATED LEGACY ENDPOINTS
-// These endpoints are deprecated and will be removed in future versions
-// Please migrate to RESTful endpoints
-// =====================================================
-
-async function legacyController_handleGet(url, params, db, origin, userId) {
-  const action = url.searchParams.get("action");
-  console.warn(`⚠️ DEPRECATED: Legacy action '${action}' used. Please migrate to RESTful endpoints.`);
-  
-  if (!action) return jsonResponse({ 
-    message: "⚠️ DEPRECATED: Action-based API is deprecated. Please use RESTful endpoints.",
-    deprecated: true
-  }, 400, origin);
-
-  // Map legacy actions to new controllers
-  switch (action) {
-    case "getStores": return await storeController_list(db, origin);
-    case "getUsers": return await employeeController_list(url, db, origin);
-    case "getUser": return await employeeController_getById(url, db, origin);
-    case "getDashboardStats": return await dashboardController_getStats(db, origin);
-    case "checkId": return await employeeController_checkIdExists(url, db, origin);
-    case "getUserHistory": return await employeeController_getHistory(url, db, origin);
-    case "getCurrentShift": return await shiftController_getCurrent(url, db, origin, userId);
-    case "getWeeklyShifts": return await shiftController_getWeekly(url, db, origin);
-    case "getAttendanceData": return await attendanceController_getData(url, db, origin);
-    case "getPendingRequests": return await requestController_getPending(db, origin);
-    case "getPermissions": return await employeeController_getPermissions(url, db, origin);
-    case "getPendingRegistrations": return await registrationController_getPending(url, db, origin);
-    case "getTimesheet": return await timesheetController_get(url, db, origin, userId);
-    case "getAttendanceHistory": return await attendanceController_getHistory(url, db, origin);
-    case "getShiftAssignments": return await shiftController_getAssignments(url, db, origin);
-    case "getShifts": return await shiftController_list(url, db, origin);
-    case "getPersonalStats": return await employeeController_getPersonalStats(url, db, origin, userId);
-    case "getEmployeesByStore": return await storeController_getEmployees(url, db, origin);
-    case "getShiftRequests": return await shiftController_getRequests(url, db, origin);
-    case "getAttendanceRequests": return await attendanceController_getRequests(url, db, origin);
-    case "getAllUsers": return await employeeController_getAll(url, db, origin);
-    case "checkdk": return await employeeController_checkDuplicate(url, db, origin);
-    case "getPendingRequestsCount": return await requestController_getPendingCount(url, db, origin);
-    default: return jsonResponse({ 
-      message: "⚠️ DEPRECATED: Unknown action. Please use RESTful endpoints.",
-      deprecated: true,
-      action: action
-    }, 400, origin);
-  }
-}
-
-async function legacyController_handlePost(url, params, body, db, origin, userId, token, env) {
-  const action = url.searchParams.get("action");
-  console.warn(`⚠️ DEPRECATED: Legacy action '${action}' used. Please migrate to RESTful endpoints.`);
-  
-  if (!action) return jsonResponse({ 
-    message: "⚠️ DEPRECATED: Action-based API is deprecated. Please use RESTful endpoints.",
-    deprecated: true
-  }, 400, origin);
-
-  // Map legacy actions to new controllers
-  switch (action) {
-    case "login": return await authController_login(body, db, origin);
-    case "register": return await authController_register(body, db, origin, env);
-    case "checkGPS": return await attendanceController_checkGPS(body, db, origin);
-    case "update": return await employeeController_update(body, db, origin);
-    case "assignShift": return await shiftController_assign(body, db, origin);
-    case "loginUser": return await authController_loginUser(body, db, origin);
-    case "updateUser": return await employeeController_updateUser(body, userId, db, origin);
-    case "updatePersonalInfo": return await employeeController_updatePersonalInfo(body, db, origin);
-    case "updateUserWithHistory": return await employeeController_updateWithHistory(body, db, origin);
-    case "approveRegistration": return await registrationController_approve(body, db, origin);
-    case "processAttendance": return await attendanceController_process(body, db, origin);
-    case "createAttendanceRequest": return await attendanceController_createRequest(body, db, origin);
-    case "replyToComment": return await commentController_reply(body, db, origin);
-    case "saveShiftAssignments": return await shiftController_saveAssignments(body, db, origin);
-    case "approveShiftRequest": return await shiftController_approveRequest(body, db, origin);
-    case "rejectShiftRequest": return await shiftController_rejectRequest(body, db, origin);
-    case "approveAttendanceRequest": return await attendanceController_approveRequest(body, db, origin, token);
-    case "rejectAttendanceRequest": return await attendanceController_rejectRequest(body, db, origin, token);
-    case "verifyEmail": return await authController_verifyEmail(body, db, origin, env);
-    case "approveRegistrationWithHistory": return await registrationController_approveWithHistory(body, db, origin);
-    case "completeRequest": return await requestController_complete(body, db, origin);
-    case "createStore": return await storeController_create(body, db, origin);
-    case "createEmployee": return await employeeController_create(body, db, origin);
-    default: return jsonResponse({ 
-      message: "⚠️ DEPRECATED: Unknown action. Please use RESTful endpoints.",
-      deprecated: true,
-      action: action
-    }, 400, origin);
-  }
-}
-
-// =====================================================
-// DATABASE MIGRATION SQL (HIGH-PRIORITY OPTIMIZATIONS)
-// =====================================================
-
-const MIGRATION_001_COMPOUND_INDEXES = `
-CREATE INDEX IF NOT EXISTS idx_attendance_employee_date_range ON attendance(employeeId, checkDate DESC);
-CREATE INDEX IF NOT EXISTS idx_shift_assignments_employee_specific_date ON shift_assignments(employeeId, date);
-CREATE INDEX IF NOT EXISTS idx_employee_requests_status_employee ON employee_requests(status, employeeId, createdAt DESC);
-CREATE INDEX IF NOT EXISTS idx_sessions_token_active ON sessions(session_token, is_active, expires_at);
-CREATE INDEX IF NOT EXISTS idx_employees_store_position ON employees(storeId, position, is_active);
-CREATE INDEX IF NOT EXISTS idx_employees_store_active ON employees(storeId, is_active, employeeId);
-CREATE INDEX IF NOT EXISTS idx_timesheets_employee_exact_period ON timesheets(employeeId, year, month);
-CREATE INDEX IF NOT EXISTS idx_notifications_employee_unread ON notifications(employeeId, isRead, createdAt DESC);
-CREATE INDEX IF NOT EXISTS idx_shift_assignments_date_shift ON shift_assignments(date, shiftId);
-CREATE INDEX IF NOT EXISTS idx_employee_requests_type_status ON employee_requests(requestType, status, createdAt DESC);
-`;
-
-const MIGRATION_002_COVERING_INDEXES = `
-CREATE INDEX IF NOT EXISTS idx_employees_list_covering ON employees(is_active, position, storeId, employeeId, fullName, email);
-CREATE INDEX IF NOT EXISTS idx_attendance_dashboard_covering ON attendance(employeeId, checkDate, checkTime, checkLocation, attendanceId);
-CREATE INDEX IF NOT EXISTS idx_shift_assignments_list_covering ON shift_assignments(date, employeeId, shiftId, assignmentId);
-CREATE INDEX IF NOT EXISTS idx_employee_requests_list_covering ON employee_requests(status, employeeId, requestType, title, createdAt, requestId);
-`;
-
-const MIGRATION_003_STATS_CACHE = `
-CREATE TABLE IF NOT EXISTS employee_stats_cache (
-  employeeId TEXT PRIMARY KEY,
-  totalAttendanceDays INTEGER DEFAULT 0,
-  totalWorkHours REAL DEFAULT 0,
-  totalLateCheckins INTEGER DEFAULT 0,
-  totalEarlyCheckouts INTEGER DEFAULT 0,
-  lastCheckDate TEXT,
-  lastCheckTime TEXT,
-  currentMonthDays INTEGER DEFAULT 0,
-  lastUpdated TEXT DEFAULT (datetime('now')),
-  FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
-);
-CREATE INDEX IF NOT EXISTS idx_employee_stats_updated ON employee_stats_cache(lastUpdated);
-CREATE INDEX IF NOT EXISTS idx_employee_stats_employee ON employee_stats_cache(employeeId, lastUpdated);
-INSERT OR IGNORE INTO employee_stats_cache (employeeId, totalAttendanceDays, lastCheckDate, lastUpdated)
-SELECT employeeId, COUNT(*) as totalAttendanceDays, MAX(checkDate) as lastCheckDate, datetime('now') as lastUpdated
-FROM attendance GROUP BY employeeId;
-CREATE TRIGGER IF NOT EXISTS trg_update_stats_after_attendance_insert
-AFTER INSERT ON attendance BEGIN
-  INSERT INTO employee_stats_cache (employeeId, totalAttendanceDays, lastCheckDate, lastCheckTime, lastUpdated)
-  VALUES (NEW.employeeId, 1, NEW.checkDate, NEW.checkTime, datetime('now'))
-  ON CONFLICT(employeeId) DO UPDATE SET
-    totalAttendanceDays = totalAttendanceDays + 1,
-    lastCheckDate = NEW.checkDate,
-    lastCheckTime = NEW.checkTime,
-    lastUpdated = datetime('now');
-END;
-CREATE TRIGGER IF NOT EXISTS trg_update_stats_after_attendance_update
-AFTER UPDATE ON attendance BEGIN
-  UPDATE employee_stats_cache SET lastCheckDate = NEW.checkDate, lastCheckTime = NEW.checkTime, lastUpdated = datetime('now')
-  WHERE employeeId = NEW.employeeId;
-END;
-CREATE TRIGGER IF NOT EXISTS trg_update_stats_after_attendance_delete
-AFTER DELETE ON attendance BEGIN
-  UPDATE employee_stats_cache SET totalAttendanceDays = totalAttendanceDays - 1, lastUpdated = datetime('now')
-  WHERE employeeId = OLD.employeeId;
-END;
-`;
-
-const MIGRATION_004_DAILY_SUMMARY = `
-CREATE TABLE IF NOT EXISTS daily_attendance_summary (
-  summaryDate TEXT NOT NULL,
-  storeId TEXT NOT NULL,
-  totalEmployees INTEGER DEFAULT 0,
-  presentEmployees INTEGER DEFAULT 0,
-  absentEmployees INTEGER DEFAULT 0,
-  lateEmployees INTEGER DEFAULT 0,
-  averageCheckInTime TEXT,
-  lastUpdated TEXT DEFAULT (datetime('now')),
-  PRIMARY KEY (summaryDate, storeId),
-  FOREIGN KEY (storeId) REFERENCES stores(storeId) ON DELETE CASCADE
-);
-CREATE INDEX IF NOT EXISTS idx_daily_summary_date ON daily_attendance_summary(summaryDate DESC);
-CREATE INDEX IF NOT EXISTS idx_daily_summary_store_date ON daily_attendance_summary(storeId, summaryDate DESC);
-INSERT OR IGNORE INTO daily_attendance_summary (summaryDate, storeId, totalEmployees, presentEmployees, lastUpdated)
-SELECT a.checkDate, e.storeId, (SELECT COUNT(DISTINCT employeeId) FROM employees WHERE storeId = e.storeId AND is_active = 1), COUNT(DISTINCT a.employeeId), datetime('now')
-FROM attendance a JOIN employees e ON a.employeeId = e.employeeId WHERE a.checkDate >= date('now', '-90 days') GROUP BY a.checkDate, e.storeId;
-CREATE TRIGGER IF NOT EXISTS trg_update_daily_summary_after_insert
-AFTER INSERT ON attendance BEGIN
-  INSERT INTO daily_attendance_summary (summaryDate, storeId, totalEmployees, presentEmployees, lastUpdated)
-  SELECT NEW.checkDate, e.storeId, (SELECT COUNT(*) FROM employees WHERE storeId = e.storeId AND is_active = 1), 1, datetime('now')
-  FROM employees e WHERE e.employeeId = NEW.employeeId
-  ON CONFLICT(summaryDate, storeId) DO UPDATE SET presentEmployees = presentEmployees + 1, lastUpdated = datetime('now');
-END;
-`;
-
-/**
- * Run database migrations for high-priority optimizations
- * @param {D1Database} db - Database instance
- * @returns {Promise<Array>} Migration results
- */
-async function runDatabaseMigrations(db) {
-  const migrations = [
-    { name: '001_compound_indexes', sql: MIGRATION_001_COMPOUND_INDEXES, priority: 'HIGH' },
-    { name: '002_covering_indexes', sql: MIGRATION_002_COVERING_INDEXES, priority: 'HIGH' },
-    { name: '003_stats_cache', sql: MIGRATION_003_STATS_CACHE, priority: 'HIGH' },
-    { name: '004_daily_summary', sql: MIGRATION_004_DAILY_SUMMARY, priority: 'HIGH' }
-  ];
-  
-  const results = [];
-  
-  for (const migration of migrations) {
-    try {
-      console.log(`Running migration: ${migration.name}`);
-      
-      // Split SQL into statements and execute
-      const statements = migration.sql.split(';')
-        .map(s => s.trim())
-        .filter(s => s && !s.startsWith('--'));
-      
-      for (const stmt of statements) {
-        await db.prepare(stmt).run();
-      }
-      
-      results.push({
-        migration: migration.name,
-        priority: migration.priority,
-        status: 'success',
-        message: 'Applied successfully'
-      });
-      
-      console.log(`✅ Migration ${migration.name} completed`);
-    } catch (error) {
-      results.push({
-        migration: migration.name,
-        priority: migration.priority,
-        status: 'error',
-        error: error.message
-      });
-      
-      console.error(`❌ Migration ${migration.name} failed:`, error);
-      // Continue with other migrations
-    }
-  }
-  
-  return results;
-}
-
-/**
- * Controller for database migrations (admin only)
- */
-async function adminController_runMigrations(url, params, db, origin, userId) {
-  try {
-    // Verify admin permission
-    const user = await db.prepare('SELECT position FROM employees WHERE employeeId = ?')
-      .bind(userId).first();
-    
-    if (!user || user.position !== 'AD') {
-      return jsonResponse({ error: 'Unauthorized - Admin access required' }, 403, origin);
-    }
-    
-    // Run migrations
-    const results = await runDatabaseMigrations(db);
-    
-    const successCount = results.filter(r => r.status === 'success').length;
-    const failCount = results.filter(r => r.status === 'error').length;
-    
-    return jsonResponse({
-      success: failCount === 0,
-      message: `Database migrations completed: ${successCount} success, ${failCount} failed`,
-      results,
-      expectedImprovements: {
-        databaseQueries: '80-90% faster',
-        dashboardLoads: '90% faster',
-        managerViews: '70-90% faster',
-        listQueries: '40-60% faster'
-      }
-    }, 200, origin);
-  } catch (error) {
-    console.error('Migration error:', error);
-    return jsonResponse({ 
-      error: 'Migration failed', 
-      message: error.message 
-    }, 500, origin);
-  }
-}
-
-// =====================================================
 // MAIN EXPORT WITH RESTFUL ROUTING
 // =====================================================
 
@@ -3052,9 +2729,7 @@ export default {
         return await route.handler(url, route.params, db, ALLOWED_ORIGIN, request.userId);
       } else if (['POST', 'PUT', 'PATCH'].includes(request.method)) {
         // Special handling for different POST routes
-        if (pathname === '/api/legacy') {
-          return await route.handler(url, route.params, body, db, ALLOWED_ORIGIN, request.userId, token, env);
-        } else if (pathname === '/api/auth/register') {
+        if (pathname === '/api/auth/register') {
           return await route.handler(body, db, ALLOWED_ORIGIN, env);
         } else if (pathname === '/api/auth/login') {
           return await route.handler(body, db, ALLOWED_ORIGIN);
@@ -3076,8 +2751,6 @@ export default {
           return await route.handler(body, db, ALLOWED_ORIGIN);
         } else if (pathname === '/api/shifts/assign') {
           return await route.handler(body, db, ALLOWED_ORIGIN);
-        } else if (pathname === '/api/admin/migrate') {
-          return await route.handler(url, route.params, db, ALLOWED_ORIGIN, request.userId);
         } else if (pathname.includes('/approve') || pathname.includes('/reject') || pathname.includes('/complete')) {
           return await route.handler(url, route.params, body, db, ALLOWED_ORIGIN, token);
         } else {
@@ -3086,10 +2759,10 @@ export default {
         }
       }
 
-      return jsonResponse({ message: "Phương thức không được hỗ trợ!" }, 405);
+      return jsonResponse({ message: "Phương thức không được hỗ trợ!" }, 405, request.headers.get('Origin'));
     } catch (error) {
       console.error("Lỗi xử lý yêu cầu:", error);
-      return jsonResponse({ message: "Lỗi xử lý yêu cầu!", error: error.message }, 500);
+      return jsonResponse({ message: "Lỗi xử lý yêu cầu!", error: error.message }, 500, request.headers.get('Origin'));
     }
   },
 };

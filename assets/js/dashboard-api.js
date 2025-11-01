@@ -160,7 +160,7 @@ const DashboardAPI = {
             const response = await this.getClient().completeRequest(requestId, {
                 status: 'approved',
                 approverNotes,
-                completedBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
+                completedBy: SimpleStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
@@ -173,7 +173,7 @@ const DashboardAPI = {
         try {
             const response = await this.getClient().rejectAttendanceRequest(requestId, {
                 rejectionReason: approverNotes,
-                rejectedBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
+                rejectedBy: SimpleStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
@@ -239,7 +239,7 @@ const DashboardAPI = {
                 body: JSON.stringify({
                     employeeId,
                     status: 'APPROVED', // Updated to match schema
-                    approved_by: SecureStorage.get('userData')?.employeeId,
+                    approved_by: SimpleStorage.get('userData')?.employeeId,
                     approved_at: new Date().toISOString()
                 })
             });
@@ -257,7 +257,7 @@ const DashboardAPI = {
                 employeeId,
                 approved: false,
                 reason: reason,
-                actionBy: SecureStorageWrapper.getItem('loggedInUser')?.employeeId
+                actionBy: SimpleStorageWrapper.getItem('loggedInUser')?.employeeId
             });
             return response;
         } catch (error) {
