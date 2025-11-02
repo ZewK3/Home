@@ -44,15 +44,6 @@ CREATE TABLE employees (
 -- pending_registrations.verification_code stores the verification code
 -- pending_registrations.status tracks verification state (pending/verified/approved/rejected)
 -- This design is more efficient as it combines registration and verification in one table.
-CREATE TABLE email_verification (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    code TEXT NOT NULL,
-    verified INTEGER DEFAULT 0,
-    createdAt TEXT DEFAULT (datetime('now')),
-    expiresAt TEXT NOT NULL,
-    FOREIGN KEY (email) REFERENCES employees(email) ON DELETE CASCADE
-);
 
 -- Stores table - Streamlined for GPS validation
 CREATE TABLE stores (
@@ -84,21 +75,6 @@ CREATE TABLE attendance (
 );
 
 -- Timesheets table (unchanged - monthly summaries)
-CREATE TABLE timesheets (
-    timesheetId INTEGER PRIMARY KEY AUTOINCREMENT,
-    employeeId TEXT NOT NULL,
-    month INTEGER NOT NULL,
-    year INTEGER NOT NULL,
-    totalDays INTEGER DEFAULT 0,
-    presentDays INTEGER DEFAULT 0,
-    absentDays INTEGER DEFAULT 0,
-    lateDays INTEGER DEFAULT 0,
-    totalHours REAL DEFAULT 0,
-    overtimeHours REAL DEFAULT 0,
-    createdAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    UNIQUE(employeeId, month, year)
-);
 
 -- Shift assignments - Links employees to shifts
 CREATE TABLE shift_assignments (
@@ -293,87 +269,20 @@ CREATE TABLE user_change_history (
 );
 
 -- Departments table (optional - for organizational structure)
-CREATE TABLE departments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    department_code TEXT UNIQUE NOT NULL,
-    department_name TEXT NOT NULL,
-    description TEXT,
-    managerEmployeeId TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (managerEmployeeId) REFERENCES employees(employeeId)
-);
 
 -- =====================================================
 -- SYSTEM MANAGEMENT
 -- =====================================================
 
 -- Permissions table (unchanged)
-CREATE TABLE permissions (
-    permissionId INTEGER PRIMARY KEY AUTOINCREMENT,
-    employeeId TEXT NOT NULL,
-    permission TEXT NOT NULL,
-    granted INTEGER DEFAULT 0,
-    grantedBy TEXT,
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    FOREIGN KEY (grantedBy) REFERENCES employees(employeeId),
-    UNIQUE(employeeId, permission)
-);
 
 -- Notifications (unchanged)
-CREATE TABLE notifications (
-    notificationId INTEGER PRIMARY KEY AUTOINCREMENT,
-    employeeId TEXT NOT NULL,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    type TEXT DEFAULT 'info' CHECK(type IN ('info', 'success', 'warning', 'error', 'request', 'task', 'system')),
-    isRead INTEGER DEFAULT 0,
-    actionUrl TEXT,
-    createdAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
-);
 
 -- HR settings (unchanged)
-CREATE TABLE hr_settings (
-    settingId INTEGER PRIMARY KEY AUTOINCREMENT,
-    settingKey TEXT NOT NULL UNIQUE,
-    settingValue TEXT,
-    category TEXT,
-    description TEXT,
-    updatedBy TEXT,
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (updatedBy) REFERENCES employees(employeeId)
-);
 
 -- History logs (unchanged)
-CREATE TABLE history_logs (
-    logId INTEGER PRIMARY KEY AUTOINCREMENT,
-    action_type TEXT NOT NULL,
-    action_by_employee_id TEXT NOT NULL,
-    target_employee_id TEXT,
-    description TEXT,
-    details TEXT,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (action_by_employee_id) REFERENCES employees(employeeId),
-    FOREIGN KEY (target_employee_id) REFERENCES employees(employeeId)
-);
 
 -- Messages table (unchanged - for internal messaging)
-CREATE TABLE messages (
-    messageId INTEGER PRIMARY KEY AUTOINCREMENT,
-    senderId TEXT NOT NULL,
-    receiverId TEXT NOT NULL,
-    subject TEXT,
-    message TEXT NOT NULL,
-    isRead INTEGER DEFAULT 0,
-    sentAt TEXT DEFAULT (datetime('now')),
-    readAt TEXT,
-    FOREIGN KEY (senderId) REFERENCES employees(employeeId),
-    FOREIGN KEY (receiverId) REFERENCES employees(employeeId)
-);
 
 -- =====================================================
 -- OPTIMIZED INDEXES FOR PERFORMANCE
@@ -398,7 +307,6 @@ CREATE INDEX idx_attendance_checkDate ON attendance(checkDate);
 CREATE INDEX idx_attendance_checkLocation ON attendance(checkLocation);
 
 -- Timesheet indexes
-CREATE INDEX idx_timesheets_employee_period ON timesheets(employeeId, year DESC, month DESC);
 
 -- Shift assignment indexes
 CREATE INDEX idx_shift_assignments_employee_date ON shift_assignments(employeeId, date DESC);
@@ -416,24 +324,12 @@ CREATE INDEX idx_shifts_start_time ON shifts(startTime);
 CREATE INDEX idx_shifts_end_time ON shifts(endTime);
 
 -- Notification indexes
-CREATE INDEX idx_notifications_employee_read ON notifications(employeeId, isRead);
-CREATE INDEX idx_notifications_created ON notifications(createdAt DESC);
-CREATE INDEX idx_notifications_type ON notifications(type);
 
 -- Permission indexes
-CREATE INDEX idx_permissions_employee_permission ON permissions(employeeId, permission);
 
 -- History log indexes
-CREATE INDEX idx_history_logs_action_by ON history_logs(action_by_employee_id);
-CREATE INDEX idx_history_logs_target ON history_logs(target_employee_id);
-CREATE INDEX idx_history_logs_type ON history_logs(action_type);
-CREATE INDEX idx_history_logs_created ON history_logs(created_at DESC);
 
 -- Message indexes
-CREATE INDEX idx_messages_sender ON messages(senderId);
-CREATE INDEX idx_messages_receiver ON messages(receiverId);
-CREATE INDEX idx_messages_read ON messages(isRead);
-CREATE INDEX idx_messages_sent ON messages(sentAt DESC);
 
 -- Pending registrations indexes
 CREATE INDEX idx_pending_reg_employeeId ON pending_registrations(employeeId);
@@ -447,29 +343,14 @@ CREATE INDEX idx_user_change_changed_at ON user_change_history(changed_at DESC);
 -- Position-based permissions (no separate roles tables needed)
 
 -- Departments indexes
-CREATE INDEX idx_departments_code ON departments(department_code);
-CREATE INDEX idx_departments_manager ON departments(managerEmployeeId);
 
 -- =====================================================
 -- SAMPLE DATA
 -- =====================================================
 
 -- Default admin permissions
-INSERT OR IGNORE INTO permissions (employeeId, permission, granted) 
-VALUES 
-    ('ADMIN001', 'schedule', 1),
-    ('ADMIN001', 'rewards', 1),
-    ('ADMIN001', 'admin', 1),
-    ('ADMIN001', 'finance', 1);
 
 -- Default HR settings
-INSERT OR IGNORE INTO hr_settings (settingKey, settingValue, category, description) 
-VALUES 
-    ('work_hours_per_day', '8', 'attendance', 'Standard work hours per day'),
-    ('overtime_multiplier', '1.5', 'payroll', 'Overtime pay multiplier'),
-    ('max_gps_distance', '50', 'attendance', 'Maximum GPS distance in meters for check-in'),
-    ('late_threshold_minutes', '15', 'attendance', 'Minutes after scheduled time considered late'),
-    ('auto_approve_leave_days', '3', 'requests', 'Auto-approve leave requests under N days');
 
 -- =====================================================
 -- OPTIMIZATION SUMMARY
@@ -505,7 +386,6 @@ VALUES
 -- 1. shifts table - predefined work shifts for better shift management
 -- 2. pending_registrations - user registration workflow
 -- 3. user_change_history - audit trail for user changes
--- 4. departments - organizational structure (optional)
 --
 -- BENEFITS:
 -- - Simplified schema with consistent employeeId usage
@@ -552,12 +432,8 @@ CREATE INDEX IF NOT EXISTS idx_employees_store_active
 ON employees(storeId, is_active, employeeId);
 
 -- Timesheets by employee + exact period
-CREATE INDEX IF NOT EXISTS idx_timesheets_employee_exact_period 
-ON timesheets(employeeId, year, month);
 
 -- Notifications by employee + unread status
-CREATE INDEX IF NOT EXISTS idx_notifications_employee_unread 
-ON notifications(employeeId, isRead, createdAt DESC);
 
 -- Shift assignments by date + shift (for schedules)
 CREATE INDEX IF NOT EXISTS idx_shift_assignments_date_shift 
