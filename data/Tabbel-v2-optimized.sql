@@ -28,8 +28,7 @@ CREATE TABLE employees (
     fullName TEXT NOT NULL,
     phone TEXT,
     email TEXT UNIQUE,
-    password TEXT NOT NULL,
-    salt TEXT,
+    password TEXT NOT NULL,              -- SHA-256 hashed, no salt needed
     storeId TEXT,
     position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
     approval_status TEXT DEFAULT 'approved' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
@@ -259,20 +258,19 @@ CREATE TABLE pending_registrations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT UNIQUE NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    name TEXT,
-    fullName TEXT,
+    password TEXT NOT NULL,              -- Already hashed with SHA-256
+    fullName TEXT NOT NULL,              -- Synchronized with employees.fullName
     phone TEXT,
-    storeId TEXT,
-    storeName TEXT,
-    department TEXT,
-    position TEXT DEFAULT 'NV',
+    storeId TEXT,                        -- FOREIGN KEY to stores(storeId)
+    position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),  -- Match employees position constraint
     verification_code TEXT,
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'verified', 'approved', 'rejected')),
     created_at TEXT DEFAULT (datetime('now')),
     verified_at TEXT,
     approved_at TEXT,
-    approved_by TEXT
+    approved_by TEXT,                    -- employeeId of approver
+    FOREIGN KEY (storeId) REFERENCES stores(storeId),
+    FOREIGN KEY (approved_by) REFERENCES employees(employeeId)
 );
 
 -- User change history

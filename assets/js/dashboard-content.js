@@ -665,13 +665,9 @@ const DashboardContent = {
                         <div class="stat-value" id="currentTime">--:--</div>
                         <div class="stat-label" id="currentDate">--</div>
                     </div>
-                    <button class="btn btn-success btn-full mb-md" onclick="DashboardContent.performCheckIn()">
-                        <span class="material-icons-round">login</span>
-                        Check In
-                    </button>
-                    <button class="btn btn-danger btn-full" onclick="DashboardContent.performCheckOut()">
-                        <span class="material-icons-round">logout</span>
-                        Check Out
+                    <button class="btn btn-primary btn-full mb-md" onclick="DashboardContent.performAttendance()">
+                        <span class="material-icons-round">fingerprint</span>
+                        Chấm công
                     </button>
                     <div id="attendanceStatus" class="mt-md"></div>
                 </div>
@@ -718,7 +714,7 @@ const DashboardContent = {
         setInterval(updateTime, 1000);
     },
 
-    async performCheckIn() {
+    async performAttendance() {
         if (!navigator.geolocation) {
             showNotification('Trình duyệt không hỗ trợ GPS', 'error');
             return;
@@ -726,45 +722,17 @@ const DashboardContent = {
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                const result = await DashboardAPI.clockIn(
+                const result = await DashboardAPI.checkGPS(
                     this.employeeId,
                     position.coords.latitude,
                     position.coords.longitude
                 );
 
                 if (result.success) {
-                    showNotification('Check-in thành công!', 'success');
+                    showNotification('Chấm công thành công!', 'success');
                     this.loadAttendanceHistory();
                 } else {
-                    showNotification(result.message || 'Check-in thất bại', 'error');
-                }
-            },
-            (error) => {
-                showNotification('Không thể lấy vị trí GPS', 'error');
-                console.error('GPS error:', error);
-            }
-        );
-    },
-
-    async performCheckOut() {
-        if (!navigator.geolocation) {
-            showNotification('Trình duyệt không hỗ trợ GPS', 'error');
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const result = await DashboardAPI.clockOut(
-                    this.employeeId,
-                    position.coords.latitude,
-                    position.coords.longitude
-                );
-
-                if (result.success) {
-                    showNotification('Check-out thành công!', 'success');
-                    this.loadAttendanceHistory();
-                } else {
-                    showNotification(result.message || 'Check-out thất bại', 'error');
+                    showNotification(result.message || 'Chấm công thất bại', 'error');
                 }
             },
             (error) => {

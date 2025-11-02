@@ -547,17 +547,37 @@ body {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
                 0 0 0 1px rgba(255, 255, 255, 0.2);
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) scale(0.95);
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.18);
     width: 100%;
     max-height: calc(100vh - 2rem);
+    overflow-y: auto;
     box-sizing: border-box;
+}
+
+/* Custom Scrollbar */
+.form-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.form-container::-webkit-scrollbar-thumb {
+    background: rgba(103, 232, 249, 0.4);
+    border-radius: 10px;
+}
+
+.form-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(103, 232, 249, 0.6);
 }
 
 .form-container.active {
@@ -645,13 +665,13 @@ body {
 /* Form Header - Enhanced Cosmic Theme */
 .form-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-header h2 {
-    font-size: 1.875rem;
+    font-size: 1.625rem;
     color: #ffffff;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
     font-weight: 700;
     text-shadow: 0 0 20px rgba(103, 232, 249, 0.3);
 }
@@ -662,7 +682,7 @@ body {
     width: 60px;
     height: 3px;
     background: linear-gradient(90deg, rgba(103, 232, 249, 1), rgba(147, 51, 234, 1));
-    margin: 1rem auto 0;
+    margin: 0.75rem auto 0;
     border-radius: 2px;
     box-shadow: 0 0 10px rgba(103, 232, 249, 0.5);
 }
@@ -674,7 +694,7 @@ body {
 
 /* Input Group */
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .input-group {
@@ -683,8 +703,8 @@ body {
 
 .input-group input {
     width: 100%;
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    font-size: 1rem;
+    padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+    font-size: 0.9375rem;
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     background-color: rgba(255, 255, 255, 0.1);
@@ -803,10 +823,10 @@ body {
 /* Buttons - Cosmic Theme */
 .btn {
     width: 100%;
-    padding: 0.875rem 1.5rem;
+    padding: 0.75rem 1.25rem;
     border: none;
     border-radius: 12px;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -840,6 +860,25 @@ body {
 
 .btn-primary:hover::before {
     left: 100%;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* Loading State - GitHub Style */
@@ -898,10 +937,27 @@ body {
     text-shadow: 0 0 8px rgba(103, 232, 249, 0.6);
 }
 
+/* Form Info */
+.form-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(96, 165, 250, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.form-info p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
 /* Form Footer */
 .form-footer {
     text-align: center;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     color: rgba(255, 255, 255, 0.9);
 }
 
@@ -928,7 +984,7 @@ body {
 }
 
 .form-options {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: rgba(255, 255, 255, 0.9);
 }
 

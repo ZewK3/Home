@@ -30,161 +30,40 @@
 const ALLOWED_ORIGIN = "*";
 
 // =====================================================
-// PHASE 3: ADVANCED PERFORMANCE OPTIMIZATIONS
+// HELPER FUNCTIONS
 // =====================================================
 
-// =====================================================
-// 1. DATABASE QUERY BATCHING UTILITY
-// =====================================================
-
-/**
- * Batch multiple database queries and execute in parallel
- * @param {Array} queries - Array of query objects { query, params }
- * @param {Database} db - Database instance
- * @returns {Promise<Array>} Results array
- */
-async function batchQueries(queries, db) {
-  return await Promise.all(
-    queries.map(({ query, params }) => 
-      db.prepare(query).bind(...(params || [])).first()
-    )
-  );
+async function getVerifiedPendingRegistration(db, employeeId) {
+  return await db.prepare(`
+    SELECT employeeId, email, password, fullName, phone, storeId, position
+    FROM pending_registrations 
+    WHERE employeeId = ? AND status = 'verified'
+  `).bind(employeeId).first();
 }
 
-/**
- * Execute queries in parallel with error handling
- * @param {Object} queryMap - Object with named queries
- * @param {Database} db - Database instance
- * @returns {Promise<Object>} Results object with same keys
- */
-async function parallelQueries(queryMap, db) {
-  const entries = Object.entries(queryMap);
-  const promises = entries.map(([key, { query, params }]) =>
-    db.prepare(query).bind(...(params || [])).first()
-      .then(result => [key, result])
-      .catch(error => [key, { error: error.message }])
-  );
-  
-  const results = await Promise.all(promises);
-  return Object.fromEntries(results);
-}
-
-// =====================================================
-// 2. PREPARED STATEMENT CACHE
-// =====================================================
-
-const statementCache = new Map();
-
-/**
- * Get cached prepared statement
- * @param {Database} db - Database instance
- * @param {string} query - SQL query string
- * @returns {PreparedStatement} Prepared statement
- */
-function getCachedStatement(db, query) {
-  if (!statementCache.has(query)) {
-    statementCache.set(query, db.prepare(query));
-  }
-  return statementCache.get(query);
-}
-
-// =====================================================
-// 3. KV-BASED CACHING LAYER
-// =====================================================
-
-/**
- * Cache manager with TTL support
- */
-class CacheManager {
-  constructor(kvStore) {
-    this.kv = kvStore;
-    this.defaultTTL = 300; // 5 minutes
-  }
-  
-  /**
-   * Get from cache or execute function
-   */
-  async getOrSet(key, fetchFn, ttl = this.defaultTTL) {
-    if (!this.kv) {
-      // Fallback if KV not available
-      return await fetchFn();
+async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) {
+  try {
+    if (!pendingReg.fullName) {
+      throw new Error("Missing required field: fullName");
     }
     
-    try {
-      // Try to get from cache
-      const cached = await this.kv.get(key, { type: 'json' });
-      if (cached) {
-        console.log(`✅ Cache HIT: ${key}`);
-        return cached;
-      }
-      
-      console.log(`❌ Cache MISS: ${key}`);
-      
-      // Execute function and cache result
-      const result = await fetchFn();
-      await this.kv.put(key, JSON.stringify(result), {
-        expirationTtl: ttl
-      });
-      
-      return result;
-    } catch (error) {
-      console.error('Cache error:', error);
-      // Fallback to direct execution
-      return await fetchFn();
-    }
-  }
-  
-  /**
-   * Invalidate cache by key or pattern
-   */
-  async invalidate(keyOrPattern) {
-    if (!this.kv) return;
-    
-    try {
-      if (keyOrPattern.includes('*')) {
-        // Pattern-based invalidation
-        const prefix = keyOrPattern.replace('*', '');
-        const list = await this.kv.list({ prefix });
-        await Promise.all(
-          list.keys.map(key => this.kv.delete(key.name))
-        );
-      } else {
-        await this.kv.delete(keyOrPattern);
-      }
-    } catch (error) {
-      console.error('Cache invalidation error:', error);
-    }
-  }
-}
-
-// =====================================================
-// 4. PERFORMANCE MONITORING
-// =====================================================
-
-class PerformanceMonitor {
-  static logRequest(endpoint, duration, cached = false, method = 'GET') {
-    const log = {
-      endpoint,
-      method,
-      duration: `${duration}ms`,
-      cached,
-      timestamp: new Date().toISOString()
-    };
-    console.log('📊 Performance:', JSON.stringify(log));
-  }
-  
-  static async measureAsync(name, fn) {
-    const start = Date.now();
-    try {
-      const result = await fn();
-      const duration = Date.now() - start;
-      console.log(`⏱️  ${name}: ${duration}ms`);
-      return result;
-    } catch (error) {
-      const duration = Date.now() - start;
-      console.log(`❌ ${name} failed: ${duration}ms`);
-      throw error;
-    }
+    await db.prepare(`
+      INSERT INTO employees 
+      (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+    `).bind(
+      pendingReg.employeeId,
+      pendingReg.fullName,
+      pendingReg.email,
+      pendingReg.password, // Use the already hashed password from pending_registrations
+      pendingReg.phone,
+      pendingReg.storeId,
+      pendingReg.position || 'NV',
+      timestamp
+    ).run();
+  } catch (error) {
+    console.error('Error creating employee from pending registration:', error);
+    throw new Error(`Failed to create employee record: ${error.message}`);
   }
 }
 
@@ -446,7 +325,7 @@ async function registrationController_approveWithHistory(body, db, origin) {
   try {
     // Get action by user info
     const actionByUser = await db
-      .prepare("SELECT name FROM employees WHERE employeeId = ?")
+      .prepare("SELECT fullName FROM employees WHERE employeeId = ?")
       .bind(actionBy)
       .first();
     
@@ -454,34 +333,57 @@ async function registrationController_approveWithHistory(body, db, origin) {
       return jsonResponse({ message: "Người thực hiện không hợp lệ!" }, 400, origin);
     }
 
-    // Update approval status in pending_registrations
     const updateStatus = approved ? 'approved' : 'rejected';
-    await db
-      .prepare("UPDATE pending_registrations SET status = ? WHERE employeeId = ?")
-      .bind(updateStatus, employeeId)
-      .run();
-
-    // Log approval action to user_change_history table (Enhanced schema v3.0)
     const timestamp = TimezoneUtils.toHanoiISOString();
-    
-    await db
-      .prepare(
-        "INSERT INTO user_change_history (employeeId, field_name, old_value, new_value, changed_by, changed_at, reason) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      )
-      .bind(
-        employeeId,
-        'registration_status',
-        'pending',
-        updateStatus,
-        actionBy,
-        timestamp,
-        reason || ''
-      )
-      .run();
 
-    return jsonResponse({ 
-      message: approved ? "Đã phê duyệt đăng ký!" : "Đã từ chối đăng ký!" 
-    }, 200, origin);
+    // Start transaction
+    await db.exec("BEGIN TRANSACTION");
+    
+    try {
+      if (approved) {
+        // Get pending registration data using helper
+        const pendingReg = await getVerifiedPendingRegistration(db, employeeId);
+        
+        if (!pendingReg) {
+          await db.exec("ROLLBACK");
+          return jsonResponse({ message: "Đăng ký chưa được xác thực hoặc không tồn tại!" }, 404, origin);
+        }
+
+        // Create employee record using helper function
+        await createEmployeeFromPendingRegistration(db, pendingReg, timestamp);
+      }
+
+      // Update approval status in pending_registrations
+      await db
+        .prepare("UPDATE pending_registrations SET status = ?, approved_by = ?, approved_at = ? WHERE employeeId = ?")
+        .bind(updateStatus, actionBy, timestamp, employeeId)
+        .run();
+
+      // Log approval action to user_change_history table (Enhanced schema v3.0)
+      await db
+        .prepare(
+          "INSERT INTO user_change_history (employeeId, field_name, old_value, new_value, changed_by, changed_at, reason) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        )
+        .bind(
+          employeeId,
+          'registration_status',
+          'pending',
+          updateStatus,
+          actionBy,
+          timestamp,
+          reason || ''
+        )
+        .run();
+
+      await db.exec("COMMIT");
+
+      return jsonResponse({ 
+        message: approved ? "Đã phê duyệt đăng ký!" : "Đã từ chối đăng ký!" 
+      }, 200, origin);
+    } catch (innerError) {
+      await db.exec("ROLLBACK");
+      throw innerError;
+    }
     
   } catch (error) {
     console.error('Error processing approval with history:', error);
@@ -659,7 +561,7 @@ async function authController_login(body, db, origin) {
 }
 
 // Store Controller - Get all stores
-async function storeController_list(db, origin) {
+async function storeController_list(url, params, db, origin, userId) {
   try {
     const stores = await db
       .prepare("SELECT * FROM stores ORDER BY storeName")
@@ -902,36 +804,31 @@ async function authController_register(body, db, origin, env) {
       fullName, // Client sends fullName
       name, // Direct name field
       position, 
-      storeName, // Client sends storeName
-      storeId, // Direct storeId field
+      storeId, // Client now sends storeId directly
       phone
     } = body;
 
     // Use mapped values, prioritizing client-sent field names
     const userName = name || fullName;
 
-    if (!email || !password || !userName || !storeName) {
+    if (!email || !password || !userName || !storeId) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu thông tin bắt buộc!" 
       }, 400, origin);
     }
 
-    // Look up store by name to get storeId
-    let userStoreId = storeId;
-    if (!userStoreId && storeName) {
-      const storeRecord = await db
-        .prepare("SELECT storeId FROM stores WHERE storeName = ?")
-        .bind(storeName)
-        .first();
-      
-      if (!storeRecord) {
-        return jsonResponse({ 
-          success: false, 
-          message: "Cửa hàng không tồn tại!" 
-        }, 400, origin);
-      }
-      userStoreId = storeRecord.storeId;
+    // Verify that the storeId exists
+    const storeRecord = await db
+      .prepare("SELECT storeId FROM stores WHERE storeId = ?")
+      .bind(storeId)
+      .first();
+    
+    if (!storeRecord) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Cửa hàng không tồn tại!" 
+      }, 400, origin);
     }
 
     // Generate employeeId if not provided
@@ -969,16 +866,16 @@ async function authController_register(body, db, origin, env) {
     // Send verification email
     const verificationCode = await sendVerificationEmail(email, finalEmployeeId, userName, env);
 
-    // Create pending registration
+    // Create pending registration with fullName
     await db
       .prepare(`
         INSERT INTO pending_registrations 
-        (employeeId, email, password, name, position, storeId, phone,
-         verification_code, status, submitted_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        (employeeId, email, password, fullName, position, storeId, phone,
+         verification_code, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
       `)
-      .bind(finalEmployeeId, email, hashedPassword, userName, 
-            position || 'NV', userStoreId, phone || null, verificationCode, new Date().toISOString())
+      .bind(finalEmployeeId, email, hashedPassword, userName,
+            position || 'NV', storeId, phone || null, verificationCode)
       .run();
 
     return jsonResponse({
@@ -1091,7 +988,7 @@ async function attendanceController_checkGPS(body, db, origin) {
 }
 
 // Dashboard Controller - Get statistics
-async function dashboardController_getStats(db, origin) {
+async function dashboardController_getStats(url, params, db, origin, userId) {
   try {
     // Get total employees
     const totalEmployees = await db
@@ -1201,7 +1098,7 @@ async function employeeController_getHistory(url, db, origin) {
 }
 
 // Shift Controller - Get assignments
-async function shiftController_getAssignments(url, db, origin) {
+async function shiftController_getAssignments(url, params, db, origin, userId) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const date = url.searchParams.get("date");
@@ -1359,7 +1256,7 @@ async function shiftController_getCurrent(url, db, origin, authenticatedUserId =
 }
 
 // Shift Controller - Get weekly shifts
-async function shiftController_getWeekly(url, db, origin) {
+async function shiftController_getWeekly(url, params, db, origin, userId) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const weekStart = url.searchParams.get("weekStart");
@@ -1401,7 +1298,7 @@ async function shiftController_getWeekly(url, db, origin) {
 }
 
 // Shift Controller - Get all shifts
-async function shiftController_list(url, db, origin) {
+async function shiftController_list(url, params, db, origin, userId) {
   try {
     const shifts = await db
       .prepare("SELECT * FROM shifts ORDER BY startTime")
@@ -1422,7 +1319,7 @@ async function shiftController_list(url, db, origin) {
 }
 
 // Attendance Controller - Get attendance data
-async function attendanceController_getData(url, db, origin) {
+async function attendanceController_getData(url, params, db, origin, userId) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const startDate = url.searchParams.get("startDate");
@@ -1473,7 +1370,7 @@ async function attendanceController_getData(url, db, origin) {
 }
 
 // Request Controller - Get pending requests
-async function requestController_getPending(db, origin) {
+async function requestController_getPending(url, params, db, origin, userId) {
   try {
     const requests = await db
       .prepare(`
@@ -1549,7 +1446,7 @@ async function employeeController_getPermissions(url, db, origin) {
 }
 
 // Registration Controller - Get pending registrations
-async function registrationController_getPending(url, db, origin) {
+async function registrationController_getPending(url, params, db, origin, userId) {
   try {
     const page = parseInt(url.searchParams.get("page")) || 1;
     const limit = parseInt(url.searchParams.get("limit")) || 20;
@@ -1705,26 +1602,23 @@ async function registrationController_approve(body, db, origin) {
     await db.exec("BEGIN TRANSACTION");
     
     try {
-      // Update pending registration status
-      const updateStmt = await db.prepare(`
-        UPDATE pending_registrations 
-        SET status = 'approved', approved_by = ?, approved_at = ?, updated_at = ?
-        WHERE employeeId = ?
-      `);
-      const result = await updateStmt.bind(approvedBy, currentTime, currentTime, employeeId).run();
+      // Get pending registration data using helper
+      const pendingReg = await getVerifiedPendingRegistration(db, employeeId);
       
-      if (result.changes === 0) {
+      if (!pendingReg) {
         await db.exec("ROLLBACK");
-        return jsonResponse({ message: "Pending registration not found" }, 404, origin);
+        return jsonResponse({ message: "Pending registration not found or not verified" }, 404, origin);
       }
 
-      // Activate the employee account
-      const activateStmt = await db.prepare(`
-        UPDATE employees 
-        SET is_active = 1, employment_status = 'active', updated_at = ?
+      // Create employee record using helper function
+      await createEmployeeFromPendingRegistration(db, pendingReg, currentTime);
+
+      // Update pending registration status
+      await db.prepare(`
+        UPDATE pending_registrations 
+        SET status = 'approved', approved_by = ?, approved_at = ?
         WHERE employeeId = ?
-      `);
-      await activateStmt.bind(currentTime, employeeId).run();
+      `).bind(approvedBy, currentTime, employeeId).run();
       
       await db.exec("COMMIT");
       
@@ -2022,7 +1916,7 @@ async function attendanceController_rejectRequest(body, db, origin, token) {
 }
 
 // Timesheet Controller - Get timesheet
-async function timesheetController_get(url, db, origin, authenticatedUserId = null) {
+async function timesheetController_get(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     // Use authenticated user ID if available, otherwise fall back to URL parameter
@@ -2087,7 +1981,7 @@ async function timesheetController_get(url, db, origin, authenticatedUserId = nu
 }
 
 // Attendance Controller - Get history
-async function attendanceController_getHistory(url, db, origin) {
+async function attendanceController_getHistory(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2223,7 +2117,7 @@ async function storeController_getEmployees(url, db, origin) {
 }
 
 // Shift Controller - Get requests
-async function shiftController_getRequests(url, db, origin) {
+async function shiftController_getRequests(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2265,7 +2159,7 @@ async function shiftController_getRequests(url, db, origin) {
 }
 
 // Attendance Controller - Get requests
-async function attendanceController_getRequests(url, db, origin) {
+async function attendanceController_getRequests(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2317,7 +2211,7 @@ async function attendanceController_getRequests(url, db, origin) {
 // =====================================================
 
 // Employee Controller - Get all users
-async function employeeController_getAll(url, db, origin) {
+async function employeeController_getAll(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const includeInactive = urlParams.get("includeInactive") === "true";
@@ -2419,7 +2313,7 @@ async function employeeController_checkDuplicate(url, db, origin) {
 }
 
 // Request Controller - Get pending count
-async function requestController_getPendingCount(url, db, origin) {
+async function requestController_getPendingCount(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2759,10 +2653,10 @@ export default {
         }
       }
 
-      return jsonResponse({ message: "Phương thức không được hỗ trợ!" }, 405, request.headers.get('Origin'));
+      return jsonResponse({ message: "Phương thức không được hỗ trợ!" }, 405, ALLOWED_ORIGIN);
     } catch (error) {
       console.error("Lỗi xử lý yêu cầu:", error);
-      return jsonResponse({ message: "Lỗi xử lý yêu cầu!", error: error.message }, 500, request.headers.get('Origin'));
+      return jsonResponse({ message: "Lỗi xử lý yêu cầu!", error: error.message }, 500, ALLOWED_ORIGIN);
     }
   },
 };

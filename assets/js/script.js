@@ -284,7 +284,7 @@ function isValidForm(data) {
 
 // Load stores for registration form
 async function loadStores() {
-    const storeSelect = document.getElementById("storeName");
+    const storeSelect = document.getElementById("storeId");
     if (!storeSelect) {
         // Store select element not found - silent fail for better UX
         return;
@@ -481,12 +481,12 @@ async function handleRegister(event) {
         fullName: elements.registerForm.fullName?.value.trim() || "",
         phone: elements.registerForm.phone?.value.trim() || "",
         email: elements.registerForm.email?.value.trim() || "",
-        storeName: elements.registerForm.storeName?.value || "",
+        storeId: elements.registerForm.storeId?.value || "",
         position: "NV"
     };
 
     // Validate store selection
-    if (!formData.storeName) {
+    if (!formData.storeId) {
         showNotification("Vui lòng chọn cửa hàng", "warning");
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng ký";
@@ -504,8 +504,11 @@ async function handleRegister(event) {
 
         if (data.success) {
             if (data.requiresVerification) {
-                // Store registration data for verification step
-                registrationData = formData;
+                // Store registration data with employeeId from response for verification step
+                registrationData = {
+                    ...formData,
+                    employeeId: data.employeeId
+                };
                 showNotification("Mã xác nhận đã được gửi tới email của bạn!", "success", 5000);
                 showVerificationForm();
             } else {
