@@ -284,7 +284,7 @@ function isValidForm(data) {
 
 // Load stores for registration form
 async function loadStores() {
-    const storeSelect = document.getElementById("storeName");
+    const storeSelect = document.getElementById("storeId");
     if (!storeSelect) {
         // Store select element not found - silent fail for better UX
         return;
@@ -481,7 +481,7 @@ async function handleRegister(event) {
         fullName: elements.registerForm.fullName?.value.trim() || "",
         phone: elements.registerForm.phone?.value.trim() || "",
         email: elements.registerForm.email?.value.trim() || "",
-        storeId: elements.registerForm.storeName?.value || "", // Field name is storeName but value is storeId
+        storeId: elements.registerForm.storeId?.value || "",
         position: "NV"
     };
 
