@@ -504,8 +504,11 @@ async function handleRegister(event) {
 
         if (data.success) {
             if (data.requiresVerification) {
-                // Store registration data for verification step
-                registrationData = formData;
+                // Store registration data with employeeId from response for verification step
+                registrationData = {
+                    ...formData,
+                    employeeId: data.employeeId
+                };
                 showNotification("Mã xác nhận đã được gửi tới email của bạn!", "success", 5000);
                 showVerificationForm();
             } else {
