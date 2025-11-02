@@ -184,6 +184,44 @@
             </form>
         </div>
 
+        <!-- Email Verification Form -->
+        <div id="verificationFormContainer" class="form-container">
+            <div class="form-header">
+                <div class="logo-container">
+                    <h2>Xác thực Email</h2>
+                </div>
+            </div>
+
+            <form id="verificationForm" class="form">
+                <div class="form-info">
+                    <p>Vui lòng nhập mã xác thực 8 ký tự đã được gửi đến email của bạn.</p>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="material-icons-round input-icon">verified_user</span>
+                        <input type="text" id="verificationCode" name="verificationCode" placeholder=" " required maxlength="8" style="text-transform: uppercase;">
+                        <label for="verificationCode">Mã xác thực</label>
+                        <div class="input-border"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-round btn-icon">check_circle</span>
+                    <span class="btn-text">Xác nhận</span>
+                    <span class="btn-loader"></span>
+                </button>
+
+                <div class="form-footer">
+                    <button type="button" id="resendCodeBtn" class="btn btn-secondary">
+                        <span class="material-icons-round btn-icon">refresh</span>
+                        <span class="btn-text">Gửi lại mã</span>
+                    </button>
+                    <p><a href="#" id="backToLogin" class="form-link">Quay lại đăng nhập</a></p>
+                </div>
+            </form>
+        </div>
+
         <!-- Forgot Password Form -->
         <div id="forgotPasswordFormContainer" class="form-container">
             <div class="form-header">

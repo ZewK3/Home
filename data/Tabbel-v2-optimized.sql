@@ -28,8 +28,7 @@ CREATE TABLE employees (
     fullName TEXT NOT NULL,
     phone TEXT,
     email TEXT UNIQUE,
-    password TEXT NOT NULL,
-    salt TEXT,
+    password TEXT NOT NULL,              -- SHA-256 hashed, no salt needed
     storeId TEXT,
     position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
     approval_status TEXT DEFAULT 'approved' CHECK(approval_status IN ('pending', 'approved', 'rejected')),

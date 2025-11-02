@@ -862,6 +862,25 @@ body {
     left: 100%;
 }
 
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Loading State - GitHub Style */
 .btn-loader {
     display: none;
@@ -916,6 +935,23 @@ body {
 .form-link:hover {
     color: rgba(147, 51, 234, 1);
     text-shadow: 0 0 8px rgba(103, 232, 249, 0.6);
+}
+
+/* Form Info */
+.form-info {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(96, 165, 250, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(96, 165, 250, 0.2);
+}
+
+.form-info p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 /* Form Footer */
