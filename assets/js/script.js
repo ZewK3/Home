@@ -481,12 +481,12 @@ async function handleRegister(event) {
         fullName: elements.registerForm.fullName?.value.trim() || "",
         phone: elements.registerForm.phone?.value.trim() || "",
         email: elements.registerForm.email?.value.trim() || "",
-        storeName: elements.registerForm.storeName?.value || "",
+        storeId: elements.registerForm.storeName?.value || "", // Field name is storeName but value is storeId
         position: "NV"
     };
 
     // Validate store selection
-    if (!formData.storeName) {
+    if (!formData.storeId) {
         showNotification("Vui lòng chọn cửa hàng", "warning");
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng ký";

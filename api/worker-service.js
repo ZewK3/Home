@@ -446,7 +446,7 @@ async function registrationController_approveWithHistory(body, db, origin) {
   try {
     // Get action by user info
     const actionByUser = await db
-      .prepare("SELECT name FROM employees WHERE employeeId = ?")
+      .prepare("SELECT fullName FROM employees WHERE employeeId = ?")
       .bind(actionBy)
       .first();
     
@@ -454,34 +454,75 @@ async function registrationController_approveWithHistory(body, db, origin) {
       return jsonResponse({ message: "Người thực hiện không hợp lệ!" }, 400, origin);
     }
 
-    // Update approval status in pending_registrations
     const updateStatus = approved ? 'approved' : 'rejected';
-    await db
-      .prepare("UPDATE pending_registrations SET status = ? WHERE employeeId = ?")
-      .bind(updateStatus, employeeId)
-      .run();
-
-    // Log approval action to user_change_history table (Enhanced schema v3.0)
     const timestamp = TimezoneUtils.toHanoiISOString();
-    
-    await db
-      .prepare(
-        "INSERT INTO user_change_history (employeeId, field_name, old_value, new_value, changed_by, changed_at, reason) VALUES (?, ?, ?, ?, ?, ?, ?)"
-      )
-      .bind(
-        employeeId,
-        'registration_status',
-        'pending',
-        updateStatus,
-        actionBy,
-        timestamp,
-        reason || ''
-      )
-      .run();
 
-    return jsonResponse({ 
-      message: approved ? "Đã phê duyệt đăng ký!" : "Đã từ chối đăng ký!" 
-    }, 200, origin);
+    // Start transaction
+    await db.exec("BEGIN TRANSACTION");
+    
+    try {
+      if (approved) {
+        // Get pending registration data
+        const pendingReg = await db.prepare(`
+          SELECT employeeId, email, password, name, fullName, phone, storeId, position
+          FROM pending_registrations 
+          WHERE employeeId = ? AND status = 'verified'
+        `).bind(employeeId).first();
+        
+        if (!pendingReg) {
+          await db.exec("ROLLBACK");
+          return jsonResponse({ message: "Đăng ký chưa được xác thực hoặc không tồn tại!" }, 404, origin);
+        }
+
+        // Create employee record with data from pending_registrations
+        const finalName = pendingReg.fullName || pendingReg.name;
+        await db.prepare(`
+          INSERT INTO employees 
+          (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+        `).bind(
+          pendingReg.employeeId,
+          finalName,
+          pendingReg.email,
+          pendingReg.password, // Use the already hashed password from pending_registrations
+          pendingReg.phone,
+          pendingReg.storeId,
+          pendingReg.position || 'NV',
+          timestamp
+        ).run();
+      }
+
+      // Update approval status in pending_registrations
+      await db
+        .prepare("UPDATE pending_registrations SET status = ?, approved_by = ?, approved_at = ? WHERE employeeId = ?")
+        .bind(updateStatus, actionBy, timestamp, employeeId)
+        .run();
+
+      // Log approval action to user_change_history table (Enhanced schema v3.0)
+      await db
+        .prepare(
+          "INSERT INTO user_change_history (employeeId, field_name, old_value, new_value, changed_by, changed_at, reason) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        )
+        .bind(
+          employeeId,
+          'registration_status',
+          'pending',
+          updateStatus,
+          actionBy,
+          timestamp,
+          reason || ''
+        )
+        .run();
+
+      await db.exec("COMMIT");
+
+      return jsonResponse({ 
+        message: approved ? "Đã phê duyệt đăng ký!" : "Đã từ chối đăng ký!" 
+      }, 200, origin);
+    } catch (innerError) {
+      await db.exec("ROLLBACK");
+      throw innerError;
+    }
     
   } catch (error) {
     console.error('Error processing approval with history:', error);
@@ -902,36 +943,31 @@ async function authController_register(body, db, origin, env) {
       fullName, // Client sends fullName
       name, // Direct name field
       position, 
-      storeName, // Client sends storeName
-      storeId, // Direct storeId field
+      storeId, // Client now sends storeId directly
       phone
     } = body;
 
     // Use mapped values, prioritizing client-sent field names
     const userName = name || fullName;
 
-    if (!email || !password || !userName || !storeName) {
+    if (!email || !password || !userName || !storeId) {
       return jsonResponse({ 
         success: false, 
         message: "Thiếu thông tin bắt buộc!" 
       }, 400, origin);
     }
 
-    // Look up store by name to get storeId
-    let userStoreId = storeId;
-    if (!userStoreId && storeName) {
-      const storeRecord = await db
-        .prepare("SELECT storeId FROM stores WHERE storeName = ?")
-        .bind(storeName)
-        .first();
-      
-      if (!storeRecord) {
-        return jsonResponse({ 
-          success: false, 
-          message: "Cửa hàng không tồn tại!" 
-        }, 400, origin);
-      }
-      userStoreId = storeRecord.storeId;
+    // Verify that the storeId exists
+    const storeRecord = await db
+      .prepare("SELECT storeId FROM stores WHERE storeId = ?")
+      .bind(storeId)
+      .first();
+    
+    if (!storeRecord) {
+      return jsonResponse({ 
+        success: false, 
+        message: "Cửa hàng không tồn tại!" 
+      }, 400, origin);
     }
 
     // Generate employeeId if not provided
@@ -978,7 +1014,7 @@ async function authController_register(body, db, origin, env) {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
       .bind(finalEmployeeId, email, hashedPassword, userName, 
-            position || 'NV', userStoreId, phone || null, verificationCode, new Date().toISOString())
+            position || 'NV', storeId, phone || null, verificationCode, new Date().toISOString())
       .run();
 
     return jsonResponse({
@@ -1705,26 +1741,41 @@ async function registrationController_approve(body, db, origin) {
     await db.exec("BEGIN TRANSACTION");
     
     try {
-      // Update pending registration status
-      const updateStmt = await db.prepare(`
-        UPDATE pending_registrations 
-        SET status = 'approved', approved_by = ?, approved_at = ?, updated_at = ?
-        WHERE employeeId = ?
-      `);
-      const result = await updateStmt.bind(approvedBy, currentTime, currentTime, employeeId).run();
+      // Get pending registration data
+      const pendingReg = await db.prepare(`
+        SELECT employeeId, email, password, name, fullName, phone, storeId, position
+        FROM pending_registrations 
+        WHERE employeeId = ? AND status = 'verified'
+      `).bind(employeeId).first();
       
-      if (result.changes === 0) {
+      if (!pendingReg) {
         await db.exec("ROLLBACK");
-        return jsonResponse({ message: "Pending registration not found" }, 404, origin);
+        return jsonResponse({ message: "Pending registration not found or not verified" }, 404, origin);
       }
 
-      // Activate the employee account
-      const activateStmt = await db.prepare(`
-        UPDATE employees 
-        SET is_active = 1, employment_status = 'active', updated_at = ?
+      // Create employee record with data from pending_registrations
+      const finalName = pendingReg.fullName || pendingReg.name;
+      await db.prepare(`
+        INSERT INTO employees 
+        (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+      `).bind(
+        pendingReg.employeeId,
+        finalName,
+        pendingReg.email,
+        pendingReg.password, // Use the already hashed password from pending_registrations
+        pendingReg.phone,
+        pendingReg.storeId,
+        pendingReg.position || 'NV',
+        currentTime
+      ).run();
+
+      // Update pending registration status
+      await db.prepare(`
+        UPDATE pending_registrations 
+        SET status = 'approved', approved_by = ?, approved_at = ?
         WHERE employeeId = ?
-      `);
-      await activateStmt.bind(currentTime, employeeId).run();
+      `).bind(approvedBy, currentTime, employeeId).run();
       
       await db.exec("COMMIT");
       
