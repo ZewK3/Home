@@ -189,6 +189,34 @@ class PerformanceMonitor {
 }
 
 // =====================================================
+// HELPER FUNCTIONS
+// =====================================================
+
+/**
+ * Create employee record from pending registration data
+ * Handles both 'name' and 'fullName' fields for backward compatibility
+ */
+async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) {
+  // Handle both 'name' and 'fullName' fields (backward compatibility)
+  const finalName = pendingReg.fullName || pendingReg.name;
+  
+  await db.prepare(`
+    INSERT INTO employees 
+    (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+  `).bind(
+    pendingReg.employeeId,
+    finalName,
+    pendingReg.email,
+    pendingReg.password, // Use the already hashed password from pending_registrations
+    pendingReg.phone,
+    pendingReg.storeId,
+    pendingReg.position || 'NV',
+    timestamp
+  ).run();
+}
+
+// =====================================================
 // TIMEZONE AND EMAIL UTILITIES
 // =====================================================
 
@@ -474,22 +502,8 @@ async function registrationController_approveWithHistory(body, db, origin) {
           return jsonResponse({ message: "Đăng ký chưa được xác thực hoặc không tồn tại!" }, 404, origin);
         }
 
-        // Create employee record with data from pending_registrations
-        const finalName = pendingReg.fullName || pendingReg.name;
-        await db.prepare(`
-          INSERT INTO employees 
-          (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
-        `).bind(
-          pendingReg.employeeId,
-          finalName,
-          pendingReg.email,
-          pendingReg.password, // Use the already hashed password from pending_registrations
-          pendingReg.phone,
-          pendingReg.storeId,
-          pendingReg.position || 'NV',
-          timestamp
-        ).run();
+        // Create employee record using helper function
+        await createEmployeeFromPendingRegistration(db, pendingReg, timestamp);
       }
 
       // Update approval status in pending_registrations
@@ -1753,22 +1767,8 @@ async function registrationController_approve(body, db, origin) {
         return jsonResponse({ message: "Pending registration not found or not verified" }, 404, origin);
       }
 
-      // Create employee record with data from pending_registrations
-      const finalName = pendingReg.fullName || pendingReg.name;
-      await db.prepare(`
-        INSERT INTO employees 
-        (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
-      `).bind(
-        pendingReg.employeeId,
-        finalName,
-        pendingReg.email,
-        pendingReg.password, // Use the already hashed password from pending_registrations
-        pendingReg.phone,
-        pendingReg.storeId,
-        pendingReg.position || 'NV',
-        currentTime
-      ).run();
+      // Create employee record using helper function
+      await createEmployeeFromPendingRegistration(db, pendingReg, currentTime);
 
       // Update pending registration status
       await db.prepare(`
