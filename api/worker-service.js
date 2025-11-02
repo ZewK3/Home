@@ -875,11 +875,11 @@ async function authController_register(body, db, origin, env) {
       .prepare(`
         INSERT INTO pending_registrations 
         (employeeId, email, password, name, fullName, position, storeId, phone,
-         verification_code, status, submitted_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+         verification_code, status) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
       `)
       .bind(finalEmployeeId, email, hashedPassword, finalName, finalName,
-            position || 'NV', storeId, phone || null, verificationCode, new Date().toISOString())
+            position || 'NV', storeId, phone || null, verificationCode)
       .run();
 
     return jsonResponse({
