@@ -1,59 +1,27 @@
 
 /* Professional Classic Theme - Synchronized with Dashboard */
 body {
-    position: relative;
-    min-height: 100vh;
-    max-height: 100vh;
-    overflow: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
     background: #0f1419;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding: 0;
     color: #e8edf4;
     box-sizing: border-box;
+    margin: 0;
 }
 
 .flag-vn {
-    position: fixed;
-    top: 18px;
-    left: 18px;
-    width: 60px;
-    height: 40px;
-    z-index: 1001;
-    pointer-events: none;
+    display: none; /* Removed for cleaner professional look */
 }
-.flag-vn .flag-element {
-    /* Animation và style gốc từ bài viết, chỉ chỉnh lại size cho phù hợp */
-    -webkit-animation: oscill 1s ease-in-out infinite alternate;
-    -moz-animation: oscill 1s ease-in-out infinite alternate;
-    -ms-animation: oscill 1s ease-in-out infinite alternate;
-    animation: oscill 1s ease-in-out infinite alternate;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/2/21/Flag_of_Vietnam.svg');
-    background-size: 60px 100%;
-    position: relative;
-    height: 100%;
-    width: 1px;
-    display: inline-block;
-    /*box-shadow: 0 1px #888, 0 -1px #aaa;*/
-}
-@-webkit-keyframes oscill {
-    0% { top: 5%; }
-    100% { top: -5%; }
-}
-@-moz-keyframes oscill {
-    0% { top: 5%; }
-    100% { top: -5%; }
-}
-@-ms-keyframes oscill {
-    0% { top: 5%; }
-    100% { top: -5%; }
-}
-@keyframes oscill {
-    0% { top: 5%; }
-    100% { top: -5%; }
-}
+
 /* Glass Morphism Effect - Subtle dark theme */
 .glass-bg {
     position: fixed;
@@ -99,78 +67,11 @@ body {
     animation-delay: -8s;
 }
 
-/* Enhanced Light Streaks */
-.light-streak {
-    position: absolute;
-    width: 1px;
-    background: linear-gradient(to bottom, transparent, rgba(103, 232, 249, 0.4), transparent);
-    animation: streakAnimation 12s infinite linear;
-    border-radius: 50%;
-}
-
-.light-streaks::before {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 100px;
-    background: linear-gradient(to bottom, transparent, rgba(147, 51, 234, 0.3), transparent);
-    animation: streakAnimation 15s infinite linear;
-    animation-delay: -5s;
-    left: 25%;
-}
-
-.light-streaks::after {
-    content: '';
-    position: absolute;
-    width: 1px;
-    height: 80px;
-    background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.3), transparent);
-    animation: streakAnimation 18s infinite linear;
-    animation-delay: -10s;
-    right: 30%;
-}
-
-/* Moving Stars */
-.stars {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: -1;
-}
-
-/* Stars Effect */
-.star {
-    position: absolute;
-    width: 2px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 50%;
-    animation: twinkle 3s infinite ease-in-out;
-    box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
-}
-
-/* Enhanced Aurora Effect */
+/* Removed decorative elements for professional look */
+.light-streaks,
+.stars,
 .aurora {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -2;
-    opacity: 0.3;
-    background: 
-        linear-gradient(
-            45deg,
-            transparent 0%,
-            rgba(103, 232, 249, 0.1) 25%,
-            rgba(147, 51, 234, 0.08) 50%,
-            rgba(59, 130, 246, 0.1) 75%,
-            transparent 100%
-        );
-    animation: auroraAnimation 30s infinite;
+    display: none;
 }
 
 /* Animations */
@@ -189,42 +90,8 @@ body {
     }
 }
 
-@keyframes streakAnimation {
-    0% {
-        transform: translateY(-100%) translateX(-100%) rotate(45deg);
-        height: 50vh;
-        opacity: 0;
-    }
-    50% {
-        opacity: 0.5;
-    }
-    100% {
-        transform: translateY(100%) translateX(100%) rotate(45deg);
-        height: 50vh;
-        opacity: 0;
-    }
-}
-
-@keyframes twinkle {
-    0%, 100% {
-        opacity: 0.3;
-        transform: scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes auroraAnimation {
-    0%, 100% {
-        transform: translateY(-20px) rotate(0deg);
-    }
-    50% {
-        transform: translateY(20px) rotate(180deg);
-    }
-}
-[data-theme="dark"] {
+/* Removed unused animations */
+@keyframes floatAnimation {
     --background: #0f172a;
     --foreground: #f8fafc;
     --gradient-background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
@@ -546,20 +413,20 @@ body {
 .auth-container {
     width: 100%;
     max-width: 480px;
-    max-height: calc(100vh - 2rem);
-    perspective: 1000px;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 
-/* Form Container - Professional Classic Card */
+/* Form Container - Professional Classic Card with Internal Scroll */
 .form-container {
     display: none;
     background: rgba(26, 35, 50, 0.92);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
-    padding: 2.5rem;
+    padding: 2rem 1.5rem;
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg),
                 0 0 0 1px rgba(91, 159, 249, 0.15),
@@ -569,9 +436,34 @@ body {
     transition: var(--transition);
     border: 1px solid rgba(91, 159, 249, 0.2);
     width: 100%;
-    max-height: calc(100vh - 2rem);
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-sizing: border-box;
     position: relative;
+    
+    /* Custom scrollbar for professional look */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(91, 159, 249, 0.3) rgba(26, 35, 50, 0.5);
+}
+
+/* Webkit scrollbar styling */
+.form-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form-container::-webkit-scrollbar-track {
+    background: rgba(26, 35, 50, 0.5);
+    border-radius: 3px;
+}
+
+.form-container::-webkit-scrollbar-thumb {
+    background: rgba(91, 159, 249, 0.3);
+    border-radius: 3px;
+}
+
+.form-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(91, 159, 249, 0.5);
 }
 
 .form-container::before {
@@ -668,17 +560,18 @@ body {
     }
 }
 
-/* Form Header - Enhanced Cosmic Theme */
+/* Form Header - Enhanced Professional Theme */
 .form-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     position: relative;
+    flex-shrink: 0;
 }
 
 .form-header h2 {
-    font-size: 2rem;
+    font-size: 1.75rem;
     color: var(--foreground);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
     font-weight: 700;
     font-family: var(--font-serif);
     letter-spacing: 0.5px;
@@ -688,10 +581,10 @@ body {
 .form-header::after {
     content: '';
     display: block;
-    width: 80px;
-    height: 3px;
+    width: 60px;
+    height: 2px;
     background: var(--gradient-gold);
-    margin: 1rem auto 0;
+    margin: 0.75rem auto 0;
     border-radius: 2px;
     box-shadow: var(--shadow-gold);
 }
