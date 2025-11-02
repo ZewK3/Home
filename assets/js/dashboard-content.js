@@ -656,6 +656,30 @@ const DashboardContent = {
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
+                        <span class="material-icons-round">how_to_reg</span>
+                        Chấm công
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-lg">
+                        <div class="stat-value" id="currentTime">--:--</div>
+                        <div class="stat-label" id="currentDate">--</div>
+                    </div>
+                    <button class="btn btn-success btn-full mb-md" onclick="DashboardContent.performCheckIn()">
+                        <span class="material-icons-round">login</span>
+                        Check In
+                    </button>
+                    <button class="btn btn-danger btn-full" onclick="DashboardContent.performCheckOut()">
+                        <span class="material-icons-round">logout</span>
+                        Check Out
+                    </button>
+                    <div id="attendanceStatus" class="mt-md"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
                         <span class="material-icons-round">history</span>
                         Lịch sử chấm công
                     </h2>
@@ -669,6 +693,7 @@ const DashboardContent = {
         `;
 
         setTimeout(() => {
+            this.updateClock();
             this.loadAttendanceHistory();
         }, 100);
 
