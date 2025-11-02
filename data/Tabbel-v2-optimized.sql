@@ -38,7 +38,12 @@ CREATE TABLE employees (
     FOREIGN KEY (storeId) REFERENCES stores(storeId)
 );
 
--- Email verification (unchanged)
+-- Email verification table (Legacy - NOT USED)
+-- NOTE: This table exists for backward compatibility but is NOT actively used.
+-- The system now uses the 'pending_registrations' table for email verification.
+-- pending_registrations.verification_code stores the verification code
+-- pending_registrations.status tracks verification state (pending/verified/approved/rejected)
+-- This design is more efficient as it combines registration and verification in one table.
 CREATE TABLE email_verification (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT NOT NULL UNIQUE,
