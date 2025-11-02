@@ -35,7 +35,7 @@ const ALLOWED_ORIGIN = "*";
 
 async function getVerifiedPendingRegistration(db, employeeId) {
   return await db.prepare(`
-    SELECT employeeId, email, password, name, fullName, phone, storeId, position
+    SELECT employeeId, email, password, fullName, phone, storeId, position
     FROM pending_registrations 
     WHERE employeeId = ? AND status = 'verified'
   `).bind(employeeId).first();
@@ -43,11 +43,8 @@ async function getVerifiedPendingRegistration(db, employeeId) {
 
 async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) {
   try {
-    // Handle both 'name' and 'fullName' fields (backward compatibility)
-    const finalName = pendingReg.fullName || pendingReg.name;
-    
-    if (!finalName) {
-      throw new Error("Missing required field: name or fullName");
+    if (!pendingReg.fullName) {
+      throw new Error("Missing required field: fullName");
     }
     
     await db.prepare(`
@@ -56,7 +53,7 @@ async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) 
       VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
     `).bind(
       pendingReg.employeeId,
-      finalName,
+      pendingReg.fullName,
       pendingReg.email,
       pendingReg.password, // Use the already hashed password from pending_registrations
       pendingReg.phone,
@@ -869,16 +866,15 @@ async function authController_register(body, db, origin, env) {
     // Send verification email
     const verificationCode = await sendVerificationEmail(email, finalEmployeeId, userName, env);
 
-    // Create pending registration (store in both name and fullName for consistency)
-    const finalName = userName; // Clear variable name for binding
+    // Create pending registration with fullName
     await db
       .prepare(`
         INSERT INTO pending_registrations 
-        (employeeId, email, password, name, fullName, position, storeId, phone,
+        (employeeId, email, password, fullName, position, storeId, phone,
          verification_code, status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
       `)
-      .bind(finalEmployeeId, email, hashedPassword, finalName, finalName,
+      .bind(finalEmployeeId, email, hashedPassword, userName,
             position || 'NV', storeId, phone || null, verificationCode)
       .run();
 
