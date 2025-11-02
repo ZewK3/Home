@@ -1,19 +1,17 @@
 
-/* Animated Background - Cosmic Theme */
+/* Animated Background - Dark Minimalist Theme (matching dashboard) */
 body {
     position: relative;
     min-height: 100vh;
     max-height: 100vh;
     overflow: auto;
-    background: #000428;
-    background: -webkit-linear-gradient(to right, #004e92, #000428);
-    background: linear-gradient(to right, #004e92, #000428);
+    background: #0a0e1a;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    color: #ffffff;
+    color: #f0f6fc;
     box-sizing: border-box;
 }
 
@@ -56,7 +54,7 @@ body {
     0% { top: 5%; }
     100% { top: -5%; }
 }
-/* Glass Morphism Effect */
+/* Glass Morphism Effect - Subtle dark theme */
 .glass-bg {
     position: fixed;
     top: 0;
@@ -69,11 +67,11 @@ body {
 .glass-circle {
     position: absolute;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
+    background: rgba(68, 147, 248, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     animation: floatAnimation 25s infinite ease-in-out;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(68, 147, 248, 0.08);
 }
 
 .circle-1 {
@@ -81,7 +79,7 @@ body {
     height: 500px;
     left: -150px;
     top: -150px;
-    background: radial-gradient(circle at center, rgba(103, 232, 249, 0.12), rgba(103, 232, 249, 0.04));
+    background: radial-gradient(circle at center, rgba(68, 147, 248, 0.08), rgba(68, 147, 248, 0.02));
 }
 
 .circle-2 {
@@ -89,7 +87,7 @@ body {
     height: 400px;
     right: -120px;
     bottom: -120px;
-    background: radial-gradient(circle at center, rgba(147, 51, 234, 0.12), rgba(147, 51, 234, 0.04));
+    background: radial-gradient(circle at center, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02));
 }
 
 .circle-3 {
@@ -97,7 +95,7 @@ body {
     height: 250px;
     right: 35%;
     top: 25%;
-    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04));
+    background: radial-gradient(circle at center, rgba(96, 165, 250, 0.08), rgba(96, 165, 250, 0.02));
     animation-delay: -8s;
 }
 
@@ -345,29 +343,31 @@ body {
     background: radial-gradient(circle at center, rgba(34, 211, 238, 0.1), rgba(34, 211, 238, 0.05));
 }
 :root {
-    --primary: #4f46e5;
-    --primary-dark: #4338ca;
-    --primary-light: #6366f1;
+    /* Brand colors matching dashboard */
+    --primary: #4493f8;
+    --primary-dark: #2563eb;
+    --primary-light: #60a5fa;
     --secondary: #0ea5e9;
-    --success: #22c55e;
-    --danger: #ef4444;
-    --warning: #f59e0b;
+    --success: #3fb950;
+    --danger: #f85149;
+    --warning: #f0883e;
     
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --gray-100: #f1f5f9;
-    --gray-200: #e2e8f0;
-    --gray-300: #cbd5e1;
-    --gray-400: #94a3b8;
-    --gray-500: #64748b;
+    /* Dark theme colors (matching dashboard) */
+    --background: #0a0e1a;
+    --foreground: #f0f6fc;
+    --gray-100: #161b22;
+    --gray-200: #1c2128;
+    --gray-300: #21262d;
+    --gray-400: #8b949e;
+    --gray-500: #c9d1d9;
     
-    --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-    --gradient-background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --gradient-primary: linear-gradient(135deg, #4493f8 0%, #2563eb 100%);
+    --gradient-background: linear-gradient(135deg, #0a0e1a 0%, #0f1419 100%);
     
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.3);
     
     --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -530,10 +530,10 @@ body {
 
 
 
-/* Auth Container */
+/* Auth Container - Mobile-first design (matching dashboard) */
 .auth-container {
     width: 100%;
-    max-width: 28rem;
+    max-width: 480px;
     max-height: calc(100vh - 2rem);
     perspective: 1000px;
     display: flex;
@@ -541,20 +541,20 @@ body {
     justify-content: center;
 }
 
-/* Form Container - Cosmic Glass Morphism */
+/* Form Container - Dark minimalist glass morphism */
 .form-container {
     display: none;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(22, 27, 34, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding: 2rem;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
-                0 0 0 1px rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 
+                0 0 0 1px rgba(68, 147, 248, 0.1);
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(68, 147, 248, 0.15);
     width: 100%;
     max-height: calc(100vh - 2rem);
     box-sizing: border-box;
@@ -567,7 +567,7 @@ body {
     animation: formAppear 0.3s ease-out;
 }
 
-/* Enhanced Form Loading State */
+/* Enhanced Form Loading State - Dark theme */
 .form-container.loading {
     position: relative;
     pointer-events: none; /* Prevent all interactions */
@@ -581,7 +581,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(10, 14, 26, 0.8);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
     border-radius: inherit;
@@ -598,8 +598,8 @@ body {
     left: 50%;
     width: 32px;
     height: 32px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top: 3px solid #4f46e5;
+    border: 3px solid rgba(68, 147, 248, 0.3);
+    border-top: 3px solid #4493f8;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     transform: translate(-50%, -50%);
