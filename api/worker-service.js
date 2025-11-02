@@ -194,7 +194,9 @@ class PerformanceMonitor {
 
 /**
  * Get verified pending registration by employeeId
- * @returns {Object|null} Pending registration data or null if not found
+ * @param {Database} db - Database instance
+ * @param {string} employeeId - Employee ID to look up
+ * @returns {Promise<Object|null>} Pending registration data or null if not found
  */
 async function getVerifiedPendingRegistration(db, employeeId) {
   return await db.prepare(`
@@ -207,6 +209,9 @@ async function getVerifiedPendingRegistration(db, employeeId) {
 /**
  * Create employee record from pending registration data
  * Handles both 'name' and 'fullName' fields for backward compatibility
+ * @param {Database} db - Database instance
+ * @param {Object} pendingReg - Pending registration data
+ * @param {string} timestamp - ISO timestamp for created_at field
  * @throws {Error} If database operation fails
  */
 async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) {
@@ -1037,7 +1042,8 @@ async function authController_register(body, db, origin, env) {
     // Send verification email
     const verificationCode = await sendVerificationEmail(email, finalEmployeeId, userName, env);
 
-    // Create pending registration
+    // Create pending registration (store in both name and fullName for consistency)
+    const finalName = userName; // Clear variable name for binding
     await db
       .prepare(`
         INSERT INTO pending_registrations 
@@ -1045,7 +1051,7 @@ async function authController_register(body, db, origin, env) {
          verification_code, status, submitted_at) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
-      .bind(finalEmployeeId, email, hashedPassword, userName, userName,
+      .bind(finalEmployeeId, email, hashedPassword, finalName, finalName,
             position || 'NV', storeId, phone || null, verificationCode, new Date().toISOString())
       .run();
 
