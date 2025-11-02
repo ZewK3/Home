@@ -1041,11 +1041,11 @@ async function authController_register(body, db, origin, env) {
     await db
       .prepare(`
         INSERT INTO pending_registrations 
-        (employeeId, email, password, name, position, storeId, phone,
+        (employeeId, email, password, name, fullName, position, storeId, phone,
          verification_code, status, submitted_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)
       `)
-      .bind(finalEmployeeId, email, hashedPassword, userName, 
+      .bind(finalEmployeeId, email, hashedPassword, userName, userName,
             position || 'NV', storeId, phone || null, verificationCode, new Date().toISOString())
       .run();
 
