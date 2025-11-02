@@ -992,7 +992,7 @@ async function attendanceController_checkGPS(body, db, origin) {
 }
 
 // Dashboard Controller - Get statistics
-async function dashboardController_getStats(db, origin) {
+async function dashboardController_getStats(url, params, db, origin, userId) {
   try {
     // Get total employees
     const totalEmployees = await db
@@ -1102,7 +1102,7 @@ async function employeeController_getHistory(url, db, origin) {
 }
 
 // Shift Controller - Get assignments
-async function shiftController_getAssignments(url, db, origin) {
+async function shiftController_getAssignments(url, params, db, origin, userId) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const date = url.searchParams.get("date");
@@ -1260,7 +1260,7 @@ async function shiftController_getCurrent(url, db, origin, authenticatedUserId =
 }
 
 // Shift Controller - Get weekly shifts
-async function shiftController_getWeekly(url, db, origin) {
+async function shiftController_getWeekly(url, params, db, origin, userId) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const weekStart = url.searchParams.get("weekStart");
@@ -1302,7 +1302,7 @@ async function shiftController_getWeekly(url, db, origin) {
 }
 
 // Shift Controller - Get all shifts
-async function shiftController_list(url, db, origin) {
+async function shiftController_list(url, params, db, origin, userId) {
   try {
     const shifts = await db
       .prepare("SELECT * FROM shifts ORDER BY startTime")
@@ -1323,7 +1323,7 @@ async function shiftController_list(url, db, origin) {
 }
 
 // Attendance Controller - Get attendance data
-async function attendanceController_getData(url, db, origin) {
+async function attendanceController_getData(url, params, db, origin, userId) {
   try {
     const employeeId = url.searchParams.get("employeeId");
     const startDate = url.searchParams.get("startDate");
@@ -1374,7 +1374,7 @@ async function attendanceController_getData(url, db, origin) {
 }
 
 // Request Controller - Get pending requests
-async function requestController_getPending(db, origin) {
+async function requestController_getPending(url, params, db, origin, userId) {
   try {
     const requests = await db
       .prepare(`
@@ -1450,7 +1450,7 @@ async function employeeController_getPermissions(url, db, origin) {
 }
 
 // Registration Controller - Get pending registrations
-async function registrationController_getPending(url, db, origin) {
+async function registrationController_getPending(url, params, db, origin, userId) {
   try {
     const page = parseInt(url.searchParams.get("page")) || 1;
     const limit = parseInt(url.searchParams.get("limit")) || 20;
@@ -1920,7 +1920,7 @@ async function attendanceController_rejectRequest(body, db, origin, token) {
 }
 
 // Timesheet Controller - Get timesheet
-async function timesheetController_get(url, db, origin, authenticatedUserId = null) {
+async function timesheetController_get(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     // Use authenticated user ID if available, otherwise fall back to URL parameter
@@ -1985,7 +1985,7 @@ async function timesheetController_get(url, db, origin, authenticatedUserId = nu
 }
 
 // Attendance Controller - Get history
-async function attendanceController_getHistory(url, db, origin) {
+async function attendanceController_getHistory(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2121,7 +2121,7 @@ async function storeController_getEmployees(url, db, origin) {
 }
 
 // Shift Controller - Get requests
-async function shiftController_getRequests(url, db, origin) {
+async function shiftController_getRequests(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2163,7 +2163,7 @@ async function shiftController_getRequests(url, db, origin) {
 }
 
 // Attendance Controller - Get requests
-async function attendanceController_getRequests(url, db, origin) {
+async function attendanceController_getRequests(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
@@ -2215,7 +2215,7 @@ async function attendanceController_getRequests(url, db, origin) {
 // =====================================================
 
 // Employee Controller - Get all users
-async function employeeController_getAll(url, db, origin) {
+async function employeeController_getAll(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const includeInactive = urlParams.get("includeInactive") === "true";
@@ -2317,7 +2317,7 @@ async function employeeController_checkDuplicate(url, db, origin) {
 }
 
 // Request Controller - Get pending count
-async function requestController_getPendingCount(url, db, origin) {
+async function requestController_getPendingCount(url, params, db, origin, userId) {
   try {
     const urlParams = new URLSearchParams(url.search);
     const employeeId = urlParams.get("employeeId");
