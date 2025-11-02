@@ -20,24 +20,29 @@
     --space-xl: 20px;
     --space-2xl: 24px;
     
-    /* Mobile Colors - Enhanced Professional Dark Theme */
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #0f1419;
-    --bg-elevated: #161b22;
-    --bg-card: #1c2128;
-    --bg-card-hover: #21262d;
+    /* Mobile Colors - Professional Classic Navy Theme */
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a2332;
+    --bg-elevated: #21293a;
+    --bg-card: #21293a;
+    --bg-card-hover: #2a3547;
     
-    --text-primary: #f0f6fc;
+    --text-primary: #e8edf4;
     --text-secondary: #c9d1d9;
     --text-muted: #8b949e;
     
-    /* Enhanced Brand Colors with Gradients */
-    --brand: #4493f8;
-    --brand-dark: #2563eb;
-    --brand-light: #60a5fa;
-    --brand-glow: rgba(68, 147, 248, 0.3);
-    --brand-gradient: linear-gradient(135deg, #4493f8 0%, #2563eb 100%);
-    --brand-gradient-hover: linear-gradient(135deg, #60a5fa 0%, #4493f8 100%);
+    /* Enhanced Brand Colors with Gold Accents */
+    --brand: #5b9ff9;
+    --brand-dark: #4493f8;
+    --brand-light: #7db8fc;
+    --brand-glow: rgba(91, 159, 249, 0.3);
+    --brand-gradient: linear-gradient(135deg, #5b9ff9 0%, #4493f8 100%);
+    --brand-gradient-hover: linear-gradient(135deg, #7db8fc 0%, #5b9ff9 100%);
+    
+    --gold-accent: #d4af37;
+    --gold-light: #e4c04f;
+    --gold-gradient: linear-gradient(135deg, #d4af37 0%, #b8932c 100%);
+    --gold-glow: rgba(212, 175, 55, 0.3);
     
     /* Status Colors */
     --success: #3fb950;
@@ -55,14 +60,16 @@
     
     --border: #30363d;
     --border-light: #21262d;
-    --border-accent: rgba(68, 147, 248, 0.3);
+    --border-accent: rgba(91, 159, 249, 0.3);
+    --border-gold: rgba(212, 175, 55, 0.3);
     
-    /* Enhanced Shadows */
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
-    --shadow-brand: 0 8px 16px -4px rgba(68, 147, 248, 0.4);
+    /* Enhanced Professional Shadows */
+    --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 16px -3px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 16px 32px -8px rgba(0, 0, 0, 0.7);
+    --shadow-brand: 0 8px 20px -4px rgba(91, 159, 249, 0.4);
+    --shadow-gold: 0 8px 20px -4px rgba(212, 175, 55, 0.3);
     --shadow-success: 0 8px 16px -4px rgba(63, 185, 80, 0.3);
     --shadow-danger: 0 8px 16px -4px rgba(248, 81, 73, 0.3);
     
