@@ -564,7 +564,7 @@ async function authController_login(body, db, origin) {
 }
 
 // Store Controller - Get all stores
-async function storeController_list(db, origin) {
+async function storeController_list(url, params, db, origin, userId) {
   try {
     const stores = await db
       .prepare("SELECT * FROM stores ORDER BY storeName")
