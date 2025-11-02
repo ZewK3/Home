@@ -193,27 +193,49 @@ class PerformanceMonitor {
 // =====================================================
 
 /**
+ * Get verified pending registration by employeeId
+ * @returns {Object|null} Pending registration data or null if not found
+ */
+async function getVerifiedPendingRegistration(db, employeeId) {
+  return await db.prepare(`
+    SELECT employeeId, email, password, name, fullName, phone, storeId, position
+    FROM pending_registrations 
+    WHERE employeeId = ? AND status = 'verified'
+  `).bind(employeeId).first();
+}
+
+/**
  * Create employee record from pending registration data
  * Handles both 'name' and 'fullName' fields for backward compatibility
+ * @throws {Error} If database operation fails
  */
 async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) {
-  // Handle both 'name' and 'fullName' fields (backward compatibility)
-  const finalName = pendingReg.fullName || pendingReg.name;
-  
-  await db.prepare(`
-    INSERT INTO employees 
-    (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
-  `).bind(
-    pendingReg.employeeId,
-    finalName,
-    pendingReg.email,
-    pendingReg.password, // Use the already hashed password from pending_registrations
-    pendingReg.phone,
-    pendingReg.storeId,
-    pendingReg.position || 'NV',
-    timestamp
-  ).run();
+  try {
+    // Handle both 'name' and 'fullName' fields (backward compatibility)
+    const finalName = pendingReg.fullName || pendingReg.name;
+    
+    if (!finalName) {
+      throw new Error("Missing required field: name or fullName");
+    }
+    
+    await db.prepare(`
+      INSERT INTO employees 
+      (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+    `).bind(
+      pendingReg.employeeId,
+      finalName,
+      pendingReg.email,
+      pendingReg.password, // Use the already hashed password from pending_registrations
+      pendingReg.phone,
+      pendingReg.storeId,
+      pendingReg.position || 'NV',
+      timestamp
+    ).run();
+  } catch (error) {
+    console.error('Error creating employee from pending registration:', error);
+    throw new Error(`Failed to create employee record: ${error.message}`);
+  }
 }
 
 // =====================================================
@@ -490,12 +512,8 @@ async function registrationController_approveWithHistory(body, db, origin) {
     
     try {
       if (approved) {
-        // Get pending registration data
-        const pendingReg = await db.prepare(`
-          SELECT employeeId, email, password, name, fullName, phone, storeId, position
-          FROM pending_registrations 
-          WHERE employeeId = ? AND status = 'verified'
-        `).bind(employeeId).first();
+        // Get pending registration data using helper
+        const pendingReg = await getVerifiedPendingRegistration(db, employeeId);
         
         if (!pendingReg) {
           await db.exec("ROLLBACK");
@@ -1755,12 +1773,8 @@ async function registrationController_approve(body, db, origin) {
     await db.exec("BEGIN TRANSACTION");
     
     try {
-      // Get pending registration data
-      const pendingReg = await db.prepare(`
-        SELECT employeeId, email, password, name, fullName, phone, storeId, position
-        FROM pending_registrations 
-        WHERE employeeId = ? AND status = 'verified'
-      `).bind(employeeId).first();
+      // Get pending registration data using helper
+      const pendingReg = await getVerifiedPendingRegistration(db, employeeId);
       
       if (!pendingReg) {
         await db.exec("ROLLBACK");
