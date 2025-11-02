@@ -199,6 +199,8 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header-actions {
@@ -266,13 +268,14 @@ body {
    ======================================== */
 .card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-accent);
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
     margin: var(--space-md);
     transition: all var(--transition);
     position: relative;
     overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .card::before {
@@ -283,18 +286,19 @@ body {
     right: 0;
     height: 3px;
     background: var(--brand-gradient);
-    opacity: 0;
+    opacity: 0.7;
     transition: opacity var(--transition);
 }
 
 .card:hover::before {
     opacity: 1;
+    box-shadow: 0 0 12px var(--brand-glow);
 }
 
 .card:hover {
-    border-color: var(--border-accent);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    border-color: var(--brand);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(68, 147, 248, 0.2), 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .card-header {
@@ -302,6 +306,8 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--space-sm);
 }
 
 .card-title {
@@ -311,10 +317,12 @@ body {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    letter-spacing: 0.3px;
 }
 
 .card-title .material-icons-round {
     color: var(--brand);
+    font-size: 24px;
 }
 
 .card-body {
@@ -335,13 +343,14 @@ body {
 
 .stat-card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-accent);
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
     text-align: center;
     position: relative;
     overflow: hidden;
     transition: all var(--transition);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .stat-card::before {
@@ -357,13 +366,13 @@ body {
 }
 
 .stat-card:hover {
-    border-color: var(--border-accent);
+    border-color: var(--brand);
     transform: translateY(-4px);
-    box-shadow: var(--shadow-brand);
+    box-shadow: 0 8px 24px rgba(68, 147, 248, 0.25), 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .stat-card:hover::before {
-    opacity: 1;
+    opacity: 0.6;
 }
 
 .stat-value {
@@ -376,6 +385,7 @@ body {
     margin-bottom: var(--space-xs);
     position: relative;
     z-index: 1;
+    letter-spacing: 0.5px;
 }
 
 .stat-label {
@@ -383,6 +393,7 @@ body {
     color: var(--text-muted);
     position: relative;
     z-index: 1;
+    font-weight: 500;
 }
 
 /* ========================================
@@ -603,10 +614,11 @@ body {
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--transition);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     position: relative;
     overflow: hidden;
+    letter-spacing: 0.3px;
 }
 
 .btn::before {
@@ -634,36 +646,50 @@ body {
 .btn-primary {
     background: var(--brand-gradient);
     color: white;
-    box-shadow: var(--shadow-brand);
+    box-shadow: 0 4px 12px rgba(68, 147, 248, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(68, 147, 248, 0.2);
 }
 
 .btn-primary:hover {
     background: var(--brand-gradient-hover);
-    box-shadow: 0 12px 20px -4px rgba(68, 147, 248, 0.5);
+    box-shadow: 0 8px 24px rgba(68, 147, 248, 0.4), 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
 }
 
 .btn-secondary {
     background: var(--bg-elevated);
     color: var(--text-primary);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-accent);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover {
     background: var(--bg-card-hover);
-    border-color: var(--border-accent);
+    border-color: var(--brand);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-success {
     background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
     color: white;
-    box-shadow: var(--shadow-success);
+    box-shadow: 0 4px 12px var(--success-glow), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-success:hover {
+    box-shadow: 0 8px 20px var(--success-glow), 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
 .btn-danger {
     background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
     color: white;
-    box-shadow: var(--shadow-danger);
+    box-shadow: 0 4px 12px rgba(248, 81, 73, 0.3), 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+    box-shadow: 0 8px 20px rgba(248, 81, 73, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
 .btn-full {
