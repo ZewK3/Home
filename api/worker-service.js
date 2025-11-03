@@ -35,7 +35,7 @@ const ALLOWED_ORIGIN = "*";
 
 async function getVerifiedPendingRegistration(db, employeeId) {
   return await db.prepare(`
-    SELECT employeeId, email, password, fullName, phone, storeId, position
+    SELECT employeeId, email, password, fullName, phone, storeId, departmentId, positionId
     FROM pending_registrations 
     WHERE employeeId = ? AND status = 'verified'
   `).bind(employeeId).first();
@@ -49,8 +49,8 @@ async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) 
     
     await db.prepare(`
       INSERT INTO employees 
-      (employeeId, fullName, email, password, phone, storeId, position, approval_status, is_active, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?)
+      (employeeId, fullName, email, password, phone, storeId, departmentId, positionId, approval_status, is_active, hire_date, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?, ?)
     `).bind(
       pendingReg.employeeId,
       pendingReg.fullName,
@@ -58,8 +58,10 @@ async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) 
       pendingReg.password, // Use the already hashed password from pending_registrations
       pendingReg.phone,
       pendingReg.storeId,
-      pendingReg.position || 'NV',
-      timestamp
+      pendingReg.departmentId || null,
+      pendingReg.positionId || null,
+      timestamp, // hire_date
+      timestamp  // created_at
     ).run();
   } catch (error) {
     console.error('Error creating employee from pending registration:', error);
@@ -503,9 +505,13 @@ async function authController_login(body, db, origin) {
     // Get user for password verification
     const user = await db
       .prepare(`
-        SELECT e.employeeId, e.password, e.fullName, e.email, e.position, e.storeId, 
-               e.is_active
+        SELECT e.employeeId, e.password, e.fullName, e.email, e.storeId, 
+               e.is_active, e.departmentId, e.positionId,
+               d.departmentName, d.departmentCode,
+               p.positionName, p.positionCode, p.positionLevel
         FROM employees e
+        LEFT JOIN departments d ON e.departmentId = d.departmentId
+        LEFT JOIN positions p ON e.positionId = p.positionId
         WHERE e.employeeId = ? AND e.is_active = 1
       `)
       .bind(actualEmployeeId)
@@ -545,8 +551,14 @@ async function authController_login(body, db, origin) {
         employeeId: user.employeeId,
         fullName: user.fullName,
         email: user.email,
-        position: user.position, // NV, QL, or AD for permission checks
-        storeId: user.storeId
+        storeId: user.storeId,
+        departmentId: user.departmentId,
+        positionId: user.positionId,
+        departmentName: user.departmentName,
+        departmentCode: user.departmentCode,
+        positionName: user.positionName,
+        positionCode: user.positionCode,
+        positionLevel: user.positionLevel
       }
     }, 200, origin);
 
@@ -2228,6 +2240,472 @@ async function notificationController_markAllRead(body, db, origin, authenticate
   }
 }
 
+// =====================================================
+// DEPARTMENT CONTROLLERS
+// =====================================================
+
+// Department Controller - Get all departments
+async function departmentController_getAll(url, params, db, origin) {
+  try {
+    const departments = await db.prepare(`
+      SELECT departmentId, departmentName, departmentCode, description,
+             workHoursPerDay, workDaysPerMonth, requiresShiftAssignment, createdAt
+      FROM departments
+      ORDER BY departmentCode
+    `).all();
+
+    return jsonResponse({
+      success: true,
+      data: departments.results || []
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting departments:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy danh sách phòng ban", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Department Controller - Get by ID
+async function departmentController_getById(url, params, db, origin) {
+  try {
+    const { departmentId } = params;
+    
+    const department = await db.prepare(`
+      SELECT departmentId, departmentName, departmentCode, description,
+             workHoursPerDay, workDaysPerMonth, requiresShiftAssignment, createdAt
+      FROM departments
+      WHERE departmentId = ?
+    `).bind(departmentId).first();
+
+    if (!department) {
+      return jsonResponse({ 
+        success: false,
+        message: "Không tìm thấy phòng ban!" 
+      }, 404, origin);
+    }
+
+    // Get employee count
+    const employeeCount = await db.prepare(`
+      SELECT COUNT(*) as count FROM employees WHERE departmentId = ?
+    `).bind(departmentId).first();
+
+    department.employeeCount = employeeCount?.count || 0;
+
+    return jsonResponse({
+      success: true,
+      data: department
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting department:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy thông tin phòng ban", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// =====================================================
+// POSITION CONTROLLERS
+// =====================================================
+
+// Position Controller - Get all positions
+async function positionController_getAll(url, params, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const departmentId = urlParams.get("departmentId");
+    
+    let query = `
+      SELECT p.positionId, p.departmentId, p.positionName, p.positionCode,
+             p.positionLevel, p.baseSalaryRate, p.salaryType, p.description,
+             p.permissions, p.isActive, p.createdAt,
+             d.departmentName, d.departmentCode
+      FROM positions p
+      LEFT JOIN departments d ON p.departmentId = d.departmentId
+      WHERE p.isActive = 1
+    `;
+    
+    const params_bind = [];
+    if (departmentId) {
+      query += ` AND p.departmentId = ?`;
+      params_bind.push(departmentId);
+    }
+    
+    query += ` ORDER BY p.departmentId, p.positionLevel, p.positionCode`;
+    
+    const stmt = db.prepare(query);
+    const positions = await (params_bind.length > 0 ? stmt.bind(...params_bind) : stmt).all();
+
+    return jsonResponse({
+      success: true,
+      data: positions.results || []
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting positions:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy danh sách chức vụ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Position Controller - Get by ID
+async function positionController_getById(url, params, db, origin) {
+  try {
+    const { positionId } = params;
+    
+    const position = await db.prepare(`
+      SELECT p.positionId, p.departmentId, p.positionName, p.positionCode,
+             p.positionLevel, p.baseSalaryRate, p.salaryType, p.description,
+             p.permissions, p.isActive, p.createdAt,
+             d.departmentName, d.departmentCode
+      FROM positions p
+      LEFT JOIN departments d ON p.departmentId = d.departmentId
+      WHERE p.positionId = ?
+    `).bind(positionId).first();
+
+    if (!position) {
+      return jsonResponse({ 
+        success: false,
+        message: "Không tìm thấy chức vụ!" 
+      }, 404, origin);
+    }
+
+    // Get employee count
+    const employeeCount = await db.prepare(`
+      SELECT COUNT(*) as count FROM employees WHERE positionId = ?
+    `).bind(positionId).first();
+
+    position.employeeCount = employeeCount?.count || 0;
+
+    return jsonResponse({
+      success: true,
+      data: position
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting position:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy thông tin chức vụ", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// =====================================================
+// SALARY CONTROLLERS
+// =====================================================
+
+// Salary Controller - Get salary records
+async function salaryController_getRecords(url, params, db, origin) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = urlParams.get("employeeId");
+    const month = urlParams.get("month");
+    const year = urlParams.get("year");
+    const status = urlParams.get("status");
+    
+    let whereConditions = [];
+    let params_bind = [];
+    
+    if (employeeId) {
+      whereConditions.push("s.employeeId = ?");
+      params_bind.push(employeeId);
+    }
+    if (month) {
+      whereConditions.push("s.month = ?");
+      params_bind.push(parseInt(month));
+    }
+    if (year) {
+      whereConditions.push("s.year = ?");
+      params_bind.push(parseInt(year));
+    }
+    if (status) {
+      whereConditions.push("s.status = ?");
+      params_bind.push(status);
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(" AND ")}` : "";
+    
+    const query = `
+      SELECT s.salaryId, s.employeeId, s.month, s.year,
+             s.departmentId, s.positionId, s.baseSalary, s.workDays, s.standardDays,
+             s.workHours, s.overtimeHours, s.overtimePay, s.bonus, s.deduction,
+             s.totalSalary, s.status, s.calculatedAt, s.approvedBy, s.approvedAt,
+             s.paidAt, s.notes,
+             e.fullName as employeeName,
+             d.departmentName,
+             p.positionName
+      FROM salary_records s
+      LEFT JOIN employees e ON s.employeeId = e.employeeId
+      LEFT JOIN departments d ON s.departmentId = d.departmentId
+      LEFT JOIN positions p ON s.positionId = p.positionId
+      ${whereClause}
+      ORDER BY s.year DESC, s.month DESC, s.employeeId
+    `;
+    
+    const stmt = db.prepare(query);
+    const records = await (params_bind.length > 0 ? stmt.bind(...params_bind) : stmt).all();
+
+    return jsonResponse({
+      success: true,
+      data: records.results || []
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting salary records:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy bảng lương", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Salary Controller - Calculate salary
+async function salaryController_calculate(body, db, origin) {
+  try {
+    const { employeeId, month, year } = body;
+    
+    if (!employeeId || !month || !year) {
+      return jsonResponse({ 
+        success: false,
+        message: "employeeId, month và year là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Get employee info with position and department
+    const employee = await db.prepare(`
+      SELECT e.employeeId, e.fullName, e.departmentId, e.positionId,
+             d.workDaysPerMonth, d.workHoursPerDay, d.requiresShiftAssignment,
+             p.baseSalaryRate, p.salaryType
+      FROM employees e
+      LEFT JOIN departments d ON e.departmentId = d.departmentId
+      LEFT JOIN positions p ON e.positionId = p.positionId
+      WHERE e.employeeId = ?
+    `).bind(employeeId).first();
+
+    if (!employee) {
+      return jsonResponse({ 
+        success: false,
+        message: "Không tìm thấy nhân viên!" 
+      }, 404, origin);
+    }
+
+    if (!employee.positionId) {
+      return jsonResponse({ 
+        success: false,
+        message: "Nhân viên chưa được phân chức vụ!" 
+      }, 400, origin);
+    }
+
+    // Get timesheet data
+    const timesheet = await db.prepare(`
+      SELECT workDays, totalHours, overtimeHours
+      FROM timesheets
+      WHERE employeeId = ? AND month = ? AND year = ?
+    `).bind(employeeId, month, year).first();
+
+    if (!timesheet) {
+      return jsonResponse({ 
+        success: false,
+        message: "Chưa có bảng công cho tháng này!" 
+      }, 404, origin);
+    }
+
+    // Calculate salary based on salary type
+    let baseSalary = 0;
+    let overtimePay = 0;
+    const standardDays = employee.workDaysPerMonth || 26;
+    
+    if (employee.salaryType === 'monthly') {
+      // Monthly salary: base salary regardless of days (deduct if absent)
+      baseSalary = employee.baseSalaryRate || 0;
+      if (timesheet.workDays < standardDays) {
+        baseSalary = (baseSalary / standardDays) * timesheet.workDays;
+      }
+    } else if (employee.salaryType === 'hourly') {
+      // Hourly salary: rate * hours worked
+      baseSalary = (employee.baseSalaryRate || 0) * (timesheet.totalHours || 0);
+      overtimePay = (employee.baseSalaryRate || 0) * 1.5 * (timesheet.overtimeHours || 0);
+    } else if (employee.salaryType === 'daily') {
+      // Daily salary: rate * days worked
+      baseSalary = (employee.baseSalaryRate || 0) * (timesheet.workDays || 0);
+    }
+
+    const totalSalary = baseSalary + overtimePay;
+
+    // Check if salary record already exists
+    const existing = await db.prepare(`
+      SELECT salaryId FROM salary_records
+      WHERE employeeId = ? AND month = ? AND year = ?
+    `).bind(employeeId, month, year).first();
+
+    if (existing) {
+      // Update existing record
+      await db.prepare(`
+        UPDATE salary_records
+        SET baseSalary = ?, workDays = ?, standardDays = ?,
+            workHours = ?, overtimeHours = ?, overtimePay = ?,
+            totalSalary = ?, departmentId = ?, positionId = ?,
+            calculatedAt = datetime('now')
+        WHERE salaryId = ?
+      `).bind(
+        baseSalary,
+        timesheet.workDays,
+        standardDays,
+        timesheet.totalHours,
+        timesheet.overtimeHours,
+        overtimePay,
+        totalSalary,
+        employee.departmentId,
+        employee.positionId,
+        existing.salaryId
+      ).run();
+
+      return jsonResponse({
+        success: true,
+        message: "Đã cập nhật bảng lương!",
+        salaryId: existing.salaryId,
+        data: {
+          baseSalary,
+          overtimePay,
+          totalSalary,
+          workDays: timesheet.workDays,
+          standardDays
+        }
+      }, 200, origin);
+    } else {
+      // Insert new record
+      const result = await db.prepare(`
+        INSERT INTO salary_records
+        (employeeId, month, year, departmentId, positionId,
+         baseSalary, workDays, standardDays, workHours, overtimeHours,
+         overtimePay, totalSalary, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+      `).bind(
+        employeeId,
+        month,
+        year,
+        employee.departmentId,
+        employee.positionId,
+        baseSalary,
+        timesheet.workDays,
+        standardDays,
+        timesheet.totalHours,
+        timesheet.overtimeHours,
+        overtimePay,
+        totalSalary
+      ).run();
+
+      return jsonResponse({
+        success: true,
+        message: "Đã tính lương thành công!",
+        salaryId: result.meta.last_row_id,
+        data: {
+          baseSalary,
+          overtimePay,
+          totalSalary,
+          workDays: timesheet.workDays,
+          standardDays
+        }
+      }, 200, origin);
+    }
+  } catch (error) {
+    console.error("Error calculating salary:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi tính lương", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Salary Controller - Approve salary
+async function salaryController_approve(body, db, origin, authenticatedUserId = null) {
+  try {
+    const { salaryId } = body;
+    const approvedBy = authenticatedUserId;
+    
+    if (!salaryId) {
+      return jsonResponse({ 
+        success: false,
+        message: "salaryId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    const result = await db.prepare(`
+      UPDATE salary_records
+      SET status = 'approved',
+          approvedBy = ?,
+          approvedAt = datetime('now')
+      WHERE salaryId = ? AND status = 'pending'
+    `).bind(approvedBy, salaryId).run();
+
+    if (result.changes === 0) {
+      return jsonResponse({ 
+        success: false,
+        message: "Không tìm thấy bảng lương hoặc đã được duyệt!" 
+      }, 404, origin);
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Đã duyệt bảng lương thành công!"
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error approving salary:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi duyệt lương", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Salary Controller - Mark as paid
+async function salaryController_markPaid(body, db, origin, authenticatedUserId = null) {
+  try {
+    const { salaryId } = body;
+    
+    if (!salaryId) {
+      return jsonResponse({ 
+        success: false,
+        message: "salaryId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    const result = await db.prepare(`
+      UPDATE salary_records
+      SET status = 'paid',
+          paidAt = datetime('now')
+      WHERE salaryId = ? AND status = 'approved'
+    `).bind(salaryId).run();
+
+    if (result.changes === 0) {
+      return jsonResponse({ 
+        success: false,
+        message: "Không tìm thấy bảng lương hoặc chưa được duyệt!" 
+      }, 404, origin);
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Đã đánh dấu đã thanh toán!"
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error marking salary as paid:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi cập nhật trạng thái", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
 // Attendance Controller - Get history
 async function attendanceController_getHistory(url, params, db, origin, userId) {
   try {
@@ -2286,7 +2764,16 @@ async function employeeController_getPersonalStats(url, db, origin, authenticate
     }
 
     // Get basic employee info
-    const employeeStmt = await db.prepare("SELECT employeeId, fullName, email, position, storeId, is_active, phone FROM employees WHERE employeeId = ?");
+    const employeeStmt = await db.prepare(`
+      SELECT e.employeeId, e.fullName, e.email, e.storeId, e.is_active, e.phone,
+             e.departmentId, e.positionId,
+             d.departmentName, d.departmentCode,
+             p.positionName, p.positionCode, p.positionLevel
+      FROM employees e
+      LEFT JOIN departments d ON e.departmentId = d.departmentId
+      LEFT JOIN positions p ON e.positionId = p.positionId
+      WHERE e.employeeId = ?
+    `);
     const employee = await employeeStmt.bind(employeeId).first();
     
     if (!employee) {
@@ -2464,22 +2951,27 @@ async function employeeController_getAll(url, params, db, origin, userId) {
     const urlParams = new URLSearchParams(url.search);
     const includeInactive = urlParams.get("includeInactive") === "true";
     
-    let whereClause = includeInactive ? "WHERE 1=1" : "WHERE is_active = 1";
+    let whereClause = includeInactive ? "WHERE 1=1" : "WHERE e.is_active = 1";
 
     const stmt = await db.prepare(`
       SELECT 
-        employeeId, fullName, email, phone, position, storeId,
-        is_active, created_at, last_login_at
-      FROM employees 
+        e.employeeId, e.fullName, e.email, e.phone, e.storeId,
+        e.is_active, e.created_at, e.last_login_at,
+        e.departmentId, e.positionId,
+        d.departmentName, d.departmentCode,
+        p.positionName, p.positionCode, p.positionLevel
+      FROM employees e
+      LEFT JOIN departments d ON e.departmentId = d.departmentId
+      LEFT JOIN positions p ON e.positionId = p.positionId
       ${whereClause}
-      ORDER BY fullName ASC
+      ORDER BY e.fullName ASC
     `);
     
     const users = await stmt.all();
 
     return jsonResponse({
-      users: users,
-      totalUsers: users.length
+      users: users.results || [],
+      totalUsers: (users.results || []).length
     }, 200, origin);
   } catch (error) {
     console.error("Error getting all users:", error);
@@ -2711,6 +3203,26 @@ function initializeRouter() {
   router.addRoute('POST', '/api/notifications', notificationController_create, true);
   router.addRoute('POST', '/api/notifications/mark-read', notificationController_markRead, true);
   router.addRoute('POST', '/api/notifications/mark-all-read', notificationController_markAllRead, true);
+  
+  // =====================================================
+  // DEPARTMENT ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/departments', departmentController_getAll, true);
+  router.addRoute('GET', '/api/departments/:departmentId', departmentController_getById, true);
+  
+  // =====================================================
+  // POSITION ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/positions', positionController_getAll, true);
+  router.addRoute('GET', '/api/positions/:positionId', positionController_getById, true);
+  
+  // =====================================================
+  // SALARY ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/salary/records', salaryController_getRecords, true);
+  router.addRoute('POST', '/api/salary/calculate', salaryController_calculate, true);
+  router.addRoute('POST', '/api/salary/approve', salaryController_approve, true);
+  router.addRoute('POST', '/api/salary/mark-paid', salaryController_markPaid, true);
   
   // =====================================================
   // REGISTRATION ROUTES
