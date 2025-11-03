@@ -1980,6 +1980,254 @@ async function timesheetController_get(url, params, db, origin, userId) {
   }
 }
 
+// Timesheet Controller - Get or generate monthly timesheet
+async function timesheetController_getMonthly(url, db, origin, authenticatedUserId = null) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = authenticatedUserId || urlParams.get("employeeId");
+    const month = parseInt(urlParams.get("month"));
+    const year = parseInt(urlParams.get("year"));
+    
+    if (!employeeId || !month || !year) {
+      return jsonResponse({ 
+        success: false,
+        message: "employeeId, month và year là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    // Check if timesheet already exists
+    const existing = await db.prepare(`
+      SELECT * FROM timesheets 
+      WHERE employeeId = ? AND month = ? AND year = ?
+    `).bind(employeeId, month, year).first();
+
+    if (existing) {
+      return jsonResponse({
+        success: true,
+        data: existing
+      }, 200, origin);
+    }
+
+    // Generate timesheet from attendance data
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // Last day of month
+
+    const attendanceData = await db.prepare(`
+      SELECT 
+        COUNT(DISTINCT checkDate) as totalDays,
+        SUM(CASE WHEN checkTime LIKE 'Giờ vào:%' THEN 1 ELSE 0 END) as presentDays
+      FROM attendance
+      WHERE employeeId = ? AND checkDate BETWEEN ? AND ?
+    `).bind(employeeId, startDate, endDate).first();
+
+    // Create timesheet record
+    const timesheetData = {
+      employeeId,
+      month,
+      year,
+      totalDays: attendanceData?.totalDays || 0,
+      presentDays: attendanceData?.presentDays || 0,
+      absentDays: 0,
+      lateDays: 0,
+      totalHours: 0,
+      overtimeHours: 0
+    };
+
+    await db.prepare(`
+      INSERT INTO timesheets 
+      (employeeId, month, year, totalDays, presentDays, absentDays, lateDays, totalHours, overtimeHours)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      timesheetData.employeeId,
+      timesheetData.month,
+      timesheetData.year,
+      timesheetData.totalDays,
+      timesheetData.presentDays,
+      timesheetData.absentDays,
+      timesheetData.lateDays,
+      timesheetData.totalHours,
+      timesheetData.overtimeHours
+    ).run();
+
+    return jsonResponse({
+      success: true,
+      data: timesheetData,
+      generated: true
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting monthly timesheet:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy bảng công tháng", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Notification Controller - Get user notifications
+async function notificationController_getAll(url, db, origin, authenticatedUserId = null) {
+  try {
+    const urlParams = new URLSearchParams(url.search);
+    const employeeId = authenticatedUserId || urlParams.get("employeeId");
+    const unreadOnly = urlParams.get("unreadOnly") === "true";
+    const limit = parseInt(urlParams.get("limit")) || 50;
+    const offset = parseInt(urlParams.get("offset")) || 0;
+    
+    if (!employeeId) {
+      return jsonResponse({ 
+        success: false,
+        message: "employeeId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    let whereClause = "WHERE employeeId = ?";
+    const params = [employeeId];
+    
+    if (unreadOnly) {
+      whereClause += " AND isRead = 0";
+    }
+
+    const notifications = await db.prepare(`
+      SELECT * FROM notifications
+      ${whereClause}
+      ORDER BY createdAt DESC
+      LIMIT ? OFFSET ?
+    `).bind(...params, limit, offset).all();
+
+    const unreadCount = await db.prepare(`
+      SELECT COUNT(*) as count FROM notifications
+      WHERE employeeId = ? AND isRead = 0
+    `).bind(employeeId).first();
+
+    return jsonResponse({
+      success: true,
+      data: notifications.results || [],
+      unreadCount: unreadCount?.count || 0,
+      pagination: {
+        limit,
+        offset,
+        hasMore: (notifications.results || []).length === limit
+      }
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error getting notifications:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi lấy thông báo", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Notification Controller - Create notification
+async function notificationController_create(body, db, origin) {
+  try {
+    const { employeeId, title, message, type, actionUrl } = body;
+    
+    if (!employeeId || !title || !message) {
+      return jsonResponse({ 
+        success: false,
+        message: "employeeId, title và message là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    const result = await db.prepare(`
+      INSERT INTO notifications (employeeId, title, message, type, actionUrl)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(
+      employeeId,
+      title,
+      message,
+      type || 'info',
+      actionUrl || null
+    ).run();
+
+    return jsonResponse({
+      success: true,
+      message: "Tạo thông báo thành công!",
+      notificationId: result.lastRowId
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi tạo thông báo", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Notification Controller - Mark as read
+async function notificationController_markRead(body, db, origin) {
+  try {
+    const { notificationId, employeeId } = body;
+    
+    if (!notificationId) {
+      return jsonResponse({ 
+        success: false,
+        message: "notificationId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    const result = await db.prepare(`
+      UPDATE notifications 
+      SET isRead = 1 
+      WHERE notificationId = ? AND employeeId = ?
+    `).bind(notificationId, employeeId).run();
+
+    if (result.changes === 0) {
+      return jsonResponse({ 
+        success: false,
+        message: "Không tìm thấy thông báo!" 
+      }, 404, origin);
+    }
+
+    return jsonResponse({
+      success: true,
+      message: "Đánh dấu đã đọc thành công!"
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi đánh dấu thông báo", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
+// Notification Controller - Mark all as read
+async function notificationController_markAllRead(body, db, origin, authenticatedUserId = null) {
+  try {
+    const employeeId = authenticatedUserId || body.employeeId;
+    
+    if (!employeeId) {
+      return jsonResponse({ 
+        success: false,
+        message: "employeeId là bắt buộc!" 
+      }, 400, origin);
+    }
+
+    await db.prepare(`
+      UPDATE notifications 
+      SET isRead = 1 
+      WHERE employeeId = ? AND isRead = 0
+    `).bind(employeeId).run();
+
+    return jsonResponse({
+      success: true,
+      message: "Đánh dấu tất cả thông báo đã đọc thành công!"
+    }, 200, origin);
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    return jsonResponse({ 
+      success: false,
+      message: "Lỗi khi đánh dấu thông báo", 
+      error: error.message 
+    }, 500, origin);
+  }
+}
+
 // Attendance Controller - Get history
 async function attendanceController_getHistory(url, params, db, origin, userId) {
   try {
@@ -2454,6 +2702,15 @@ function initializeRouter() {
   // TIMESHEET ROUTES
   // =====================================================
   router.addRoute('GET', '/api/timesheet', timesheetController_get, true);
+  router.addRoute('GET', '/api/timesheets/monthly', timesheetController_getMonthly, true);
+  
+  // =====================================================
+  // NOTIFICATION ROUTES
+  // =====================================================
+  router.addRoute('GET', '/api/notifications', notificationController_getAll, true);
+  router.addRoute('POST', '/api/notifications', notificationController_create, true);
+  router.addRoute('POST', '/api/notifications/mark-read', notificationController_markRead, true);
+  router.addRoute('POST', '/api/notifications/mark-all-read', notificationController_markAllRead, true);
   
   // =====================================================
   // REGISTRATION ROUTES

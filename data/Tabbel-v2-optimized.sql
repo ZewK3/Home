@@ -74,7 +74,22 @@ CREATE TABLE attendance (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
--- Timesheets table (unchanged - monthly summaries)
+-- Timesheets table - Monthly summaries for employees
+CREATE TABLE timesheets (
+    timesheetId INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    month INTEGER NOT NULL,
+    year INTEGER NOT NULL,
+    totalDays INTEGER DEFAULT 0,
+    presentDays INTEGER DEFAULT 0,
+    absentDays INTEGER DEFAULT 0,
+    lateDays INTEGER DEFAULT 0,
+    totalHours REAL DEFAULT 0,
+    overtimeHours REAL DEFAULT 0,
+    createdAt TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
+    UNIQUE(employeeId, month, year)
+);
 
 -- Shift assignments - Links employees to shifts
 CREATE TABLE shift_assignments (
@@ -270,6 +285,19 @@ CREATE TABLE user_change_history (
 
 -- Departments table (optional - for organizational structure)
 
+-- Notifications - System notifications for employees
+CREATE TABLE notifications (
+    notificationId INTEGER PRIMARY KEY AUTOINCREMENT,
+    employeeId TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    type TEXT DEFAULT 'info' CHECK(type IN ('info', 'success', 'warning', 'error', 'request', 'task', 'system')),
+    isRead INTEGER DEFAULT 0,
+    actionUrl TEXT,
+    createdAt TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
+);
+
 -- =====================================================
 -- SYSTEM MANAGEMENT
 -- =====================================================
@@ -307,6 +335,7 @@ CREATE INDEX idx_attendance_checkDate ON attendance(checkDate);
 CREATE INDEX idx_attendance_checkLocation ON attendance(checkLocation);
 
 -- Timesheet indexes
+CREATE INDEX idx_timesheets_employee_period ON timesheets(employeeId, year DESC, month DESC);
 
 -- Shift assignment indexes
 CREATE INDEX idx_shift_assignments_employee_date ON shift_assignments(employeeId, date DESC);
@@ -324,6 +353,9 @@ CREATE INDEX idx_shifts_start_time ON shifts(startTime);
 CREATE INDEX idx_shifts_end_time ON shifts(endTime);
 
 -- Notification indexes
+CREATE INDEX idx_notifications_employee_read ON notifications(employeeId, isRead);
+CREATE INDEX idx_notifications_created ON notifications(createdAt DESC);
+CREATE INDEX idx_notifications_type ON notifications(type);
 
 -- Permission indexes
 
@@ -432,8 +464,12 @@ CREATE INDEX IF NOT EXISTS idx_employees_store_active
 ON employees(storeId, is_active, employeeId);
 
 -- Timesheets by employee + exact period
+CREATE INDEX IF NOT EXISTS idx_timesheets_employee_exact_period 
+ON timesheets(employeeId, year, month);
 
 -- Notifications by employee + unread status
+CREATE INDEX IF NOT EXISTS idx_notifications_employee_unread 
+ON notifications(employeeId, isRead, createdAt DESC);
 
 -- Shift assignments by date + shift (for schedules)
 CREATE INDEX IF NOT EXISTS idx_shift_assignments_date_shift 
