@@ -41,6 +41,21 @@ class APIClient {
 
         try {
             const response = await fetch(url, config);
+            
+            // Handle session expiry / unauthorized
+            if (response.status === 401 || response.status === 403) {
+                console.error('Session expired or unauthorized, redirecting to login...');
+                // Clear stored credentials
+                SimpleStorage.remove(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+                SimpleStorage.remove('authToken');
+                SimpleStorage.remove('userData');
+                // Redirect to login page
+                if (!window.location.pathname.includes('index.html')) {
+                    window.location.href = window.location.origin + '/index.html';
+                }
+                throw new Error('Session expired. Please login again.');
+            }
+            
             const data = await response.json();
             
             if (!response.ok) {
