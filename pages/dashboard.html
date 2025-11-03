@@ -203,22 +203,35 @@
     <script src="../../assets/js/simple-storage.js"></script>
     <script src="../../assets/js/api-client.js"></script>
     
-    <!-- Phase 3: Advanced Optimizations -->
-    <script src="../../assets/js/state-management.js"></script>
-    <script src="../../assets/js/lazy-loading.js"></script>
+    <!-- HRM SPA System -->
+    <script src="../../assets/js/hrm-modules.js"></script>
+    <script src="../../assets/js/hrm-router.js"></script>
     
-    <script src="../../assets/js/dashboard-content.js"></script>
     <script src="../../assets/js/dashboard-main.js"></script>
     
-    <!-- Phase 3: Service Worker Registration - REMOVED for direct API access -->
     <script>
-        // Service Worker removed - Using direct API calls for better reliability
-        console.log('✅ Application ready with direct API access');
+        // CH Dashboard - Store Department
+        console.log('✅ CH Dashboard loading...');
         
-        // Initialize app state
-        appState.setState({
-            user: JSON.parse(localStorage.getItem('userData') || 'null'),
-            token: localStorage.getItem('authToken')
+        // Initialize HRM Router for CH on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('authToken');
+            const userData = localStorage.getItem('userData');
+            
+            if (!token || !userData) {
+                console.log('No authentication found, redirecting to login...');
+                window.location.href = '../../index.html';
+                return;
+            }
+            
+            // Initialize Router for CH department
+            HRMRouter.init('CH');
+            
+            // Hide loader
+            setTimeout(() => {
+                const loader = document.getElementById('mobileLoader');
+                if (loader) loader.classList.add('hidden');
+            }, 500);
         });
     </script>
 </body>

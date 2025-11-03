@@ -207,21 +207,18 @@
     <script src="../assets/js/simple-storage.js"></script>
     <script src="../assets/js/api-client.js"></script>
     
-    <!-- Phase 3: Advanced Optimizations -->
-    <script src="../assets/js/state-management.js"></script>
-    <script src="../assets/js/lazy-loading.js"></script>
+    <!-- HRM SPA System -->
+    <script src="../assets/js/hrm-modules.js"></script>
+    <script src="../assets/js/hrm-router.js"></script>
     
     <script src="../assets/js/theme-manager.js"></script>
-    <script src="../assets/js/dashboard-content.js"></script>
-    <script src="../assets/js/menu-manager.js"></script>
 
     <script>
-        // Service Worker removed - Using direct API calls for better reliability
-        console.log('✅ Application ready with direct API access');
+        // HRM System - VP Dashboard (Office Department)
+        console.log('✅ HRM System loading...');
         
-        // Admin Dashboard Logic
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check authentication and admin role
+            // Check authentication
             const token = localStorage.getItem('authToken');
             const userData = localStorage.getItem('userData');
             
@@ -231,25 +228,23 @@
                 return;
             }
 
-            // Check if user is admin
+            // Check if user is from VP department
             const user = JSON.parse(userData);
-            const isAdmin = user.position === 'AD' || user.position === 'ADMIN';
-            
-            if (!isAdmin) {
-                console.log('User is not admin, redirecting to regular dashboard...');
+            if (user.departmentId !== 'VP') {
+                console.log('User is not from VP department, redirecting to store dashboard...');
                 window.location.href = './dashboard.html';
                 return;
             }
 
-            // Initialize Dashboard Content
-            await DashboardContent.init();
+            // Initialize HRM Router for VP
+            HRMRouter.init('VP');
 
             // Hide loader
             setTimeout(() => {
                 document.getElementById('mobileLoader').classList.add('hidden');
             }, 500);
 
-            // Drawer menu toggle
+            // Menu handling
             const menuBtn = document.getElementById('menuBtn');
             const drawerOverlay = document.getElementById('drawerOverlay');
             const closeDrawer = document.getElementById('closeDrawer');
@@ -268,12 +263,12 @@
                 }
             });
 
-            // Menu item click handling
+            // Menu item click handling - use router
             const menuItems = document.querySelectorAll('.menu-item[data-function]');
             menuItems.forEach(item => {
                 item.addEventListener('click', () => {
                     const functionName = item.dataset.function;
-                    navigateToFunction(functionName);
+                    HRMRouter.navigateTo(functionName);
                     drawerOverlay.classList.remove('active');
                 });
             });
@@ -293,7 +288,7 @@
             // User menu
             const userBtn = document.getElementById('userBtn');
             userBtn.addEventListener('click', () => {
-                navigateToFunction('profile');
+                HRMRouter.navigateTo('profile');
             });
 
             // Notification button
@@ -317,109 +312,16 @@
                     window.location.href = '../index.html';
                 }
             });
-
-            // Check for hash on load
-            if (window.location.hash) {
-                handleHashChange();
-            } else {
-                navigateToFunction('home');
-            }
-
-            // Listen for hash changes
-            window.addEventListener('hashchange', handleHashChange);
         });
 
         function handleNavigation(navType) {
-            switch(navType) {
-                case 'home':
-                    navigateToFunction('home');
-                    break;
-                case 'manage':
-                    navigateToFunction('approve-registration');
-                    break;
-                case 'reports':
-                    navigateToFunction('view-reports');
-                    break;
-                case 'settings':
-                    navigateToFunction('system-settings');
-                    break;
-            }
-        }
-
-        function handleHashChange() {
-            const hash = window.location.hash.substring(1);
-            if (hash) {
-                navigateToFunction(hash);
-            }
-        }
-
-        function navigateToFunction(functionName) {
-            // Update URL hash
-            if (window.location.hash !== `#${functionName}`) {
-                window.location.hash = functionName;
-            }
-
-            // Update header title
-            const headerTitle = document.querySelector('.header-title');
-            const titles = {
-                'home': 'Admin Dashboard',
-                'approve-registration': 'Duyệt đăng ký',
-                'grant-access': 'Phân quyền',
-                'employee-management': 'Quản lý nhân viên',
-                'process-requests': 'Xử lý yêu cầu',
-                'attendance-approval': 'Duyệt chấm công',
-                'schedule-management': 'Xếp lịch',
-                'shift-management': 'Quản lý ca',
-                'view-reports': 'Báo cáo',
-                'analytics': 'Phân tích',
-                'system-settings': 'Cài đặt hệ thống',
-                'system-logs': 'Nhật ký',
-                'profile': 'Thông tin cá nhân'
+            const navMap = {
+                'home': 'home',
+                'manage': 'employee-management',
+                'reports': 'reports',
+                'settings': 'system-settings'
             };
-            headerTitle.textContent = titles[functionName] || 'Admin Dashboard';
-
-            // Render content
-            renderContent(functionName);
-        }
-
-        async function renderContent(functionName) {
-            const mainContent = document.getElementById('mainContent');
-            
-            // Content mapping to DashboardContent methods
-            const contentMethods = {
-                'home': 'renderAdminDashboard',
-                'approve-registration': 'renderApproveRegistration',
-                'grant-access': 'renderGrantAccess',
-                'employee-management': 'renderEmployeeManagement',
-                'process-requests': 'renderProcessRequests',
-                'attendance-approval': 'renderAttendanceApproval',
-                'schedule-management': 'renderScheduleManagement',
-                'shift-management': 'renderShiftManagement',
-                'view-reports': 'renderReports',
-                'analytics': 'renderAnalytics',
-                'system-settings': 'renderSystemSettings',
-                'system-logs': 'renderSystemLogs',
-                'profile': 'renderProfile'
-            };
-
-            const methodName = contentMethods[functionName] || 'renderAdminDashboard';
-            
-            if (typeof DashboardContent[methodName] === 'function') {
-                const content = await DashboardContent[methodName]();
-                mainContent.innerHTML = content;
-            } else {
-                // Fallback for missing methods
-                mainContent.innerHTML = `
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="message">
-                                <span class="material-icons-round">construction</span>
-                                <p>Chức năng "${functionName}" đang được phát triển</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+            HRMRouter.navigateTo(navMap[navType] || 'home');
         }
 
     </script>
