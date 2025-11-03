@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#0f1419">
     <title>404 - Không Tìm Thấy Trang</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
@@ -15,7 +16,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f1419 0%, #1a2332 50%, #21293a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -36,21 +37,21 @@
 
         .shape {
             position: absolute;
-            opacity: 0.1;
+            opacity: 0.05;
             animation: float 20s infinite ease-in-out;
         }
 
         .shape-circle {
             width: 200px;
             height: 200px;
-            background: white;
+            background: #5b9ff9;
             border-radius: 50%;
         }
 
         .shape-square {
             width: 150px;
             height: 150px;
-            background: white;
+            background: #5b9ff9;
             transform: rotate(45deg);
         }
 
@@ -60,14 +61,15 @@
         }
 
         .container {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(33, 41, 58, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 60px 40px;
             max-width: 700px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(91, 159, 249, 0.2);
             position: relative;
             z-index: 1;
             animation: slideIn 0.6s ease-out;
@@ -87,7 +89,7 @@
         .error-code {
             font-size: 120px;
             font-weight: 900;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5b9ff9 0%, #4493f8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -103,7 +105,7 @@
 
         .icon-sad {
             font-size: 80px;
-            color: #667eea;
+            color: #5b9ff9;
             margin-bottom: 20px;
             animation: wobble 3s infinite;
         }
@@ -116,20 +118,20 @@
 
         h1 {
             font-size: 36px;
-            color: #2d3748;
+            color: #e8edf4;
             margin-bottom: 15px;
             font-weight: 700;
         }
 
         .subtitle {
             font-size: 18px;
-            color: #4a5568;
+            color: #c9d1d9;
             margin-bottom: 40px;
             line-height: 1.6;
         }
 
         .suggestions {
-            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            background: rgba(91, 159, 249, 0.1);
             border-radius: 12px;
             padding: 30px;
             margin: 30px 0;
@@ -137,7 +139,7 @@
         }
 
         .suggestions h3 {
-            color: #2d3748;
+            color: #e8edf4;
             font-size: 20px;
             margin-bottom: 20px;
             display: flex;
@@ -151,10 +153,10 @@
         }
 
         .suggestions li {
-            color: #4a5568;
+            color: #c9d1d9;
             font-size: 16px;
             padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(91, 159, 249, 0.1);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -165,7 +167,7 @@
         }
 
         .suggestions .material-icons-round {
-            color: #667eea;
+            color: #5b9ff9;
             font-size: 20px;
         }
 
@@ -192,24 +194,24 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #5b9ff9 0%, #4493f8 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(91, 159, 249, 0.4);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 6px 20px rgba(91, 159, 249, 0.5);
         }
 
         .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: rgba(91, 159, 249, 0.1);
+            color: #5b9ff9;
+            border: 2px solid #5b9ff9;
         }
 
         .btn-secondary:hover {
-            background: #667eea;
+            background: #5b9ff9;
             color: white;
             transform: translateY(-2px);
         }
@@ -217,8 +219,8 @@
         .footer {
             margin-top: 40px;
             padding-top: 20px;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            color: #718096;
+            border-top: 1px solid rgba(91, 159, 249, 0.2);
+            color: #8b949e;
             font-size: 14px;
         }
 
