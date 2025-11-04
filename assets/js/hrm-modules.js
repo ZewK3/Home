@@ -774,6 +774,7 @@ const HRMModules = {
                 
                 // Update notification list
                 if (notifList) {
+                    const formatTime = this.formatTime;  // Capture method reference
                     notifList.innerHTML = notifications.data.map(notif => `
                         <div class="notification-item ${notif.isRead ? 'read' : 'unread'}">
                             <div class="notification-icon ${notif.type}">
@@ -784,7 +785,7 @@ const HRMModules = {
                             <div class="notification-content">
                                 <h4 class="notification-title">${notif.title}</h4>
                                 <p class="notification-message">${notif.message}</p>
-                                <small class="notification-time">${this.formatTime(notif.createdAt)}</small>
+                                <small class="notification-time">${formatTime(notif.createdAt)}</small>
                             </div>
                         </div>
                     `).join('');
