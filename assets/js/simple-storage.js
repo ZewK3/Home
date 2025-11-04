@@ -6,6 +6,7 @@
 const SimpleStorage = {
     /**
      * Simple XOR-based encoding (not cryptographically secure, but obscures data)
+     * Handles UTF-8 characters (including Vietnamese)
      */
     _encode(str) {
         const key = 'HRM2024';
@@ -13,21 +14,39 @@ const SimpleStorage = {
         for (let i = 0; i < str.length; i++) {
             encoded += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
         }
-        return btoa(encoded); // Base64 encode
+        // Use encodeURIComponent to handle UTF-8 before base64 encoding
+        return btoa(encodeURIComponent(encoded).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+            return String.fromCharCode('0x' + p1);
+        }));
     },
 
     /**
      * Decode XOR-encoded string
+     * Handles UTF-8 characters (including Vietnamese)
+     * Falls back to old decoding method for backward compatibility
      */
     _decode(encoded) {
         try {
             const key = 'HRM2024';
-            const str = atob(encoded); // Base64 decode
-            let decoded = '';
-            for (let i = 0; i < str.length; i++) {
-                decoded += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            // Try new UTF-8 compatible decoding first
+            try {
+                const str = decodeURIComponent(Array.prototype.map.call(atob(encoded), (c) => {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                let decoded = '';
+                for (let i = 0; i < str.length; i++) {
+                    decoded += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return decoded;
+            } catch (e) {
+                // Fall back to old decoding method for backward compatibility
+                const str = atob(encoded);
+                let decoded = '';
+                for (let i = 0; i < str.length; i++) {
+                    decoded += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return decoded;
             }
-            return decoded;
         } catch (error) {
             console.error('Decode error:', error);
             return null;

@@ -38,12 +38,22 @@ const PermissionManager = {
      */
     getUserPermissions() {
         try {
-            const userData = localStorage.getItem('userData');
-            if (!userData) {
+            // Use SimpleStorage if available, otherwise fall back to localStorage
+            let user;
+            if (typeof SimpleStorage !== 'undefined') {
+                user = SimpleStorage.get('userData');
+            } else {
+                const userData = localStorage.getItem('userData');
+                if (!userData) {
+                    return null;
+                }
+                user = JSON.parse(userData);
+            }
+            
+            if (!user) {
                 return null;
             }
 
-            const user = JSON.parse(userData);
             // Parse permissions from comma-separated string
             const permissionsList = user.permissions ? user.permissions.split(',').map(p => p.trim()) : [];
             
@@ -271,9 +281,18 @@ if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => {
         // Apply permissions after a short delay to ensure DOM is ready
         setTimeout(() => {
-            const userData = localStorage.getItem('userData');
-            if (userData) {
-                const user = JSON.parse(userData);
+            // Use SimpleStorage if available, otherwise fall back to localStorage
+            let user;
+            if (typeof SimpleStorage !== 'undefined') {
+                user = SimpleStorage.get('userData');
+            } else {
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                    user = JSON.parse(userData);
+                }
+            }
+            
+            if (user) {
                 if (user.departmentId === 'VP') {
                     PermissionManager.applyVPMenuPermissions();
                 } else if (user.departmentId === 'CH') {

@@ -64,9 +64,9 @@ function updateNotificationUI(notifications) {
 
 // Mobile Dashboard Logic
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check authentication
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
+    // Check authentication - use SimpleStorage to properly decode data
+    const token = SimpleStorage.get('authToken');
+    const userData = SimpleStorage.get('userData');
     
     if (!token || !userData) {
         console.log('No authentication found, redirecting to login...');
@@ -76,7 +76,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if user is admin and redirect to admin dashboard
     try {
-        const user = JSON.parse(userData);
+        // userData is already parsed by SimpleStorage.get()
+        const user = userData;
         const isAdmin = user.position === 'AD' || user.position === 'ADMIN';
         
         if (isAdmin) {

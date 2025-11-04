@@ -294,9 +294,13 @@ const MockUsers = {
 // Mock Authentication Helper
 const MockAuth = {
     /**
-     * Get current logged in user from localStorage
+     * Get current logged in user from localStorage using SimpleStorage
      */
     getCurrentUser() {
+        // Use SimpleStorage if available, otherwise fall back to localStorage
+        if (typeof SimpleStorage !== 'undefined') {
+            return SimpleStorage.get('userData');
+        }
         const userData = localStorage.getItem('userData');
         return userData ? JSON.parse(userData) : null;
     },
@@ -381,9 +385,8 @@ const MockAPI = {
                     return;
                 }
 
-                // Save to localStorage
-                localStorage.setItem('authToken', user.authToken);
-                localStorage.setItem('userData', JSON.stringify(user));
+                // Data will be saved by the login handler using SimpleStorage
+                // No need to save here to avoid double storage and encoding issues
 
                 resolve({
                     success: true,
