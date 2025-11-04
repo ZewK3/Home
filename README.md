@@ -274,37 +274,111 @@ Buttons: "Về Trang Chủ" / "Quay Lại"
 
 ## 🔐 Hệ Thống Permissions
 
-### Permission Levels
-- **Level 1 (Staff)**: Chỉ xem và thao tác cá nhân
-- **Level 2 (Supervisor)**: Quản lý ca, duyệt timesheet
-- **Level 3 (Manager)**: Quản lý nhân viên, lương, báo cáo
-- **Level 4 (Admin)**: Full access, phê duyệt đăng ký
+### Permission-Based Access Control
+
+Hệ thống sử dụng **permissions-based** thay vì level-based để linh hoạt hơn trong việc quản lý quyền truy cập cho nhiều chức vụ khác nhau.
+
+### Cách Hoạt Động
+
+Mỗi position có một chuỗi permissions được lưu trong database:
+```sql
+-- Ví dụ: Kế Toán (VP_KT)
+permissions = "employee_view,salary_manage,reports_view,timesheet_view"
+
+-- Ví dụ: Quản Lý LV2 (CH_QL_LV2)
+permissions = "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_approve,request_approve"
+```
+
+### Danh Sách Permissions
+
+**Core Permissions**:
+- `employee_manage` - Quản lý nhân viên (tạo, sửa, xóa)
+- `employee_view` - Xem thông tin nhân viên
+- `registration_approve` - Phê duyệt đăng ký
+- `department_manage` - Quản lý phòng ban
+- `position_manage` - Quản lý chức vụ
+- `salary_manage` - Quản lý lương (tính, duyệt, thanh toán)
+- `salary_view` - Xem lương cá nhân
+- `timesheet_approve` - Duyệt bảng công
+- `timesheet_view` - Xem bảng công cá nhân
+- `attendance_self` - Chấm công cá nhân
+- `attendance_approve` - Duyệt chấm công
+- `schedule_manage` - Quản lý lịch làm việc
+- `schedule_view` - Xem lịch làm việc
+- `shift_manage` - Quản lý ca làm
+- `request_create` - Tạo yêu cầu
+- `request_approve` - Duyệt yêu cầu
+- `reports_view` - Xem báo cáo
+- `notification_view` - Xem thông báo
+- `profile_view` - Xem hồ sơ cá nhân
+- `system_admin` - Quản trị hệ thống
 
 ### Modules & Required Permissions
 
 #### HRMSystem.html (VP)
 ```
-Dashboard → Level >= 1
-Employee Management → Level >= 3
-Approve Registration → Level >= 4  
-Departments → Level >= 3
-Positions → Level >= 3
-Salary Management → Level >= 3
-Timesheet Approval → Level >= 2
-Reports → Level >= 3
+Dashboard → No permission required
+Employee Management → employee_manage
+Approve Registration → registration_approve
+Departments → department_manage
+Positions → position_manage
+Salary Management → salary_manage
+Timesheet Approval → timesheet_approve
+Reports → reports_view
 ```
 
 #### dashboard.html (CH)
 ```
-Dashboard → Level >= 1
-Attendance → Level >= 1
-Schedule → Level >= 1
-Timesheet → Level >= 1
-Salary → Level >= 1
-Requests → Level >= 1
-Notifications → Level >= 1
-Profile → Level >= 1
+Dashboard → No permission required
+Attendance → attendance_self
+Schedule → schedule_view
+Timesheet → timesheet_view
+Salary → salary_view
+Requests → request_create
+Notifications → notification_view
+Profile → profile_view
 ```
+
+### Permission Examples
+
+**VP Kế Toán (Accountant)**:
+```
+employee_view,salary_manage,reports_view,timesheet_view
+```
+
+**VP Admin**:
+```
+employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin
+```
+
+**CH Nhân Viên LV1**:
+```
+attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view
+```
+
+**CH Quản Lý LV2**:
+```
+attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view
+```
+
+### Thêm Permission Mới
+
+1. Update trong database:
+```sql
+UPDATE positions
+SET permissions = 'employee_manage,new_permission'
+WHERE positionId = 'VP_KT';
+```
+
+2. Map trong `permission-manager.js`:
+```javascript
+'new-module': { 
+    required: ['new_permission'], 
+    label: 'New Module' 
+}
+```
+
+📘 **Chi tiết**: Xem [PERMISSIONS_GUIDE.md](./PERMISSIONS_GUIDE.md)
 
 ## 📊 Kiến Trúc Kỹ Thuật
 

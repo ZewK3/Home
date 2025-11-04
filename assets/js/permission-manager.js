@@ -1,34 +1,35 @@
 /**
  * Permission Manager - Handles permission-based UI rendering
+ * Uses permissions field from positions table instead of positionLevel
  */
 
 const PermissionManager = {
     /**
-     * Module permission requirements
+     * Module permission requirements - maps module names to required permission strings
      */
-    permissions: {
+    modulePermissions: {
         // VP (HRMSystem.html) Module Permissions
         VP: {
-            'home': { level: 1, label: 'Dashboard' },
-            'employee-management': { level: 3, label: 'Quản Lý Nhân Viên' },
-            'approve-registration': { level: 4, label: 'Duyệt Đăng Ký' },
-            'departments': { level: 3, label: 'Phòng Ban' },
-            'positions': { level: 3, label: 'Chức Vụ' },
-            'salary-management': { level: 3, label: 'Quản Lý Lương' },
-            'timesheet-approval': { level: 2, label: 'Duyệt Bảng Công' },
-            'reports': { level: 3, label: 'Báo Cáo' }
+            'home': { required: [], label: 'Dashboard' }, // Everyone can access
+            'employee-management': { required: ['employee_manage'], label: 'Quản Lý Nhân Viên' },
+            'approve-registration': { required: ['registration_approve'], label: 'Duyệt Đăng Ký' },
+            'departments': { required: ['department_manage'], label: 'Phòng Ban' },
+            'positions': { required: ['position_manage'], label: 'Chức Vụ' },
+            'salary-management': { required: ['salary_manage'], label: 'Quản Lý Lương' },
+            'timesheet-approval': { required: ['timesheet_approve'], label: 'Duyệt Bảng Công' },
+            'reports': { required: ['reports_view'], label: 'Báo Cáo' }
         },
         
         // CH (dashboard.html) Module Permissions
         CH: {
-            'home': { level: 1, label: 'Trang Chủ' },
-            'attendance': { level: 1, label: 'Chấm Công' },
-            'schedule': { level: 1, label: 'Lịch Làm' },
-            'timesheet': { level: 1, label: 'Bảng Công' },
-            'salary': { level: 1, label: 'Bảng Lương' },
-            'requests': { level: 1, label: 'Yêu Cầu' },
-            'notifications': { level: 1, label: 'Thông Báo' },
-            'profile': { level: 1, label: 'Cá Nhân' }
+            'home': { required: [], label: 'Trang Chủ' },
+            'attendance': { required: ['attendance_self'], label: 'Chấm Công' },
+            'schedule': { required: ['schedule_view'], label: 'Lịch Làm' },
+            'timesheet': { required: ['timesheet_view'], label: 'Bảng Công' },
+            'salary': { required: ['salary_view'], label: 'Bảng Lương' },
+            'requests': { required: ['request_create'], label: 'Yêu Cầu' },
+            'notifications': { required: ['notification_view'], label: 'Thông Báo' },
+            'profile': { required: ['profile_view'], label: 'Cá Nhân' }
         }
     },
 
@@ -43,12 +44,16 @@ const PermissionManager = {
             }
 
             const user = JSON.parse(userData);
+            // Parse permissions from comma-separated string
+            const permissionsList = user.permissions ? user.permissions.split(',').map(p => p.trim()) : [];
+            
             return {
                 employeeId: user.employeeId,
                 departmentId: user.departmentId,
                 positionId: user.positionId,
-                positionLevel: user.positionLevel || 1,
-                permissions: user.permissions || ''
+                positionLevel: user.positionLevel || 1, // Keep for backward compatibility
+                permissions: permissionsList, // Array of permission strings
+                permissionsRaw: user.permissions || '' // Original string
             };
         } catch (error) {
             console.error('Error getting user permissions:', error);
@@ -57,7 +62,7 @@ const PermissionManager = {
     },
 
     /**
-     * Check if user has access to a module
+     * Check if user has access to a module based on permissions
      */
     hasAccess(moduleName, department) {
         const userPerms = this.getUserPermissions();
@@ -65,16 +70,25 @@ const PermissionManager = {
             return false;
         }
 
-        const modulePerms = this.permissions[department];
-        if (!modulePerms || !modulePerms[moduleName]) {
+        const moduleConfig = this.modulePermissions[department];
+        if (!moduleConfig || !moduleConfig[moduleName]) {
             console.warn(`Module ${moduleName} not found in ${department} permissions`);
             return false;
         }
 
-        const requiredLevel = modulePerms[moduleName].level;
-        const userLevel = userPerms.positionLevel;
+        const requiredPerms = moduleConfig[moduleName].required;
+        
+        // If no permissions required, everyone can access
+        if (!requiredPerms || requiredPerms.length === 0) {
+            return true;
+        }
 
-        return userLevel >= requiredLevel;
+        // Check if user has at least one of the required permissions
+        const hasPermission = requiredPerms.some(reqPerm => 
+            userPerms.permissions.includes(reqPerm)
+        );
+
+        return hasPermission;
     },
 
     /**
@@ -87,14 +101,18 @@ const PermissionManager = {
         }
 
         const allowedModules = [];
-        const modulePerms = this.permissions[department];
+        const moduleConfig = this.modulePermissions[department];
 
-        for (const [moduleName, moduleInfo] of Object.entries(modulePerms)) {
-            if (userPerms.positionLevel >= moduleInfo.level) {
+        for (const [moduleName, moduleInfo] of Object.entries(moduleConfig)) {
+            // Check if user has required permissions
+            const requiredPerms = moduleInfo.required;
+            
+            if (requiredPerms.length === 0 || 
+                requiredPerms.some(reqPerm => userPerms.permissions.includes(reqPerm))) {
                 allowedModules.push({
                     name: moduleName,
                     label: moduleInfo.label,
-                    requiredLevel: moduleInfo.level
+                    requiredPermissions: requiredPerms
                 });
             }
         }
@@ -113,24 +131,24 @@ const PermissionManager = {
 
         const menuItems = {
             // Employee Management Section
-            'employee-management': { selector: '[data-function="employee-management"]', level: 3 },
-            'approve-registration': { selector: '[data-function="approve-registration"]', level: 4 },
-            'grant-access': { selector: '[data-function="grant-access"]', level: 4 },
+            'employee-management': { selector: '[data-function="employee-management"]', permissions: ['employee_manage'] },
+            'approve-registration': { selector: '[data-function="approve-registration"]', permissions: ['registration_approve'] },
+            'grant-access': { selector: '[data-function="grant-access"]', permissions: ['registration_approve'] },
             
             // Approval Section
-            'process-requests': { selector: '[data-function="process-requests"]', level: 2 },
-            'attendance-approval': { selector: '[data-function="attendance-approval"]', level: 2 },
+            'process-requests': { selector: '[data-function="process-requests"]', permissions: ['request_approve'] },
+            'attendance-approval': { selector: '[data-function="attendance-approval"]', permissions: ['timesheet_approve'] },
             
             // Schedule Section
-            'schedule-management': { selector: '[data-function="schedule-management"]', level: 3 },
-            'shift-management': { selector: '[data-function="shift-management"]', level: 2 },
+            'schedule-management': { selector: '[data-function="schedule-management"]', permissions: ['schedule_manage'] },
+            'shift-management': { selector: '[data-function="shift-management"]', permissions: ['shift_manage'] },
             
             // Reports Section
-            'view-reports': { selector: '[data-function="view-reports"]', level: 3 },
-            'analytics': { selector: '[data-function="analytics"]', level: 3 },
+            'view-reports': { selector: '[data-function="view-reports"]', permissions: ['reports_view'] },
+            'analytics': { selector: '[data-function="analytics"]', permissions: ['reports_view'] },
             
             // System Section
-            'system-settings': { selector: '[data-function="system-settings"]', level: 4 }
+            'system-settings': { selector: '[data-function="system-settings"]', permissions: ['system_admin'] }
         };
 
         // Apply permissions to each menu item
@@ -139,7 +157,12 @@ const PermissionManager = {
             if (element) {
                 const listItem = element.closest('li');
                 if (listItem) {
-                    if (userPerms.positionLevel < config.level) {
+                    // Check if user has any of the required permissions
+                    const hasPermission = config.permissions.some(perm => 
+                        userPerms.permissions.includes(perm)
+                    );
+                    
+                    if (!hasPermission) {
                         listItem.style.display = 'none';
                     } else {
                         listItem.style.display = 'block';

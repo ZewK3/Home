@@ -194,17 +194,17 @@ INSERT INTO departments (departmentId, departmentName, departmentCode, descripti
 
 -- Insert default positions for VP (Office)
 INSERT INTO positions (positionId, departmentId, positionName, positionCode, positionLevel, baseSalaryRate, salaryType, description, permissions) VALUES
-('VP_KT', 'VP', 'Kế Toán', 'KT', 2, 8000000, 'monthly', 'Nhân viên kế toán văn phòng', 'accounting,finance'),
-('VP_IT', 'VP', 'Nhân Viên IT', 'IT', 2, 9000000, 'monthly', 'Nhân viên công nghệ thông tin', 'it,system_admin'),
-('VP_QLKV', 'VP', 'Quản Lý Khu Vực', 'QLKV', 3, 12000000, 'monthly', 'Quản lý khu vực văn phòng', 'area_manager,view_all_stores'),
-('VP_ADMIN', 'VP', 'Quản Trị Viên', 'ADMIN', 4, 15000000, 'monthly', 'Quản trị viên hệ thống', 'admin,all_permissions');
+('VP_KT', 'VP', 'Kế Toán', 'KT', 2, 8000000, 'monthly', 'Nhân viên kế toán văn phòng', 'employee_view,salary_manage,reports_view,timesheet_view'),
+('VP_IT', 'VP', 'Nhân Viên IT', 'IT', 2, 9000000, 'monthly', 'Nhân viên công nghệ thông tin', 'employee_view,system_admin,reports_view'),
+('VP_QLKV', 'VP', 'Quản Lý Khu Vực', 'QLKV', 3, 12000000, 'monthly', 'Quản lý khu vực văn phòng', 'employee_manage,salary_view,timesheet_approve,reports_view,schedule_manage,shift_manage,request_approve'),
+('VP_ADMIN', 'VP', 'Quản Trị Viên', 'ADMIN', 4, 15000000, 'monthly', 'Quản trị viên hệ thống', 'employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin');
 
 -- Insert default positions for CH (Store)
 INSERT INTO positions (positionId, departmentId, positionName, positionCode, positionLevel, baseSalaryRate, salaryType, description, permissions) VALUES
-('CH_NV_LV1', 'CH', 'Nhân Viên LV1', 'NV_LV1', 1, 25000, 'hourly', 'Nhân viên cửa hàng cấp 1', 'basic_operations'),
-('CH_NV_LV2', 'CH', 'Nhân Viên LV2', 'NV_LV2', 1, 28000, 'hourly', 'Nhân viên cửa hàng cấp 2', 'basic_operations,inventory'),
-('CH_QL_LV1', 'CH', 'Quản Lý LV1', 'QL_LV1', 2, 35000, 'hourly', 'Quản lý ca cửa hàng cấp 1', 'shift_manager,approve_requests'),
-('CH_QL_LV2', 'CH', 'Quản Lý LV2', 'QL_LV2', 3, 40000, 'hourly', 'Quản lý cửa hàng cấp 2', 'store_manager,approve_all');
+('CH_NV_LV1', 'CH', 'Nhân Viên LV1', 'NV_LV1', 1, 25000, 'hourly', 'Nhân viên cửa hàng cấp 1', 'attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view'),
+('CH_NV_LV2', 'CH', 'Nhân Viên LV2', 'NV_LV2', 1, 28000, 'hourly', 'Nhân viên cửa hàng cấp 2', 'attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view'),
+('CH_QL_LV1', 'CH', 'Quản Lý LV1', 'QL_LV1', 2, 35000, 'hourly', 'Quản lý ca cửa hàng cấp 1', 'attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view'),
+('CH_QL_LV2', 'CH', 'Quản Lý LV2', 'QL_LV2', 3, 40000, 'hourly', 'Quản lý cửa hàng cấp 2', 'attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view');
 
 -- Insert default shift data with various shift lengths
 -- 4-hour shifts (8:00 to 23:00)
