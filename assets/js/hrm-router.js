@@ -66,6 +66,15 @@ const HRMRouter = {
             return;
         }
         
+        // CHECK PERMISSIONS FIRST
+        if (typeof PermissionManager !== 'undefined') {
+            if (!PermissionManager.hasAccess(moduleName, this.currentDepartment)) {
+                console.warn(`Access denied to module: ${moduleName}`);
+                PermissionManager.showAccessDenied(moduleName);
+                return;
+            }
+        }
+        
         // Show loading state
         mainContent.innerHTML = `
             <div class="loading-container">
