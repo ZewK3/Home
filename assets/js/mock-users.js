@@ -23,7 +23,6 @@ const MockUsers = {
         positionId: "VP_ADMIN",
         positionName: "Quản Trị Viên",
         positionCode: "ADMIN",
-        positionLevel: 4,
         permissions: "employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin",
         authToken: "mock_token_admin"
     },
@@ -42,7 +41,6 @@ const MockUsers = {
         positionId: "VP_QLKV",
         positionName: "Quản Lý Khu Vực",
         positionCode: "QLKV",
-        positionLevel: 3,
         permissions: "employee_manage,salary_manage,timesheet_approve,reports_view,schedule_manage,request_approve",
         authToken: "mock_token_qlvp"
     },
@@ -61,7 +59,6 @@ const MockUsers = {
         positionId: "VP_KT",
         positionName: "Kế Toán",
         positionCode: "KT",
-        positionLevel: 2,
         permissions: "employee_view,salary_manage,reports_view,timesheet_view",
         authToken: "mock_token_ketoan"
     },
@@ -80,7 +77,6 @@ const MockUsers = {
         positionId: "VP_IT",
         positionName: "Nhân Viên IT",
         positionCode: "IT",
-        positionLevel: 2,
         permissions: "employee_view,system_admin,department_manage,position_manage,reports_view",
         authToken: "mock_token_it"
     },
@@ -99,7 +95,6 @@ const MockUsers = {
         positionId: "VP_GS",
         positionName: "Giám Sát",
         positionCode: "GS",
-        positionLevel: 2,
         permissions: "timesheet_approve,request_approve,shift_manage,attendance_approve",
         authToken: "mock_token_gsvp"
     },
@@ -118,7 +113,6 @@ const MockUsers = {
         positionId: "CH_QL_LV2",
         positionName: "Quản Lý LV2",
         positionCode: "QL_LV2",
-        positionLevel: 3,
         permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view",
         authToken: "mock_token_ql2"
     },
@@ -137,7 +131,6 @@ const MockUsers = {
         positionId: "CH_QL_LV1",
         positionName: "Quản Lý LV1",
         positionCode: "QL_LV1",
-        positionLevel: 2,
         permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,salary_view,request_create,request_approve,notification_view",
         authToken: "mock_token_ql1"
     },
@@ -156,7 +149,6 @@ const MockUsers = {
         positionId: "CH_NV_LV2",
         positionName: "Nhân Viên LV2",
         positionCode: "NV_LV2",
-        positionLevel: 1,
         permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
         authToken: "mock_token_nv2"
     },
@@ -175,7 +167,6 @@ const MockUsers = {
         positionId: "CH_NV_LV1",
         positionName: "Nhân Viên LV1",
         positionCode: "NV_LV1",
-        positionLevel: 1,
         permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
         authToken: "mock_token_nv1"
     },
@@ -194,7 +185,6 @@ const MockUsers = {
         positionId: "CH_CT",
         positionName: "Ca Trưởng",
         positionCode: "CT",
-        positionLevel: 2,
         permissions: "attendance_self,attendance_approve,schedule_view,shift_manage,timesheet_view,salary_view,request_create,notification_view,profile_view",
         authToken: "mock_token_ct"
     },
@@ -213,7 +203,6 @@ const MockUsers = {
         positionId: "TEST_NONE",
         positionName: "No Permissions",
         positionCode: "NONE",
-        positionLevel: 1,
         permissions: "",
         authToken: "mock_token_none"
     },
@@ -231,7 +220,6 @@ const MockUsers = {
         positionId: "TEST_VIEW",
         positionName: "View Only",
         positionCode: "VIEW",
-        positionLevel: 1,
         permissions: "employee_view,timesheet_view,salary_view,schedule_view,notification_view,profile_view",
         authToken: "mock_token_view"
     },
@@ -249,7 +237,6 @@ const MockUsers = {
         positionId: "TEST_APPROVE",
         positionName: "Approver",
         positionCode: "APPROVE",
-        positionLevel: 2,
         permissions: "registration_approve,timesheet_approve,attendance_approve,request_approve",
         authToken: "mock_token_approve"
     },
@@ -267,7 +254,6 @@ const MockUsers = {
         positionId: "TEST_CREATE",
         positionName: "Creator",
         positionCode: "CREATE",
-        positionLevel: 1,
         permissions: "request_create,notification_view",
         authToken: "mock_token_create"
     },
@@ -285,7 +271,6 @@ const MockUsers = {
         positionId: "TEST_FULL",
         positionName: "Full Access",
         positionCode: "FULL",
-        positionLevel: 4,
         permissions: "employee_manage,employee_view,registration_approve,department_manage,position_manage,salary_manage,salary_view,timesheet_approve,timesheet_view,attendance_self,attendance_approve,schedule_manage,schedule_view,shift_manage,request_create,request_approve,reports_view,system_admin,notification_view,profile_view",
         authToken: "mock_token_full"
     }
@@ -340,7 +325,6 @@ const MockAuth = {
                 fullName: user.fullName,
                 department: user.departmentName,
                 position: user.positionName,
-                level: user.positionLevel,
                 permissionCount: user.permissions ? user.permissions.split(',').length : 0
             };
         });
@@ -403,7 +387,6 @@ const MockAPI = {
                     positionId: user.positionId,
                     positionName: user.positionName,
                     positionCode: user.positionCode,
-                    positionLevel: user.positionLevel,
                     permissions: user.permissions
                 });
             }, 500);

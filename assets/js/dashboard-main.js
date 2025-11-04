@@ -35,7 +35,13 @@ const NotificationCache = {
 // Load notifications on page load only
 async function loadNotifications() {
     try {
-        const notifications = await DashboardAPI.getNotifications();
+        // Use apiClient which respects MOCK_MODE
+        const response = await apiClient.get('/notifications', {
+            employeeId: SimpleStorage.get('userData')?.employeeId,
+            limit: 10
+        });
+        
+        const notifications = response.data || [];
         if (notifications) {
             // Save to cache
             NotificationCache.saveCache(notifications);
