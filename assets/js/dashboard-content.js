@@ -421,7 +421,7 @@ const DashboardContent = {
         
         if (choice) {
             // For demo, register for morning shift
-            const result = await apiClient.post('/shifts/register', ({ date, shiftType: 'morning' });
+            const result = await apiClient.post('/shifts/register', { date, shiftType: 'morning' });
             
             if (result.success) {
                 alert('Đã gửi yêu cầu đăng ký ca làm!');
@@ -635,7 +635,7 @@ const DashboardContent = {
         const email = document.getElementById('profileEmail')?.value;
         const phone = document.getElementById('profilePhone')?.value;
 
-        const result = await apiClient.put('/profile/update', (this.employeeId, {
+        const result = await apiClient.put('/profile/update', {
             fullName: name,
             email,
             phone
@@ -722,11 +722,11 @@ const DashboardContent = {
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                const result = await apiClient.post('/gps/check', (
-                    this.employeeId,
-                    position.coords.latitude,
-                    position.coords.longitude
-                );
+                const result = await apiClient.post('/gps/check', {
+                    employeeId: this.employeeId,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
 
                 if (result.success) {
                     showNotification('Chấm công thành công!', 'success');
@@ -895,7 +895,7 @@ const DashboardContent = {
             return;
         }
 
-        const result = await apiClient.post('/requests/submit', ({
+        const result = await apiClient.post('/requests/submit', {
             employeeId: this.employeeId,
             type,
             startDate,
@@ -1034,7 +1034,7 @@ const DashboardContent = {
     },
 
     async approveRequest(requestId) {
-        const result = await apiClient.post('/requests/approve', (requestId, 'Đã duyệt');
+        const result = await apiClient.post('/requests/approve', { requestId, reason: 'Đã duyệt' });
         
         if (result.success) {
             showNotification('Đã duyệt yêu cầu', 'success');
@@ -1045,7 +1045,7 @@ const DashboardContent = {
     },
 
     async rejectRequest(requestId) {
-        const result = await apiClient.post('/requests/reject', (requestId, 'Không đủ điều kiện');
+        const result = await apiClient.post('/requests/reject', { requestId, reason: 'Không đủ điều kiện' });
         
         if (result.success) {
             showNotification('Đã từ chối yêu cầu', 'success');
@@ -1120,7 +1120,7 @@ const DashboardContent = {
     },
 
     async approveRegistration(employeeId) {
-        const result = await apiClient.post('/registrations/approve', (employeeId);
+        const result = await apiClient.post('/registrations/approve', { employeeId });
         
         if (result.success) {
             showNotification('Đã duyệt đăng ký', 'success');
@@ -1131,7 +1131,7 @@ const DashboardContent = {
     },
 
     async rejectRegistration(employeeId) {
-        const result = await apiClient.post('/registrations/reject', (employeeId, 'Thông tin không đầy đủ');
+        const result = await apiClient.post('/registrations/reject', { employeeId, reason: 'Thông tin không đầy đủ' });
         
         if (result.success) {
             showNotification('Đã từ chối đăng ký', 'success');
@@ -1211,7 +1211,7 @@ const DashboardContent = {
         if (!select) return;
 
         const newPosition = select.value;
-        const result = await apiClient.put('/permissions/update', (employeeId, newPosition);
+        const result = await apiClient.put('/permissions/update', { employeeId, position: newPosition });
         
         if (result.success) {
             showNotification('Đã cập nhật quyền', 'success');
@@ -1297,13 +1297,13 @@ const DashboardContent = {
     },
 
     async handleNotificationClick(notificationId) {
-        await apiClient.post('/notifications/read', (notificationId);
+        await apiClient.post('/notifications/read', { notificationId });
         await this.updateNotificationBadge();
         await this.loadNotifications();
     },
 
     async markAllRead() {
-        await apiClient.post('/notifications/read-all', ();
+        await apiClient.post('/notifications/read-all', {});
         await this.updateNotificationBadge();
         await this.loadNotifications();
     },
@@ -1459,7 +1459,7 @@ const DashboardContent = {
     },
 
     async registerShift(shiftId) {
-        const result = await apiClient.post('/shifts/register', (shiftId);
+        const result = await apiClient.post('/shifts/register', { shiftId });
         if (result.success) {
             await this.loadWeeklySchedule();
             // Show success message
@@ -1561,7 +1561,7 @@ const DashboardContent = {
         list.querySelectorAll('.notification-item').forEach(item => {
             item.addEventListener('click', async () => {
                 const id = item.dataset.id;
-                await apiClient.post('/notifications/read', (id);
+                await apiClient.post('/notifications/read', { notificationId: id });
                 item.classList.remove('unread');
                 this.updateNotificationBadge();
             });
