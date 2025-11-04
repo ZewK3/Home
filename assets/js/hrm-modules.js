@@ -669,32 +669,52 @@ const HRMModules = {
                     <p>${userData?.positionName || 'Nhân viên'} - ${userData?.departmentName || 'Store'}</p>
                 </div>
                 
-                <div class="quick-actions">
-                    <button class="action-card" onclick="HRMRouter.navigateTo('attendance')">
-                        <span class="material-icons-round">fingerprint</span>
-                        <span>Chấm Công</span>
+                <!-- Enhanced Quick Actions Grid -->
+                <div class="quick-actions-grid">
+                    <button class="action-card-modern" onclick="HRMRouter.navigateTo('attendance')">
+                        <div class="action-icon gradient-primary">
+                            <span class="material-icons-round">fingerprint</span>
+                        </div>
+                        <span class="action-label">Chấm Công</span>
                     </button>
-                    <button class="action-card" onclick="HRMRouter.navigateTo('schedule')">
-                        <span class="material-icons-round">calendar_month</span>
-                        <span>Lịch Làm</span>
+                    <button class="action-card-modern" onclick="HRMRouter.navigateTo('schedule')">
+                        <div class="action-icon gradient-info">
+                            <span class="material-icons-round">calendar_month</span>
+                        </div>
+                        <span class="action-label">Lịch Làm</span>
                     </button>
-                    <button class="action-card" onclick="HRMRouter.navigateTo('timesheet')">
-                        <span class="material-icons-round">table_chart</span>
-                        <span>Bảng Công</span>
+                    <button class="action-card-modern" onclick="HRMRouter.navigateTo('timesheet')">
+                        <div class="action-icon gradient-warning">
+                            <span class="material-icons-round">table_chart</span>
+                        </div>
+                        <span class="action-label">Bảng Công</span>
                     </button>
-                    <button class="action-card" onclick="HRMRouter.navigateTo('salary')">
-                        <span class="material-icons-round">payments</span>
-                        <span>Lương</span>
+                    <button class="action-card-modern" onclick="HRMRouter.navigateTo('salary')">
+                        <div class="action-icon gradient-success">
+                            <span class="material-icons-round">payments</span>
+                        </div>
+                        <span class="action-label">Lương</span>
                     </button>
                 </div>
                 
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h3>Thông Báo Mới</h3>
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card-modern">
+                        <div class="stat-icon">
+                            <span class="material-icons-round">schedule</span>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="hoursWorked">--</div>
+                            <div class="stat-label">Giờ làm</div>
+                        </div>
                     </div>
-                    <div class="card-body" id="recentNotifications">
-                        <div class="loading-container">
-                            <div class="spinner"></div>
+                    <div class="stat-card-modern">
+                        <div class="stat-icon">
+                            <span class="material-icons-round">event_available</span>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="presentDays">--</div>
+                            <div class="stat-label">Ngày công</div>
                         </div>
                     </div>
                 </div>
@@ -702,37 +722,93 @@ const HRMModules = {
         },
         
         async initDashboard() {
-            // Load recent notifications
+            // Load statistics
             const userData = SimpleStorage.get('userData');
             const employeeId = userData?.employeeId;
             
             if (employeeId) {
                 try {
+                    // Load notifications for the panel
                     const notifications = await apiClient.get('/notifications', {
                         employeeId,
-                        limit: 5
+                        limit: 10
                     });
                     
-                    const container = document.getElementById('recentNotifications');
-                    if (notifications.data?.length > 0) {
-                        container.innerHTML = `
-                            <div class="list-group">
-                                ${notifications.data.map(notif => `
-                                    <div class="list-item">
-                                        <h4>${notif.title}</h4>
-                                        <p>${notif.message}</p>
-                                        <small>${new Date(notif.createdAt).toLocaleString('vi-VN')}</small>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `;
-                    } else {
-                        container.innerHTML = '<p class="text-muted">Không có thông báo mới</p>';
+                    // Update notification panel
+                    this.updateNotificationPanel(notifications);
+                    
+                    // Load timesheet stats
+                    const timesheetData = await apiClient.get('/timesheet', {
+                        employeeId,
+                        month: new Date().getMonth() + 1,
+                        year: new Date().getFullYear()
+                    });
+                    
+                    // Update stats
+                    const hoursEl = document.getElementById('hoursWorked');
+                    const daysEl = document.getElementById('presentDays');
+                    
+                    if (hoursEl && timesheetData.data) {
+                        hoursEl.textContent = timesheetData.data.totalHours || '--';
+                    }
+                    if (daysEl && timesheetData.data) {
+                        daysEl.textContent = timesheetData.data.presentDays || '--';
                     }
                 } catch (error) {
-                    console.error('Error loading notifications:', error);
+                    console.error('Error loading dashboard data:', error);
                 }
             }
+        },
+        
+        updateNotificationPanel(notifications) {
+            const notifList = document.getElementById('notificationList');
+            const notifBadge = document.querySelector('.notification-badge');
+            const notifBtn = document.getElementById('notifBtn');
+            
+            if (notifications && notifications.data && notifications.data.length > 0) {
+                // Update badge
+                if (notifBadge && notifications.unreadCount > 0) {
+                    notifBadge.textContent = notifications.unreadCount > 99 ? '99+' : notifications.unreadCount;
+                    notifBadge.style.display = 'flex';
+                }
+                
+                // Update notification list
+                if (notifList) {
+                    notifList.innerHTML = notifications.data.map(notif => `
+                        <div class="notification-item ${notif.isRead ? 'read' : 'unread'}">
+                            <div class="notification-icon ${notif.type}">
+                                <span class="material-icons-round">
+                                    ${notif.type === 'success' ? 'check_circle' : notif.type === 'warning' ? 'warning' : 'info'}
+                                </span>
+                            </div>
+                            <div class="notification-content">
+                                <h4 class="notification-title">${notif.title}</h4>
+                                <p class="notification-message">${notif.message}</p>
+                                <small class="notification-time">${this.formatTime(notif.createdAt)}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                if (notifList) {
+                    notifList.innerHTML = '<div class="empty-state"><p>Không có thông báo mới</p></div>';
+                }
+                if (notifBadge) {
+                    notifBadge.style.display = 'none';
+                }
+            }
+        },
+        
+        formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // seconds
+            
+            if (diff < 60) return 'Vừa xong';
+            if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+            if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
+            return date.toLocaleDateString('vi-VN');
         },
         
         /**
@@ -745,15 +821,13 @@ const HRMModules = {
                         <h3>Chấm Công</h3>
                     </div>
                     <div class="card-body">
-                        <div class="attendance-controls">
-                            <button class="btn btn-success btn-lg" onclick="HRMModules.CH.clockIn()">
-                                <span class="material-icons-round">login</span>
-                                Check In
+                        <!-- Single Attendance Button -->
+                        <div class="attendance-single-action">
+                            <button class="btn-attendance-primary" id="attendanceBtn" onclick="HRMModules.CH.handleAttendance()">
+                                <span class="material-icons-round">fingerprint</span>
+                                <span class="btn-text">Chấm Công</span>
                             </button>
-                            <button class="btn btn-danger btn-lg" onclick="HRMModules.CH.clockOut()">
-                                <span class="material-icons-round">logout</span>
-                                Check Out
-                            </button>
+                            <p class="attendance-hint">Nhấn để ghi nhận thời gian ra/vào</p>
                         </div>
                         
                         <div class="mt-4" id="todayAttendance">
@@ -768,6 +842,102 @@ const HRMModules = {
         },
         
         async initAttendance() {
+            // Load today's attendance
+            const userData = SimpleStorage.get('userData');
+            const employeeId = userData?.employeeId;
+            
+            if (employeeId) {
+                try {
+                    const attendance = await apiClient.get('/attendance', {
+                        employeeId,
+                        date: new Date().toISOString().split('T')[0]
+                    });
+                    
+                    const container = document.getElementById('todayAttendance');
+                    if (attendance.data?.length > 0) {
+                        const record = attendance.data[0];
+                        container.innerHTML = `
+                            <h4>Lịch Sử Hôm Nay</h4>
+                            <div class="attendance-timeline">
+                                ${record.checkIn ? `
+                                    <div class="timeline-item success">
+                                        <div class="timeline-icon">
+                                            <span class="material-icons-round">login</span>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <strong>Vào làm</strong>
+                                            <span>${record.checkIn}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                ${record.checkOut ? `
+                                    <div class="timeline-item danger">
+                                        <div class="timeline-icon">
+                                            <span class="material-icons-round">logout</span>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <strong>Ra về</strong>
+                                            <span>${record.checkOut}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                        
+                        // Update button state
+                        const btn = document.getElementById('attendanceBtn');
+                        if (btn) {
+                            if (record.checkIn && !record.checkOut) {
+                                btn.classList.add('checked-in');
+                                btn.querySelector('.btn-text').textContent = 'Chấm Công Ra';
+                            }
+                        }
+                    } else {
+                        container.innerHTML = '<h4>Lịch Sử Hôm Nay</h4><p class="text-muted">Chưa có dữ liệu chấm công hôm nay</p>';
+                    }
+                } catch (error) {
+                    console.error('Error loading attendance:', error);
+                }
+            }
+        },
+        
+        async handleAttendance() {
+            const userData = SimpleStorage.get('userData');
+            const employeeId = userData?.employeeId;
+            
+            if (!employeeId) return;
+            
+            try {
+                // Check current status
+                const attendance = await apiClient.get('/attendance', {
+                    employeeId,
+                    date: new Date().toISOString().split('T')[0]
+                });
+                
+                const hasCheckedIn = attendance.data?.length > 0 && attendance.data[0].checkIn;
+                const hasCheckedOut = attendance.data?.length > 0 && attendance.data[0].checkOut;
+                
+                let result;
+                if (!hasCheckedIn) {
+                    // Check in
+                    result = await apiClient.post('/attendance/check-in', { employeeId });
+                    alert('✅ ' + result.message);
+                } else if (!hasCheckedOut) {
+                    // Check out
+                    result = await apiClient.post('/attendance/check-out', { employeeId });
+                    alert('✅ ' + result.message);
+                } else {
+                    alert('ℹ️ Bạn đã hoàn thành chấm công hôm nay');
+                    return;
+                }
+                
+                // Reload attendance data
+                await this.initAttendance();
+            } catch (error) {
+                console.error('Error during attendance:', error);
+                alert('❌ Có lỗi xảy ra: ' + error.message);
+            }
+        },
             await this.loadTodayAttendance();
         },
         

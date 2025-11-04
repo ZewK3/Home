@@ -152,15 +152,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeNotifPanel = document.getElementById('closeNotifPanel');
     const notificationPanel = document.getElementById('notificationPanel');
 
-    notifBtn.addEventListener('click', () => {
-        DashboardContent.toggleNotificationPanel();
+    notifBtn?.addEventListener('click', () => {
+        notificationPanel?.classList.toggle('active');
+        notificationPanel?.classList.toggle('hidden');
     });
 
     if (closeNotifPanel) {
         closeNotifPanel.addEventListener('click', () => {
-            notificationPanel.classList.add('hidden');
+            notificationPanel?.classList.remove('active');
+            notificationPanel?.classList.add('hidden');
         });
     }
+    
+    // Close notification panel when clicking outside
+    document.addEventListener('click', (e) => {
+        if (notificationPanel && 
+            !notificationPanel.contains(e.target) && 
+            e.target !== notifBtn &&
+            !notifBtn?.contains(e.target)) {
+            notificationPanel.classList.remove('active');
+            notificationPanel.classList.add('hidden');
+        }
+    });
 
     // Load notifications once on page load
     loadNotifications();
