@@ -939,8 +939,6 @@ const HRMModules = {
                 alert('❌ Có lỗi xảy ra: ' + error.message);
             }
         },
-            await this.loadTodayAttendance();
-        },
         
         async loadTodayAttendance() {
             const userData = SimpleStorage.get('userData');
