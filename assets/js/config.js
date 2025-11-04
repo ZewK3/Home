@@ -13,7 +13,9 @@ const CONFIG = {
     // API Version - set to 'restful' to use new RESTful endpoints, 'legacy' for old action-based
     API_VERSION: 'restful',
     // Maintenance mode - set to true to enable maintenance page
-    MAINTENANCE_MODE: false
+    MAINTENANCE_MODE: false,
+    // Mock mode - set to true to use mock users for testing without backend
+    MOCK_MODE: true
 };
 
 // Check maintenance mode on page load (except for maintenance and 404 pages)

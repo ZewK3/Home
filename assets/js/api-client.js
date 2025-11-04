@@ -74,6 +74,12 @@ class APIClient {
     // =====================================================
 
     async login(credentials) {
+        // Check if mock mode is enabled
+        if (typeof CONFIG !== 'undefined' && CONFIG.MOCK_MODE && typeof MockAPI !== 'undefined') {
+            console.log('🎭 Mock mode enabled, using mock login');
+            return MockAPI.login(credentials.username || credentials.employeeId, credentials.password);
+        }
+        
         return this.request('/api/auth/login', {
             method: 'POST',
             body: JSON.stringify(credentials),
