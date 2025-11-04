@@ -345,6 +345,53 @@ class APIClient {
         
         return this.request(endpoint, options);
     }
+
+    // =====================================================
+    // GENERIC HTTP METHODS
+    // =====================================================
+
+    /**
+     * Generic GET request
+     * @param {string} endpoint - API endpoint
+     * @param {object} params - Query parameters
+     */
+    async get(endpoint, params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+        return this.request(url, { method: 'GET' });
+    }
+
+    /**
+     * Generic POST request
+     * @param {string} endpoint - API endpoint
+     * @param {object} data - Request body data
+     */
+    async post(endpoint, data = {}) {
+        return this.request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    /**
+     * Generic PUT request
+     * @param {string} endpoint - API endpoint
+     * @param {object} data - Request body data
+     */
+    async put(endpoint, data = {}) {
+        return this.request(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    /**
+     * Generic DELETE request
+     * @param {string} endpoint - API endpoint
+     */
+    async delete(endpoint) {
+        return this.request(endpoint, { method: 'DELETE' });
+    }
 }
 
 // Create singleton instance
