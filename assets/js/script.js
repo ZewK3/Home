@@ -403,13 +403,13 @@ async function handleLogin(event) {
     const isRememberMe = rememberMeCheckbox ? rememberMeCheckbox.checked : false;
     
     const formData = {
-        loginEmployeeId: elements.loginForm.loginEmployeeId?.value.trim() || "",
-        loginPassword: elements.loginForm.loginPassword?.value || "",
+        employeeId: elements.loginForm.loginEmployeeId?.value.trim() || "",
+        password: elements.loginForm.loginPassword?.value || "",
         rememberMe: isRememberMe  // Send rememberMe flag to backend
     };
 
     // Validate form data
-    if (!formData.loginEmployeeId || !formData.loginPassword) {
+    if (!formData.employeeId || !formData.password) {
         showNotification("Vui lòng nhập đầy đủ thông tin đăng nhập", "warning");
         if (button) button.classList.remove("loading");
         if (buttonText) buttonText.textContent = "Đăng nhập";
@@ -431,7 +431,7 @@ async function handleLogin(event) {
         
         // Store rememberMe preference for UI
         if (isRememberMe) {
-            SimpleStorage.set(REMEMBER_ME_KEY, formData.loginEmployeeId);
+            SimpleStorage.set(REMEMBER_ME_KEY, formData.employeeId);
         } else {
             // Clear remembered ID if user unchecked rememberMe
             SimpleStorage.remove(REMEMBER_ME_KEY);

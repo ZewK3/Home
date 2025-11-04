@@ -389,6 +389,7 @@ const MockAPI = {
                     success: true,
                     message: 'Đăng nhập thành công',
                     token: user.authToken,
+                    userData: user,
                     employeeId: user.employeeId,
                     fullName: user.fullName,
                     email: user.email,
