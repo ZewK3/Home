@@ -332,7 +332,7 @@ const DashboardContent = {
         }
 
         // Fetch week schedule
-        const schedule = await DashboardAPI.getWeekSchedule(weekStart);
+        const schedule = await apiClient.get('/schedule', weekStart);
         
         // Generate 7-day grid
         let html = '<div class="week-grid">';
@@ -421,7 +421,7 @@ const DashboardContent = {
         
         if (choice) {
             // For demo, register for morning shift
-            const result = await DashboardAPI.registerForShift({ date, shiftType: 'morning' });
+            const result = await apiClient.post('/shifts/register', ({ date, shiftType: 'morning' });
             
             if (result.success) {
                 alert('Đã gửi yêu cầu đăng ký ca làm!');
@@ -477,7 +477,7 @@ const DashboardContent = {
         }
 
         // Fetch team schedule
-        const teamSchedule = await DashboardAPI.getTeamSchedule(weekStart);
+        const teamSchedule = await apiClient.get('/team-schedule', weekStart);
         
         if (!teamSchedule || teamSchedule.length === 0) {
             container.innerHTML = '<div class="message">Chưa có lịch làm việc cho tuần này</div>';
@@ -591,7 +591,7 @@ const DashboardContent = {
         const container = document.getElementById('profileContent');
         if (!container) return;
 
-        const profile = await DashboardAPI.getEmployeeProfile(this.employeeId);
+        const profile = await apiClient.get('/profile', this.employeeId);
         
         if (!profile) {
             container.innerHTML = '<div class="message error">Không thể tải thông tin</div>';
@@ -635,7 +635,7 @@ const DashboardContent = {
         const email = document.getElementById('profileEmail')?.value;
         const phone = document.getElementById('profilePhone')?.value;
 
-        const result = await DashboardAPI.updateEmployeeProfile(this.employeeId, {
+        const result = await apiClient.put('/profile/update', (this.employeeId, {
             fullName: name,
             email,
             phone
@@ -722,7 +722,7 @@ const DashboardContent = {
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                const result = await DashboardAPI.checkGPS(
+                const result = await apiClient.post('/gps/check', (
                     this.employeeId,
                     position.coords.latitude,
                     position.coords.longitude
@@ -750,7 +750,7 @@ const DashboardContent = {
         const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
         const endDate = today.toISOString().split('T')[0];
 
-        const attendance = await DashboardAPI.getAttendance(this.employeeId, startDate, endDate);
+        const attendance = await apiClient.get('/attendance', this.employeeId, startDate, endDate);
         
         if (!attendance || attendance.length === 0) {
             container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công</div>';
@@ -808,7 +808,7 @@ const DashboardContent = {
         const container = document.getElementById('timesheetData');
         if (!container) return;
 
-        const timesheet = await DashboardAPI.getTimesheet(this.employeeId, month, year);
+        const timesheet = await apiClient.get('/timesheet', this.employeeId, month, year);
         
         if (!timesheet) {
             container.innerHTML = '<div class="message">Chưa có bảng công</div>';
@@ -895,7 +895,7 @@ const DashboardContent = {
             return;
         }
 
-        const result = await DashboardAPI.submitAttendanceRequest({
+        const result = await apiClient.post('/requests/submit', ({
             employeeId: this.employeeId,
             type,
             startDate,
@@ -941,7 +941,7 @@ const DashboardContent = {
         const container = document.getElementById('requestsList');
         if (!container) return;
 
-        const requests = await DashboardAPI.getAttendanceRequests(this.employeeId);
+        const requests = await apiClient.get('/requests', this.employeeId);
         
         if (!requests || requests.length === 0) {
             container.innerHTML = '<div class="message">Không có đơn từ</div>';
@@ -999,7 +999,7 @@ const DashboardContent = {
         const container = document.getElementById('pendingRequestsList');
         if (!container) return;
 
-        const requests = await DashboardAPI.getPendingRequests();
+        const requests = await apiClient.get('/requests', );
         
         if (!requests || requests.length === 0) {
             container.innerHTML = '<div class="message">Không có yêu cầu chờ xử lý</div>';
@@ -1034,7 +1034,7 @@ const DashboardContent = {
     },
 
     async approveRequest(requestId) {
-        const result = await DashboardAPI.approveRequest(requestId, 'Đã duyệt');
+        const result = await apiClient.post('/requests/approve', (requestId, 'Đã duyệt');
         
         if (result.success) {
             showNotification('Đã duyệt yêu cầu', 'success');
@@ -1045,7 +1045,7 @@ const DashboardContent = {
     },
 
     async rejectRequest(requestId) {
-        const result = await DashboardAPI.rejectRequest(requestId, 'Không đủ điều kiện');
+        const result = await apiClient.post('/requests/reject', (requestId, 'Không đủ điều kiện');
         
         if (result.success) {
             showNotification('Đã từ chối yêu cầu', 'success');
@@ -1084,7 +1084,7 @@ const DashboardContent = {
         const container = document.getElementById('pendingRegistrationsList');
         if (!container) return;
 
-        const registrations = await DashboardAPI.getPendingRegistrations();
+        const registrations = await apiClient.get('/registrations', );
         
         if (!registrations || registrations.length === 0) {
             container.innerHTML = '<div class="message">Không có đăng ký chờ duyệt</div>';
@@ -1120,7 +1120,7 @@ const DashboardContent = {
     },
 
     async approveRegistration(employeeId) {
-        const result = await DashboardAPI.approveRegistration(employeeId);
+        const result = await apiClient.post('/registrations/approve', (employeeId);
         
         if (result.success) {
             showNotification('Đã duyệt đăng ký', 'success');
@@ -1131,7 +1131,7 @@ const DashboardContent = {
     },
 
     async rejectRegistration(employeeId) {
-        const result = await DashboardAPI.rejectRegistration(employeeId, 'Thông tin không đầy đủ');
+        const result = await apiClient.post('/registrations/reject', (employeeId, 'Thông tin không đầy đủ');
         
         if (result.success) {
             showNotification('Đã từ chối đăng ký', 'success');
@@ -1170,7 +1170,7 @@ const DashboardContent = {
         const container = document.getElementById('employeesList');
         if (!container) return;
 
-        const employees = await DashboardAPI.getAllEmployees();
+        const employees = await apiClient.get('/employees', );
         
         if (!employees || employees.length === 0) {
             container.innerHTML = '<div class="message">Không có nhân viên</div>';
@@ -1211,7 +1211,7 @@ const DashboardContent = {
         if (!select) return;
 
         const newPosition = select.value;
-        const result = await DashboardAPI.updateEmployeePermissions(employeeId, newPosition);
+        const result = await apiClient.put('/permissions/update', (employeeId, newPosition);
         
         if (result.success) {
             showNotification('Đã cập nhật quyền', 'success');
@@ -1259,7 +1259,7 @@ const DashboardContent = {
         const container = document.getElementById('notificationsList');
         if (!container) return;
 
-        const notifications = await DashboardAPI.getNotifications();
+        const notifications = await apiClient.get('/notifications', );
         
         if (!notifications || notifications.length === 0) {
             container.innerHTML = '<div class="message">Không có thông báo</div>';
@@ -1297,19 +1297,19 @@ const DashboardContent = {
     },
 
     async handleNotificationClick(notificationId) {
-        await DashboardAPI.markNotificationRead(notificationId);
+        await apiClient.post('/notifications/read', (notificationId);
         await this.updateNotificationBadge();
         await this.loadNotifications();
     },
 
     async markAllRead() {
-        await DashboardAPI.markAllNotificationsRead();
+        await apiClient.post('/notifications/read-all', ();
         await this.updateNotificationBadge();
         await this.loadNotifications();
     },
 
     async updateNotificationBadge() {
-        const count = await DashboardAPI.getNotificationCount();
+        const count = await apiClient.get('/notification-count', );
         const badge = document.querySelector('.mobile-header .badge');
         if (badge) {
             if (count > 0) {
@@ -1388,7 +1388,7 @@ const DashboardContent = {
         document.getElementById('weekDisplay').textContent = 
             `${weekStart.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit'})} - ${weekEnd.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit'})}`;
 
-        const shifts = await DashboardAPI.getAvailableShifts(weekStartStr);
+        const shifts = await apiClient.get('/shifts/available', weekStartStr);
         
         if (!shifts || shifts.length === 0) {
             container.innerHTML = '<div class="message">Không có ca làm việc khả dụng</div>';
@@ -1459,7 +1459,7 @@ const DashboardContent = {
     },
 
     async registerShift(shiftId) {
-        const result = await DashboardAPI.registerForShift(shiftId);
+        const result = await apiClient.post('/shifts/register', (shiftId);
         if (result.success) {
             await this.loadWeeklySchedule();
             // Show success message
@@ -1533,7 +1533,7 @@ const DashboardContent = {
         const panel = document.getElementById('notificationPanel');
         if (!panel) return;
 
-        const notifications = await DashboardAPI.getNotifications();
+        const notifications = await apiClient.get('/notifications', );
         const list = document.getElementById('notificationList');
         
         if (notifications.length === 0) {
@@ -1561,7 +1561,7 @@ const DashboardContent = {
         list.querySelectorAll('.notification-item').forEach(item => {
             item.addEventListener('click', async () => {
                 const id = item.dataset.id;
-                await DashboardAPI.markNotificationRead(id);
+                await apiClient.post('/notifications/read', (id);
                 item.classList.remove('unread');
                 this.updateNotificationBadge();
             });
@@ -1580,7 +1580,7 @@ const DashboardContent = {
     },
 
     async updateNotificationBadge() {
-        const count = await DashboardAPI.getNotificationCount();
+        const count = await apiClient.get('/notification-count', );
         const badge = document.querySelector('.notification-badge');
         if (badge) {
             badge.textContent = count > 0 ? count : '';

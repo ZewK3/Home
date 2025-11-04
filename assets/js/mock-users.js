@@ -508,9 +508,130 @@ const MockAPI = {
                         employeeId: 'E001',
                         fullName: 'Nguyễn Văn A',
                         position: 'Nhân viên',
-                        department: 'Cửa hàng'
+                        department: 'Cửa hàng',
+                        permissions: 'attendance_self,schedule_view'
+                    },
+                    {
+                        employeeId: 'E002',
+                        fullName: 'Trần Thị B',
+                        position: 'Quản lý',
+                        department: 'Văn phòng',
+                        permissions: 'employee_manage,salary_view'
                     }
                 ]
+            });
+        }
+        
+        // Profile endpoints
+        if (endpoint.includes('/profile') || endpoint.includes('/employee/')) {
+            const userData = SimpleStorage.get('userData');
+            return Promise.resolve({
+                success: true,
+                data: {
+                    employeeId: userData?.employeeId || 'E001',
+                    fullName: userData?.fullName || 'Nguyễn Văn A',
+                    email: userData?.email || 'user@company.com',
+                    phone: userData?.phone || '0901234567',
+                    position: userData?.positionName || 'Nhân viên',
+                    department: userData?.departmentName || 'Cửa hàng'
+                }
+            });
+        }
+        
+        // Requests endpoints
+        if (endpoint.includes('/requests') || endpoint.includes('/attendance-requests')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        requestId: 'R001',
+                        employeeId: 'E001',
+                        employeeName: 'Nguyễn Văn A',
+                        type: 'leave',
+                        reason: 'Nghỉ phép',
+                        date: new Date().toISOString().split('T')[0],
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    }
+                ]
+            });
+        }
+        
+        // Registrations endpoints
+        if (endpoint.includes('/registrations')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        employeeId: 'E999',
+                        fullName: 'Nguyễn Văn Mới',
+                        email: 'new@company.com',
+                        phone: '0909999999',
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    }
+                ]
+            });
+        }
+        
+        // GPS check endpoint
+        if (endpoint.includes('/gps/check')) {
+            return Promise.resolve({
+                success: true,
+                data: {
+                    isInRange: true,
+                    distance: 50, // meters
+                    storeName: 'Cửa hàng chính'
+                }
+            });
+        }
+        
+        // Available shifts endpoint
+        if (endpoint.includes('/shifts/available')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        id: 'shift1',
+                        date: new Date().toISOString().split('T')[0],
+                        shiftType: 'morning',
+                        startTime: '08:00',
+                        endTime: '12:00',
+                        available: true,
+                        registered: false
+                    },
+                    {
+                        id: 'shift2',
+                        date: new Date().toISOString().split('T')[0],
+                        shiftType: 'afternoon',
+                        startTime: '13:00',
+                        endTime: '17:00',
+                        available: true,
+                        registered: false
+                    }
+                ]
+            });
+        }
+        
+        // Team schedule endpoint
+        if (endpoint.includes('/team-schedule')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        employeeId: 'E001',
+                        employeeName: 'Nguyễn Văn A',
+                        shifts: ['08:00-12:00', '13:00-17:00']
+                    }
+                ]
+            });
+        }
+        
+        // Notification count
+        if (endpoint.includes('/notification-count')) {
+            return Promise.resolve({
+                success: true,
+                data: { count: 2, unreadCount: 2 }
             });
         }
         
@@ -546,7 +667,89 @@ const MockAPI = {
             });
         }
         
+        // Shift registration
+        if (endpoint.includes('/shifts/register') || endpoint.includes('/register-shift')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Đăng ký ca làm việc thành công',
+                data: { registered: true }
+            });
+        }
+        
+        // Request submissions
+        if (endpoint.includes('/requests/submit') || endpoint.includes('/attendance-request')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Gửi yêu cầu thành công',
+                data: { requestId: 'R' + Date.now() }
+            });
+        }
+        
+        // Approve/reject actions
+        if (endpoint.includes('/approve') || endpoint.includes('/reject')) {
+            return Promise.resolve({
+                success: true,
+                message: endpoint.includes('/approve') ? 'Đã duyệt thành công' : 'Đã từ chối',
+                data: { status: endpoint.includes('/approve') ? 'approved' : 'rejected' }
+            });
+        }
+        
+        // Profile updates
+        if (endpoint.includes('/profile/update') || endpoint.includes('/employee/update')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Cập nhật thông tin thành công',
+                data: { updated: true }
+            });
+        }
+        
+        // Permission updates
+        if (endpoint.includes('/permissions/update')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Cập nhật quyền thành công',
+                data: { updated: true }
+            });
+        }
+        
+        // Mark notifications as read
+        if (endpoint.includes('/notifications/read') || endpoint.includes('/mark-read')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Đánh dấu đã đọc thành công',
+                data: { marked: true }
+            });
+        }
+        
+        // GPS check
+        if (endpoint.includes('/gps/check')) {
+            return Promise.resolve({
+                success: true,
+                data: {
+                    isInRange: true,
+                    distance: 50,
+                    storeName: 'Cửa hàng chính'
+                }
+            });
+        }
+        
         return Promise.resolve({ success: true, message: 'Mock success' });
+    },
+    
+    /**
+     * Simulate PUT request
+     */
+    put(endpoint, data) {
+        console.log('Mock PUT:', endpoint, data);
+        return this.post(endpoint, data); // Reuse POST logic
+    },
+    
+    /**
+     * Simulate DELETE request  
+     */
+    delete(endpoint) {
+        console.log('Mock DELETE:', endpoint);
+        return Promise.resolve({ success: true, message: 'Mock delete success' });
     }
 };
 
