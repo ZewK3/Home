@@ -22,7 +22,7 @@ CREATE TABLE sessions (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
--- Employees table - Simplified with position-based permissions
+-- Employees table - Enhanced for F&B HRM with Department support
 CREATE TABLE employees (
     employeeId TEXT PRIMARY KEY,
     fullName TEXT NOT NULL,
@@ -30,24 +30,24 @@ CREATE TABLE employees (
     email TEXT UNIQUE,
     password TEXT NOT NULL,              -- SHA-256 hashed, no salt needed
     storeId TEXT,
-    position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),
+    departmentId TEXT,                   -- FK to departments table
+    positionId TEXT,                     -- FK to positions table
     approval_status TEXT DEFAULT 'approved' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
     is_active INTEGER DEFAULT 1,
+    hire_date TEXT,                      -- Date of hiring
     last_login_at TEXT,
     created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (storeId) REFERENCES stores(storeId)
+    FOREIGN KEY (storeId) REFERENCES stores(storeId),
+    FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    FOREIGN KEY (positionId) REFERENCES positions(positionId)
 );
 
--- Email verification (unchanged)
-CREATE TABLE email_verification (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    code TEXT NOT NULL,
-    verified INTEGER DEFAULT 0,
-    createdAt TEXT DEFAULT (datetime('now')),
-    expiresAt TEXT NOT NULL,
-    FOREIGN KEY (email) REFERENCES employees(email) ON DELETE CASCADE
-);
+-- Email verification table (Legacy - NOT USED)
+-- NOTE: This table exists for backward compatibility but is NOT actively used.
+-- The system now uses the 'pending_registrations' table for email verification.
+-- pending_registrations.verification_code stores the verification code
+-- pending_registrations.status tracks verification state (pending/verified/approved/rejected)
+-- This design is more efficient as it combines registration and verification in one table.
 
 -- Stores table - Streamlined for GPS validation
 CREATE TABLE stores (
@@ -59,6 +59,34 @@ CREATE TABLE stores (
     longitude REAL,
     radius REAL DEFAULT 50.0,            -- GPS validation radius in meters
     createdAt TEXT DEFAULT (datetime('now'))
+);
+
+-- Departments table - For organizational structure (VP: Office, CH: Store)
+CREATE TABLE departments (
+    departmentId TEXT PRIMARY KEY,       -- Example: VP, CH
+    departmentName TEXT NOT NULL,        -- Example: Văn Phòng, Cửa Hàng
+    departmentCode TEXT UNIQUE NOT NULL, -- Short code: VP, CH
+    description TEXT,
+    workHoursPerDay INTEGER DEFAULT 8,   -- Default work hours per day
+    workDaysPerMonth INTEGER DEFAULT 26, -- Default work days per month
+    requiresShiftAssignment INTEGER DEFAULT 1, -- 0 for VP (no shifts), 1 for CH (requires shifts)
+    createdAt TEXT DEFAULT (datetime('now'))
+);
+
+-- Positions table - For position hierarchy and salary management
+CREATE TABLE positions (
+    positionId TEXT PRIMARY KEY,         -- Example: VP_KT, CH_NV_LV1
+    departmentId TEXT NOT NULL,          -- FK to departments
+    positionName TEXT NOT NULL,          -- Example: Kế Toán, Nhân Viên LV1
+    positionCode TEXT UNIQUE NOT NULL,   -- Short code: KT, NV_LV1, QL_LV1
+    positionLevel INTEGER DEFAULT 1,     -- Level for hierarchy: 1=Staff, 2=Supervisor, 3=Manager, 4=Admin
+    baseSalaryRate REAL DEFAULT 0,       -- Base salary rate (hourly/daily/monthly based on type)
+    salaryType TEXT DEFAULT 'hourly' CHECK(salaryType IN ('hourly', 'daily', 'monthly')),
+    description TEXT,
+    permissions TEXT,                    -- JSON or comma-separated permissions
+    isActive INTEGER DEFAULT 1,
+    createdAt TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (departmentId) REFERENCES departments(departmentId)
 );
 
 -- =====================================================
@@ -78,7 +106,7 @@ CREATE TABLE attendance (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
--- Timesheets table (unchanged - monthly summaries)
+-- Timesheets table - Monthly summaries for employees
 CREATE TABLE timesheets (
     timesheetId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
@@ -150,6 +178,33 @@ CREATE TABLE shifts (
     timeName TEXT NOT NULL,
     createdAt TEXT DEFAULT (datetime('now'))
 );
+
+-- =====================================================
+-- INITIAL DATA - DEPARTMENTS
+-- =====================================================
+
+-- Insert default departments (VP: Office, CH: Store)
+INSERT INTO departments (departmentId, departmentName, departmentCode, description, workHoursPerDay, workDaysPerMonth, requiresShiftAssignment) VALUES
+('VP', 'Văn Phòng', 'VP', 'Phòng ban văn phòng - làm việc hành chính', 8, 26, 0),
+('CH', 'Cửa Hàng', 'CH', 'Cửa hàng bán lẻ - yêu cầu phân ca', 8, 26, 1);
+
+-- =====================================================
+-- INITIAL DATA - POSITIONS
+-- =====================================================
+
+-- Insert default positions for VP (Office)
+INSERT INTO positions (positionId, departmentId, positionName, positionCode, positionLevel, baseSalaryRate, salaryType, description, permissions) VALUES
+('VP_KT', 'VP', 'Kế Toán', 'KT', 2, 8000000, 'monthly', 'Nhân viên kế toán văn phòng', 'employee_view,salary_manage,reports_view,timesheet_view'),
+('VP_IT', 'VP', 'Nhân Viên IT', 'IT', 2, 9000000, 'monthly', 'Nhân viên công nghệ thông tin', 'employee_view,system_admin,reports_view'),
+('VP_QLKV', 'VP', 'Quản Lý Khu Vực', 'QLKV', 3, 12000000, 'monthly', 'Quản lý khu vực văn phòng', 'employee_manage,salary_view,timesheet_approve,reports_view,schedule_manage,shift_manage,request_approve'),
+('VP_ADMIN', 'VP', 'Quản Trị Viên', 'ADMIN', 4, 15000000, 'monthly', 'Quản trị viên hệ thống', 'employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin');
+
+-- Insert default positions for CH (Store)
+INSERT INTO positions (positionId, departmentId, positionName, positionCode, positionLevel, baseSalaryRate, salaryType, description, permissions) VALUES
+('CH_NV_LV1', 'CH', 'Nhân Viên LV1', 'NV_LV1', 1, 25000, 'hourly', 'Nhân viên cửa hàng cấp 1', 'attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view'),
+('CH_NV_LV2', 'CH', 'Nhân Viên LV2', 'NV_LV2', 1, 28000, 'hourly', 'Nhân viên cửa hàng cấp 2', 'attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view'),
+('CH_QL_LV1', 'CH', 'Quản Lý LV1', 'QL_LV1', 2, 35000, 'hourly', 'Quản lý ca cửa hàng cấp 1', 'attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view'),
+('CH_QL_LV2', 'CH', 'Quản Lý LV2', 'QL_LV2', 3, 40000, 'hourly', 'Quản lý cửa hàng cấp 2', 'attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view');
 
 -- Insert default shift data with various shift lengths
 -- 4-hour shifts (8:00 to 23:00)
@@ -262,7 +317,8 @@ CREATE TABLE pending_registrations (
     fullName TEXT NOT NULL,              -- Synchronized with employees.fullName
     phone TEXT,
     storeId TEXT,                        -- FOREIGN KEY to stores(storeId)
-    position TEXT DEFAULT 'NV' CHECK(position IN ('NV', 'QL', 'AD')),  -- Match employees position constraint
+    departmentId TEXT,                   -- FOREIGN KEY to departments(departmentId)
+    positionId TEXT,                     -- FOREIGN KEY to positions(positionId)
     verification_code TEXT,
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'verified', 'approved', 'rejected')),
     created_at TEXT DEFAULT (datetime('now')),
@@ -270,6 +326,8 @@ CREATE TABLE pending_registrations (
     approved_at TEXT,
     approved_by TEXT,                    -- employeeId of approver
     FOREIGN KEY (storeId) REFERENCES stores(storeId),
+    FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    FOREIGN KEY (positionId) REFERENCES positions(positionId),
     FOREIGN KEY (approved_by) REFERENCES employees(employeeId)
 );
 
@@ -287,36 +345,39 @@ CREATE TABLE user_change_history (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId)
 );
 
--- Departments table (optional - for organizational structure)
-CREATE TABLE departments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    department_code TEXT UNIQUE NOT NULL,
-    department_name TEXT NOT NULL,
-    description TEXT,
-    managerEmployeeId TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (managerEmployeeId) REFERENCES employees(employeeId)
-);
-
--- =====================================================
--- SYSTEM MANAGEMENT
--- =====================================================
-
--- Permissions table (unchanged)
-CREATE TABLE permissions (
-    permissionId INTEGER PRIMARY KEY AUTOINCREMENT,
+-- Salary records - Track salary calculations and payments
+CREATE TABLE salary_records (
+    salaryId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
-    permission TEXT NOT NULL,
-    granted INTEGER DEFAULT 0,
-    grantedBy TEXT,
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now')),
+    month INTEGER NOT NULL,
+    year INTEGER NOT NULL,
+    departmentId TEXT,
+    positionId TEXT,
+    baseSalary REAL DEFAULT 0,           -- Base salary based on position
+    workDays INTEGER DEFAULT 0,          -- Actual work days
+    standardDays INTEGER DEFAULT 26,     -- Standard work days per month
+    workHours REAL DEFAULT 0,            -- Total work hours
+    overtimeHours REAL DEFAULT 0,        -- Overtime hours
+    overtimePay REAL DEFAULT 0,          -- Overtime payment
+    bonus REAL DEFAULT 0,                -- Bonus amount
+    deduction REAL DEFAULT 0,            -- Deduction amount (fines, etc)
+    totalSalary REAL DEFAULT 0,          -- Final calculated salary
+    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'paid')),
+    calculatedAt TEXT DEFAULT (datetime('now')),
+    approvedBy TEXT,
+    approvedAt TEXT,
+    paidAt TEXT,
+    notes TEXT,
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    FOREIGN KEY (grantedBy) REFERENCES employees(employeeId),
-    UNIQUE(employeeId, permission)
+    FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    FOREIGN KEY (positionId) REFERENCES positions(positionId),
+    FOREIGN KEY (approvedBy) REFERENCES employees(employeeId),
+    UNIQUE(employeeId, month, year)
 );
 
--- Notifications (unchanged)
+-- Departments table (optional - for organizational structure)
+
+-- Notifications - System notifications for employees
 CREATE TABLE notifications (
     notificationId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
@@ -329,46 +390,19 @@ CREATE TABLE notifications (
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE
 );
 
+-- =====================================================
+-- SYSTEM MANAGEMENT
+-- =====================================================
+
+-- Permissions table (unchanged)
+
+-- Notifications (unchanged)
+
 -- HR settings (unchanged)
-CREATE TABLE hr_settings (
-    settingId INTEGER PRIMARY KEY AUTOINCREMENT,
-    settingKey TEXT NOT NULL UNIQUE,
-    settingValue TEXT,
-    category TEXT,
-    description TEXT,
-    updatedBy TEXT,
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (updatedBy) REFERENCES employees(employeeId)
-);
 
 -- History logs (unchanged)
-CREATE TABLE history_logs (
-    logId INTEGER PRIMARY KEY AUTOINCREMENT,
-    action_type TEXT NOT NULL,
-    action_by_employee_id TEXT NOT NULL,
-    target_employee_id TEXT,
-    description TEXT,
-    details TEXT,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (action_by_employee_id) REFERENCES employees(employeeId),
-    FOREIGN KEY (target_employee_id) REFERENCES employees(employeeId)
-);
 
 -- Messages table (unchanged - for internal messaging)
-CREATE TABLE messages (
-    messageId INTEGER PRIMARY KEY AUTOINCREMENT,
-    senderId TEXT NOT NULL,
-    receiverId TEXT NOT NULL,
-    subject TEXT,
-    message TEXT NOT NULL,
-    isRead INTEGER DEFAULT 0,
-    sentAt TEXT DEFAULT (datetime('now')),
-    readAt TEXT,
-    FOREIGN KEY (senderId) REFERENCES employees(employeeId),
-    FOREIGN KEY (receiverId) REFERENCES employees(employeeId)
-);
 
 -- =====================================================
 -- OPTIMIZED INDEXES FOR PERFORMANCE
@@ -382,7 +416,8 @@ CREATE INDEX idx_sessions_is_active ON sessions(is_active);
 
 -- Employee indexes
 CREATE INDEX idx_employees_email ON employees(email);
-CREATE INDEX idx_employees_position ON employees(position);
+CREATE INDEX idx_employees_departmentId ON employees(departmentId);
+CREATE INDEX idx_employees_positionId ON employees(positionId);
 CREATE INDEX idx_employees_approval_status ON employees(approval_status);
 CREATE INDEX idx_employees_storeId ON employees(storeId);
 CREATE INDEX idx_employees_is_active ON employees(is_active);
@@ -416,19 +451,10 @@ CREATE INDEX idx_notifications_created ON notifications(createdAt DESC);
 CREATE INDEX idx_notifications_type ON notifications(type);
 
 -- Permission indexes
-CREATE INDEX idx_permissions_employee_permission ON permissions(employeeId, permission);
 
 -- History log indexes
-CREATE INDEX idx_history_logs_action_by ON history_logs(action_by_employee_id);
-CREATE INDEX idx_history_logs_target ON history_logs(target_employee_id);
-CREATE INDEX idx_history_logs_type ON history_logs(action_type);
-CREATE INDEX idx_history_logs_created ON history_logs(created_at DESC);
 
 -- Message indexes
-CREATE INDEX idx_messages_sender ON messages(senderId);
-CREATE INDEX idx_messages_receiver ON messages(receiverId);
-CREATE INDEX idx_messages_read ON messages(isRead);
-CREATE INDEX idx_messages_sent ON messages(sentAt DESC);
 
 -- Pending registrations indexes
 CREATE INDEX idx_pending_reg_employeeId ON pending_registrations(employeeId);
@@ -439,32 +465,30 @@ CREATE INDEX idx_pending_reg_status ON pending_registrations(status);
 CREATE INDEX idx_user_change_employeeId ON user_change_history(employeeId);
 CREATE INDEX idx_user_change_changed_at ON user_change_history(changed_at DESC);
 
--- Position-based permissions (no separate roles tables needed)
-
 -- Departments indexes
-CREATE INDEX idx_departments_code ON departments(department_code);
-CREATE INDEX idx_departments_manager ON departments(managerEmployeeId);
+CREATE INDEX idx_departments_code ON departments(departmentCode);
+CREATE INDEX idx_departments_active ON departments(createdAt DESC);
+
+-- Positions indexes
+CREATE INDEX idx_positions_departmentId ON positions(departmentId);
+CREATE INDEX idx_positions_code ON positions(positionCode);
+CREATE INDEX idx_positions_level ON positions(positionLevel);
+CREATE INDEX idx_positions_active ON positions(isActive);
+
+-- Salary records indexes
+CREATE INDEX idx_salary_employeeId ON salary_records(employeeId);
+CREATE INDEX idx_salary_period ON salary_records(year DESC, month DESC);
+CREATE INDEX idx_salary_status ON salary_records(status);
+CREATE INDEX idx_salary_department ON salary_records(departmentId);
+CREATE INDEX idx_salary_position ON salary_records(positionId);
 
 -- =====================================================
 -- SAMPLE DATA
 -- =====================================================
 
 -- Default admin permissions
-INSERT OR IGNORE INTO permissions (employeeId, permission, granted) 
-VALUES 
-    ('ADMIN001', 'schedule', 1),
-    ('ADMIN001', 'rewards', 1),
-    ('ADMIN001', 'admin', 1),
-    ('ADMIN001', 'finance', 1);
 
 -- Default HR settings
-INSERT OR IGNORE INTO hr_settings (settingKey, settingValue, category, description) 
-VALUES 
-    ('work_hours_per_day', '8', 'attendance', 'Standard work hours per day'),
-    ('overtime_multiplier', '1.5', 'payroll', 'Overtime pay multiplier'),
-    ('max_gps_distance', '50', 'attendance', 'Maximum GPS distance in meters for check-in'),
-    ('late_threshold_minutes', '15', 'attendance', 'Minutes after scheduled time considered late'),
-    ('auto_approve_leave_days', '3', 'requests', 'Auto-approve leave requests under N days');
 
 -- =====================================================
 -- OPTIMIZATION SUMMARY
@@ -500,7 +524,6 @@ VALUES
 -- 1. shifts table - predefined work shifts for better shift management
 -- 2. pending_registrations - user registration workflow
 -- 3. user_change_history - audit trail for user changes
--- 4. departments - organizational structure (optional)
 --
 -- BENEFITS:
 -- - Simplified schema with consistent employeeId usage
@@ -538,9 +561,9 @@ ON employee_requests(status, employeeId, createdAt DESC);
 CREATE INDEX IF NOT EXISTS idx_sessions_token_active 
 ON sessions(session_token, is_active, expires_at);
 
--- Employees by store + position (for manager queries)
-CREATE INDEX IF NOT EXISTS idx_employees_store_position 
-ON employees(storeId, position, is_active);
+-- Employees by store + department + position (for manager queries)
+CREATE INDEX IF NOT EXISTS idx_employees_store_dept_position 
+ON employees(storeId, departmentId, positionId, is_active);
 
 -- Employees by store + active status
 CREATE INDEX IF NOT EXISTS idx_employees_store_active 
@@ -570,7 +593,7 @@ ON employee_requests(requestType, status, createdAt DESC);
 
 -- Cover common employee list queries (no table lookup needed)
 CREATE INDEX IF NOT EXISTS idx_employees_list_covering 
-ON employees(is_active, position, storeId, employeeId, fullName, email);
+ON employees(is_active, departmentId, positionId, storeId, employeeId, fullName, email);
 
 -- Cover attendance dashboard queries
 CREATE INDEX IF NOT EXISTS idx_attendance_dashboard_covering 

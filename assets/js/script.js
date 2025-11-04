@@ -176,6 +176,9 @@ function showVerificationForm() {
                 verificationInput.focus();
             }
         }, 300);
+        
+        // Start countdown timer for resend button (90 seconds)
+        startResendCountdown();
     }
 }
 
@@ -482,7 +485,8 @@ async function handleRegister(event) {
         phone: elements.registerForm.phone?.value.trim() || "",
         email: elements.registerForm.email?.value.trim() || "",
         storeId: elements.registerForm.storeId?.value || "",
-        position: "NV"
+        position: "NV",
+        departmentId: "CH"  // Default to CH (Store) department for all registrations
     };
 
     // Validate store selection
@@ -589,7 +593,7 @@ async function handleVerification(event) {
     }
 }
 
-// Resend verification code
+// Resend verification code with 90-second countdown
 async function resendVerificationCode() {
     if (!registrationData) {
         showNotification("Không có dữ liệu để gửi lại mã", "error");
@@ -612,24 +616,8 @@ async function resendVerificationCode() {
         if (data.success) {
             showNotification("Mã xác nhận mới đã được gửi!", "success");
             
-            // Start countdown
-            let countdown = 60;
-            const countdownInterval = setInterval(() => {
-                if (buttonText) {
-                    buttonText.textContent = `Gửi lại (${countdown}s)`;
-                }
-                countdown--;
-                
-                if (countdown < 0) {
-                    clearInterval(countdownInterval);
-                    if (button) {
-                        button.disabled = false;
-                    }
-                    if (buttonText) {
-                        buttonText.textContent = "Gửi lại mã";
-                    }
-                }
-            }, 1000);
+            // Start 90-second countdown (1 minute 30 seconds)
+            startResendCountdown();
         } else {
             throw new Error("Không thể gửi lại mã xác nhận");
         }
@@ -642,6 +630,39 @@ async function resendVerificationCode() {
             buttonText.textContent = "Gửi lại mã";
         }
     }
+}
+
+// Start the resend countdown timer (90 seconds)
+function startResendCountdown() {
+    const button = document.getElementById('resendCodeBtn');
+    const buttonText = button?.querySelector(".btn-text");
+    
+    if (!button || !buttonText) return;
+    
+    let countdown = 90; // 1 minute 30 seconds
+    button.disabled = true;
+    
+    const countdownInterval = setInterval(() => {
+        if (buttonText) {
+            const minutes = Math.floor(countdown / 60);
+            const seconds = countdown % 60;
+            const timeDisplay = minutes > 0 
+                ? `${minutes}:${seconds.toString().padStart(2, '0')}`
+                : `${seconds}s`;
+            buttonText.textContent = `Gửi lại (${timeDisplay})`;
+        }
+        countdown--;
+        
+        if (countdown < 0) {
+            clearInterval(countdownInterval);
+            if (button) {
+                button.disabled = false;
+            }
+            if (buttonText) {
+                buttonText.textContent = "Gửi lại mã";
+            }
+        }
+    }, 1000);
 }
 
 // Handle forgot password form submission
