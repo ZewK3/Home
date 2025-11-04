@@ -411,10 +411,127 @@ const MockAPI = {
     },
 
     /**
-     * Simulate any GET request
+     * Simulate any GET request with comprehensive mock data
      */
-    get(endpoint) {
-        console.log('Mock GET:', endpoint);
+    get(endpoint, params) {
+        console.log('Mock GET:', endpoint, params);
+        
+        // Mock data for various endpoints
+        if (endpoint.includes('/notifications')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        id: 'n1',
+                        title: 'Thông báo quan trọng',
+                        message: 'Hệ thống sẽ bảo trì vào 10:00 PM hôm nay',
+                        type: 'info',
+                        isRead: false,
+                        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        id: 'n2',
+                        title: 'Yêu cầu đã được duyệt',
+                        message: 'Yêu cầu nghỉ phép của bạn đã được chấp thuận',
+                        type: 'success',
+                        isRead: false,
+                        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        id: 'n3',
+                        title: 'Lịch làm việc mới',
+                        message: 'Lịch làm việc tuần sau đã được cập nhật',
+                        type: 'info',
+                        isRead: true,
+                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+                    }
+                ],
+                unreadCount: 2
+            });
+        }
+        
+        if (endpoint.includes('/attendance')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        id: 'a1',
+                        employeeId: 'E001',
+                        date: new Date().toISOString().split('T')[0],
+                        checkIn: '08:30:00',
+                        checkOut: null,
+                        status: 'present',
+                        hoursWorked: 0
+                    }
+                ]
+            });
+        }
+        
+        if (endpoint.includes('/shifts') || endpoint.includes('/schedule')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        id: 's1',
+                        name: 'Ca Sáng',
+                        startTime: '08:00',
+                        endTime: '12:00',
+                        date: new Date().toISOString().split('T')[0]
+                    },
+                    {
+                        id: 's2',
+                        name: 'Ca Chiều',
+                        startTime: '13:00',
+                        endTime: '17:00',
+                        date: new Date().toISOString().split('T')[0]
+                    }
+                ]
+            });
+        }
+        
+        if (endpoint.includes('/salary')) {
+            return Promise.resolve({
+                success: true,
+                data: {
+                    month: new Date().getMonth() + 1,
+                    year: new Date().getFullYear(),
+                    baseSalary: 10000000,
+                    bonus: 1000000,
+                    deduction: 500000,
+                    total: 10500000,
+                    status: 'calculated'
+                }
+            });
+        }
+        
+        if (endpoint.includes('/timesheet')) {
+            return Promise.resolve({
+                success: true,
+                data: {
+                    totalDays: 22,
+                    presentDays: 20,
+                    absentDays: 1,
+                    lateDays: 1,
+                    totalHours: 160
+                }
+            });
+        }
+        
+        if (endpoint.includes('/employees')) {
+            return Promise.resolve({
+                success: true,
+                data: [
+                    {
+                        employeeId: 'E001',
+                        fullName: 'Nguyễn Văn A',
+                        position: 'Nhân viên',
+                        department: 'Cửa hàng'
+                    }
+                ]
+            });
+        }
+        
+        // Default response
         return Promise.resolve({ success: true, data: [], message: 'Mock data' });
     },
 
@@ -423,6 +540,29 @@ const MockAPI = {
      */
     post(endpoint, data) {
         console.log('Mock POST:', endpoint, data);
+        
+        if (endpoint.includes('/attendance/check-in')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Chấm công vào thành công',
+                data: {
+                    checkIn: new Date().toTimeString().split(' ')[0],
+                    status: 'checked_in'
+                }
+            });
+        }
+        
+        if (endpoint.includes('/attendance/check-out')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Chấm công ra thành công',
+                data: {
+                    checkOut: new Date().toTimeString().split(' ')[0],
+                    status: 'checked_out'
+                }
+            });
+        }
+        
         return Promise.resolve({ success: true, message: 'Mock success' });
     }
 };
