@@ -1837,4 +1837,408 @@ body {
     color: var(--text-muted);
 }
 
+/* ========================================
+   TIMESHEET ENHANCEMENTS
+   ======================================== */
+
+.timesheet-table-wrapper {
+    overflow-x: auto;
+    margin-top: var(--space-lg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.timesheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+
+.timesheet-table thead {
+    background: var(--bg-elevated);
+}
+
+.timesheet-table th {
+    padding: var(--space-md);
+    text-align: left;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.timesheet-table td {
+    padding: var(--space-md);
+    font-size: var(--font-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.timesheet-table tbody tr:hover {
+    background: var(--bg-card-hover);
+}
+
+.timesheet-table .weekend-row {
+    background: rgba(91, 159, 249, 0.05);
+}
+
+.timesheet-table .weekend-row:hover {
+    background: rgba(91, 159, 249, 0.1);
+}
+
+.timesheet-table tfoot {
+    background: var(--bg-elevated);
+    font-weight: 600;
+}
+
+.weekend-stat {
+    background: linear-gradient(135deg, rgba(91, 159, 249, 0.1) 0%, rgba(91, 159, 249, 0.05) 100%);
+    border: 1px solid rgba(91, 159, 249, 0.2);
+}
+
+.weekend-bonus-alert {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    margin-top: var(--space-lg);
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.05) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: var(--radius-md);
+}
+
+.weekend-bonus-alert .material-icons-round {
+    color: var(--gold-accent);
+    font-size: 32px;
+}
+
+.weekend-bonus-alert strong {
+    color: var(--gold-accent);
+}
+
+/* ========================================
+   SALARY ENHANCEMENTS
+   ======================================== */
+
+.salary-calculation-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.salary-calculation-header .material-icons-round {
+    color: var(--brand);
+    font-size: 28px;
+}
+
+.salary-calculation-header h4 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.salary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+}
+
+.salary-row.weekend-bonus-row {
+    background: rgba(212, 175, 55, 0.05);
+    padding: var(--space-sm) var(--space-md);
+    margin: var(--space-sm) calc(var(--space-md) * -1);
+    border-left: 3px solid var(--gold-accent);
+}
+
+.salary-row.total {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    font-size: var(--font-lg);
+}
+
+.salary-breakdown-info {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--brand);
+}
+
+.salary-breakdown-info h5 {
+    margin-top: 0;
+    margin-bottom: var(--space-md);
+    color: var(--text-primary);
+}
+
+.salary-breakdown-info ul {
+    margin: 0;
+    padding-left: var(--space-xl);
+}
+
+.salary-breakdown-info li {
+    margin-bottom: var(--space-sm);
+    color: var(--text-secondary);
+}
+
+/* ========================================
+   REQUEST MODULE
+   ======================================== */
+
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.request-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--space-lg);
+    transition: all 0.2s ease;
+}
+
+.request-item:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--brand);
+}
+
+.request-item.pending {
+    border-left: 3px solid var(--warning);
+}
+
+.request-item.approved {
+    border-left: 3px solid var(--success);
+}
+
+.request-item.rejected {
+    border-left: 3px solid var(--error);
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.request-type {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--text-primary);
+}
+
+.request-type .material-icons-round {
+    color: var(--brand);
+    font-size: 20px;
+}
+
+.request-body {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+}
+
+.request-body p {
+    margin: var(--space-sm) 0;
+}
+
+.request-body small {
+    color: var(--text-muted);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl);
+    text-align: center;
+}
+
+.empty-state .material-icons-round {
+    font-size: 64px;
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg);
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    padding: var(--space-lg);
+}
+
+.form-group {
+    margin-bottom: var(--space-lg);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-md);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--brand);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px var(--brand-glow);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: flex-end;
+    margin-top: var(--space-xl);
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+    font-size: var(--font-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: rgba(63, 185, 80, 0.1);
+    color: var(--success-light);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+}
+
+.badge-warning {
+    background: rgba(249, 171, 0, 0.1);
+    color: var(--warning-light);
+    border: 1px solid rgba(249, 171, 0, 0.3);
+}
+
+.badge-danger {
+    background: rgba(248, 81, 73, 0.1);
+    color: var(--error-light);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+}
+
+.badge-info {
+    background: rgba(91, 159, 249, 0.1);
+    color: var(--brand-light);
+    border: 1px solid rgba(91, 159, 249, 0.3);
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.text-success {
+    color: var(--success-light) !important;
+}
+
+.text-danger {
+    color: var(--error-light) !important;
+}
+
+.text-warning {
+    color: var(--warning-light) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-error {
+    color: var(--error) !important;
+}
+
 /* END OF MOBILE DASHBOARD CSS */
