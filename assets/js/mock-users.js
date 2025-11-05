@@ -99,22 +99,89 @@ const MockUsers = {
         authToken: "mock_token_gsvp"
     },
 
-    // CH - Quản Lý LV2 (Store Manager)
+    // CH - Quản Lý LV2 (Store Manager) - Comprehensive 40+ fields
     quanly2: {
+        // Basic Identity
         employeeId: "E101",
         username: "quanly2",
         password: "123456",
         fullName: "Nguyễn Thị Lan",
+        firstName: "Lan",
+        lastName: "Nguyễn Thị",
+        nickname: "Lan Lan",
+        
+        // Contact Information
         email: "lanql@store.com",
         phone: "0911234567",
+        emergencyContact: "0912999888",
+        emergencyContactName: "Nguyễn Văn Hùng (Chồng)",
+        
+        // Personal Information
+        dateOfBirth: "1988-05-15",
+        age: 36,
+        gender: "female",
+        maritalStatus: "married",
+        nationality: "Việt Nam",
+        ethnicity: "Kinh",
+        religion: "Không",
+        
+        // Identity Documents
+        identityNumber: "079088015678",
+        identityIssueDate: "2015-06-10",
+        identityIssuePlace: "Công an TP.HCM",
+        passportNumber: "",
+        driverLicense: "",
+        
+        // Address Information
+        address: "234 Đường Lê Văn Việt, Quận 9, TP.HCM",
+        permanentAddress: "456 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM",
+        city: "TP.HCM",
+        district: "Quận 9",
+        ward: "Phường Tăng Nhơn Phú A",
+        
+        // Organization Information
         departmentId: "CH",
         departmentName: "Cửa Hàng",
         departmentCode: "CH",
         positionId: "CH_QL_LV2",
         positionName: "Quản Lý LV2",
         positionCode: "QL_LV2",
-        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view",
-        authToken: "mock_token_ql2"
+        storeId: "S001",
+        storeName: "Cửa hàng 74 Đồng Đen",
+        
+        // Employment Information
+        hireDate: "2016-03-01",
+        probationEndDate: "2016-05-31",
+        contractType: "full_time",
+        contractStartDate: "2016-06-01",
+        contractEndDate: "2026-05-31",
+        workingStatus: "active",
+        
+        // Salary Information
+        baseSalary: 25000, // 25,000 VNĐ per hour for CH
+        salaryType: "hourly", // hourly for CH, monthly for VP
+        bankAccount: "1234567890",
+        bankName: "Vietcombank",
+        bankBranch: "Chi nhánh TP.HCM",
+        taxCode: "0123456789",
+        insuranceNumber: "1234567890123",
+        
+        // Work Schedule
+        workSchedule: "shift", // shift for CH, fixed for VP
+        standardHoursPerWeek: 48,
+        
+        // Performance & Skills
+        performanceRating: "excellent",
+        skills: "Quản lý nhân sự, Quản lý kho, Chăm sóc khách hàng",
+        certifications: "Chứng chỉ Quản lý Cửa hàng F&B",
+        
+        // System Information
+        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view,profile_edit",
+        authToken: "mock_token_ql2",
+        status: "active",
+        createdAt: "2016-03-01T08:00:00.000Z",
+        updatedAt: "2024-11-05T10:00:00.000Z",
+        lastLoginAt: "2024-11-05T08:30:00.000Z"
     },
 
     // CH - Quản Lý LV1
@@ -143,22 +210,89 @@ const MockUsers = {
         authToken: "mock_token_ql1"
     },
 
-    // CH - Nhân Viên LV2
+    // CH - Nhân Viên LV2 - Comprehensive 40+ fields
     nhanvien2: {
+        // Basic Identity
         employeeId: "E103",
         username: "nhanvien2",
         password: "123456",
         fullName: "Lê Thị Hoa",
+        firstName: "Hoa",
+        lastName: "Lê Thị",
+        nickname: "Hoa Hoa",
+        
+        // Contact Information
         email: "hoanv@store.com",
         phone: "0913456789",
+        emergencyContact: "0914888777",
+        emergencyContactName: "Lê Văn Bình (Anh trai)",
+        
+        // Personal Information
+        dateOfBirth: "1996-08-22",
+        age: 28,
+        gender: "female",
+        maritalStatus: "single",
+        nationality: "Việt Nam",
+        ethnicity: "Kinh",
+        religion: "Phật giáo",
+        
+        // Identity Documents
+        identityNumber: "079096023456",
+        identityIssueDate: "2018-09-15",
+        identityIssuePlace: "Công an TP.HCM",
+        passportNumber: "",
+        driverLicense: "",
+        
+        // Address Information
+        address: "567 Đường Lê Hồng Phong, Quận 10, TP.HCM",
+        permanentAddress: "789 Đường Nguyễn Trãi, Quận 5, TP.HCM",
+        city: "TP.HCM",
+        district: "Quận 10",
+        ward: "Phường 12",
+        
+        // Organization Information
         departmentId: "CH",
         departmentName: "Cửa Hàng",
         departmentCode: "CH",
         positionId: "CH_NV_LV2",
         positionName: "Nhân Viên LV2",
         positionCode: "NV_LV2",
-        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
-        authToken: "mock_token_nv2"
+        storeId: "S001",
+        storeName: "Cửa hàng 74 Đồng Đen",
+        
+        // Employment Information
+        hireDate: "2020-07-15",
+        probationEndDate: "2020-10-14",
+        contractType: "full_time",
+        contractStartDate: "2020-10-15",
+        contractEndDate: "2025-10-14",
+        workingStatus: "active",
+        
+        // Salary Information
+        baseSalary: 22000, // 22,000 VNĐ per hour for CH NV LV2
+        salaryType: "hourly", // hourly for CH, monthly for VP
+        bankAccount: "9876543210",
+        bankName: "Techcombank",
+        bankBranch: "Chi nhánh Quận 10",
+        taxCode: "9876543210",
+        insuranceNumber: "9876543210123",
+        
+        // Work Schedule
+        workSchedule: "shift", // shift for CH, fixed for VP
+        standardHoursPerWeek: 48,
+        
+        // Performance & Skills
+        performanceRating: "good",
+        skills: "Pha chế, Phục vụ, Kỹ năng giao tiếp",
+        certifications: "Chứng chỉ Pha chế cơ bản",
+        
+        // System Information
+        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
+        authToken: "mock_token_nv2",
+        status: "active",
+        createdAt: "2020-07-15T08:00:00.000Z",
+        updatedAt: "2024-11-05T10:00:00.000Z",
+        lastLoginAt: "2024-11-05T08:00:00.000Z"
     },
 
     // CH - Nhân Viên LV1
@@ -412,19 +546,26 @@ const MockAuth = {
 const MockAPI = {
     /**
      * Simulate login API call
-     * @param {string} username 
+     * Supports both username and employeeId for backward compatibility
+     * @param {string} usernameOrEmployeeId - Username or employeeId
      * @param {string} password 
      */
-    login(username, password) {
+    login(usernameOrEmployeeId, password) {
         return new Promise((resolve, reject) => {
             // Simulate network delay
             setTimeout(() => {
-                const user = MockUsers[username];
+                // First try to find by username (for backward compatibility)
+                let user = MockUsers[usernameOrEmployeeId];
+                
+                // If not found by username, search by employeeId
+                if (!user) {
+                    user = Object.values(MockUsers).find(u => u.employeeId === usernameOrEmployeeId);
+                }
                 
                 if (!user) {
                     reject({
                         success: false,
-                        message: 'Tên đăng nhập không tồn tại'
+                        message: 'Mã nhân viên không tồn tại'
                     });
                     return;
                 }
