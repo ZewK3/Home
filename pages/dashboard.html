@@ -89,19 +89,6 @@
         </nav>
     </div>
 
-    <!-- Notification Panel -->
-    <div id="notificationPanel" class="notification-panel hidden">
-        <div class="notification-header">
-            <h3>Thông báo</h3>
-            <button id="markAllRead" class="mark-all-btn">
-                <span class="material-icons-round">done_all</span>
-            </button>
-        </div>
-        <div id="notificationList" class="notification-list">
-            <!-- Notifications will be rendered here -->
-        </div>
-    </div>
-
     <!-- Drawer Menu -->
     <div id="drawerOverlay" class="drawer-overlay">
         <div class="drawer">
@@ -198,45 +185,7 @@
         </div>
     </div>
 
-    <!-- Mobile Dashboard JavaScript -->
-    <script src="../../assets/js/config.js"></script>
-    <script src="../../assets/js/mock-users.js"></script>
-    <script src="../../assets/js/simple-storage.js"></script>
-    <script src="../../assets/js/api-client.js"></script>
-    
-    <!-- Permission System -->
-    <script src="../../assets/js/permission-manager.js"></script>
-    
-    <!-- HRM SPA System -->
-    <script src="../../assets/js/hrm-modules.js"></script>
-    <script src="../../assets/js/hrm-router.js"></script>
-    
-    <script src="../../assets/js/dashboard-main.js"></script>
-    
-    <script>
-        // CH Dashboard - Store Department
-        console.log('✅ CH Dashboard loading...');
-        
-        // Initialize HRM Router for CH on DOM ready
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('authToken');
-            const userData = localStorage.getItem('userData');
-            
-            if (!token || !userData) {
-                console.log('No authentication found, redirecting to login...');
-                window.location.href = '../../index.html';
-                return;
-            }
-            
-            // Initialize Router for CH department
-            HRMRouter.init('CH');
-            
-            // Hide loader
-            setTimeout(() => {
-                const loader = document.getElementById('mobileLoader');
-                if (loader) loader.classList.add('hidden');
-            }, 500);
-        });
-    </script>
+    <!-- Consolidated Dashboard Script Loader -->
+    <script src="../../assets/js/dashboard-loader.js"></script>
 </body>
 </html>

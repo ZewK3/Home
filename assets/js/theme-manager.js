@@ -7,7 +7,12 @@ class ThemeManager {
     
     static setLightTheme() {
         document.documentElement.setAttribute('data-theme', 'light');
-        localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, 'light');
+        // Use SimpleStorage for UTF-8 support
+        if (typeof SimpleStorage !== 'undefined') {
+            SimpleStorage.set(CONFIG.STORAGE_KEYS.THEME, 'light');
+        } else {
+            localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, 'light');
+        }
         
         return 'light';
     }

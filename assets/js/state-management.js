@@ -95,10 +95,15 @@ class AppState {
   }
   
   /**
-   * Load state from localStorage
+   * Load state from storage using SimpleStorage
    */
   loadState() {
     try {
+      // Use SimpleStorage if available for UTF-8 support
+      if (typeof SimpleStorage !== 'undefined') {
+        return SimpleStorage.get(this.config.storageKey) || {};
+      }
+      // Fallback to localStorage
       const saved = localStorage.getItem(this.config.storageKey);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
@@ -108,7 +113,7 @@ class AppState {
   }
   
   /**
-   * Save state to localStorage
+   * Save state to storage using SimpleStorage
    */
   saveState() {
     try {
@@ -120,7 +125,12 @@ class AppState {
         }
       });
       
-      localStorage.setItem(this.config.storageKey, JSON.stringify(toSave));
+      // Use SimpleStorage if available for UTF-8 support
+      if (typeof SimpleStorage !== 'undefined') {
+        SimpleStorage.set(this.config.storageKey, toSave);
+      } else {
+        localStorage.setItem(this.config.storageKey, JSON.stringify(toSave));
+      }
     } catch (error) {
       console.error('Failed to save state:', error);
     }
@@ -131,7 +141,12 @@ class AppState {
    */
   clear() {
     this.state = {};
-    localStorage.removeItem(this.config.storageKey);
+    // Use SimpleStorage if available
+    if (typeof SimpleStorage !== 'undefined') {
+      SimpleStorage.remove(this.config.storageKey);
+    } else {
+      localStorage.removeItem(this.config.storageKey);
+    }
     this.notify({}, {});
   }
 }
@@ -185,19 +200,26 @@ class SmartCache {
       return memCached.data;
     }
     
-    // 2. Check localStorage
+    // 2. Check storage using SimpleStorage
     if (useStorage) {
       try {
-        const stored = localStorage.getItem(key);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Date.now() - parsed.timestamp < this.config.storageTTL) {
-            this.stats.hits++;
-            console.log(`💾 Storage cache HIT: ${key}`);
-            // Promote to memory cache
-            this.setMemory(key, parsed.data);
-            return parsed.data;
+        let parsed;
+        // Use SimpleStorage if available for UTF-8 support
+        if (typeof SimpleStorage !== 'undefined') {
+          parsed = SimpleStorage.get(key);
+        } else {
+          const stored = localStorage.getItem(key);
+          if (stored) {
+            parsed = JSON.parse(stored);
           }
+        }
+        
+        if (parsed && Date.now() - parsed.timestamp < this.config.storageTTL) {
+          this.stats.hits++;
+          console.log(`💾 Storage cache HIT: ${key}`);
+          // Promote to memory cache
+          this.setMemory(key, parsed.data);
+          return parsed.data;
         }
       } catch (error) {
         console.warn('Storage cache error:', error);
@@ -216,7 +238,7 @@ class SmartCache {
   }
   
   /**
-   * Set in cache
+   * Set in cache using SimpleStorage
    */
   set(key, data, options = {}) {
     this.stats.sets++;
@@ -224,10 +246,16 @@ class SmartCache {
     
     if (options.useStorage !== false) {
       try {
-        localStorage.setItem(key, JSON.stringify({
+        const cacheData = {
           data,
           timestamp: Date.now()
-        }));
+        };
+        // Use SimpleStorage if available for UTF-8 support
+        if (typeof SimpleStorage !== 'undefined') {
+          SimpleStorage.set(key, cacheData);
+        } else {
+          localStorage.setItem(key, JSON.stringify(cacheData));
+        }
       } catch (error) {
         console.warn('Storage set error:', error);
       }
@@ -251,7 +279,7 @@ class SmartCache {
   }
   
   /**
-   * Invalidate cache
+   * Invalidate cache using SimpleStorage
    */
   invalidate(pattern) {
     // Clear memory
@@ -263,29 +291,49 @@ class SmartCache {
         }
       }
       
-      // Clear storage
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(prefix)) {
-          localStorage.removeItem(key);
+      // Clear storage using SimpleStorage
+      if (typeof SimpleStorage !== 'undefined') {
+        // SimpleStorage doesn't support pattern matching, so we'll clear individual keys
+        // This is a limitation we'll need to work around
+        for (const key of this.memory.keys()) {
+          if (key.startsWith(prefix)) {
+            SimpleStorage.remove(key);
+          }
+        }
+      } else {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(prefix)) {
+            localStorage.removeItem(key);
+          }
         }
       }
     } else {
       this.memory.delete(pattern);
-      localStorage.removeItem(pattern);
+      if (typeof SimpleStorage !== 'undefined') {
+        SimpleStorage.remove(pattern);
+      } else {
+        localStorage.removeItem(pattern);
+      }
     }
   }
   
   /**
-   * Clear all caches
+   * Clear all caches using SimpleStorage
    */
   clear() {
     this.memory.clear();
-    // Clear only cache items from localStorage
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(this.config.storagePrefix)) {
-        localStorage.removeItem(key);
+    // Clear only cache items from storage
+    if (typeof SimpleStorage !== 'undefined') {
+      // Note: SimpleStorage doesn't have a pattern-based clear
+      // We'll clear memory cache and rely on TTL for storage cleanup
+      console.log('Cache memory cleared. Storage items will expire based on TTL.');
+    } else {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(this.config.storagePrefix)) {
+          localStorage.removeItem(key);
+        }
       }
     }
   }

@@ -35,7 +35,13 @@ const NotificationCache = {
 // Load notifications on page load only
 async function loadNotifications() {
     try {
-        const notifications = await DashboardAPI.getNotifications();
+        // Use apiClient which respects MOCK_MODE
+        const response = await apiClient.get('/notifications', {
+            employeeId: SimpleStorage.get('userData')?.employeeId,
+            limit: 10
+        });
+        
+        const notifications = response.data || [];
         if (notifications) {
             // Save to cache
             NotificationCache.saveCache(notifications);
@@ -62,11 +68,11 @@ function updateNotificationUI(notifications) {
     }
 }
 
-// Mobile Dashboard Logic
-document.addEventListener('DOMContentLoaded', async () => {
-    // Check authentication
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
+// Mobile Dashboard Initialization Function
+async function initMobileDashboard() {
+    // Check authentication - use SimpleStorage to properly decode data
+    const token = SimpleStorage.get('authToken');
+    const userData = SimpleStorage.get('userData');
     
     if (!token || !userData) {
         console.log('No authentication found, redirecting to login...');
@@ -76,7 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check if user is admin and redirect to admin dashboard
     try {
-        const user = JSON.parse(userData);
+        // userData is already parsed by SimpleStorage.get()
+        const user = userData;
         const isAdmin = user.position === 'AD' || user.position === 'ADMIN';
         
         if (isAdmin) {
@@ -93,7 +100,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Hide loader
     setTimeout(() => {
-        document.getElementById('mobileLoader').classList.add('hidden');
+        const loader = document.getElementById('mobileLoader');
+        if (loader) loader.classList.add('hidden');
     }, 500);
 
     // Apply role-based menu filtering
@@ -104,13 +112,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const drawerOverlay = document.getElementById('drawerOverlay');
     const closeDrawer = document.getElementById('closeDrawer');
 
-    menuBtn.addEventListener('click', () => {
-        drawerOverlay.classList.add('active');
-    });
+    if (menuBtn && drawerOverlay && closeDrawer) {
+        menuBtn.addEventListener('click', () => {
+            drawerOverlay.classList.add('active');
+        });
 
-    closeDrawer.addEventListener('click', () => {
-        drawerOverlay.classList.remove('active');
-    });
+        closeDrawer.addEventListener('click', () => {
+            drawerOverlay.classList.remove('active');
+        });
 
     drawerOverlay.addEventListener('click', (e) => {
         if (e.target === drawerOverlay) {
@@ -151,15 +160,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const closeNotifPanel = document.getElementById('closeNotifPanel');
     const notificationPanel = document.getElementById('notificationPanel');
 
-    notifBtn.addEventListener('click', () => {
-        DashboardContent.toggleNotificationPanel();
+    notifBtn?.addEventListener('click', () => {
+        notificationPanel?.classList.toggle('active');
+        notificationPanel?.classList.toggle('hidden');
     });
 
     if (closeNotifPanel) {
         closeNotifPanel.addEventListener('click', () => {
-            notificationPanel.classList.add('hidden');
+            notificationPanel?.classList.remove('active');
+            notificationPanel?.classList.add('hidden');
         });
     }
+    
+    // Close notification panel when clicking outside
+    document.addEventListener('click', (e) => {
+        if (notificationPanel && 
+            !notificationPanel.contains(e.target) && 
+            e.target !== notifBtn &&
+            !notifBtn?.contains(e.target)) {
+            notificationPanel.classList.remove('active');
+            notificationPanel.classList.add('hidden');
+        }
+    });
 
     // Load notifications once on page load
     loadNotifications();
@@ -167,7 +189,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Hash-based navigation support
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange(); // Handle initial hash
-});
+}
+
+// Also support direct call when DOM is already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileDashboard);
+} else if (typeof window.dashboardInitialized === 'undefined') {
+    // If DOM is already loaded and dashboard not initialized, init now
+    window.dashboardInitialized = true;
+    // Delay slightly to ensure all scripts are loaded
+    setTimeout(initMobileDashboard, 100);
+}
+
+// Export for use by dashboard-loader
+window.initMobileDashboard = initMobileDashboard;
 
 // Role-based menu filtering
 function filterMenuByRole() {
@@ -283,3 +318,9 @@ async function renderContent(functionName) {
 // Make functions globally available for onclick handlers
 window.navigateToFunction = navigateToFunction;
 window.filterMenuByRole = filterMenuByRole;
+}
+
+// Export for use in dashboard-loader.js
+if (typeof window !== 'undefined') {
+    window.initMobileDashboard = initMobileDashboard;
+}
