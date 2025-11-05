@@ -61,8 +61,8 @@
         console.log('✅ CH Dashboard loading...');
         
         // Check authentication
-        const token = localStorage.getItem('authToken') || SimpleStorage.get('authToken');
-        const userData = localStorage.getItem('userData') || SimpleStorage.get('userData');
+        const token = localStorage.getItem('authToken') || (typeof SimpleStorage !== 'undefined' ? SimpleStorage.get('authToken') : null);
+        const userData = localStorage.getItem('userData') || (typeof SimpleStorage !== 'undefined' ? SimpleStorage.get('userData') : null);
         
         if (!token || !userData) {
             console.log('No authentication found, redirecting to login...');
@@ -75,6 +75,12 @@
             HRMRouter.init('CH');
         } else {
             console.error('HRMRouter not found');
+        }
+        
+        // Call the mobile dashboard init function if available
+        if (typeof window.initMobileDashboard === 'function') {
+            window.dashboardInitialized = true;
+            window.initMobileDashboard();
         }
         
         // Hide loader

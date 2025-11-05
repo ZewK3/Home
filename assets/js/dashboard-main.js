@@ -68,8 +68,8 @@ function updateNotificationUI(notifications) {
     }
 }
 
-// Mobile Dashboard Logic
-document.addEventListener('DOMContentLoaded', async () => {
+// Mobile Dashboard Initialization Function
+async function initMobileDashboard() {
     // Check authentication - use SimpleStorage to properly decode data
     const token = SimpleStorage.get('authToken');
     const userData = SimpleStorage.get('userData');
@@ -100,7 +100,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Hide loader
     setTimeout(() => {
-        document.getElementById('mobileLoader').classList.add('hidden');
+        const loader = document.getElementById('mobileLoader');
+        if (loader) loader.classList.add('hidden');
     }, 500);
 
     // Apply role-based menu filtering
@@ -111,13 +112,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const drawerOverlay = document.getElementById('drawerOverlay');
     const closeDrawer = document.getElementById('closeDrawer');
 
-    menuBtn.addEventListener('click', () => {
-        drawerOverlay.classList.add('active');
-    });
+    if (menuBtn && drawerOverlay && closeDrawer) {
+        menuBtn.addEventListener('click', () => {
+            drawerOverlay.classList.add('active');
+        });
 
-    closeDrawer.addEventListener('click', () => {
-        drawerOverlay.classList.remove('active');
-    });
+        closeDrawer.addEventListener('click', () => {
+            drawerOverlay.classList.remove('active');
+        });
 
     drawerOverlay.addEventListener('click', (e) => {
         if (e.target === drawerOverlay) {
@@ -187,7 +189,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Hash-based navigation support
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange(); // Handle initial hash
-});
+}
+
+// Also support direct call when DOM is already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileDashboard);
+} else if (typeof window.dashboardInitialized === 'undefined') {
+    // If DOM is already loaded and dashboard not initialized, init now
+    window.dashboardInitialized = true;
+    // Delay slightly to ensure all scripts are loaded
+    setTimeout(initMobileDashboard, 100);
+}
+
+// Export for use by dashboard-loader
+window.initMobileDashboard = initMobileDashboard;
 
 // Role-based menu filtering
 function filterMenuByRole() {
