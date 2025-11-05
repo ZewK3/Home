@@ -489,70 +489,204 @@ const MockAPI = {
         }
         
         if (endpoint.includes('/attendance')) {
+            // Generate comprehensive attendance data for current month
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const currentDay = today.getDate();
+            
+            const attendanceData = [];
+            // Generate attendance records for each day of current month up to today
+            for (let day = 1; day <= Math.min(currentDay, daysInMonth); day++) {
+                // Skip weekends (Saturday=6, Sunday=0)
+                const date = new Date(year, month, day);
+                if (date.getDay() === 0 || date.getDay() === 6) continue;
+                
+                // Morning check-in (08:00 - 08:30)
+                const morningMinutes = Math.floor(Math.random() * 30);
+                const morningTime = `08:${morningMinutes.toString().padStart(2, '0')}:00`;
+                
+                attendanceData.push({
+                    attendanceId: `a${day}m`,
+                    employeeId: params?.employeeId || 'E101',
+                    checkDate: `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+                    checkTime: morningTime,
+                    checkLocation: 'Cửa Hàng 74 Đồng Đen',
+                    createdAt: new Date(year, month, day, 8, morningMinutes).toISOString()
+                });
+                
+                // Afternoon check-in (13:00 - 13:30)
+                const afternoonMinutes = Math.floor(Math.random() * 30);
+                const afternoonTime = `13:${afternoonMinutes.toString().padStart(2, '0')}:00`;
+                
+                attendanceData.push({
+                    attendanceId: `a${day}a`,
+                    employeeId: params?.employeeId || 'E101',
+                    checkDate: `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
+                    checkTime: afternoonTime,
+                    checkLocation: 'Cửa Hàng 74 Đồng Đen',
+                    createdAt: new Date(year, month, day, 13, afternoonMinutes).toISOString()
+                });
+            }
+            
             return Promise.resolve({
                 success: true,
-                data: [
-                    {
-                        id: 'a1',
-                        employeeId: 'E001',
-                        date: new Date().toISOString().split('T')[0],
-                        checkIn: '08:30:00',
-                        checkOut: null,
-                        status: 'present',
-                        hoursWorked: 0
-                    }
-                ]
+                data: attendanceData,
+                total: attendanceData.length
             });
         }
         
         if (endpoint.includes('/shifts') || endpoint.includes('/schedule')) {
+            // Generate schedule data for current month
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            const scheduleData = [];
+            // Generate shifts for each day of current month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                // Skip weekends
+                if (date.getDay() === 0 || date.getDay() === 6) continue;
+                
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                
+                // Alternate between morning and afternoon shifts
+                if (day % 2 === 0) {
+                    // Morning shift
+                    scheduleData.push({
+                        shiftId: `s${day}m`,
+                        assignmentId: `a${day}m`,
+                        employeeId: params?.employeeId || 'E101',
+                        shiftName: 'Ca Sáng',
+                        startTime: '08:00:00',
+                        endTime: '12:00:00',
+                        breakTime: 0,
+                        workHours: 4,
+                        date: dateStr,
+                        status: day <= today.getDate() ? 'completed' : 'scheduled'
+                    });
+                } else {
+                    // Afternoon shift
+                    scheduleData.push({
+                        shiftId: `s${day}a`,
+                        assignmentId: `a${day}a`,
+                        employeeId: params?.employeeId || 'E101',
+                        shiftName: 'Ca Chiều',
+                        startTime: '13:00:00',
+                        endTime: '17:00:00',
+                        breakTime: 0,
+                        workHours: 4,
+                        date: dateStr,
+                        status: day <= today.getDate() ? 'completed' : 'scheduled'
+                    });
+                }
+            }
+            
             return Promise.resolve({
                 success: true,
-                data: [
-                    {
-                        id: 's1',
-                        name: 'Ca Sáng',
-                        startTime: '08:00',
-                        endTime: '12:00',
-                        date: new Date().toISOString().split('T')[0]
-                    },
-                    {
-                        id: 's2',
-                        name: 'Ca Chiều',
-                        startTime: '13:00',
-                        endTime: '17:00',
-                        date: new Date().toISOString().split('T')[0]
-                    }
-                ]
+                data: scheduleData,
+                total: scheduleData.length
             });
         }
         
         if (endpoint.includes('/salary')) {
+            const today = new Date();
+            const month = today.getMonth() + 1;
+            const year = today.getFullYear();
+            
+            // Calculate based on position
+            const user = MockAuth.getCurrentUser();
+            let baseSalary = 8000000; // Default for staff
+            if (user && user.positionName) {
+                if (user.positionName.includes('Quản Lý')) {
+                    baseSalary = 15000000;
+                } else if (user.positionName.includes('Nhân Viên LV2')) {
+                    baseSalary = 10000000;
+                }
+            }
+            
             return Promise.resolve({
                 success: true,
                 data: {
-                    month: new Date().getMonth() + 1,
-                    year: new Date().getFullYear(),
-                    baseSalary: 10000000,
-                    bonus: 1000000,
-                    deduction: 500000,
-                    total: 10500000,
-                    status: 'calculated'
+                    employeeId: user?.employeeId || 'E101',
+                    month: month,
+                    year: year,
+                    baseSalary: baseSalary,
+                    bonus: baseSalary * 0.1, // 10% bonus
+                    deduction: baseSalary * 0.05, // 5% deduction (insurance, etc)
+                    total: baseSalary + (baseSalary * 0.1) - (baseSalary * 0.05),
+                    status: 'calculated',
+                    paymentDate: `${year}-${month.toString().padStart(2, '0')}-25`,
+                    details: {
+                        workDays: 22,
+                        presentDays: 20,
+                        hoursWorked: 160,
+                        overtimeHours: 0
+                    }
                 }
             });
         }
         
         if (endpoint.includes('/timesheet')) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const currentDay = today.getDate();
+            
+            // Count work days (excluding weekends)
+            let workDays = 0;
+            let presentDays = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                if (date.getDay() !== 0 && date.getDay() !== 6) {
+                    workDays++;
+                    if (day <= currentDay) {
+                        presentDays++;
+                    }
+                }
+            }
+            
             return Promise.resolve({
                 success: true,
                 data: {
-                    totalDays: 22,
-                    presentDays: 20,
-                    absentDays: 1,
-                    lateDays: 1,
-                    totalHours: 160
+                    employeeId: params?.employeeId || 'E101',
+                    month: month + 1,
+                    year: year,
+                    totalDays: workDays,
+                    presentDays: presentDays,
+                    absentDays: 0,
+                    lateDays: Math.floor(presentDays * 0.1), // 10% late
+                    totalHours: presentDays * 8,
+                    overtimeHours: 0,
+                    details: generateTimesheetDetails(year, month, currentDay)
                 }
             });
+        }
+        
+        // Helper function to generate detailed timesheet data
+        function generateTimesheetDetails(year, month, currentDay) {
+            const details = [];
+            for (let day = 1; day <= currentDay; day++) {
+                const date = new Date(year, month, day);
+                // Skip weekends
+                if (date.getDay() === 0 || date.getDay() === 6) continue;
+                
+                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                details.push({
+                    date: dateStr,
+                    dayOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()],
+                    shiftName: day % 2 === 0 ? 'Ca Sáng' : 'Ca Chiều',
+                    checkInTime: day % 2 === 0 ? '08:00:00' : '13:00:00',
+                    checkOutTime: day % 2 === 0 ? '12:00:00' : '17:00:00',
+                    workHours: 4,
+                    status: 'present'
+                });
+            }
+            return details;
         }
         
         if (endpoint.includes('/employees')) {

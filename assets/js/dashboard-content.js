@@ -750,21 +750,21 @@ const DashboardContent = {
         const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
         const endDate = today.toISOString().split('T')[0];
 
-        const attendance = await apiClient.get('/attendance', this.employeeId, startDate, endDate);
+        const attendance = await apiClient.get('/attendance', { employeeId: this.employeeId, startDate, endDate });
         
-        if (!attendance || attendance.length === 0) {
+        if (!attendance || !attendance.data || attendance.data.length === 0) {
             container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công</div>';
             return;
         }
 
         let html = '<div class="list">';
-        attendance.forEach(record => {
+        attendance.data.forEach(record => {
             html += `
                 <div class="list-item">
                     <div class="list-item-content">
-                        <div class="list-item-title">${record.date}</div>
+                        <div class="list-item-title">${record.checkDate}</div>
                         <div class="list-item-subtitle">
-                            Vào: ${record.checkIn || 'N/A'} | Ra: ${record.checkOut || 'N/A'}
+                            Thời gian: ${record.checkTime || 'N/A'}
                         </div>
                     </div>
                 </div>
