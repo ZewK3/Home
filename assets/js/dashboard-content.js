@@ -591,43 +591,50 @@ const DashboardContent = {
         const container = document.getElementById('profileContent');
         if (!container) return;
 
-        const profile = await apiClient.get('/profile', this.employeeId);
-        
-        if (!profile) {
-            container.innerHTML = '<div class="message error">Không thể tải thông tin</div>';
-            return;
-        }
+        try {
+            // Fix: API call should pass employeeId as parameter object
+            const response = await apiClient.get('/profile', { employeeId: this.employeeId });
+            const profile = response.data || response;
+            
+            if (!profile) {
+                container.innerHTML = '<div class="message error">Không thể tải thông tin</div>';
+                return;
+            }
 
-        container.innerHTML = `
-            <div class="form-group">
-                <label class="form-label">Mã nhân viên</label>
-                <input type="text" class="form-input" value="${profile.employeeId}" disabled>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Họ và tên</label>
-                <input type="text" class="form-input" id="profileName" value="${profile.fullName}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-input" id="profileEmail" value="${profile.email || ''}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Số điện thoại</label>
-                <input type="tel" class="form-input" id="profilePhone" value="${profile.phone || ''}">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Cửa hàng</label>
-                <input type="text" class="form-input" value="${profile.storeName}" disabled>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Chức vụ</label>
-                <input type="text" class="form-input" value="${profile.position}" disabled>
-            </div>
-            <button class="btn btn-primary btn-full" onclick="DashboardContent.saveProfile()">
-                <span class="material-icons-round">save</span>
-                Lưu thay đổi
-            </button>
-        `;
+            container.innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Mã nhân viên</label>
+                    <input type="text" class="form-input" value="${profile.employeeId || ''}" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Họ và tên</label>
+                    <input type="text" class="form-input" id="profileName" value="${profile.fullName || ''}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="profileEmail" value="${profile.email || ''}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại</label>
+                    <input type="tel" class="form-input" id="profilePhone" value="${profile.phone || ''}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phòng ban</label>
+                    <input type="text" class="form-input" value="${profile.departmentName || ''}" disabled>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Chức vụ</label>
+                    <input type="text" class="form-input" value="${profile.positionName || ''}" disabled>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="DashboardContent.saveProfile()">
+                    <span class="material-icons-round">save</span>
+                    Lưu thay đổi
+                </button>
+            `;
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            container.innerHTML = '<div class="message error">Không thể tải thông tin profile</div>';
+        }
     },
 
     async saveProfile() {
@@ -808,33 +815,103 @@ const DashboardContent = {
         const container = document.getElementById('timesheetData');
         if (!container) return;
 
-        const timesheet = await apiClient.get('/timesheet', this.employeeId, month, year);
-        
-        if (!timesheet) {
-            container.innerHTML = '<div class="message">Chưa có bảng công</div>';
-            return;
-        }
+        try {
+            const response = await apiClient.get('/timesheet', { employeeId: this.employeeId, month, year });
+            const timesheet = response.data || response;
+            
+            if (!timesheet) {
+                container.innerHTML = '<div class="message">Chưa có bảng công</div>';
+                return;
+            }
 
-        container.innerHTML = `
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value">${timesheet.totalDays || 0}</div>
-                    <div class="stat-label">Ngày làm việc</div>
+            // Generate calendar grid
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const daysInMonth = new Date(year, month, 0).getDate();
+            
+            let calendarHTML = '<div class="calendar-container"><div class="calendar-grid">';
+            
+            // Calendar headers
+            const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            dayNames.forEach(day => {
+                calendarHTML += `<div class="calendar-header">${day}</div>`;
+            });
+            
+            // Empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                calendarHTML += '<div class="calendar-day empty"></div>';
+            }
+            
+            // Calendar days
+            const records = timesheet.records || [];
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month - 1, day);
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                
+                // Find attendance record for this day
+                const record = records.find(r => new Date(r.date).getDate() === day);
+                
+                let dayClass = 'calendar-day';
+                let statusHTML = '';
+                
+                if (isWeekend) {
+                    dayClass += ' weekend';
+                    statusHTML = '<span class="day-status">Nghỉ</span>';
+                } else if (record) {
+                    if (record.status === 'present') {
+                        dayClass += ' present';
+                        statusHTML = `<span class="day-status success">✓</span>`;
+                    } else if (record.status === 'absent') {
+                        dayClass += ' absent';
+                        statusHTML = `<span class="day-status error">✗</span>`;
+                    } else if (record.status === 'late') {
+                        dayClass += ' late';
+                        statusHTML = `<span class="day-status warning">Trễ</span>`;
+                    }
+                } else {
+                    statusHTML = '<span class="day-status">-</span>';
+                }
+                
+                calendarHTML += `
+                    <div class="${dayClass}" title="${record ? record.checkTime : 'Chưa chấm công'}">
+                        <div class="day-number">${day}</div>
+                        ${statusHTML}
+                    </div>
+                `;
+            }
+            
+            calendarHTML += '</div></div>';
+            
+            // Summary section below calendar
+            const summaryHTML = `
+                <div class="timesheet-summary">
+                    <h3>Tổng hợp tháng ${month}/${year}</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${timesheet.presentDays || 0}</div>
+                            <div class="stat-label">Ngày đi làm</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${timesheet.totalHours || 0}h</div>
+                            <div class="stat-label">Tổng giờ</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${timesheet.lateDays || 0}</div>
+                            <div class="stat-label">Ngày đi trễ</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${timesheet.absentDays || 0}</div>
+                            <div class="stat-label">Ngày vắng</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-value">${timesheet.totalHours || 0}h</div>
-                    <div class="stat-label">Tổng giờ</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${timesheet.overtimeHours || 0}h</div>
-                    <div class="stat-label">Làm thêm</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${timesheet.leaveDays || 0}</div>
-                    <div class="stat-label">Nghỉ phép</div>
-                </div>
-            </div>
-        `;
+            `;
+            
+            container.innerHTML = calendarHTML + summaryHTML;
+        } catch (error) {
+            console.error('Error loading timesheet:', error);
+            container.innerHTML = '<div class="message error">Không thể tải bảng công</div>';
+        }
     },
 
     /**

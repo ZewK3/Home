@@ -1710,4 +1710,131 @@ body {
     color: var(--brand);
 }
 
+/* ========================================
+   CALENDAR TIMESHEET VIEW
+   ======================================== */
+.calendar-container {
+    width: 100%;
+    margin-bottom: var(--space-lg);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    background: var(--bg-secondary);
+    padding: var(--space-xs);
+    border-radius: var(--radius-lg);
+}
+
+.calendar-header {
+    background: var(--bg-elevated);
+    padding: var(--space-sm);
+    text-align: center;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.calendar-day {
+    background: var(--bg-card);
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    border-radius: var(--radius-sm);
+    position: relative;
+}
+
+.calendar-day.empty {
+    background: transparent;
+}
+
+.calendar-day.weekend {
+    background: var(--bg-secondary);
+    opacity: 0.6;
+}
+
+.calendar-day.present {
+    background: rgba(63, 185, 80, 0.15);
+    border: 1px solid var(--success);
+}
+
+.calendar-day.absent {
+    background: rgba(248, 81, 73, 0.15);
+    border: 1px solid var(--danger);
+}
+
+.calendar-day.late {
+    background: rgba(255, 174, 66, 0.15);
+    border: 1px solid var(--warning);
+}
+
+.day-number {
+    font-size: var(--font-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.day-status {
+    font-size: var(--font-xs);
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.day-status.success {
+    color: var(--success);
+}
+
+.day-status.error {
+    color: var(--danger);
+}
+
+.day-status.warning {
+    color: var(--warning);
+}
+
+.timesheet-summary {
+    background: var(--bg-card);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    margin-top: var(--space-lg);
+}
+
+.timesheet-summary h3 {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-lg);
+    text-align: center;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.stat-card {
+    background: var(--bg-elevated);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: var(--font-2xl);
+    font-weight: 700;
+    color: var(--brand);
+    margin-bottom: var(--space-xs);
+}
+
+.stat-label {
+    font-size: var(--font-sm);
+    color: var(--text-muted);
+}
+
 /* END OF MOBILE DASHBOARD CSS */

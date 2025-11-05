@@ -125,13 +125,21 @@ const MockUsers = {
         fullName: "Trần Văn Minh",
         email: "minhql@store.com",
         phone: "0912345678",
+        dateOfBirth: "1985-03-20",
+        gender: "male",
+        address: "456 Đường XYZ, Quận 3, TP.HCM",
+        identityNumber: "079085012345",
         departmentId: "CH",
         departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "CH_QL_LV1",
         positionName: "Quản Lý LV1",
-        positionCode: "QL_LV1",
-        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,salary_view,request_create,request_approve,notification_view",
+        storeId: "S001",
+        storeName: "Cửa hàng Trung tâm",
+        hireDate: "2018-06-15",
+        contractType: "full_time",
+        baseSalary: 15000000,
+        status: "active",
+        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,salary_view,request_create,request_approve,notification_view,profile_view,profile_edit",
         authToken: "mock_token_ql1"
     },
 
@@ -161,13 +169,21 @@ const MockUsers = {
         fullName: "Phạm Văn Đức",
         email: "ducnv@store.com",
         phone: "0914567890",
+        dateOfBirth: "1995-07-10",
+        gender: "male",
+        address: "789 Đường DEF, Quận 10, TP.HCM",
+        identityNumber: "079095056789",
         departmentId: "CH",
         departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "CH_NV_LV1",
         positionName: "Nhân Viên LV1",
-        positionCode: "NV_LV1",
-        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
+        storeId: "S001",
+        storeName: "Cửa hàng Trung tâm",
+        hireDate: "2021-09-01",
+        contractType: "full_time",
+        baseSalary: 8000000,
+        status: "active",
+        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
         authToken: "mock_token_nv1"
     },
 
@@ -714,15 +730,30 @@ const MockAPI = {
         // Profile endpoints
         if (endpoint.includes('/profile') || endpoint.includes('/employee/')) {
             const userData = SimpleStorage.get('userData');
+            const currentUser = MockAPI.users[userData?.employeeId] || MockAPI.users.nhanvien1;
+            
             return Promise.resolve({
                 success: true,
                 data: {
-                    employeeId: userData?.employeeId || 'E001',
-                    fullName: userData?.fullName || 'Nguyễn Văn A',
-                    email: userData?.email || 'user@company.com',
-                    phone: userData?.phone || '0901234567',
-                    position: userData?.positionName || 'Nhân viên',
-                    department: userData?.departmentName || 'Cửa hàng'
+                    employeeId: currentUser.employeeId,
+                    fullName: currentUser.fullName,
+                    email: currentUser.email,
+                    phone: currentUser.phone || '0901234567',
+                    dateOfBirth: currentUser.dateOfBirth || '1990-01-15',
+                    gender: currentUser.gender || 'male',
+                    address: currentUser.address || '123 Đường ABC, Quận 1, TP.HCM',
+                    identityNumber: currentUser.identityNumber || '012345678901',
+                    positionId: currentUser.positionId,
+                    positionName: currentUser.positionName,
+                    departmentId: currentUser.departmentId,
+                    departmentName: currentUser.departmentName,
+                    storeId: currentUser.storeId || 'S001',
+                    storeName: currentUser.storeName || 'Cửa hàng Trung tâm',
+                    hireDate: currentUser.hireDate || '2020-01-01',
+                    contractType: currentUser.contractType || 'full_time',
+                    baseSalary: currentUser.baseSalary || 8000000,
+                    status: currentUser.status || 'active',
+                    permissions: currentUser.permissions
                 }
             });
         }
