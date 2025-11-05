@@ -633,11 +633,11 @@ const DashboardContent = {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phòng ban</label>
-                    <input type="text" class="form-input" value="${profile.departmentName || ''}" disabled>
+                    <input type="text" class="form-input" value="${profile.departmentId || ''}" disabled>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Chức vụ</label>
-                    <input type="text" class="form-input" value="${profile.positionName || ''}" disabled>
+                    <input type="text" class="form-input" value="${profile.positionId || ''}" disabled>
                 </div>
                 <button class="btn btn-primary btn-full" onclick="DashboardContent.saveProfile()">
                     <span class="material-icons-round">save</span>

@@ -465,8 +465,8 @@ const MockAuth = {
         localStorage.setItem('userData', JSON.stringify(user));
         
         console.log('✅ Switched to user:', user.fullName);
-        console.log('   Department:', user.departmentName);
-        console.log('   Position:', user.positionName);
+        console.log('   Department ID:', user.departmentId);
+        console.log('   Position ID:', user.positionId);
         console.log('   Permissions:', user.permissions);
         
         return true;
@@ -481,8 +481,8 @@ const MockAuth = {
             return {
                 username: user.username,
                 fullName: user.fullName,
-                department: user.departmentName,
-                position: user.positionName,
+                departmentId: user.departmentId,
+                positionId: user.positionId,
                 permissionCount: user.permissions ? user.permissions.split(',').length : 0
             };
         });
@@ -550,11 +550,7 @@ const MockAPI = {
                     email: user.email,
                     phone: user.phone,
                     departmentId: user.departmentId,
-                    departmentName: user.departmentName,
-                    departmentCode: user.departmentCode,
                     positionId: user.positionId,
-                    positionName: user.positionName,
-                    positionCode: user.positionCode,
                     permissions: permissionsWithDefaults  // Always includes default permissions
                 });
             }, 500);
@@ -713,11 +709,15 @@ const MockAPI = {
             // Calculate based on position
             const user = MockAuth.getCurrentUser();
             let baseSalary = 8000000; // Default for staff
-            if (user && user.positionName) {
-                if (user.positionName.includes('Quản Lý')) {
-                    baseSalary = 15000000;
-                } else if (user.positionName.includes('Nhân Viên LV2')) {
-                    baseSalary = 10000000;
+            // Determine salary based on department and permissions
+            if (user) {
+                if (user.departmentId === 'CH') {
+                    // CH department: hourly rate (use default for calculation)
+                    baseSalary = 25000 * 160; // Assuming 160 hours/month
+                } else if (user.permissions && user.permissions.includes('employee_manage')) {
+                    baseSalary = 15000000; // Manager level
+                } else if (user.permissions && user.permissions.includes('salary_manage')) {
+                    baseSalary = 10000000; // Specialized staff
                 }
             }
             
@@ -837,20 +837,14 @@ const MockAPI = {
                     fullName: currentUser.fullName,
                     email: currentUser.email,
                     phone: currentUser.phone || '0901234567',
-                    dateOfBirth: currentUser.dateOfBirth || '1990-01-15',
-                    gender: currentUser.gender || 'male',
-                    address: currentUser.address || '123 Đường ABC, Quận 1, TP.HCM',
-                    identityNumber: currentUser.identityNumber || '012345678901',
                     positionId: currentUser.positionId,
-                    positionName: currentUser.positionName,
                     departmentId: currentUser.departmentId,
-                    departmentName: currentUser.departmentName,
-                    storeId: currentUser.storeId || 'S001',
-                    storeName: currentUser.storeName || 'Cửa hàng Trung tâm',
-                    hireDate: currentUser.hireDate || '2020-01-01',
-                    contractType: currentUser.contractType || 'full_time',
-                    baseSalary: currentUser.baseSalary || 8000000,
-                    status: currentUser.status || 'active',
+                    storeId: currentUser.storeId || null,
+                    hire_date: currentUser.hire_date || '2020-01-01',
+                    approval_status: currentUser.approval_status || 'approved',
+                    is_active: currentUser.is_active || 1,
+                    created_at: currentUser.created_at || new Date().toISOString(),
+                    last_login_at: currentUser.last_login_at || new Date().toISOString(),
                     permissions: currentUser.permissions
                 }
             });
