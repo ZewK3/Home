@@ -66,12 +66,18 @@ const HRMRouter = {
             return;
         }
         
-        // CHECK PERMISSIONS FIRST
-        if (typeof PermissionManager !== 'undefined') {
-            if (!PermissionManager.hasAccess(moduleName, this.currentDepartment)) {
-                console.warn(`Access denied to module: ${moduleName}`);
-                PermissionManager.showAccessDenied(moduleName);
-                return;
+        // CHECK PERMISSIONS - Use unified permission check
+        const userData = typeof SimpleStorage !== 'undefined' ? SimpleStorage.get('userData') : null;
+        if (userData && userData.permissions) {
+            // For unified dashboard, check if user has access based on their permissions
+            // Home and profile are always accessible
+            if (moduleName !== 'home' && moduleName !== 'profile') {
+                const hasPermission = this.checkModulePermission(moduleName, userData.permissions);
+                if (!hasPermission) {
+                    console.warn(`Access denied to module: ${moduleName} - user lacks required permission`);
+                    this.showAccessDenied(moduleName);
+                    return;
+                }
             }
         }
         
@@ -243,6 +249,63 @@ const HRMRouter = {
                 item.classList.remove('active');
             }
         });
+    },
+    
+    /**
+     * Check if user has permission for a module
+     */
+    checkModulePermission(moduleName, permissionsString) {
+        // Define module permission requirements
+        const modulePermissions = {
+            'attendance': ['attendance_self'],
+            'schedule': ['schedule_view', 'schedule_manage'],
+            'timesheet': ['timesheet_view', 'timesheet_approve'],
+            'salary': ['salary_view', 'salary_manage'],
+            'requests': ['request_create', 'request_approve'],
+            'leave-request': ['request_create'],
+            'process-requests': ['request_approve'],
+            'schedule-management': ['schedule_manage'],
+            'timesheet-approval': ['timesheet_approve'],
+            'attendance-approval': ['attendance_approve'],
+            'employees': ['employee_view', 'employee_manage'],
+            'employee-management': ['employee_manage'],
+            'registration-approval': ['registration_approve'],
+            'departments': ['department_manage'],
+            'positions': ['position_manage'],
+            'reports': ['reports_view'],
+            'salary-management': ['salary_manage'],
+            'system-settings': ['system_admin']
+        };
+        
+        const requiredPerms = modulePermissions[moduleName];
+        if (!requiredPerms) {
+            // Module not found in permissions map, allow access
+            return true;
+        }
+        
+        const userPermissions = permissionsString.split(',').map(p => p.trim());
+        
+        // Check if user has at least one of the required permissions
+        return requiredPerms.some(perm => userPermissions.includes(perm));
+    },
+    
+    /**
+     * Show access denied message
+     */
+    showAccessDenied(moduleName) {
+        const mainContent = document.getElementById('mainContent');
+        if (mainContent) {
+            mainContent.innerHTML = `
+                <div class="error-container">
+                    <span class="material-icons-round" style="font-size: 64px; color: #f87171;">lock</span>
+                    <h3>Không có quyền truy cập</h3>
+                    <p>Bạn không có quyền truy cập module "${moduleName}"</p>
+                    <button class="btn btn-primary" onclick="HRMRouter.navigateTo('home')">
+                        Về trang chủ
+                    </button>
+                </div>
+            `;
+        }
     },
     
     /**
