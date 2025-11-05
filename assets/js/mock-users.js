@@ -10,471 +10,374 @@
 
 const MockUsers = {
     // VP - Admin (Full Access)
+    // Only fields from SQL schema: employees table + permissions from positions table
     admin: {
+        // From employees table
         employeeId: "E001",
-        username: "admin",
-        password: "123456",
         fullName: "Nguyễn Văn Admin",
-        email: "admin@company.com",
         phone: "0901234567",
+        email: "admin@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_ADMIN",
-        positionName: "Quản Trị Viên",
-        positionCode: "ADMIN",
-        position: "AD", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin",
+        
+        // Mock API only
+        username: "admin",
         authToken: "mock_token_admin"
     },
 
     // VP - Quản Lý Khu Vực (Manager)
     quanly_vp: {
+        // From employees table
         employeeId: "E002",
-        username: "quanly_vp",
-        password: "123456",
         fullName: "Trần Thị Quản Lý",
-        email: "quanly@company.com",
         phone: "0902345678",
+        email: "quanly@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_QLKV",
-        positionName: "Quản Lý Khu Vực",
-        positionCode: "QLKV",
-        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-02-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-02-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_manage,salary_manage,timesheet_approve,reports_view,schedule_manage,request_approve",
+        
+        // Mock API only
+        username: "quanly_vp",
         authToken: "mock_token_qlvp"
     },
 
     // VP - Kế Toán
     ketoan: {
+        // From employees table
         employeeId: "E003",
-        username: "ketoan",
-        password: "123456",
         fullName: "Lê Văn Toán",
-        email: "ketoan@company.com",
         phone: "0903456789",
+        email: "ketoan@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_KT",
-        positionName: "Kế Toán",
-        positionCode: "KT",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-03-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-03-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_view,salary_manage,reports_view,timesheet_view",
+        
+        // Mock API only
+        username: "ketoan",
         authToken: "mock_token_ketoan"
     },
 
     // VP - IT
     it: {
+        // From employees table
         employeeId: "E004",
-        username: "it",
-        password: "123456",
         fullName: "Phạm Thị IT",
-        email: "it@company.com",
         phone: "0904567890",
+        email: "it@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_IT",
-        positionName: "Nhân Viên IT",
-        positionCode: "IT",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-04-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-04-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_view,system_admin,department_manage,position_manage,reports_view",
+        
+        // Mock API only
+        username: "it",
         authToken: "mock_token_it"
     },
 
     // VP - Giám Sát
     giamsat_vp: {
+        // From employees table
         employeeId: "E005",
-        username: "giamsat_vp",
-        password: "123456",
         fullName: "Hoàng Văn Sát",
-        email: "giamsat@company.com",
         phone: "0905678901",
+        email: "giamsat@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_GS",
-        positionName: "Giám Sát",
-        positionCode: "GS",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-05-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-05-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "timesheet_approve,request_approve,shift_manage,attendance_approve",
+        
+        // Mock API only
+        username: "giamsat_vp",
         authToken: "mock_token_gsvp"
     },
 
-    // CH - Quản Lý LV2 (Store Manager) - Matches Tabbel-v2-optimized.sql schema
+    // CH - Quản Lý LV2 (Store Manager)
     quanly2: {
-        // Core SQL Schema Fields (from employees table)
+        // From employees table
         employeeId: "E101",
-        username: "quanly2",
-        password: "123456",
         fullName: "Nguyễn Thị Lan",
         phone: "0911234567",
         email: "lanql@store.com",
+        password: "123456",
         storeId: "S001",
         departmentId: "CH",
         positionId: "CH_QL_LV2",
         approval_status: "approved",
         is_active: 1,
         hire_date: "2016-03-01",
-        last_login_at: "2024-11-05T08:30:00.000Z",
-        created_at: "2016-03-01T08:00:00.000Z",
+        last_login_at: "2024-11-05T08:30:00Z",
+        created_at: "2016-03-01T08:00:00Z",
         
-        // Position-related fields (from positions table: CH_QL_LV2)
-        positionName: "Quản Lý LV2",
-        positionCode: "QL_LV2",
-        baseSalaryRate: 40000, // From SQL: CH_QL_LV2 = 40000 VNĐ/hour
-        salaryType: "hourly",
+        // From positions table (via JOIN)
+        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view",
         
-        // Department-related fields
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
-        
-        // Store-related fields
-        storeName: "Cửa hàng 74 Đồng Đen",
-        
-        // Extended fields (not in core schema but useful for UI)
-        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
-        firstName: "Lan",
-        lastName: "Nguyễn Thị",
-        nickname: "Lan Lan",
-        emergencyContact: "0912999888",
-        emergencyContactName: "Nguyễn Văn Hùng (Chồng)",
-        dateOfBirth: "1988-05-15",
-        age: 36,
-        gender: "female",
-        maritalStatus: "married",
-        nationality: "Việt Nam",
-        ethnicity: "Kinh",
-        religion: "Không",
-        identityNumber: "079088015678",
-        identityIssueDate: "2015-06-10",
-        identityIssuePlace: "Công an TP.HCM",
-        passportNumber: "",
-        driverLicense: "",
-        address: "234 Đường Lê Văn Việt, Quận 9, TP.HCM",
-        permanentAddress: "456 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM",
-        city: "TP.HCM",
-        district: "Quận 9",
-        ward: "Phường Tăng Nhơn Phú A",
-        probationEndDate: "2016-05-31",
-        contractType: "full_time",
-        contractStartDate: "2016-06-01",
-        contractEndDate: "2026-05-31",
-        bankAccount: "1234567890",
-        bankName: "Vietcombank",
-        bankBranch: "Chi nhánh TP.HCM",
-        taxCode: "0123456789",
-        insuranceNumber: "1234567890123",
-        workSchedule: "shift",
-        standardHoursPerWeek: 48,
-        performanceRating: "excellent",
-        skills: "Quản lý nhân sự, Quản lý kho, Chăm sóc khách hàng",
-        certifications: "Chứng chỉ Quản lý Cửa hàng F&B",
-        
-        // System fields
-        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view,profile_edit",
-        authToken: "mock_token_ql2",
-        
-        // Legacy compatibility
-        baseSalary: 40000, // Alias for baseSalaryRate
-        status: "active", // Alias for is_active
-        hireDate: "2016-03-01", // Alias for hire_date
-        createdAt: "2016-03-01T08:00:00.000Z", // Alias for created_at
-        updatedAt: "2024-11-05T10:00:00.000Z",
-        lastLoginAt: "2024-11-05T08:30:00.000Z" // Alias for last_login_at
+        // Mock API only
+        username: "quanly2",
+        authToken: "mock_token_ql2"
     },
 
     // CH - Quản Lý LV1
     quanly1: {
-        // Core SQL Schema Fields (from employees table)
+        // From employees table
         employeeId: "E102",
-        username: "quanly1",
-        password: "123456",
         fullName: "Trần Văn Minh",
         phone: "0912345678",
         email: "minhql@store.com",
+        password: "123456",
         storeId: "S001",
         departmentId: "CH",
         positionId: "CH_QL_LV1",
         approval_status: "approved",
         is_active: 1,
         hire_date: "2018-06-15",
-        last_login_at: "2024-11-05T07:45:00.000Z",
-        created_at: "2018-06-15T08:00:00.000Z",
+        last_login_at: "2024-11-05T07:45:00Z",
+        created_at: "2018-06-15T08:00:00Z",
         
-        // Position-related fields (from positions table: CH_QL_LV1)
-        positionName: "Quản Lý LV1",
-        positionCode: "QL_LV1",
-        baseSalaryRate: 35000, // From SQL: CH_QL_LV1 = 35000 VNĐ/hour
-        salaryType: "hourly",
+        // From positions table (via JOIN)
+        permissions: "attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view",
         
-        // Department-related fields
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
-        
-        // Store-related fields
-        storeName: "Cửa hàng Trung tâm",
-        
-        // Extended fields (not in core schema but useful for UI)
-        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
-        dateOfBirth: "1985-03-20",
-        gender: "male",
-        address: "456 Đường XYZ, Quận 3, TP.HCM",
-        identityNumber: "079085012345",
-        contractType: "full_time",
-        
-        // System fields
-        permissions: "attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view,profile_edit",
-        authToken: "mock_token_ql1",
-        
-        // Legacy compatibility
-        baseSalary: 35000, // Alias for baseSalaryRate
-        status: "active", // Alias for is_active
-        hireDate: "2018-06-15" // Alias for hire_date
+        // Mock API only
+        username: "quanly1",
+        authToken: "mock_token_ql1"
     },
 
-    // CH - Nhân Viên LV2 - Matches Tabbel-v2-optimized.sql schema
+    // CH - Nhân Viên LV2
     nhanvien2: {
-        // Core SQL Schema Fields (from employees table)
+        // From employees table
         employeeId: "E103",
-        username: "nhanvien2",
-        password: "123456",
         fullName: "Lê Thị Hoa",
         phone: "0913456789",
         email: "hoanv@store.com",
+        password: "123456",
         storeId: "S001",
         departmentId: "CH",
         positionId: "CH_NV_LV2",
         approval_status: "approved",
         is_active: 1,
         hire_date: "2020-07-15",
-        last_login_at: "2024-11-05T08:00:00.000Z",
-        created_at: "2020-07-15T08:00:00.000Z",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-07-15T08:00:00Z",
         
-        // Position-related fields (from positions table: CH_NV_LV2)
-        positionName: "Nhân Viên LV2",
-        positionCode: "NV_LV2",
-        baseSalaryRate: 28000, // From SQL: CH_NV_LV2 = 28000 VNĐ/hour
-        salaryType: "hourly",
+        // From positions table (via JOIN)
+        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
         
-        // Department-related fields
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
-        
-        // Store-related fields
-        storeName: "Cửa hàng 74 Đồng Đen",
-        
-        // Extended fields (not in core schema but useful for UI)
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
-        firstName: "Hoa",
-        lastName: "Lê Thị",
-        nickname: "Hoa Hoa",
-        emergencyContact: "0914888777",
-        emergencyContactName: "Lê Văn Bình (Anh trai)",
-        dateOfBirth: "1996-08-22",
-        age: 28,
-        gender: "female",
-        maritalStatus: "single",
-        nationality: "Việt Nam",
-        ethnicity: "Kinh",
-        religion: "Phật giáo",
-        identityNumber: "079096023456",
-        identityIssueDate: "2018-09-15",
-        identityIssuePlace: "Công an TP.HCM",
-        passportNumber: "",
-        driverLicense: "",
-        address: "567 Đường Lê Hồng Phong, Quận 10, TP.HCM",
-        permanentAddress: "789 Đường Nguyễn Trãi, Quận 5, TP.HCM",
-        city: "TP.HCM",
-        district: "Quận 10",
-        ward: "Phường 12",
-        probationEndDate: "2020-10-14",
-        contractType: "full_time",
-        contractStartDate: "2020-10-15",
-        contractEndDate: "2025-10-14",
-        bankAccount: "9876543210",
-        bankName: "Techcombank",
-        bankBranch: "Chi nhánh Quận 10",
-        taxCode: "9876543210",
-        insuranceNumber: "9876543210123",
-        workSchedule: "shift",
-        standardHoursPerWeek: 48,
-        performanceRating: "good",
-        skills: "Pha chế, Phục vụ, Kỹ năng giao tiếp",
-        certifications: "Chứng chỉ Pha chế cơ bản",
-        
-        // System fields
-        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
-        authToken: "mock_token_nv2",
-        
-        // Legacy compatibility
-        baseSalary: 28000, // Alias for baseSalaryRate
-        status: "active", // Alias for is_active
-        hireDate: "2020-07-15", // Alias for hire_date
-        createdAt: "2020-07-15T08:00:00.000Z", // Alias for created_at
-        updatedAt: "2024-11-05T10:00:00.000Z",
-        lastLoginAt: "2024-11-05T08:00:00.000Z" // Alias for last_login_at
+        // Mock API only
+        username: "nhanvien2",
+        authToken: "mock_token_nv2"
     },
 
     // CH - Nhân Viên LV1
     nhanvien1: {
-        // Core SQL Schema Fields (from employees table)
+        // From employees table
         employeeId: "E104",
-        username: "nhanvien1",
-        password: "123456",
         fullName: "Phạm Văn Đức",
         phone: "0914567890",
         email: "ducnv@store.com",
+        password: "123456",
         storeId: "S001",
         departmentId: "CH",
         positionId: "CH_NV_LV1",
         approval_status: "approved",
         is_active: 1,
         hire_date: "2021-09-01",
-        last_login_at: "2024-11-05T07:30:00.000Z",
-        created_at: "2021-09-01T08:00:00.000Z",
+        last_login_at: "2024-11-05T07:30:00Z",
+        created_at: "2021-09-01T08:00:00Z",
         
-        // Position-related fields (from positions table: CH_NV_LV1)
-        positionName: "Nhân Viên LV1",
-        positionCode: "NV_LV1",
-        baseSalaryRate: 25000, // From SQL: CH_NV_LV1 = 25000 VNĐ/hour
-        salaryType: "hourly",
+        // From positions table (via JOIN)
+        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
         
-        // Department-related fields
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
-        
-        // Store-related fields
-        storeName: "Cửa hàng Trung tâm",
-        
-        // Extended fields (not in core schema but useful for UI)
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
-        dateOfBirth: "1995-07-10",
-        gender: "male",
-        address: "789 Đường DEF, Quận 10, TP.HCM",
-        identityNumber: "079095056789",
-        contractType: "full_time",
-        
-        // System fields
-        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
-        authToken: "mock_token_nv1",
-        
-        // Legacy compatibility
-        baseSalary: 25000, // Alias for baseSalaryRate
-        status: "active", // Alias for is_active
-        hireDate: "2021-09-01" // Alias for hire_date
+        // Mock API only
+        username: "nhanvien1",
+        authToken: "mock_token_nv1"
     },
 
     // CH - Ca Trưởng (Shift Leader)
     catruong: {
+        // From employees table
         employeeId: "E105",
-        username: "catruong",
-        password: "123456",
         fullName: "Vũ Thị Mai",
-        email: "maict@store.com",
         phone: "0915678901",
+        email: "maict@store.com",
+        password: "123456",
+        storeId: "S001",
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "CH_CT",
-        positionName: "Ca Trưởng",
-        positionCode: "CT",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2019-08-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2019-08-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "attendance_self,attendance_approve,schedule_view,shift_manage,timesheet_view,salary_view,request_create,notification_view,profile_view",
+        
+        // Mock API only
+        username: "catruong",
         authToken: "mock_token_ct"
     },
 
     // Testing Users
     test_none: {
+        // From employees table
         employeeId: "T001",
-        username: "test_none",
-        password: "123456",
         fullName: "Test None",
-        email: "test@test.com",
         phone: "0900000000",
+        email: "test@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "TEST_NONE",
-        positionName: "No Permissions",
-        positionCode: "NONE",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "",
+        
+        // Mock API only
+        username: "test_none",
         authToken: "mock_token_none"
     },
 
     test_view: {
+        // From employees table
         employeeId: "T002",
-        username: "test_view",
-        password: "123456",
         fullName: "Test Viewer",
-        email: "viewer@test.com",
         phone: "0900000001",
+        email: "viewer@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "TEST_VIEW",
-        positionName: "View Only",
-        positionCode: "VIEW",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_view,timesheet_view,salary_view,schedule_view,notification_view,profile_view",
+        
+        // Mock API only
+        username: "test_view",
         authToken: "mock_token_view"
     },
 
     test_approve: {
+        // From employees table
         employeeId: "T003",
-        username: "test_approve",
-        password: "123456",
         fullName: "Test Approver",
-        email: "approver@test.com",
         phone: "0900000002",
+        email: "approver@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "TEST_APPROVE",
-        positionName: "Approver",
-        positionCode: "APPROVE",
-        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "registration_approve,timesheet_approve,attendance_approve,request_approve",
+        
+        // Mock API only
+        username: "test_approve",
         authToken: "mock_token_approve"
     },
 
     test_create: {
+        // From employees table
         employeeId: "T004",
-        username: "test_create",
-        password: "123456",
         fullName: "Test Creator",
-        email: "creator@test.com",
         phone: "0900000003",
+        email: "creator@test.com",
+        password: "123456",
+        storeId: "S001",
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "TEST_CREATE",
-        positionName: "Creator",
-        positionCode: "CREATE",
-        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "request_create,notification_view",
+        
+        // Mock API only
+        username: "test_create",
         authToken: "mock_token_create"
     },
 
     test_full: {
+        // From employees table
         employeeId: "T005",
-        username: "test_full",
-        password: "123456",
         fullName: "Test Full Access",
-        email: "full@test.com",
         phone: "0900000004",
+        email: "full@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "TEST_FULL",
-        positionName: "Full Access",
-        positionCode: "FULL",
-        position: "AD", // Simplified position for backward compatibility (NV/QL/AD)
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_manage,employee_view,registration_approve,department_manage,position_manage,salary_manage,salary_view,timesheet_approve,timesheet_view,attendance_self,attendance_approve,schedule_manage,schedule_view,shift_manage,request_create,request_approve,reports_view,system_admin,notification_view,profile_view",
+        
+        // Mock API only
+        username: "test_full",
         authToken: "mock_token_full"
     }
 };

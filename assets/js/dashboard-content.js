@@ -36,17 +36,26 @@ const DashboardContent = {
     },
 
     /**
-     * Home Dashboard with Role-Specific Views
+     * Home Dashboard with Permission-Based Views
      */
     async renderHome() {
-        const positionCode = this.userData?.positionCode || this.userData?.position || 'NV';
+        const permissions = this.userData?.permissions || '';
+        const permissionList = permissions.split(',');
         
-        // Render based on role
-        if (positionCode.includes('ADMIN')) {
+        // Render based on permissions
+        // Admin: has system_admin or multiple management permissions
+        if (permissionList.includes('system_admin') || 
+            (permissionList.includes('employee_manage') && permissionList.includes('department_manage'))) {
             return this.renderAdminDashboard();
-        } else if (positionCode.includes('QL') || positionCode === 'QLKV') {
+        } 
+        // Manager: has approve or manage permissions
+        else if (permissionList.includes('timesheet_approve') || 
+                 permissionList.includes('request_approve') ||
+                 permissionList.includes('schedule_manage')) {
             return this.renderManagerDashboard();
-        } else {
+        } 
+        // Worker: default view
+        else {
             return this.renderWorkerDashboard();
         }
     },
@@ -268,11 +277,12 @@ const DashboardContent = {
         const weekStart = this.getWeekStart(today);
         const userData = SimpleStorage.get('userData');
         
-        // Determine user role from positionCode or position field
-        const positionCode = userData?.positionCode || userData?.position || '';
-        const isManager = positionCode.includes('QL') || positionCode.includes('ADMIN') || positionCode === 'QLKV';
+        // Determine if user has schedule management permissions
+        const permissions = userData?.permissions || '';
+        const permissionList = permissions.split(',');
+        const isManager = permissionList.includes('schedule_manage') || permissionList.includes('shift_manage');
         
-        // Role-specific schedule view
+        // Permission-based schedule view
         if (isManager) {
             // Manager/Admin: Team schedule management
             return this.renderScheduleManagement(weekStart);
