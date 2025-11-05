@@ -277,6 +277,58 @@ const MockUsers = {
 };
 
 // Mock Authentication Helper
+/**
+ * Permission Utilities
+ * Manages default permissions and permission checks
+ */
+const PermissionUtils = {
+    /**
+     * Default permissions that ALL users have
+     */
+    getDefaultPermissions() {
+        return [
+            'salary_view',      // View salary information
+            'timesheet_view',   // View timesheet/attendance records
+            'attendance_self',  // Check-in/check-out for self
+            'schedule_view',    // View work schedule
+            'profile_view',     // View own profile
+            'profile_edit',     // Edit own profile
+            'notifications_view' // View notifications
+        ];
+    },
+
+    /**
+     * Ensure permissions string includes all default permissions
+     * @param {string} permissions - Comma-separated permission string
+     * @returns {string} Updated permissions with defaults included
+     */
+    ensureDefaultPermissions(permissions) {
+        const defaults = this.getDefaultPermissions();
+        const current = permissions ? permissions.split(',').map(p => p.trim()) : [];
+        
+        // Add defaults that are missing
+        defaults.forEach(perm => {
+            if (!current.includes(perm)) {
+                current.push(perm);
+            }
+        });
+        
+        return current.join(',');
+    },
+
+    /**
+     * Check if user has a specific permission
+     * @param {string} userPermissions - User's permission string
+     * @param {string} permission - Permission to check
+     * @returns {boolean} True if user has permission
+     */
+    hasPermission(userPermissions, permission) {
+        if (!userPermissions) return false;
+        const perms = userPermissions.split(',').map(p => p.trim());
+        return perms.includes(permission);
+    }
+};
+
 const MockAuth = {
     /**
      * Get current logged in user from localStorage using SimpleStorage
@@ -372,6 +424,9 @@ const MockAPI = {
                 // Data will be saved by the login handler using SimpleStorage
                 // No need to save here to avoid double storage and encoding issues
 
+                // Ensure user has all default permissions
+                const permissionsWithDefaults = PermissionUtils.ensureDefaultPermissions(user.permissions);
+
                 resolve({
                     success: true,
                     message: 'Đăng nhập thành công',
@@ -387,7 +442,7 @@ const MockAPI = {
                     positionId: user.positionId,
                     positionName: user.positionName,
                     positionCode: user.positionCode,
-                    permissions: user.permissions
+                    permissions: permissionsWithDefaults  // Always includes default permissions
                 });
             }, 500);
         });
