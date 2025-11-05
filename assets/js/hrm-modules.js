@@ -1077,6 +1077,27 @@ const HRMModules = {
                 
                 if (timesheet.data) {
                     const data = timesheet.data;
+                    const details = data.details || [];
+                    
+                    // Calculate weekend hours and bonus for CH department
+                    let weekendHours = 0;
+                    let weekdayHours = 0;
+                    let weekendBonus = 0;
+                    
+                    if (userData?.departmentCode === 'CH') {
+                        details.forEach(day => {
+                            const date = new Date(day.date);
+                            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                            if (isWeekend) {
+                                weekendHours += day.workHours || 0;
+                            } else {
+                                weekdayHours += day.workHours || 0;
+                            }
+                        });
+                        // Weekend bonus: 50% additional for CH department
+                        weekendBonus = weekendHours * 0.5 * (userData?.baseSalary || 22000);
+                    }
+                    
                     container.innerHTML = `
                         <div class="timesheet-summary">
                             <div class="stat">
@@ -1103,7 +1124,73 @@ const HRMModules = {
                                 <h4>${data.overtimeHours || 0}</h4>
                                 <p>Tăng Ca</p>
                             </div>
+                            ${userData?.departmentCode === 'CH' ? `
+                            <div class="stat">
+                                <h4>${weekdayHours.toFixed(1)}</h4>
+                                <p>Giờ T2-T6</p>
+                            </div>
+                            <div class="stat weekend-stat">
+                                <h4>${weekendHours.toFixed(1)}</h4>
+                                <p>Giờ Cuối Tuần</p>
+                            </div>
+                            ` : ''}
                         </div>
+                        
+                        ${userData?.departmentCode === 'CH' && weekendHours > 0 ? `
+                        <div class="weekend-bonus-alert">
+                            <span class="material-icons-round">card_giftcard</span>
+                            <div>
+                                <strong>Phụ cấp cuối tuần:</strong>
+                                <p>${weekendHours.toFixed(1)} giờ × 150% = +${weekendBonus.toLocaleString('vi-VN')} VNĐ</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${details.length > 0 ? `
+                        <div class="timesheet-table-wrapper">
+                            <table class="timesheet-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ngày</th>
+                                        <th>Thứ</th>
+                                        <th>Ca Làm</th>
+                                        <th>Giờ Vào</th>
+                                        <th>Giờ Ra</th>
+                                        <th>Giờ Làm</th>
+                                        <th>Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${details.map(day => {
+                                        const date = new Date(day.date);
+                                        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                                        return `
+                                        <tr class="${isWeekend ? 'weekend-row' : ''}">
+                                            <td>${day.date}</td>
+                                            <td>${day.dayOfWeek}${isWeekend ? ' 🎉' : ''}</td>
+                                            <td>${day.shiftName || '-'}</td>
+                                            <td>${day.checkInTime || '-'}</td>
+                                            <td>${day.checkOutTime || '-'}</td>
+                                            <td><strong>${day.workHours || 0}h</strong></td>
+                                            <td>
+                                                <span class="badge badge-${day.status === 'present' ? 'success' : day.status === 'late' ? 'warning' : 'danger'}">
+                                                    ${day.status === 'present' ? 'Đúng giờ' : day.status === 'late' ? 'Trễ' : 'Vắng'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5"><strong>Tổng</strong></td>
+                                        <td><strong>${data.totalHours || 0}h</strong></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        ` : ''}
                     `;
                 } else {
                     container.innerHTML = '<p class="text-muted">Chưa có dữ liệu bảng công cho tháng này</p>';
@@ -1167,38 +1254,88 @@ const HRMModules = {
                     year
                 });
                 
-                if (salary.data?.length > 0) {
-                    const data = salary.data[0];
+                if (salary.data) {
+                    const data = salary.data;
+                    const isCH = userData?.departmentCode === 'CH';
+                    const salaryRate = userData?.baseSalary || (isCH ? 22000 : 8000000);
+                    
+                    // Calculate salary components
+                    let baseSalaryAmount = 0;
+                    let overtimePay = 0;
+                    let weekendBonus = 0;
+                    
+                    if (isCH) {
+                        // Hourly calculation for CH
+                        baseSalaryAmount = (data.workHours || 0) * salaryRate;
+                        overtimePay = (data.overtimeHours || 0) * salaryRate * 1.5;
+                        
+                        // Weekend bonus calculation (assuming 30% of hours are weekend)
+                        const estimatedWeekendHours = (data.workHours || 0) * 0.3;
+                        weekendBonus = estimatedWeekendHours * salaryRate * 0.5;
+                    } else {
+                        // Monthly calculation for VP
+                        baseSalaryAmount = data.baseSalary || salaryRate;
+                    }
+                    
+                    const totalSalary = baseSalaryAmount + overtimePay + weekendBonus + (data.bonus || 0) - (data.deduction || 0);
+                    
                     container.innerHTML = `
                         <div class="salary-detail">
-                            <div class="salary-row">
-                                <span>Lương cơ bản:</span>
-                                <span><strong>${data.baseSalary?.toLocaleString('vi-VN')} VNĐ</strong></span>
+                            ${isCH ? `
+                            <div class="salary-calculation-header">
+                                <span class="material-icons-round">calculate</span>
+                                <h4>Tính Lương Theo Giờ (CH)</h4>
                             </div>
                             <div class="salary-row">
-                                <span>Số ngày làm:</span>
-                                <span>${data.workDays || 0} ngày</span>
+                                <span>Mức lương giờ:</span>
+                                <span><strong>${salaryRate.toLocaleString('vi-VN')} VNĐ/giờ</strong></span>
                             </div>
                             <div class="salary-row">
-                                <span>Số giờ làm:</span>
+                                <span>Số giờ làm việc:</span>
                                 <span>${data.workHours || 0} giờ</span>
                             </div>
                             <div class="salary-row">
-                                <span>Tăng ca:</span>
+                                <span>Lương giờ cơ bản:</span>
+                                <span>${baseSalaryAmount.toLocaleString('vi-VN')} VNĐ</span>
+                            </div>
+                            <div class="salary-row">
+                                <span>Giờ tăng ca (×1.5):</span>
                                 <span>${data.overtimeHours || 0} giờ</span>
                             </div>
                             <div class="salary-row">
-                                <span>Thưởng:</span>
-                                <span class="text-success">+${data.bonus?.toLocaleString('vi-VN') || 0} VNĐ</span>
+                                <span>Lương tăng ca:</span>
+                                <span class="text-success">+${overtimePay.toLocaleString('vi-VN')} VNĐ</span>
+                            </div>
+                            <div class="salary-row weekend-bonus-row">
+                                <span>Phụ cấp cuối tuần (×1.5):</span>
+                                <span class="text-success">+${weekendBonus.toLocaleString('vi-VN')} VNĐ</span>
+                            </div>
+                            ` : `
+                            <div class="salary-calculation-header">
+                                <span class="material-icons-round">money</span>
+                                <h4>Tính Lương Theo Tháng (VP)</h4>
                             </div>
                             <div class="salary-row">
-                                <span>Phạt:</span>
-                                <span class="text-danger">-${data.deduction?.toLocaleString('vi-VN') || 0} VNĐ</span>
+                                <span>Lương cơ bản:</span>
+                                <span><strong>${baseSalaryAmount.toLocaleString('vi-VN')} VNĐ</strong></span>
+                            </div>
+                            <div class="salary-row">
+                                <span>Số ngày làm việc:</span>
+                                <span>${data.workDays || 0} / 26 ngày</span>
+                            </div>
+                            `}
+                            <div class="salary-row">
+                                <span>Thưởng:</span>
+                                <span class="text-success">+${(data.bonus || 0).toLocaleString('vi-VN')} VNĐ</span>
+                            </div>
+                            <div class="salary-row">
+                                <span>Khấu trừ (Bảo hiểm, thuế):</span>
+                                <span class="text-danger">-${(data.deduction || 0).toLocaleString('vi-VN')} VNĐ</span>
                             </div>
                             <hr>
                             <div class="salary-row total">
                                 <span><strong>TỔNG LƯƠNG:</strong></span>
-                                <span><strong>${data.totalSalary?.toLocaleString('vi-VN')} VNĐ</strong></span>
+                                <span><strong>${totalSalary.toLocaleString('vi-VN')} VNĐ</strong></span>
                             </div>
                             <div class="salary-row">
                                 <span>Trạng thái:</span>
@@ -1206,7 +1343,25 @@ const HRMModules = {
                                     ${data.status === 'paid' ? 'Đã Thanh Toán' : data.status === 'approved' ? 'Đã Duyệt' : 'Chờ Duyệt'}
                                 </span>
                             </div>
+                            ${data.paymentDate ? `
+                            <div class="salary-row">
+                                <span>Ngày thanh toán:</span>
+                                <span>${data.paymentDate}</span>
+                            </div>
+                            ` : ''}
                         </div>
+                        
+                        ${isCH ? `
+                        <div class="salary-breakdown-info">
+                            <h5>📊 Chi Tiết Tính Lương</h5>
+                            <ul>
+                                <li>Lương giờ thường: ${data.workHours || 0}h × ${salaryRate.toLocaleString('vi-VN')} = ${baseSalaryAmount.toLocaleString('vi-VN')} VNĐ</li>
+                                <li>Lương tăng ca: ${data.overtimeHours || 0}h × ${salaryRate.toLocaleString('vi-VN')} × 1.5 = ${overtimePay.toLocaleString('vi-VN')} VNĐ</li>
+                                <li>Phụ cấp cuối tuần: ~${((data.workHours || 0) * 0.3).toFixed(1)}h × ${salaryRate.toLocaleString('vi-VN')} × 1.5 = ${weekendBonus.toLocaleString('vi-VN')} VNĐ</li>
+                            </ul>
+                            <p class="text-muted">* Giờ làm cuối tuần được tính thêm 50% lương cơ bản</p>
+                        </div>
+                        ` : ''}
                     `;
                 } else {
                     container.innerHTML = '<p class="text-muted">Chưa có dữ liệu lương cho tháng này</p>';
@@ -1226,18 +1381,208 @@ const HRMModules = {
                     <div class="card-header">
                         <h3>Yêu Cầu Của Tôi</h3>
                         <button class="btn btn-primary" onclick="HRMModules.CH.showNewRequestForm()">
+                            <span class="material-icons-round">add</span>
                             Tạo Yêu Cầu Mới
                         </button>
                     </div>
-                    <div class="card-body">
-                        <p class="text-muted">Chức năng đang được phát triển</p>
+                    <div class="card-body" id="requestsList">
+                        <div class="loading-container">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Request Form Modal -->
+                <div id="requestModal" class="modal" style="display: none;">
+                    <div class="modal-backdrop" onclick="HRMModules.CH.closeRequestForm()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Tạo Yêu Cầu Mới</h3>
+                            <button class="modal-close" onclick="HRMModules.CH.closeRequestForm()">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="newRequestForm">
+                                <div class="form-group">
+                                    <label>Loại yêu cầu *</label>
+                                    <select id="requestType" class="form-control" required>
+                                        <option value="">Chọn loại yêu cầu</option>
+                                        <option value="leave">Nghỉ phép</option>
+                                        <option value="overtime">Đăng ký tăng ca</option>
+                                        <option value="shift_change">Đổi ca làm việc</option>
+                                        <option value="early_leave">Xin về sớm</option>
+                                        <option value="late_arrival">Xin đi muộn</option>
+                                        <option value="other">Khác</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Ngày bắt đầu *</label>
+                                    <input type="date" id="requestStartDate" class="form-control" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Ngày kết thúc</label>
+                                    <input type="date" id="requestEndDate" class="form-control">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Lý do *</label>
+                                    <textarea id="requestReason" class="form-control" rows="4" required placeholder="Nhập lý do chi tiết..."></textarea>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="button" class="btn btn-secondary" onclick="HRMModules.CH.closeRequestForm()">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Gửi Yêu Cầu</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             `;
         },
         
-        initRequests() {
-            console.log('Requests initialized');
+        async initRequests() {
+            await this.loadRequests();
+            
+            // Setup form submit handler
+            const form = document.getElementById('newRequestForm');
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitRequest();
+                });
+            }
+        },
+        
+        async loadRequests() {
+            const userData = SimpleStorage.get('userData');
+            const container = document.getElementById('requestsList');
+            
+            if (!container) return;
+            
+            try {
+                const requests = await apiClient.get('/requests', {
+                    employeeId: userData?.employeeId,
+                    limit: 50
+                });
+                
+                if (requests.data && requests.data.length > 0) {
+                    container.innerHTML = `
+                        <div class="requests-list">
+                            ${requests.data.map(req => `
+                                <div class="request-item ${req.status}">
+                                    <div class="request-header">
+                                        <div class="request-type">
+                                            <span class="material-icons-round">${this.getRequestIcon(req.type)}</span>
+                                            <strong>${this.getRequestTypeName(req.type)}</strong>
+                                        </div>
+                                        <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
+                                            ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}
+                                        </span>
+                                    </div>
+                                    <div class="request-body">
+                                        <p><strong>Lý do:</strong> ${req.reason}</p>
+                                        <p><strong>Thời gian:</strong> ${req.startDate}${req.endDate ? ' đến ' + req.endDate : ''}</p>
+                                        <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
+                                        ${req.reviewedBy ? `
+                                        <p><small>Duyệt bởi: ${req.reviewerName} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
+                                        ${req.reviewNote ? `<p><small>Ghi chú: ${req.reviewNote}</small></p>` : ''}
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="material-icons-round">assignment</span>
+                            <p>Chưa có yêu cầu nào</p>
+                            <button class="btn btn-primary" onclick="HRMModules.CH.showNewRequestForm()">
+                                Tạo yêu cầu đầu tiên
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading requests:', error);
+                container.innerHTML = '<p class="text-error">Lỗi khi tải danh sách yêu cầu</p>';
+            }
+        },
+        
+        showNewRequestForm() {
+            const modal = document.getElementById('requestModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Set default dates
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('requestStartDate').value = today;
+            }
+        },
+        
+        closeRequestForm() {
+            const modal = document.getElementById('requestModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.getElementById('newRequestForm').reset();
+            }
+        },
+        
+        async submitRequest() {
+            const userData = SimpleStorage.get('userData');
+            const type = document.getElementById('requestType').value;
+            const startDate = document.getElementById('requestStartDate').value;
+            const endDate = document.getElementById('requestEndDate').value;
+            const reason = document.getElementById('requestReason').value;
+            
+            if (!type || !startDate || !reason) {
+                alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+                return;
+            }
+            
+            try {
+                await apiClient.post('/requests', {
+                    employeeId: userData?.employeeId,
+                    type,
+                    startDate,
+                    endDate: endDate || startDate,
+                    reason,
+                    status: 'pending'
+                });
+                
+                alert('Gửi yêu cầu thành công! Yêu cầu đang chờ phê duyệt.');
+                this.closeRequestForm();
+                await this.loadRequests();
+            } catch (error) {
+                console.error('Error submitting request:', error);
+                alert('Lỗi khi gửi yêu cầu: ' + error.message);
+            }
+        },
+        
+        getRequestIcon(type) {
+            const icons = {
+                'leave': 'beach_access',
+                'overtime': 'schedule',
+                'shift_change': 'swap_horiz',
+                'early_leave': 'logout',
+                'late_arrival': 'login',
+                'other': 'help'
+            };
+            return icons[type] || 'assignment';
+        },
+        
+        getRequestTypeName(type) {
+            const names = {
+                'leave': 'Nghỉ phép',
+                'overtime': 'Đăng ký tăng ca',
+                'shift_change': 'Đổi ca làm việc',
+                'early_leave': 'Xin về sớm',
+                'late_arrival': 'Xin đi muộn',
+                'other': 'Yêu cầu khác'
+            };
+            return names[type] || type;
         },
         
         /**

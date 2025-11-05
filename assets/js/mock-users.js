@@ -902,18 +902,67 @@ const MockAPI = {
         
         // Requests endpoints
         if (endpoint.includes('/requests') || endpoint.includes('/attendance-requests')) {
+            const userData = SimpleStorage.get('userData');
+            const currentEmployeeId = userData?.employeeId || 'E101';
+            
             return Promise.resolve({
                 success: true,
                 data: [
                     {
                         requestId: 'R001',
-                        employeeId: 'E001',
-                        employeeName: 'Nguyễn Văn A',
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
                         type: 'leave',
-                        reason: 'Nghỉ phép',
-                        date: new Date().toISOString().split('T')[0],
+                        reason: 'Nghỉ phép chăm sóc người thân',
+                        startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         status: 'pending',
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        requestId: 'R002',
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'overtime',
+                        reason: 'Đăng ký tăng ca làm thêm giờ cuối tuần',
+                        startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        status: 'approved',
+                        reviewedBy: 'E101',
+                        reviewerName: 'Nguyễn Thị Lan',
+                        reviewedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                        reviewNote: 'Đã duyệt',
+                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        requestId: 'R003',
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'early_leave',
+                        reason: 'Xin về sớm do có việc gia đình đột xuất',
+                        startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        status: 'rejected',
+                        reviewedBy: 'E101',
+                        reviewerName: 'Nguyễn Thị Lan',
+                        reviewedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+                        reviewNote: 'Không đủ lý do chính đáng',
+                        createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString()
+                    },
+                    {
+                        requestId: 'R004',
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'shift_change',
+                        reason: 'Xin đổi ca với đồng nghiệp',
+                        startDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        status: 'approved',
+                        reviewedBy: 'E101',
+                        reviewerName: 'Nguyễn Thị Lan',
+                        reviewedAt: new Date().toISOString(),
+                        reviewNote: 'Đã xác nhận với đồng nghiệp',
+                        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
                     }
                 ]
             });
@@ -1038,8 +1087,33 @@ const MockAPI = {
             });
         }
         
-        // Request submissions
-        if (endpoint.includes('/requests/submit') || endpoint.includes('/attendance-request')) {
+        // Request submissions (handle both /requests and /requests/submit)
+        if (endpoint.includes('/requests') && !endpoint.includes('/requests/')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Gửi yêu cầu thành công',
+                data: { 
+                    requestId: 'R' + Date.now(),
+                    ...data,
+                    createdAt: new Date().toISOString()
+                }
+            });
+        }
+        
+        // Request approvals
+        if (endpoint.includes('/requests/') && (endpoint.includes('/approve') || endpoint.includes('/reject'))) {
+            return Promise.resolve({
+                success: true,
+                message: endpoint.includes('/approve') ? 'Đã duyệt yêu cầu' : 'Đã từ chối yêu cầu',
+                data: { 
+                    status: endpoint.includes('/approve') ? 'approved' : 'rejected',
+                    reviewedAt: new Date().toISOString()
+                }
+            });
+        }
+        
+        // Legacy attendance-request endpoint
+        if (endpoint.includes('/attendance-request')) {
             return Promise.resolve({
                 success: true,
                 message: 'Gửi yêu cầu thành công',
