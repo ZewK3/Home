@@ -730,7 +730,8 @@ const MockAPI = {
         // Profile endpoints
         if (endpoint.includes('/profile') || endpoint.includes('/employee/')) {
             const userData = SimpleStorage.get('userData');
-            const currentUser = MockAPI.users[userData?.employeeId] || MockAPI.users.nhanvien1;
+            // Find user by employeeId since userData stores employeeId, not username
+            const currentUser = Object.values(MockAPI.users).find(u => u.employeeId === userData?.employeeId) || MockAPI.users.nhanvien1;
             
             return Promise.resolve({
                 success: true,
