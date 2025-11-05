@@ -99,16 +99,17 @@
                 </button>
             </div>
             <div class="drawer-menu">
-                <div class="menu-section">
+                <!-- Work Section - For employees with attendance permissions -->
+                <div class="menu-section" data-permission-section="attendance_self,shift_manage">
                     <h3 class="menu-section-title">Công việc</h3>
                     <ul class="menu-list">
-                        <li>
+                        <li data-required-permission="shift_manage">
                             <button class="menu-item" data-function="shifts">
                                 <span class="material-icons-round">schedule</span>
                                 <span>Ca làm</span>
                             </button>
                         </li>
-                        <li>
+                        <li data-required-permission="attendance_self">
                             <button class="menu-item" data-function="attendance">
                                 <span class="material-icons-round">location_on</span>
                                 <span>Chấm công</span>
@@ -117,52 +118,23 @@
                     </ul>
                 </div>
                 
-                <div class="menu-section">
+                <!-- Request Section - For request creation and approval -->
+                <div class="menu-section" data-permission-section="request_create,request_approve">
                     <h3 class="menu-section-title">Yêu cầu</h3>
                     <ul class="menu-list">
-                        <li>
+                        <li data-required-permission="schedule_view">
                             <button class="menu-item" data-function="schedule-registration">
                                 <span class="material-icons-round">event_available</span>
                                 <span>Đăng ký lịch</span>
                             </button>
                         </li>
-                        <li>
+                        <li data-required-permission="request_create">
                             <button class="menu-item" data-function="leave-request">
                                 <span class="material-icons-round">assignment</span>
                                 <span>Đơn Từ</span>
                             </button>
                         </li>
-                    </ul>
-                </div>
-                
-                <div class="menu-section">
-                    <h3 class="menu-section-title">Lương</h3>
-                    <ul class="menu-list">
-                        <li>
-                            <button class="menu-item" data-function="timesheet">
-                                <span class="material-icons-round">calendar_view_month</span>
-                                <span>Bảng công</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="menu-item" data-function="salary">
-                                <span class="material-icons-round">payments</span>
-                                <span>Bảng Lương</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="menu-section" data-role-section="admin">
-                    <h3 class="menu-section-title">Quản trị</h3>
-                    <ul class="menu-list">
-                        <li data-min-role="QL">
-                            <button class="menu-item" data-function="schedule-management">
-                                <span class="material-icons-round">edit_calendar</span>
-                                <span>Xếp Lịch Làm</span>
-                            </button>
-                        </li>
-                        <li data-min-role="QL">
+                        <li data-required-permission="request_approve">
                             <button class="menu-item" data-function="process-requests">
                                 <span class="material-icons-round">pending_actions</span>
                                 <span>Xử lý yêu cầu</span>
@@ -170,7 +142,114 @@
                         </li>
                     </ul>
                 </div>
+                
+                <!-- Salary Section - Timesheet and salary viewing -->
+                <div class="menu-section" data-permission-section="timesheet_view,salary_view,timesheet_approve,salary_manage">
+                    <h3 class="menu-section-title">Lương</h3>
+                    <ul class="menu-list">
+                        <li data-required-permission="timesheet_view">
+                            <button class="menu-item" data-function="timesheet">
+                                <span class="material-icons-round">calendar_view_month</span>
+                                <span>Bảng công</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="salary_view">
+                            <button class="menu-item" data-function="salary">
+                                <span class="material-icons-round">payments</span>
+                                <span>Bảng Lương</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="timesheet_approve">
+                            <button class="menu-item" data-function="timesheet-approval">
+                                <span class="material-icons-round">approval</span>
+                                <span>Duyệt bảng công</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="salary_manage">
+                            <button class="menu-item" data-function="salary-management">
+                                <span class="material-icons-round">account_balance_wallet</span>
+                                <span>Quản lý lương</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Management Section - Schedule and shift management -->
+                <div class="menu-section" data-permission-section="schedule_manage,shift_manage">
+                    <h3 class="menu-section-title">Quản lý lịch làm</h3>
+                    <ul class="menu-list">
+                        <li data-required-permission="schedule_manage">
+                            <button class="menu-item" data-function="schedule-management">
+                                <span class="material-icons-round">edit_calendar</span>
+                                <span>Xếp Lịch Làm</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="attendance_approve">
+                            <button class="menu-item" data-function="attendance-approval">
+                                <span class="material-icons-round">how_to_reg</span>
+                                <span>Duyệt chấm công</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Employee Management Section - VP Admin features -->
+                <div class="menu-section" data-permission-section="employee_manage,employee_view,registration_approve">
+                    <h3 class="menu-section-title">Quản lý nhân sự</h3>
+                    <ul class="menu-list">
+                        <li data-required-permission="employee_view">
+                            <button class="menu-item" data-function="employees">
+                                <span class="material-icons-round">people</span>
+                                <span>Nhân viên</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="employee_manage">
+                            <button class="menu-item" data-function="employee-management">
+                                <span class="material-icons-round">manage_accounts</span>
+                                <span>Quản lý NV</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="registration_approve">
+                            <button class="menu-item" data-function="registration-approval">
+                                <span class="material-icons-round">person_add</span>
+                                <span>Duyệt đăng ký</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- System Admin Section - VP Admin only -->
+                <div class="menu-section" data-permission-section="department_manage,position_manage,system_admin">
+                    <h3 class="menu-section-title">Quản trị hệ thống</h3>
+                    <ul class="menu-list">
+                        <li data-required-permission="department_manage">
+                            <button class="menu-item" data-function="departments">
+                                <span class="material-icons-round">corporate_fare</span>
+                                <span>Phòng ban</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="position_manage">
+                            <button class="menu-item" data-function="positions">
+                                <span class="material-icons-round">badge</span>
+                                <span>Chức vụ</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="reports_view">
+                            <button class="menu-item" data-function="reports">
+                                <span class="material-icons-round">analytics</span>
+                                <span>Báo cáo</span>
+                            </button>
+                        </li>
+                        <li data-required-permission="system_admin">
+                            <button class="menu-item" data-function="system-settings">
+                                <span class="material-icons-round">settings</span>
+                                <span>Cài đặt</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
 
+                <!-- Logout - Always visible -->
                 <div class="menu-section">
                     <ul class="menu-list">
                         <li>
