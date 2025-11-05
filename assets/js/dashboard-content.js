@@ -39,12 +39,12 @@ const DashboardContent = {
      * Home Dashboard with Role-Specific Views
      */
     async renderHome() {
-        const position = this.userData?.position || 'NV';
+        const positionCode = this.userData?.positionCode || this.userData?.position || 'NV';
         
         // Render based on role
-        if (position === 'AD' || position === 'ADMIN') {
+        if (positionCode.includes('ADMIN')) {
             return this.renderAdminDashboard();
-        } else if (position === 'QL' || position === 'MANAGER') {
+        } else if (positionCode.includes('QL') || positionCode === 'QLKV') {
             return this.renderManagerDashboard();
         } else {
             return this.renderWorkerDashboard();
@@ -267,10 +267,13 @@ const DashboardContent = {
         const today = new Date();
         const weekStart = this.getWeekStart(today);
         const userData = SimpleStorage.get('userData');
-        const userRole = this.roleHierarchy[userData?.position?.toUpperCase()] || 0;
+        
+        // Determine user role from positionCode or position field
+        const positionCode = userData?.positionCode || userData?.position || '';
+        const isManager = positionCode.includes('QL') || positionCode.includes('ADMIN') || positionCode === 'QLKV';
         
         // Role-specific schedule view
-        if (userRole >= 1) {
+        if (isManager) {
             // Manager/Admin: Team schedule management
             return this.renderScheduleManagement(weekStart);
         } else {

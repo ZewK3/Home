@@ -23,6 +23,7 @@ const MockUsers = {
         positionId: "VP_ADMIN",
         positionName: "Quản Trị Viên",
         positionCode: "ADMIN",
+        position: "AD", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin",
         authToken: "mock_token_admin"
     },
@@ -41,6 +42,7 @@ const MockUsers = {
         positionId: "VP_QLKV",
         positionName: "Quản Lý Khu Vực",
         positionCode: "QLKV",
+        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "employee_manage,salary_manage,timesheet_approve,reports_view,schedule_manage,request_approve",
         authToken: "mock_token_qlvp"
     },
@@ -59,6 +61,7 @@ const MockUsers = {
         positionId: "VP_KT",
         positionName: "Kế Toán",
         positionCode: "KT",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "employee_view,salary_manage,reports_view,timesheet_view",
         authToken: "mock_token_ketoan"
     },
@@ -77,6 +80,7 @@ const MockUsers = {
         positionId: "VP_IT",
         positionName: "Nhân Viên IT",
         positionCode: "IT",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "employee_view,system_admin,department_manage,position_manage,reports_view",
         authToken: "mock_token_it"
     },
@@ -95,6 +99,7 @@ const MockUsers = {
         positionId: "VP_GS",
         positionName: "Giám Sát",
         positionCode: "GS",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "timesheet_approve,request_approve,shift_manage,attendance_approve",
         authToken: "mock_token_gsvp"
     },
@@ -131,6 +136,7 @@ const MockUsers = {
         storeName: "Cửa hàng 74 Đồng Đen",
         
         // Extended fields (not in core schema but useful for UI)
+        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
         firstName: "Lan",
         lastName: "Nguyễn Thị",
         nickname: "Lan Lan",
@@ -213,6 +219,7 @@ const MockUsers = {
         storeName: "Cửa hàng Trung tâm",
         
         // Extended fields (not in core schema but useful for UI)
+        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
         dateOfBirth: "1985-03-20",
         gender: "male",
         address: "456 Đường XYZ, Quận 3, TP.HCM",
@@ -261,6 +268,7 @@ const MockUsers = {
         storeName: "Cửa hàng 74 Đồng Đen",
         
         // Extended fields (not in core schema but useful for UI)
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         firstName: "Hoa",
         lastName: "Lê Thị",
         nickname: "Hoa Hoa",
@@ -343,6 +351,7 @@ const MockUsers = {
         storeName: "Cửa hàng Trung tâm",
         
         // Extended fields (not in core schema but useful for UI)
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         dateOfBirth: "1995-07-10",
         gender: "male",
         address: "789 Đường DEF, Quận 10, TP.HCM",
@@ -373,6 +382,7 @@ const MockUsers = {
         positionId: "CH_CT",
         positionName: "Ca Trưởng",
         positionCode: "CT",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "attendance_self,attendance_approve,schedule_view,shift_manage,timesheet_view,salary_view,request_create,notification_view,profile_view",
         authToken: "mock_token_ct"
     },
@@ -391,6 +401,7 @@ const MockUsers = {
         positionId: "TEST_NONE",
         positionName: "No Permissions",
         positionCode: "NONE",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "",
         authToken: "mock_token_none"
     },
@@ -408,6 +419,7 @@ const MockUsers = {
         positionId: "TEST_VIEW",
         positionName: "View Only",
         positionCode: "VIEW",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "employee_view,timesheet_view,salary_view,schedule_view,notification_view,profile_view",
         authToken: "mock_token_view"
     },
@@ -425,6 +437,7 @@ const MockUsers = {
         positionId: "TEST_APPROVE",
         positionName: "Approver",
         positionCode: "APPROVE",
+        position: "QL", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "registration_approve,timesheet_approve,attendance_approve,request_approve",
         authToken: "mock_token_approve"
     },
@@ -442,6 +455,7 @@ const MockUsers = {
         positionId: "TEST_CREATE",
         positionName: "Creator",
         positionCode: "CREATE",
+        position: "NV", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "request_create,notification_view",
         authToken: "mock_token_create"
     },
@@ -459,6 +473,7 @@ const MockUsers = {
         positionId: "TEST_FULL",
         positionName: "Full Access",
         positionCode: "FULL",
+        position: "AD", // Simplified position for backward compatibility (NV/QL/AD)
         permissions: "employee_manage,employee_view,registration_approve,department_manage,position_manage,salary_manage,salary_view,timesheet_approve,timesheet_view,attendance_self,attendance_approve,schedule_manage,schedule_view,shift_manage,request_create,request_approve,reports_view,system_admin,notification_view,profile_view",
         authToken: "mock_token_full"
     }
