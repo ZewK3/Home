@@ -1084,7 +1084,7 @@ const HRMModules = {
                     let weekdayHours = 0;
                     let weekendBonus = 0;
                     
-                    if (userData?.departmentCode === 'CH') {
+                    if (userData?.departmentId === 'CH') {
                         details.forEach(day => {
                             const date = new Date(day.date);
                             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
@@ -1095,7 +1095,8 @@ const HRMModules = {
                             }
                         });
                         // Weekend bonus: 50% additional for CH department
-                        const salaryRate = userData?.baseSalaryRate || userData?.baseSalary || 25000;
+                        // Default CH hourly rate if not provided
+                        const salaryRate = 25000; // Base rate for CH from SQL schema
                         weekendBonus = weekendHours * 0.5 * salaryRate;
                     }
                     
@@ -1125,7 +1126,7 @@ const HRMModules = {
                                 <h4>${data.overtimeHours || 0}</h4>
                                 <p>Tăng Ca</p>
                             </div>
-                            ${userData?.departmentCode === 'CH' ? `
+                            ${userData?.departmentId === 'CH' ? `
                             <div class="stat">
                                 <h4>${weekdayHours.toFixed(1)}</h4>
                                 <p>Giờ T2-T6</p>
@@ -1137,7 +1138,7 @@ const HRMModules = {
                             ` : ''}
                         </div>
                         
-                        ${userData?.departmentCode === 'CH' && weekendHours > 0 ? `
+                        ${userData?.departmentId === 'CH' && weekendHours > 0 ? `
                         <div class="weekend-bonus-alert">
                             <span class="material-icons-round">card_giftcard</span>
                             <div>
@@ -1257,8 +1258,9 @@ const HRMModules = {
                 
                 if (salary.data) {
                     const data = salary.data;
-                    const isCH = userData?.departmentCode === 'CH';
-                    const salaryRate = userData?.baseSalaryRate || userData?.baseSalary || (isCH ? 25000 : 8000000);
+                    const isCH = userData?.departmentId === 'CH';
+                    // Use default rates from SQL schema if department is known
+                    const salaryRate = isCH ? 25000 : 8000000; // CH hourly vs VP monthly
                     
                     // Calculate salary components
                     let baseSalaryAmount = 0;
