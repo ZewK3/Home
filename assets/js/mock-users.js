@@ -99,24 +99,43 @@ const MockUsers = {
         authToken: "mock_token_gsvp"
     },
 
-    // CH - Quản Lý LV2 (Store Manager) - Comprehensive 40+ fields
+    // CH - Quản Lý LV2 (Store Manager) - Matches Tabbel-v2-optimized.sql schema
     quanly2: {
-        // Basic Identity
+        // Core SQL Schema Fields (from employees table)
         employeeId: "E101",
         username: "quanly2",
         password: "123456",
         fullName: "Nguyễn Thị Lan",
+        phone: "0911234567",
+        email: "lanql@store.com",
+        storeId: "S001",
+        departmentId: "CH",
+        positionId: "CH_QL_LV2",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2016-03-01",
+        last_login_at: "2024-11-05T08:30:00.000Z",
+        created_at: "2016-03-01T08:00:00.000Z",
+        
+        // Position-related fields (from positions table: CH_QL_LV2)
+        positionName: "Quản Lý LV2",
+        positionCode: "QL_LV2",
+        baseSalaryRate: 40000, // From SQL: CH_QL_LV2 = 40000 VNĐ/hour
+        salaryType: "hourly",
+        
+        // Department-related fields
+        departmentName: "Cửa Hàng",
+        departmentCode: "CH",
+        
+        // Store-related fields
+        storeName: "Cửa hàng 74 Đồng Đen",
+        
+        // Extended fields (not in core schema but useful for UI)
         firstName: "Lan",
         lastName: "Nguyễn Thị",
         nickname: "Lan Lan",
-        
-        // Contact Information
-        email: "lanql@store.com",
-        phone: "0911234567",
         emergencyContact: "0912999888",
         emergencyContactName: "Nguyễn Văn Hùng (Chồng)",
-        
-        // Personal Information
         dateOfBirth: "1988-05-15",
         age: 36,
         gender: "female",
@@ -124,110 +143,129 @@ const MockUsers = {
         nationality: "Việt Nam",
         ethnicity: "Kinh",
         religion: "Không",
-        
-        // Identity Documents
         identityNumber: "079088015678",
         identityIssueDate: "2015-06-10",
         identityIssuePlace: "Công an TP.HCM",
         passportNumber: "",
         driverLicense: "",
-        
-        // Address Information
         address: "234 Đường Lê Văn Việt, Quận 9, TP.HCM",
         permanentAddress: "456 Đường Nguyễn Văn Cừ, Quận 5, TP.HCM",
         city: "TP.HCM",
         district: "Quận 9",
         ward: "Phường Tăng Nhơn Phú A",
-        
-        // Organization Information
-        departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
-        positionId: "CH_QL_LV2",
-        positionName: "Quản Lý LV2",
-        positionCode: "QL_LV2",
-        storeId: "S001",
-        storeName: "Cửa hàng 74 Đồng Đen",
-        
-        // Employment Information
-        hireDate: "2016-03-01",
         probationEndDate: "2016-05-31",
         contractType: "full_time",
         contractStartDate: "2016-06-01",
         contractEndDate: "2026-05-31",
-        workingStatus: "active",
-        
-        // Salary Information
-        baseSalary: 25000, // 25,000 VNĐ per hour for CH
-        salaryType: "hourly", // hourly for CH, monthly for VP
         bankAccount: "1234567890",
         bankName: "Vietcombank",
         bankBranch: "Chi nhánh TP.HCM",
         taxCode: "0123456789",
         insuranceNumber: "1234567890123",
-        
-        // Work Schedule
-        workSchedule: "shift", // shift for CH, fixed for VP
+        workSchedule: "shift",
         standardHoursPerWeek: 48,
-        
-        // Performance & Skills
         performanceRating: "excellent",
         skills: "Quản lý nhân sự, Quản lý kho, Chăm sóc khách hàng",
         certifications: "Chứng chỉ Quản lý Cửa hàng F&B",
         
-        // System Information
+        // System fields
         permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view,profile_edit",
         authToken: "mock_token_ql2",
-        status: "active",
-        createdAt: "2016-03-01T08:00:00.000Z",
+        
+        // Legacy compatibility
+        baseSalary: 40000, // Alias for baseSalaryRate
+        status: "active", // Alias for is_active
+        hireDate: "2016-03-01", // Alias for hire_date
+        createdAt: "2016-03-01T08:00:00.000Z", // Alias for created_at
         updatedAt: "2024-11-05T10:00:00.000Z",
-        lastLoginAt: "2024-11-05T08:30:00.000Z"
+        lastLoginAt: "2024-11-05T08:30:00.000Z" // Alias for last_login_at
     },
 
     // CH - Quản Lý LV1
     quanly1: {
+        // Core SQL Schema Fields (from employees table)
         employeeId: "E102",
         username: "quanly1",
         password: "123456",
         fullName: "Trần Văn Minh",
-        email: "minhql@store.com",
         phone: "0912345678",
+        email: "minhql@store.com",
+        storeId: "S001",
+        departmentId: "CH",
+        positionId: "CH_QL_LV1",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2018-06-15",
+        last_login_at: "2024-11-05T07:45:00.000Z",
+        created_at: "2018-06-15T08:00:00.000Z",
+        
+        // Position-related fields (from positions table: CH_QL_LV1)
+        positionName: "Quản Lý LV1",
+        positionCode: "QL_LV1",
+        baseSalaryRate: 35000, // From SQL: CH_QL_LV1 = 35000 VNĐ/hour
+        salaryType: "hourly",
+        
+        // Department-related fields
+        departmentName: "Cửa Hàng",
+        departmentCode: "CH",
+        
+        // Store-related fields
+        storeName: "Cửa hàng Trung tâm",
+        
+        // Extended fields (not in core schema but useful for UI)
         dateOfBirth: "1985-03-20",
         gender: "male",
         address: "456 Đường XYZ, Quận 3, TP.HCM",
         identityNumber: "079085012345",
-        departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        positionId: "CH_QL_LV1",
-        positionName: "Quản Lý LV1",
-        storeId: "S001",
-        storeName: "Cửa hàng Trung tâm",
-        hireDate: "2018-06-15",
         contractType: "full_time",
-        baseSalary: 15000000,
-        status: "active",
-        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,salary_view,request_create,request_approve,notification_view,profile_view,profile_edit",
-        authToken: "mock_token_ql1"
+        
+        // System fields
+        permissions: "attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view,profile_edit",
+        authToken: "mock_token_ql1",
+        
+        // Legacy compatibility
+        baseSalary: 35000, // Alias for baseSalaryRate
+        status: "active", // Alias for is_active
+        hireDate: "2018-06-15" // Alias for hire_date
     },
 
-    // CH - Nhân Viên LV2 - Comprehensive 40+ fields
+    // CH - Nhân Viên LV2 - Matches Tabbel-v2-optimized.sql schema
     nhanvien2: {
-        // Basic Identity
+        // Core SQL Schema Fields (from employees table)
         employeeId: "E103",
         username: "nhanvien2",
         password: "123456",
         fullName: "Lê Thị Hoa",
+        phone: "0913456789",
+        email: "hoanv@store.com",
+        storeId: "S001",
+        departmentId: "CH",
+        positionId: "CH_NV_LV2",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-07-15",
+        last_login_at: "2024-11-05T08:00:00.000Z",
+        created_at: "2020-07-15T08:00:00.000Z",
+        
+        // Position-related fields (from positions table: CH_NV_LV2)
+        positionName: "Nhân Viên LV2",
+        positionCode: "NV_LV2",
+        baseSalaryRate: 28000, // From SQL: CH_NV_LV2 = 28000 VNĐ/hour
+        salaryType: "hourly",
+        
+        // Department-related fields
+        departmentName: "Cửa Hàng",
+        departmentCode: "CH",
+        
+        // Store-related fields
+        storeName: "Cửa hàng 74 Đồng Đen",
+        
+        // Extended fields (not in core schema but useful for UI)
         firstName: "Hoa",
         lastName: "Lê Thị",
         nickname: "Hoa Hoa",
-        
-        // Contact Information
-        email: "hoanv@store.com",
-        phone: "0913456789",
         emergencyContact: "0914888777",
         emergencyContactName: "Lê Văn Bình (Anh trai)",
-        
-        // Personal Information
         dateOfBirth: "1996-08-22",
         age: 28,
         gender: "female",
@@ -235,90 +273,90 @@ const MockUsers = {
         nationality: "Việt Nam",
         ethnicity: "Kinh",
         religion: "Phật giáo",
-        
-        // Identity Documents
         identityNumber: "079096023456",
         identityIssueDate: "2018-09-15",
         identityIssuePlace: "Công an TP.HCM",
         passportNumber: "",
         driverLicense: "",
-        
-        // Address Information
         address: "567 Đường Lê Hồng Phong, Quận 10, TP.HCM",
         permanentAddress: "789 Đường Nguyễn Trãi, Quận 5, TP.HCM",
         city: "TP.HCM",
         district: "Quận 10",
         ward: "Phường 12",
-        
-        // Organization Information
-        departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
-        positionId: "CH_NV_LV2",
-        positionName: "Nhân Viên LV2",
-        positionCode: "NV_LV2",
-        storeId: "S001",
-        storeName: "Cửa hàng 74 Đồng Đen",
-        
-        // Employment Information
-        hireDate: "2020-07-15",
         probationEndDate: "2020-10-14",
         contractType: "full_time",
         contractStartDate: "2020-10-15",
         contractEndDate: "2025-10-14",
-        workingStatus: "active",
-        
-        // Salary Information
-        baseSalary: 22000, // 22,000 VNĐ per hour for CH NV LV2
-        salaryType: "hourly", // hourly for CH, monthly for VP
         bankAccount: "9876543210",
         bankName: "Techcombank",
         bankBranch: "Chi nhánh Quận 10",
         taxCode: "9876543210",
         insuranceNumber: "9876543210123",
-        
-        // Work Schedule
-        workSchedule: "shift", // shift for CH, fixed for VP
+        workSchedule: "shift",
         standardHoursPerWeek: 48,
-        
-        // Performance & Skills
         performanceRating: "good",
         skills: "Pha chế, Phục vụ, Kỹ năng giao tiếp",
         certifications: "Chứng chỉ Pha chế cơ bản",
         
-        // System Information
+        // System fields
         permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
         authToken: "mock_token_nv2",
-        status: "active",
-        createdAt: "2020-07-15T08:00:00.000Z",
+        
+        // Legacy compatibility
+        baseSalary: 28000, // Alias for baseSalaryRate
+        status: "active", // Alias for is_active
+        hireDate: "2020-07-15", // Alias for hire_date
+        createdAt: "2020-07-15T08:00:00.000Z", // Alias for created_at
         updatedAt: "2024-11-05T10:00:00.000Z",
-        lastLoginAt: "2024-11-05T08:00:00.000Z"
+        lastLoginAt: "2024-11-05T08:00:00.000Z" // Alias for last_login_at
     },
 
     // CH - Nhân Viên LV1
     nhanvien1: {
+        // Core SQL Schema Fields (from employees table)
         employeeId: "E104",
         username: "nhanvien1",
         password: "123456",
         fullName: "Phạm Văn Đức",
-        email: "ducnv@store.com",
         phone: "0914567890",
+        email: "ducnv@store.com",
+        storeId: "S001",
+        departmentId: "CH",
+        positionId: "CH_NV_LV1",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2021-09-01",
+        last_login_at: "2024-11-05T07:30:00.000Z",
+        created_at: "2021-09-01T08:00:00.000Z",
+        
+        // Position-related fields (from positions table: CH_NV_LV1)
+        positionName: "Nhân Viên LV1",
+        positionCode: "NV_LV1",
+        baseSalaryRate: 25000, // From SQL: CH_NV_LV1 = 25000 VNĐ/hour
+        salaryType: "hourly",
+        
+        // Department-related fields
+        departmentName: "Cửa Hàng",
+        departmentCode: "CH",
+        
+        // Store-related fields
+        storeName: "Cửa hàng Trung tâm",
+        
+        // Extended fields (not in core schema but useful for UI)
         dateOfBirth: "1995-07-10",
         gender: "male",
         address: "789 Đường DEF, Quận 10, TP.HCM",
         identityNumber: "079095056789",
-        departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        positionId: "CH_NV_LV1",
-        positionName: "Nhân Viên LV1",
-        storeId: "S001",
-        storeName: "Cửa hàng Trung tâm",
-        hireDate: "2021-09-01",
         contractType: "full_time",
-        baseSalary: 8000000,
-        status: "active",
+        
+        // System fields
         permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
-        authToken: "mock_token_nv1"
+        authToken: "mock_token_nv1",
+        
+        // Legacy compatibility
+        baseSalary: 25000, // Alias for baseSalaryRate
+        status: "active", // Alias for is_active
+        hireDate: "2021-09-01" // Alias for hire_date
     },
 
     // CH - Ca Trưởng (Shift Leader)

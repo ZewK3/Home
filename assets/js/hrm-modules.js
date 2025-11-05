@@ -1095,7 +1095,8 @@ const HRMModules = {
                             }
                         });
                         // Weekend bonus: 50% additional for CH department
-                        weekendBonus = weekendHours * 0.5 * (userData?.baseSalary || 22000);
+                        const salaryRate = userData?.baseSalaryRate || userData?.baseSalary || 25000;
+                        weekendBonus = weekendHours * 0.5 * salaryRate;
                     }
                     
                     container.innerHTML = `
@@ -1257,7 +1258,7 @@ const HRMModules = {
                 if (salary.data) {
                     const data = salary.data;
                     const isCH = userData?.departmentCode === 'CH';
-                    const salaryRate = userData?.baseSalary || (isCH ? 22000 : 8000000);
+                    const salaryRate = userData?.baseSalaryRate || userData?.baseSalary || (isCH ? 25000 : 8000000);
                     
                     // Calculate salary components
                     let baseSalaryAmount = 0;
