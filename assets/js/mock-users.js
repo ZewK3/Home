@@ -8,6 +8,14 @@
  * 3. MockAPI.login(username, password) to simulate login
  */
 
+// Shift Definitions
+const SHIFT_DEFINITIONS = {
+    S4_08_12: { id: "S4_08-12", name: "Ca 4", start: "08:00", end: "12:00", hours: 4 },
+    S8_08_17: { id: "S8_08-17", name: "Ca 8", start: "08:00", end: "17:00", hours: 8 },
+    S8_13_22: { id: "S8_13-22", name: "Ca tối", start: "13:00", end: "22:00", hours: 8 },
+    S8_22_06: { id: "S8_22-06", name: "Ca đêm", start: "22:00", end: "06:00", hours: 8 }
+};
+
 const MockUsers = {
     // VP - Admin (Full Access)
     // Only fields from SQL schema: employees table + permissions from positions table
@@ -498,6 +506,65 @@ const MockAuth = {
     }
 };
 
+// Mock Attendance Data with Shift Assignments
+const MockAttendanceData = {
+    // quanly2 (E101) attendance records with shifts
+    E101: {
+        shiftAssignment: {
+            monday: "S8_08-17",
+            tuesday: "S8_08-17",
+            wednesday: "S8_08-17",
+            thursday: "S8_08-17",
+            friday: "S8_08-17",
+            saturday: null,
+            sunday: null
+        },
+        records: [
+            // January 2025 records
+            { date: "2025-01-02", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:10", status: "present", hoursWorked: 8 },
+            { date: "2025-01-03", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
+            { date: "2025-01-06", shiftId: "S8_08-17", checkIn: "08:10", checkOut: "17:08", status: "late", hoursWorked: 8 },
+            { date: "2025-01-07", shiftId: "S8_08-17", checkIn: "08:00", checkOut: "17:03", status: "present", hoursWorked: 8 },
+            { date: "2025-01-08", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:12", status: "present", hoursWorked: 8 },
+            { date: "2025-01-09", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:06", status: "present", hoursWorked: 8 },
+            { date: "2025-01-10", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8 },
+            { date: "2025-01-13", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:02", status: "present", hoursWorked: 8 },
+            { date: "2025-01-14", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:09", status: "present", hoursWorked: 8 },
+            { date: "2025-01-15", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
+            { date: "2025-01-16", shiftId: "S8_08-17", checkIn: "08:08", checkOut: "17:07", status: "present", hoursWorked: 8 },
+            { date: "2025-01-17", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:11", status: "present", hoursWorked: 8 }
+        ]
+    },
+    // nhanvien2 (E103) attendance records with 4-hour shifts
+    E103: {
+        shiftAssignment: {
+            monday: "S4_08-12",
+            tuesday: "S4_08-12",
+            wednesday: "S4_08-12",
+            thursday: "S4_08-12",
+            friday: "S4_08-12",
+            saturday: "S4_08-12", // Works on Saturday
+            sunday: null
+        },
+        records: [
+            { date: "2025-01-02", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
+            { date: "2025-01-03", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:03", status: "present", hoursWorked: 4 },
+            { date: "2025-01-04", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:08", status: "present", hoursWorked: 4 },
+            { date: "2025-01-06", shiftId: "S4_08-12", checkIn: "08:12", checkOut: "12:06", status: "late", hoursWorked: 4 },
+            { date: "2025-01-07", shiftId: "S4_08-12", checkIn: "08:00", checkOut: "12:02", status: "present", hoursWorked: 4 },
+            { date: "2025-01-08", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 },
+            { date: "2025-01-09", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:07", status: "present", hoursWorked: 4 },
+            { date: "2025-01-10", shiftId: "S4_08-12", checkIn: "08:04", checkOut: "12:05", status: "present", hoursWorked: 4 },
+            { date: "2025-01-11", shiftId: "S4_08-12", checkIn: "08:05", checkOut: "12:10", status: "present", hoursWorked: 4 }, // Saturday
+            { date: "2025-01-13", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:02", status: "present", hoursWorked: 4 },
+            { date: "2025-01-14", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:06", status: "present", hoursWorked: 4 },
+            { date: "2025-01-15", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
+            { date: "2025-01-16", shiftId: "S4_08-12", checkIn: "08:06", checkOut: "12:08", status: "present", hoursWorked: 4 },
+            { date: "2025-01-17", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 }
+        ]
+    }
+};
+
 // Mock API Client
 const MockAPI = {
     /**
@@ -598,40 +665,49 @@ const MockAPI = {
         }
         
         if (endpoint.includes('/attendance')) {
-            // Generate comprehensive attendance data for current month
+            const userData = SimpleStorage.get('userData');
+            const employeeId = params?.employeeId || userData?.employeeId;
+            const attendanceData = MockAttendanceData[employeeId];
+            
+            if (attendanceData) {
+                return Promise.resolve({
+                    success: true,
+                    data: attendanceData.records,
+                    shiftAssignment: attendanceData.shiftAssignment,
+                    total: attendanceData.records.length
+                });
+            }
+            
+            // Fallback: generate basic attendance data
             const today = new Date();
             const year = today.getFullYear();
             const month = today.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const currentDay = today.getDate();
             
-            const attendanceData = [];
-            // Generate attendance records for each day of current month up to today
+            const records = [];
             for (let day = 1; day <= Math.min(currentDay, daysInMonth); day++) {
-                // Skip weekends (Saturday=6, Sunday=0)
                 const date = new Date(year, month, day);
                 if (date.getDay() === 0 || date.getDay() === 6) continue;
                 
-                // Morning check-in (08:00 - 08:30)
                 const morningMinutes = Math.floor(Math.random() * 30);
                 const morningTime = `08:${morningMinutes.toString().padStart(2, '0')}:00`;
                 
-                attendanceData.push({
+                records.push({
                     attendanceId: `a${day}m`,
-                    employeeId: params?.employeeId || 'E101',
+                    employeeId: employeeId,
                     checkDate: `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
                     checkTime: morningTime,
                     checkLocation: 'Cửa Hàng 74 Đồng Đen',
                     createdAt: new Date(year, month, day, 8, morningMinutes).toISOString()
                 });
                 
-                // Afternoon check-in (13:00 - 13:30)
                 const afternoonMinutes = Math.floor(Math.random() * 30);
                 const afternoonTime = `13:${afternoonMinutes.toString().padStart(2, '0')}:00`;
                 
-                attendanceData.push({
+                records.push({
                     attendanceId: `a${day}a`,
-                    employeeId: params?.employeeId || 'E101',
+                    employeeId: employeeId,
                     checkDate: `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
                     checkTime: afternoonTime,
                     checkLocation: 'Cửa Hàng 74 Đồng Đen',
@@ -641,8 +717,8 @@ const MockAPI = {
             
             return Promise.resolve({
                 success: true,
-                data: attendanceData,
-                total: attendanceData.length
+                data: records,
+                total: records.length
             });
         }
         

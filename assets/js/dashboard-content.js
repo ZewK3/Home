@@ -859,7 +859,6 @@ const DashboardContent = {
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month - 1, day);
                 const dayOfWeek = date.getDay();
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 
                 // Find attendance record for this day
                 const record = records.find(r => new Date(r.date).getDate() === day);
@@ -867,10 +866,7 @@ const DashboardContent = {
                 let dayClass = 'calendar-day';
                 let statusHTML = '';
                 
-                if (isWeekend) {
-                    dayClass += ' weekend';
-                    statusHTML = '<span class="day-status">Nghỉ</span>';
-                } else if (record) {
+                if (record) {
                     if (record.status === 'present') {
                         dayClass += ' present';
                         statusHTML = `<span class="day-status success">✓</span>`;

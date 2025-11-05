@@ -1429,20 +1429,57 @@ const HRMModules = {
                                         <option value="leave">Nghỉ phép</option>
                                         <option value="overtime">Đăng ký tăng ca</option>
                                         <option value="shift_change">Đổi ca làm việc</option>
+                                        <option value="forgot_checkin">Quên chấm công vào</option>
+                                        <option value="forgot_checkout">Quên chấm công ra</option>
                                         <option value="early_leave">Xin về sớm</option>
                                         <option value="late_arrival">Xin đi muộn</option>
                                         <option value="other">Khác</option>
                                     </select>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label>Ngày bắt đầu *</label>
+                                <div class="form-group" id="startDateGroup">
+                                    <label>Ngày *</label>
                                     <input type="date" id="requestStartDate" class="form-control" required>
                                 </div>
                                 
-                                <div class="form-group">
+                                <div class="form-group" id="endDateGroup" style="display: none;">
                                     <label>Ngày kết thúc</label>
                                     <input type="date" id="requestEndDate" class="form-control">
+                                </div>
+                                
+                                <div class="form-group" id="startTimeGroup" style="display: none;">
+                                    <label>Giờ bắt đầu *</label>
+                                    <input type="time" id="requestStartTime" class="form-control">
+                                </div>
+                                
+                                <div class="form-group" id="endTimeGroup" style="display: none;">
+                                    <label>Giờ kết thúc *</label>
+                                    <input type="time" id="requestEndTime" class="form-control">
+                                </div>
+                                
+                                <div class="form-group" id="actualTimeGroup" style="display: none;">
+                                    <label>Giờ thực tế (HH:MM) *</label>
+                                    <input type="time" id="requestActualTime" class="form-control">
+                                </div>
+                                
+                                <div class="form-group" id="currentShiftGroup" style="display: none;">
+                                    <label>Ca hiện tại *</label>
+                                    <select id="requestCurrentShift" class="form-control">
+                                        <option value="">Chọn ca hiện tại</option>
+                                        <option value="S4_08-12">Ca 4 (08:00-12:00)</option>
+                                        <option value="S8_08-17">Ca 8 (08:00-17:00)</option>
+                                        <option value="S8_13-22">Ca tối (13:00-22:00)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group" id="desiredShiftGroup" style="display: none;">
+                                    <label>Ca mong muốn *</label>
+                                    <select id="requestDesiredShift" class="form-control">
+                                        <option value="">Chọn ca mong muốn</option>
+                                        <option value="S4_08-12">Ca 4 (08:00-12:00)</option>
+                                        <option value="S8_08-17">Ca 8 (08:00-17:00)</option>
+                                        <option value="S8_13-22">Ca tối (13:00-22:00)</option>
+                                    </select>
                                 </div>
                                 
                                 <div class="form-group">
@@ -1471,6 +1508,66 @@ const HRMModules = {
                     e.preventDefault();
                     this.submitRequest();
                 });
+            }
+            
+            // Setup dynamic form update based on request type
+            const requestTypeSelect = document.getElementById('requestType');
+            if (requestTypeSelect) {
+                requestTypeSelect.addEventListener('change', () => {
+                    this.updateRequestFormFields();
+                });
+                // Initialize form fields for current selection
+                this.updateRequestFormFields();
+            }
+        },
+        
+        updateRequestFormFields() {
+            const requestType = document.getElementById('requestType')?.value;
+            const startDateGroup = document.getElementById('startDateGroup');
+            const endDateGroup = document.getElementById('endDateGroup');
+            const startTimeGroup = document.getElementById('startTimeGroup');
+            const endTimeGroup = document.getElementById('endTimeGroup');
+            const actualTimeGroup = document.getElementById('actualTimeGroup');
+            const currentShiftGroup = document.getElementById('currentShiftGroup');
+            const desiredShiftGroup = document.getElementById('desiredShiftGroup');
+            
+            // Hide all optional fields first
+            [endDateGroup, startTimeGroup, endTimeGroup, actualTimeGroup, currentShiftGroup, desiredShiftGroup].forEach(el => {
+                if (el) el.style.display = 'none';
+            });
+            
+            // Show fields based on request type
+            switch(requestType) {
+                case 'leave':
+                    // Date range + reason (default fields already shown)
+                    if (endDateGroup) endDateGroup.style.display = 'block';
+                    break;
+                    
+                case 'overtime':
+                    // Date + time range + reason
+                    if (startTimeGroup) startTimeGroup.style.display = 'block';
+                    if (endTimeGroup) endTimeGroup.style.display = 'block';
+                    break;
+                    
+                case 'shift_change':
+                    // Date + current shift + desired shift + reason
+                    if (currentShiftGroup) currentShiftGroup.style.display = 'block';
+                    if (desiredShiftGroup) desiredShiftGroup.style.display = 'block';
+                    break;
+                    
+                case 'forgot_checkin':
+                case 'forgot_checkout':
+                    // Date + actual time + reason
+                    if (actualTimeGroup) actualTimeGroup.style.display = 'block';
+                    break;
+                    
+                case 'early_leave':
+                case 'late_arrival':
+                case 'other':
+                default:
+                    // Date range + reason (default)
+                    if (endDateGroup) endDateGroup.style.display = 'block';
+                    break;
             }
         },
         
