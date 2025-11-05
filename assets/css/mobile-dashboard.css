@@ -285,7 +285,7 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.card::before {
+/* .card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -295,18 +295,18 @@ body {
     background: var(--brand-gradient);
     opacity: 0.7;
     transition: opacity var(--transition);
-}
+} */
 
-.card:hover::before {
+/* .card:hover::before {
     opacity: 1;
     box-shadow: 0 0 12px var(--brand-glow);
-}
+} */
 
-.card:hover {
+/* .card:hover {
     border-color: var(--brand);
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(68, 147, 248, 0.2), 0 4px 12px rgba(0, 0, 0, 0.25);
-}
+} */
 
 .card-header {
     display: flex;
@@ -890,203 +890,6 @@ body {
 }
 
 /* ========================================
-   PHASE 3: NOTIFICATION SYSTEM STYLES
-   ======================================== */
-/* Notification Badge */
-.icon-btn {
-    position: relative;
-}
-
-.icon-btn .badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: var(--error);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.icon-btn .badge:empty {
-    display: none;
-}
-
-/* New Notification Animation */
-.has-new-notification {
-    animation: pulse-notification 2s ease-in-out;
-}
-
-@keyframes pulse-notification {
-    0%, 100% {
-        transform: scale(1);
-    }
-    25%, 75% {
-        transform: scale(1.1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}
-
-.notification-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: var(--danger);
-    color: white;
-    font-size: 10px;
-    font-weight: 600;
-    min-width: 18px;
-    height: 18px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    animation: badge-appear 0.3s ease-out;
-}
-
-@keyframes badge-appear {
-    from {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.notification-badge:empty {
-    display: none;
-}
-
-/* Notification Panel */
-.notification-panel {
-    position: fixed;
-    top: var(--header-height);
-    right: 0;
-    width: 100%;
-    max-width: 400px;
-    max-height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.3s var(--ease-out);
-}
-
-.notification-panel.hidden {
-    transform: translateX(100%);
-}
-
-.notification-panel:not(.hidden) {
-    transform: translateX(0);
-}
-
-.notification-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-lg);
-    border-bottom: 1px solid var(--border);
-}
-
-.notification-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.mark-all-btn {
-    background: transparent;
-    border: none;
-    color: var(--brand);
-    cursor: pointer;
-    padding: var(--space-sm);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-}
-
-.mark-all-btn:hover {
-    background: rgba(var(--brand-rgb), 0.1);
-}
-
-.notification-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--space-md);
-}
-
-.notification-item {
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    margin-bottom: var(--space-md);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.notification-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.notification-item.unread {
-    background: rgba(var(--brand-rgb), 0.05);
-    border-left: 3px solid var(--brand);
-}
-
-.notification-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-full);
-    background: var(--brand);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--space-sm);
-}
-
-.notification-title {
-    font-weight: 600;
-    margin-bottom: var(--space-xs);
-}
-
-.notification-body {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: var(--space-sm);
-}
-
-.notification-time {
-    font-size: 12px;
-    color: var(--text-muted);
-}
-
-.notification-empty {
-    text-align: center;
-    padding: var(--space-xl);
-    color: var(--text-muted);
-}
-
-/* ========================================
    PHASE 4: MOBILE SCHEDULE UI STYLES
    ======================================== */
 /* Weekly Calendar Container */
@@ -1573,10 +1376,10 @@ body {
     color: white;
     font-size: 10px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 2px 2px;
     border-radius: var(--radius-full);
-    min-width: 18px;
-    height: 18px;
+    min-width: 15px;
+    height: 15px;
     display: none;
     align-items: center;
     justify-content: center;
