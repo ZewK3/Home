@@ -312,7 +312,7 @@ async function renderContent(functionName) {
 
 // Make functions globally available for onclick handlers
 window.navigateToFunction = navigateToFunction;
-window.filterMenuByRole = filterMenuByRole;
+window.filterMenuByPermissions = filterMenuByPermissions;
 }
 
 // Export for use in dashboard-loader.js
