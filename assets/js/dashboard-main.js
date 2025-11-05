@@ -318,3 +318,9 @@ async function renderContent(functionName) {
 // Make functions globally available for onclick handlers
 window.navigateToFunction = navigateToFunction;
 window.filterMenuByRole = filterMenuByRole;
+}
+
+// Export for use in dashboard-loader.js
+if (typeof window !== 'undefined') {
+    window.initMobileDashboard = initMobileDashboard;
+}
