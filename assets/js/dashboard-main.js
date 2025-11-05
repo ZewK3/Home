@@ -299,12 +299,23 @@ async function renderContent(functionName) {
         'approve-registration': 'renderApproveRegistration',
         'grant-access': 'renderGrantAccess'
     };
+    
+    // Init methods that should be called after rendering
+    const initMethods = {
+        'process-requests': 'initProcessRequests'
+    };
 
     const methodName = contentMethods[functionName] || 'renderHome';
     
     if (typeof DashboardContent[methodName] === 'function') {
         const content = await DashboardContent[methodName]();
         mainContent.innerHTML = content;
+        
+        // Call init method if exists
+        const initMethod = initMethods[functionName];
+        if (initMethod && typeof DashboardContent[initMethod] === 'function') {
+            setTimeout(() => DashboardContent[initMethod](), 100);
+        }
     } else {
         mainContent.innerHTML = await DashboardContent.renderHome();
     }

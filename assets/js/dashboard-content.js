@@ -1878,40 +1878,237 @@ const DashboardContent = {
     },
 
     async renderSalary() {
+        // Delegate to HRMModules.CH.renderSalary which has full implementation
+        const html = await HRMModules.CH.renderSalary();
+        setTimeout(() => HRMModules.CH.initSalary(), 100);
+        return html;
+    },
+
+    async renderLeaveRequest() {
+        // Delegate to HRMModules.CH.renderRequests which has full implementation
+        const html = await HRMModules.CH.renderRequests();
+        setTimeout(() => HRMModules.CH.initRequests(), 100);
+        return html;
+    },
+    
+    async renderProcessRequests() {
+        // Manager/Admin module for processing employee requests
         return `
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
-                        <span class="material-icons-round">payments</span>
-                        Bảng Lương
+                        <span class="material-icons-round">pending_actions</span>
+                        Xử Lý Yêu Cầu
                     </h2>
+                    <div class="filters">
+                        <select id="requestStatusFilter" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="pending" selected>Chờ duyệt</option>
+                            <option value="approved">Đã duyệt</option>
+                            <option value="rejected">Đã từ chối</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="message">
-                        <span class="material-icons-round">construction</span>
-                        <p>Chức năng đang được phát triển</p>
+                <div class="card-body" id="pendingRequestsList">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Request Review Modal -->
+            <div id="reviewModal" class="modal" style="display: none;">
+                <div class="modal-backdrop" onclick="DashboardContent.closeReviewModal()"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Xét Duyệt Yêu Cầu</h3>
+                        <button class="modal-close" onclick="DashboardContent.closeReviewModal()">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="reviewRequestDetails"></div>
+                        <form id="reviewForm">
+                            <input type="hidden" id="reviewRequestId">
+                            <div class="form-group">
+                                <label>Ghi chú (tùy chọn)</label>
+                                <textarea id="reviewNote" class="form-control" rows="3" placeholder="Nhập ghi chú..."></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-danger" onclick="DashboardContent.reviewRequest('rejected')">
+                                    <span class="material-icons-round">close</span>
+                                    Từ chối
+                                </button>
+                                <button type="button" class="btn btn-success" onclick="DashboardContent.reviewRequest('approved')">
+                                    <span class="material-icons-round">check</span>
+                                    Phê duyệt
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         `;
     },
-
-    async renderLeaveRequest() {
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
+    
+    async initProcessRequests() {
+        await this.loadPendingRequests();
+        
+        // Setup filter change handler
+        const filter = document.getElementById('requestStatusFilter');
+        if (filter) {
+            filter.addEventListener('change', () => this.loadPendingRequests());
+        }
+    },
+    
+    async loadPendingRequests() {
+        const container = document.getElementById('pendingRequestsList');
+        const statusFilter = document.getElementById('requestStatusFilter')?.value || 'pending';
+        
+        if (!container) return;
+        
+        try {
+            const requests = await apiClient.get('/requests/all', {
+                status: statusFilter,
+                limit: 100
+            });
+            
+            if (requests.data && requests.data.length > 0) {
+                container.innerHTML = `
+                    <div class="requests-list">
+                        ${requests.data.map(req => `
+                            <div class="request-item ${req.status}">
+                                <div class="request-header">
+                                    <div class="request-info">
+                                        <div class="request-type">
+                                            <span class="material-icons-round">${this.getRequestIcon(req.type)}</span>
+                                            <strong>${this.getRequestTypeName(req.type)}</strong>
+                                        </div>
+                                        <div class="employee-info">
+                                            <span class="material-icons-round">person</span>
+                                            ${req.employeeName || req.employeeId}
+                                        </div>
+                                    </div>
+                                    <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
+                                        ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
+                                    </span>
+                                </div>
+                                <div class="request-body">
+                                    <p><strong>Lý do:</strong> ${req.reason}</p>
+                                    <p><strong>Thời gian:</strong> ${req.startDate}${req.endDate ? ' đến ' + req.endDate : ''}</p>
+                                    <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
+                                    ${req.reviewedBy ? `
+                                    <p><small>Duyệt bởi: ${req.reviewerName} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
+                                    ${req.reviewNote ? `<p><small>Ghi chú: ${req.reviewNote}</small></p>` : ''}
+                                    ` : ''}
+                                </div>
+                                ${req.status === 'pending' ? `
+                                <div class="request-actions">
+                                    <button class="btn btn-sm btn-primary" onclick="DashboardContent.showReviewModal('${req.requestId}', ${JSON.stringify(req).replace(/"/g, '&quot;')})">
+                                        Xét duyệt
+                                    </button>
+                                </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
                         <span class="material-icons-round">assignment</span>
-                        Đơn Từ
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <div class="message">
-                        <span class="material-icons-round">construction</span>
-                        <p>Chức năng đang được phát triển</p>
+                        <p>Không có yêu cầu ${statusFilter === 'pending' ? 'chờ duyệt' : statusFilter === 'approved' ? 'đã duyệt' : statusFilter === 'rejected' ? 'đã từ chối' : ''}</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading pending requests:', error);
+            container.innerHTML = '<p class="text-error">Lỗi khi tải danh sách yêu cầu</p>';
+        }
+    },
+    
+    showReviewModal(requestId, requestData) {
+        const modal = document.getElementById('reviewModal');
+        const details = document.getElementById('reviewRequestDetails');
+        
+        if (modal && details) {
+            details.innerHTML = `
+                <div class="request-review-details">
+                    <div class="detail-row">
+                        <strong>Nhân viên:</strong> ${requestData.employeeName || requestData.employeeId}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Loại yêu cầu:</strong> ${this.getRequestTypeName(requestData.type)}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Thời gian:</strong> ${requestData.startDate}${requestData.endDate ? ' đến ' + requestData.endDate : ''}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Lý do:</strong> ${requestData.reason}
+                    </div>
+                    <div class="detail-row">
+                        <strong>Ngày tạo:</strong> ${new Date(requestData.createdAt).toLocaleString('vi-VN')}
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+            
+            document.getElementById('reviewRequestId').value = requestId;
+            modal.style.display = 'flex';
+        }
+    },
+    
+    closeReviewModal() {
+        const modal = document.getElementById('reviewModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.getElementById('reviewForm').reset();
+        }
+    },
+    
+    async reviewRequest(decision) {
+        const requestId = document.getElementById('reviewRequestId').value;
+        const note = document.getElementById('reviewNote').value;
+        
+        try {
+            await apiClient.post(`/requests/${requestId}/review`, {
+                decision,
+                note
+            });
+            
+            this.closeReviewModal();
+            await this.loadPendingRequests();
+            
+            showNotification(
+                decision === 'approved' ? 'Đã phê duyệt yêu cầu' : 'Đã từ chối yêu cầu',
+                'success'
+            );
+        } catch (error) {
+            console.error('Error reviewing request:', error);
+            showNotification('Lỗi khi xử lý yêu cầu', 'error');
+        }
+    },
+    
+    getRequestIcon(type) {
+        const icons = {
+            'leave': 'event_busy',
+            'overtime': 'schedule',
+            'shift_change': 'swap_horiz',
+            'early_leave': 'exit_to_app',
+            'late_arrival': 'login',
+            'other': 'help_outline'
+        };
+        return icons[type] || 'assignment';
+    },
+    
+    getRequestTypeName(type) {
+        const names = {
+            'leave': 'Nghỉ phép',
+            'overtime': 'Tăng ca',
+            'shift_change': 'Đổi ca',
+            'early_leave': 'Về sớm',
+            'late_arrival': 'Đi muộn',
+            'other': 'Khác'
+        };
+        return names[type] || type;
     }
 };

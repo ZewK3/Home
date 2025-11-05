@@ -486,8 +486,10 @@ body {
     z-index: 201;
     transform: translateX(-100%);
     transition: transform var(--transition);
-    overflow-y: auto;
     box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent drawer itself from scrolling */
 }
 
 .drawer-overlay.active .drawer {
@@ -501,6 +503,7 @@ body {
     padding: var(--space-lg);
     border-bottom: 1px solid var(--border);
     background: var(--bg-elevated);
+    flex-shrink: 0; /* Fixed header */
 }
 
 .drawer-title {
@@ -524,6 +527,16 @@ body {
 
 .drawer-menu {
     padding: var(--space-md);
+    flex: 1; /* Take remaining space */
+    overflow-y: auto; /* Scrollable menu */
+    overflow-x: hidden;
+}
+
+.drawer-footer {
+    padding: var(--space-md);
+    border-top: 1px solid var(--border);
+    background: var(--bg-elevated);
+    flex-shrink: 0; /* Fixed footer */
 }
 
 .menu-section {
@@ -2242,3 +2255,106 @@ textarea.form-control {
 }
 
 /* END OF MOBILE DASHBOARD CSS */
+
+/* ========================================
+   REQUEST PROCESSING STYLES
+   ======================================== */
+
+.request-review-details {
+    background: var(--bg-elevated);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-lg);
+}
+
+.request-review-details .detail-row {
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+}
+
+.request-review-details .detail-row:last-child {
+    border-bottom: none;
+}
+
+.request-review-details strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.request-item {
+    background: var(--bg-card);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+    border: 1px solid var(--border);
+    transition: all var(--transition);
+}
+
+.request-item:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-accent);
+}
+
+.request-item.pending {
+    border-left: 3px solid var(--warning);
+}
+
+.request-item.approved {
+    border-left: 3px solid var(--success);
+}
+
+.request-item.rejected {
+    border-left: 3px solid var(--danger);
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.request-info {
+    flex: 1;
+}
+
+.request-type {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.employee-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--text-muted);
+    font-size: var(--font-sm);
+}
+
+.request-body {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+}
+
+.request-body p {
+    margin: var(--space-sm) 0;
+}
+
+.request-actions {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* END OF REQUEST PROCESSING STYLES */
