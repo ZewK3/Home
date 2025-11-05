@@ -565,7 +565,7 @@ const MockAPI = {
                 if (!user) {
                     reject({
                         success: false,
-                        message: 'Mã nhân viên không tồn tại'
+                        message: 'Thông tin đăng nhập không tồn tại'
                     });
                     return;
                 }

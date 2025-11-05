@@ -1269,9 +1269,24 @@ const HRMModules = {
                         baseSalaryAmount = (data.workHours || 0) * salaryRate;
                         overtimePay = (data.overtimeHours || 0) * salaryRate * 1.5;
                         
-                        // Weekend bonus calculation (assuming 30% of hours are weekend)
-                        const estimatedWeekendHours = (data.workHours || 0) * 0.3;
-                        weekendBonus = estimatedWeekendHours * salaryRate * 0.5;
+                        // Weekend bonus calculation
+                        // Get actual weekend hours from details if available, otherwise estimate
+                        let weekendHours = 0;
+                        if (data.details && Array.isArray(data.details)) {
+                            data.details.forEach(day => {
+                                const date = new Date(day.date);
+                                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                                if (isWeekend) {
+                                    weekendHours += day.workHours || 0;
+                                }
+                            });
+                        } else {
+                            // Estimate: assume 2/7 of work days are weekend (roughly 28.5%)
+                            weekendHours = (data.workHours || 0) * 0.285;
+                        }
+                        
+                        // Weekend bonus: 50% additional pay for weekend hours
+                        weekendBonus = weekendHours * salaryRate * 0.5;
                     } else {
                         // Monthly calculation for VP
                         baseSalaryAmount = data.baseSalary || salaryRate;
@@ -1357,9 +1372,9 @@ const HRMModules = {
                             <ul>
                                 <li>Lương giờ thường: ${data.workHours || 0}h × ${salaryRate.toLocaleString('vi-VN')} = ${baseSalaryAmount.toLocaleString('vi-VN')} VNĐ</li>
                                 <li>Lương tăng ca: ${data.overtimeHours || 0}h × ${salaryRate.toLocaleString('vi-VN')} × 1.5 = ${overtimePay.toLocaleString('vi-VN')} VNĐ</li>
-                                <li>Phụ cấp cuối tuần: ~${((data.workHours || 0) * 0.3).toFixed(1)}h × ${salaryRate.toLocaleString('vi-VN')} × 1.5 = ${weekendBonus.toLocaleString('vi-VN')} VNĐ</li>
+                                <li>Phụ cấp cuối tuần: ${(data.details ? 'thực tế' : '~' + ((data.workHours || 0) * 0.285).toFixed(1) + 'h ước tính')} × ${salaryRate.toLocaleString('vi-VN')} × 0.5 = ${weekendBonus.toLocaleString('vi-VN')} VNĐ</li>
                             </ul>
-                            <p class="text-muted">* Giờ làm cuối tuần được tính thêm 50% lương cơ bản</p>
+                            <p class="text-muted">* Giờ làm cuối tuần được tính thêm 50% lương cơ bản (tổng 1.5x)</p>
                         </div>
                         ` : ''}
                     `;
