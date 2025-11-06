@@ -854,6 +854,11 @@ const DashboardContent = {
                 calendarHTML += '<div class="calendar-day empty"></div>';
             }
             
+            // Store records in cache for safe access
+            if (!this.attendanceRecordsCache) {
+                this.attendanceRecordsCache = {};
+            }
+            
             // Calendar days
             const records = timesheet.records || [];
             for (let day = 1; day <= daysInMonth; day++) {
@@ -867,6 +872,10 @@ const DashboardContent = {
                 let statusHTML = '';
                 
                 if (record) {
+                    // Store record in cache with unique ID
+                    const recordId = `record-${month}-${year}-${day}`;
+                    this.attendanceRecordsCache[recordId] = record;
+                    
                     dayClass += ' clickable'; // Add clickable class when there's a record
                     if (record.status === 'present') {
                         dayClass += ' present';
@@ -878,19 +887,23 @@ const DashboardContent = {
                         dayClass += ' late';
                         statusHTML = `<span class="day-status warning">Trễ</span>`;
                     }
+                    
+                    // Use data attribute to store record ID safely
+                    calendarHTML += `
+                        <div class="${dayClass}" data-record-id="${recordId}">
+                            <div class="day-number">${day}</div>
+                            ${statusHTML}
+                        </div>
+                    `;
                 } else {
                     statusHTML = '<span class="day-status">-</span>';
+                    calendarHTML += `
+                        <div class="${dayClass}">
+                            <div class="day-number">${day}</div>
+                            ${statusHTML}
+                        </div>
+                    `;
                 }
-                
-                // Use data attribute to store record data safely
-                const dataAttr = record ? `data-record='${JSON.stringify(record).replace(/'/g, '&#39;')}'` : '';
-                
-                calendarHTML += `
-                    <div class="${dayClass}" ${dataAttr}>
-                        <div class="day-number">${day}</div>
-                        ${statusHTML}
-                    </div>
-                `;
             }
             
             calendarHTML += '</div></div>';
@@ -925,13 +938,11 @@ const DashboardContent = {
             // Add event delegation for calendar day clicks
             container.querySelectorAll('.calendar-day.clickable').forEach(dayElement => {
                 dayElement.addEventListener('click', function() {
-                    const recordData = this.getAttribute('data-record');
-                    if (recordData) {
-                        try {
-                            const record = JSON.parse(recordData);
+                    const recordId = this.getAttribute('data-record-id');
+                    if (recordId && DashboardContent.attendanceRecordsCache) {
+                        const record = DashboardContent.attendanceRecordsCache[recordId];
+                        if (record) {
                             DashboardContent.showAttendanceDetailModal(record);
-                        } catch (e) {
-                            console.error('Error parsing record data:', e);
                         }
                     }
                 });
@@ -2157,13 +2168,20 @@ const DashboardContent = {
         };
         const status = statusDisplay[record.status] || statusDisplay.present;
         
+        // Escape HTML to prevent XSS
+        const escapeHtml = (text) => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        };
+        
         // Create modal content
         modal.innerHTML = `
-            <div class="modal-backdrop" onclick="DashboardContent.closeAttendanceDetailModal()"></div>
+            <div class="modal-backdrop"></div>
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Chi Tiết Chấm Công</h3>
-                    <button class="modal-close" onclick="DashboardContent.closeAttendanceDetailModal()">
+                    <button class="modal-close" data-action="close">
                         <span class="material-icons-round">close</span>
                     </button>
                 </div>
@@ -2190,7 +2208,7 @@ const DashboardContent = {
                             <span class="material-icons-round">login</span>
                             <div class="detail-content">
                                 <strong>Giờ vào:</strong>
-                                <span>${record.checkIn}</span>
+                                <span>${escapeHtml(record.checkIn)}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -2200,7 +2218,7 @@ const DashboardContent = {
                             <span class="material-icons-round">logout</span>
                             <div class="detail-content">
                                 <strong>Giờ ra:</strong>
-                                <span>${record.checkOut}</span>
+                                <span>${escapeHtml(record.checkOut)}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -2210,7 +2228,7 @@ const DashboardContent = {
                             <span class="material-icons-round">location_on</span>
                             <div class="detail-content">
                                 <strong>Địa điểm:</strong>
-                                <span>${record.location}</span>
+                                <span>${escapeHtml(record.location)}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -2228,6 +2246,17 @@ const DashboardContent = {
                 </div>
             </div>
         `;
+        
+        // Add event listeners for modal close
+        const backdrop = modal.querySelector('.modal-backdrop');
+        const closeBtn = modal.querySelector('[data-action="close"]');
+        
+        if (backdrop) {
+            backdrop.addEventListener('click', () => this.closeAttendanceDetailModal());
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeAttendanceDetailModal());
+        }
         
         modal.style.display = 'flex';
     },
