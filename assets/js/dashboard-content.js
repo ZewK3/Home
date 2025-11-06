@@ -2019,8 +2019,8 @@ const DashboardContent = {
             if (requests.data && requests.data.length > 0) {
                 container.innerHTML = `
                     <div class="requests-list">
-                        ${requests.data.map(req => `
-                            <div class="request-item ${req.status}" onclick="DashboardContent.showRequestDetail(${JSON.stringify(req).replace(/"/g, '&quot;')})" style="cursor: pointer;">
+                        ${requests.data.map((req, index) => `
+                            <div class="request-item ${req.status}" data-request-index="${index}" style="cursor: pointer;">
                                 <div class="request-header">
                                     <div class="request-type">
                                         <span class="material-icons-round">${this.getRequestIcon(req.requestType)}</span>
@@ -2045,7 +2045,7 @@ const DashboardContent = {
                                 </div>
                                 ${req.status === 'pending' ? `
                                 <div class="request-actions">
-                                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); DashboardContent.showReviewModal('${req.requestId}', ${JSON.stringify(req).replace(/"/g, '&quot;')})">
+                                    <button class="btn btn-sm btn-primary" data-request-id="${req.requestId}" data-action="review">
                                         Xét duyệt
                                     </button>
                                 </div>
@@ -2054,6 +2054,36 @@ const DashboardContent = {
                         `).join('')}
                     </div>
                 `;
+                
+                // Store requests data for later use
+                this.currentRequests = requests.data;
+                
+                // Add click event listeners
+                const requestItems = container.querySelectorAll('.request-item');
+                requestItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        // Don't trigger if clicking on the review button
+                        if (e.target.closest('[data-action="review"]')) {
+                            return;
+                        }
+                        const index = parseInt(item.getAttribute('data-request-index'));
+                        const request = this.currentRequests[index];
+                        this.showRequestDetail(request);
+                    });
+                });
+                
+                // Add click event listeners for review buttons
+                const reviewButtons = container.querySelectorAll('[data-action="review"]');
+                reviewButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const requestId = btn.getAttribute('data-request-id');
+                        const request = this.currentRequests.find(r => r.requestId == requestId);
+                        if (request) {
+                            this.showReviewModal(requestId, request);
+                        }
+                    });
+                });
             } else {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -2375,7 +2405,7 @@ const DashboardContent = {
                     </div>
                     <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
                         ${request.status === 'pending' ? `
-                        <button class="btn btn-primary" onclick="document.getElementById('requestDetailModal').remove(); DashboardContent.showReviewModal('${request.requestId}', ${JSON.stringify(request).replace(/"/g, '&quot;')})" style="padding: 10px 20px; background: var(--brand, #0969da); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        <button class="btn btn-primary" id="modalReviewBtn-${request.requestId}" style="padding: 10px 20px; background: var(--brand, #0969da); color: white; border: none; border-radius: 8px; cursor: pointer;">
                             Xét duyệt
                         </button>
                         ` : ''}
@@ -2388,5 +2418,16 @@ const DashboardContent = {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Add event listener for review button if it exists
+        if (request.status === 'pending') {
+            const reviewBtn = document.getElementById(`modalReviewBtn-${request.requestId}`);
+            if (reviewBtn) {
+                reviewBtn.addEventListener('click', () => {
+                    document.getElementById('requestDetailModal').remove();
+                    this.showReviewModal(request.requestId, request);
+                });
+            }
+        }
     }
 };
