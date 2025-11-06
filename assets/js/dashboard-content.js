@@ -872,8 +872,8 @@ const DashboardContent = {
                 let statusHTML = '';
                 
                 if (record) {
-                    // Store record in cache with unique ID
-                    const recordId = `record-${month}-${year}-${day}`;
+                    // Store record in cache with unique ID (zero-padded for consistency)
+                    const recordId = `record-${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
                     this.attendanceRecordsCache[recordId] = record;
                     
                     dayClass += ' clickable'; // Add clickable class when there's a record
@@ -2168,13 +2168,6 @@ const DashboardContent = {
         };
         const status = statusDisplay[record.status] || statusDisplay.present;
         
-        // Escape HTML to prevent XSS
-        const escapeHtml = (text) => {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        };
-        
         // Create modal content
         modal.innerHTML = `
             <div class="modal-backdrop"></div>
@@ -2208,7 +2201,7 @@ const DashboardContent = {
                             <span class="material-icons-round">login</span>
                             <div class="detail-content">
                                 <strong>Giờ vào:</strong>
-                                <span>${escapeHtml(record.checkIn)}</span>
+                                <span>${utils.escapeHtml(record.checkIn)}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -2218,7 +2211,7 @@ const DashboardContent = {
                             <span class="material-icons-round">logout</span>
                             <div class="detail-content">
                                 <strong>Giờ ra:</strong>
-                                <span>${escapeHtml(record.checkOut)}</span>
+                                <span>${utils.escapeHtml(record.checkOut)}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -2228,7 +2221,7 @@ const DashboardContent = {
                             <span class="material-icons-round">location_on</span>
                             <div class="detail-content">
                                 <strong>Địa điểm:</strong>
-                                <span>${escapeHtml(record.location)}</span>
+                                <span>${utils.escapeHtml(record.location)}</span>
                             </div>
                         </div>
                         ` : ''}
