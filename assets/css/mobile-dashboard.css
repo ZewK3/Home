@@ -2025,6 +2025,9 @@ textarea.form-control {
     background: rgba(249, 171, 0, 0.1);
     color: var(--warning-light);
     border: 1px solid rgba(249, 171, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
 }
 
 .badge-danger {
