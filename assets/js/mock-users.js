@@ -521,18 +521,32 @@ const MockAttendanceData = {
         },
         records: [
             // January 2025 records
-            { date: "2025-01-02", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:10", status: "present", hoursWorked: 8 },
-            { date: "2025-01-03", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
-            { date: "2025-01-06", shiftId: "S8_08-17", checkIn: "08:10", checkOut: "17:08", status: "late", hoursWorked: 8 },
-            { date: "2025-01-07", shiftId: "S8_08-17", checkIn: "08:00", checkOut: "17:03", status: "present", hoursWorked: 8 },
-            { date: "2025-01-08", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:12", status: "present", hoursWorked: 8 },
-            { date: "2025-01-09", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:06", status: "present", hoursWorked: 8 },
-            { date: "2025-01-10", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8 },
-            { date: "2025-01-13", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:02", status: "present", hoursWorked: 8 },
-            { date: "2025-01-14", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:09", status: "present", hoursWorked: 8 },
-            { date: "2025-01-15", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
-            { date: "2025-01-16", shiftId: "S8_08-17", checkIn: "08:08", checkOut: "17:07", status: "present", hoursWorked: 8 },
-            { date: "2025-01-17", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:11", status: "present", hoursWorked: 8 }
+            { date: "2025-01-02", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:10", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-03", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-06", shiftId: "S8_08-17", checkIn: "08:10", checkOut: "17:08", status: "late", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-07", shiftId: "S8_08-17", checkIn: "08:00", checkOut: "17:03", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-08", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:12", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-09", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:06", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-10", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-13", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:02", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-14", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:09", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-15", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-16", shiftId: "S8_08-17", checkIn: "08:08", checkOut: "17:07", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-01-17", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:11", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            
+            // November 2025 records
+            { date: "2025-11-03", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:08", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-04", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-05", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:10", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-06", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:06", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-07", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:09", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-10", shiftId: "S8_08-17", checkIn: "08:12", checkOut: "17:11", status: "late", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-11", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-12", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:12", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-13", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:07", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-14", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:08", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-17", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" },
+            { date: "2025-11-18", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:06", status: "present", hoursWorked: 8, location: "Cửa Hàng 74 Đồng Đen" }
         ]
     },
     // nhanvien2 (E103) attendance records with 4-hour shifts

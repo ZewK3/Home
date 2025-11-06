@@ -877,12 +877,20 @@ const DashboardContent = {
                         dayClass += ' late';
                         statusHTML = `<span class="day-status warning">Trễ</span>`;
                     }
-                } else {
+                }
+                
+                // Make calendar day clickable if there's an attendance record
+                const clickHandler = record ? 
+                    `onclick="DashboardContent.showAttendanceDetailModal(${JSON.stringify(record).replace(/"/g, '&quot;')})"` : 
+                    '';
+                const clickableClass = record ? ' clickable' : '';
+                
+                if (!record) {
                     statusHTML = '<span class="day-status">-</span>';
                 }
                 
                 calendarHTML += `
-                    <div class="${dayClass}" title="${record ? record.checkTime : 'Chưa chấm công'}">
+                    <div class="${dayClass}${clickableClass}" ${clickHandler} style="${record ? 'cursor: pointer;' : ''}">
                         <div class="day-number">${day}</div>
                         ${statusHTML}
                     </div>
@@ -2106,5 +2114,120 @@ const DashboardContent = {
             'other': 'Khác'
         };
         return names[type] || type;
+    },
+    
+    /**
+     * Show attendance detail modal when calendar day is clicked
+     */
+    showAttendanceDetailModal(record) {
+        // Check if modal already exists, if not create it
+        let modal = document.getElementById('attendanceDetailModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'attendanceDetailModal';
+            modal.className = 'modal';
+            document.body.appendChild(modal);
+        }
+        
+        // Format the date nicely
+        const dateObj = new Date(record.date);
+        const formattedDate = dateObj.toLocaleDateString('vi-VN', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        // Get status display
+        const statusDisplay = {
+            'present': { text: 'Đi làm', class: 'success', icon: 'check_circle' },
+            'late': { text: 'Đi trễ', class: 'warning', icon: 'schedule' },
+            'absent': { text: 'Vắng mặt', class: 'error', icon: 'cancel' }
+        };
+        const status = statusDisplay[record.status] || statusDisplay.present;
+        
+        // Create modal content
+        modal.innerHTML = `
+            <div class="modal-backdrop" onclick="DashboardContent.closeAttendanceDetailModal()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Chi Tiết Chấm Công</h3>
+                    <button class="modal-close" onclick="DashboardContent.closeAttendanceDetailModal()">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="attendance-detail-info">
+                        <div class="detail-row">
+                            <span class="material-icons-round">calendar_today</span>
+                            <div class="detail-content">
+                                <strong>Ngày:</strong>
+                                <span>${formattedDate}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="material-icons-round">${status.icon}</span>
+                            <div class="detail-content">
+                                <strong>Trạng thái:</strong>
+                                <span class="badge badge-${status.class}">${status.text}</span>
+                            </div>
+                        </div>
+                        
+                        ${record.checkIn ? `
+                        <div class="detail-row">
+                            <span class="material-icons-round">login</span>
+                            <div class="detail-content">
+                                <strong>Giờ vào:</strong>
+                                <span>${record.checkIn}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${record.checkOut ? `
+                        <div class="detail-row">
+                            <span class="material-icons-round">logout</span>
+                            <div class="detail-content">
+                                <strong>Giờ ra:</strong>
+                                <span>${record.checkOut}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${record.location ? `
+                        <div class="detail-row">
+                            <span class="material-icons-round">location_on</span>
+                            <div class="detail-content">
+                                <strong>Địa điểm:</strong>
+                                <span>${record.location}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${record.hoursWorked ? `
+                        <div class="detail-row">
+                            <span class="material-icons-round">schedule</span>
+                            <div class="detail-content">
+                                <strong>Tổng giờ:</strong>
+                                <span>${record.hoursWorked} giờ</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        modal.style.display = 'flex';
+    },
+    
+    /**
+     * Close attendance detail modal
+     */
+    closeAttendanceDetailModal() {
+        const modal = document.getElementById('attendanceDetailModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 };

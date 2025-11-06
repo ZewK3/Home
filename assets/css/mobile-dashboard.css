@@ -2025,6 +2025,9 @@ textarea.form-control {
     background: rgba(249, 171, 0, 0.1);
     color: var(--warning-light);
     border: 1px solid rgba(249, 171, 0, 0.3);
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
 }
 
 .badge-danger {
@@ -2170,3 +2173,65 @@ textarea.form-control {
 }
 
 /* END OF REQUEST PROCESSING STYLES */
+
+/* ========================================
+   ATTENDANCE DETAIL MODAL
+   ======================================== */
+
+.attendance-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.attendance-detail-info .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+}
+
+.attendance-detail-info .detail-row:hover {
+    background: var(--bg-card-hover);
+}
+
+.attendance-detail-info .detail-row .material-icons-round {
+    color: var(--brand);
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.attendance-detail-info .detail-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.attendance-detail-info .detail-content strong {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.attendance-detail-info .detail-content span {
+    color: var(--text-primary);
+    font-size: var(--font-base);
+}
+
+/* Clickable calendar days */
+.calendar-day.clickable {
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.calendar-day.clickable:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+    border-color: var(--brand);
+}
+
+/* END OF ATTENDANCE DETAIL MODAL */
