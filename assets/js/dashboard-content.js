@@ -2022,21 +2022,19 @@ const DashboardContent = {
                         ${requests.data.map(req => `
                             <div class="request-item ${req.status}">
                                 <div class="request-header">
-                                    <div class="request-info">
-                                        <div class="request-type">
-                                            <span class="material-icons-round">${this.getRequestIcon(req.requestType || req.type)}</span>
-                                            <strong>${this.getRequestTypeName(req.requestType || req.type)}</strong>
-                                        </div>
-                                        <div class="employee-info">
-                                            <span class="material-icons-round">person</span>
-                                            ${req.employeeName || req.employeeId}
-                                        </div>
-                                        <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
-                                            ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
-                                        </span>
+                                    <div class="request-type">
+                                        <span class="material-icons-round">${this.getRequestIcon(req.requestType || req.type)}</span>
+                                        <strong>${this.getRequestTypeName(req.requestType || req.type)}</strong>
                                     </div>
+                                    <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
+                                        ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
+                                    </span>
                                 </div>
                                 <div class="request-body">
+                                    <div class="employee-info">
+                                        <span class="material-icons-round">person</span>
+                                        ${req.employeeName || req.employeeId}
+                                    </div>
                                     <p><strong>Lý do:</strong> ${req.reason || req.description || 'Không có'}</p>
                                     <p><strong>Thời gian:</strong> ${req.fromDate || req.requestDate || req.startDate || ''}${req.toDate && req.toDate !== req.fromDate ? ' đến ' + req.toDate : ''}</p>
                                     <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
@@ -2181,9 +2179,35 @@ const DashboardContent = {
             'absent': 'danger'
         }[record.status] || 'info';
         
+        // Generate checkTimes list HTML
+        const checkTimesHTML = (record.checkTimes || []).map((ct, index) => `
+            <div class="check-time-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                <span style="color: var(--text-secondary, #b0b3b8);">${ct.checkType === 'in' ? 'Chấm vào:' : 'Chấm ra:'}</span>
+                <span style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${ct.checkTime}</span>
+            </div>
+        `).join('');
+        
+        // Generate related requests HTML if any
+        const relatedRequestsHTML = (record.relatedRequests && record.relatedRequests.length > 0) ? `
+            <div class="detail-section" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color, #2d3139);">
+                <h4 style="color: var(--text-primary, #e4e6eb); margin: 0 0 12px 0; font-size: 14px;">Đơn từ liên quan:</h4>
+                ${record.relatedRequests.map(req => `
+                    <div class="request-item-small" style="background: var(--bg-secondary, #2d3139); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="color: var(--text-primary, #e4e6eb); font-weight: 600; font-size: 13px;">${this.getRequestTypeName(req.requestType)}</span>
+                            <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}" style="font-size: 11px; padding: 2px 8px;">
+                                ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}
+                            </span>
+                        </div>
+                        <div style="color: var(--text-secondary, #b0b3b8); font-size: 12px;">${req.reason || req.description || ''}</div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '';
+        
         const modalHTML = `
             <div class="modal-overlay" id="attendanceDetailModal" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
-                <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-card, #1e2228); border-radius: 12px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-card, #1e2228); border-radius: 12px; max-width: 450px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                     <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139);">
                         <h3 style="margin: 0; color: var(--text-primary, #e4e6eb);">Chi tiết chấm công</h3>
                         <button class="close-btn" onclick="document.getElementById('attendanceDetailModal').remove()" style="background: transparent; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; padding: 4px;">
@@ -2198,23 +2222,19 @@ const DashboardContent = {
                             </div>
                             <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
                                 <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca làm:</span>
-                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${record.shiftName || 'N/A'}</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${record.shiftTimeName || record.shiftName || 'N/A'}</span>
                             </div>
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ vào:</span>
-                                <span class="detail-value"><strong style="color: var(--text-primary, #e4e6eb);">${record.checkIn || 'N/A'}</strong></span>
+                            
+                            <div class="detail-section" style="margin: 16px 0;">
+                                <h4 style="color: var(--text-primary, #e4e6eb); margin: 0 0 8px 0; font-size: 14px;">Lịch sử chấm công:</h4>
+                                ${checkTimesHTML || '<div style="color: var(--text-secondary, #b0b3b8); font-size: 13px;">Chưa có dữ liệu</div>'}
                             </div>
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ ra:</span>
-                                <span class="detail-value"><strong style="color: var(--text-primary, #e4e6eb);">${record.checkOut || 'N/A'}</strong></span>
-                            </div>
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            
+                            ${relatedRequestsHTML}
+                            
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-top: 16px; border-top: 1px solid var(--border-color, #2d3139);">
                                 <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Số giờ làm:</span>
-                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${record.hoursWorked || 0} giờ</span>
-                            </div>
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
-                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</span>
-                                <span class="badge badge-${statusClass}">${statusText}</span>
+                                <span class="detail-value" style="color: var(--success, #3fb950); font-weight: 700; font-size: 16px;">${record.hoursWorked || 0} giờ</span>
                             </div>
                         </div>
                     </div>

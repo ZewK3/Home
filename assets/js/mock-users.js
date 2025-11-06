@@ -890,14 +890,33 @@ const MockAPI = {
                     const checkOutHour = 17 + Math.floor(Math.random() * 2);
                     const checkOutMin = Math.floor(Math.random() * 60);
                     
+                    // Generate shift information based on timeName format
+                    const shiftStart = checkInHour;
+                    const shiftEnd = checkOutHour + 1;
+                    const shiftTimeName = `${shiftStart.toString().padStart(2, '0')}:00-${shiftEnd.toString().padStart(2, '0')}:00`;
+                    const shiftName = `Ca ${shiftEnd - shiftStart} Tiếng ${shiftStart}-${shiftEnd}`;
+                    
+                    // Generate attendance check times
+                    const checkTimes = [
+                        {
+                            checkTime: `${checkInHour.toString().padStart(2, '0')}:${checkInMin.toString().padStart(2, '0')}`,
+                            checkType: 'in'
+                        },
+                        {
+                            checkTime: `${checkOutHour.toString().padStart(2, '0')}:${checkOutMin.toString().padStart(2, '0')}`,
+                            checkType: 'out'
+                        }
+                    ];
+                    
                     records.push({
                         date: dateStr,
-                        checkIn: `${checkInHour.toString().padStart(2, '0')}:${checkInMin.toString().padStart(2, '0')}`,
-                        checkOut: `${checkOutHour.toString().padStart(2, '0')}:${checkOutMin.toString().padStart(2, '0')}`,
-                        checkTime: `${checkInHour.toString().padStart(2, '0')}:${checkInMin.toString().padStart(2, '0')}`,
+                        shiftTimeName: shiftTimeName,
+                        shiftName: shiftName,
+                        checkTimes: checkTimes,
+                        checkTime: checkTimes[0].checkTime, // For backward compatibility
                         status: checkInMin > 10 ? 'late' : 'present',
                         hoursWorked: 8,
-                        shiftName: day % 2 === 0 ? 'Ca Sáng' : 'Ca Chiều'
+                        relatedRequests: [] // Will be populated if there are requests for this date
                     });
                 }
             }
