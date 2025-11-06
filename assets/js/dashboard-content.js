@@ -867,6 +867,7 @@ const DashboardContent = {
                 let statusHTML = '';
                 
                 if (record) {
+                    dayClass += ' clickable'; // Add clickable class when there's a record
                     if (record.status === 'present') {
                         dayClass += ' present';
                         statusHTML = `<span class="day-status success">✓</span>`;
@@ -877,20 +878,15 @@ const DashboardContent = {
                         dayClass += ' late';
                         statusHTML = `<span class="day-status warning">Trễ</span>`;
                     }
-                }
-                
-                // Make calendar day clickable if there's an attendance record
-                const clickHandler = record ? 
-                    `onclick="DashboardContent.showAttendanceDetailModal(${JSON.stringify(record).replace(/"/g, '&quot;')})"` : 
-                    '';
-                const clickableClass = record ? ' clickable' : '';
-                
-                if (!record) {
+                } else {
                     statusHTML = '<span class="day-status">-</span>';
                 }
                 
+                // Use data attribute to store record data safely
+                const dataAttr = record ? `data-record='${JSON.stringify(record).replace(/'/g, '&#39;')}'` : '';
+                
                 calendarHTML += `
-                    <div class="${dayClass}${clickableClass}" ${clickHandler} style="${record ? 'cursor: pointer;' : ''}">
+                    <div class="${dayClass}" ${dataAttr}>
                         <div class="day-number">${day}</div>
                         ${statusHTML}
                     </div>
@@ -925,6 +921,21 @@ const DashboardContent = {
             `;
             
             container.innerHTML = calendarHTML + summaryHTML;
+            
+            // Add event delegation for calendar day clicks
+            container.querySelectorAll('.calendar-day.clickable').forEach(dayElement => {
+                dayElement.addEventListener('click', function() {
+                    const recordData = this.getAttribute('data-record');
+                    if (recordData) {
+                        try {
+                            const record = JSON.parse(recordData);
+                            DashboardContent.showAttendanceDetailModal(record);
+                        } catch (e) {
+                            console.error('Error parsing record data:', e);
+                        }
+                    }
+                });
+            });
         } catch (error) {
             console.error('Error loading timesheet:', error);
             container.innerHTML = '<div class="message error">Không thể tải bảng công</div>';
