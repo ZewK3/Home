@@ -1263,15 +1263,17 @@ body {
     position: fixed;
     top: 0;
     right: 0;
+    left: 0;
     width: 100%;
     max-width: var(--mobile-max-width);
     height: 100%;
     background: var(--bg-primary);
-    z-index: 1000;
+    z-index: 2000;
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    margin: 0 auto;
 }
 
 .notification-panel.active {

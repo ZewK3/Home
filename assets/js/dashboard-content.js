@@ -2020,11 +2020,11 @@ const DashboardContent = {
                 container.innerHTML = `
                     <div class="requests-list">
                         ${requests.data.map(req => `
-                            <div class="request-item ${req.status}">
+                            <div class="request-item ${req.status}" onclick="DashboardContent.showRequestDetail(${JSON.stringify(req).replace(/"/g, '&quot;')})" style="cursor: pointer;">
                                 <div class="request-header">
                                     <div class="request-type">
-                                        <span class="material-icons-round">${this.getRequestIcon(req.requestType || req.type)}</span>
-                                        <strong>${this.getRequestTypeName(req.requestType || req.type)}</strong>
+                                        <span class="material-icons-round">${this.getRequestIcon(req.requestType)}</span>
+                                        <strong>${this.getRequestTypeName(req.requestType)}</strong>
                                     </div>
                                     <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
                                         ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
@@ -2033,10 +2033,10 @@ const DashboardContent = {
                                 <div class="request-body">
                                     <div class="employee-info">
                                         <span class="material-icons-round">person</span>
-                                        ${req.employeeName || req.employeeId}
+                                        ${req.employeeName || req.employeeId || ''}
                                     </div>
                                     <p><strong>Lý do:</strong> ${req.reason || req.description || 'Không có'}</p>
-                                    <p><strong>Thời gian:</strong> ${req.fromDate || req.requestDate || req.startDate || ''}${req.toDate && req.toDate !== req.fromDate ? ' đến ' + req.toDate : ''}</p>
+                                    <p><strong>Thời gian:</strong> ${req.fromDate || req.requestDate || req.currentShiftDate || ''}${req.toDate && req.toDate !== req.fromDate ? ' đến ' + req.toDate : req.requestedShiftDate && req.requestedShiftDate !== req.currentShiftDate ? ' đến ' + req.requestedShiftDate : ''}</p>
                                     <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
                                     ${req.reviewedBy ? `
                                     <p><small>Duyệt bởi: ${req.reviewerName || 'Quản lý'} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
@@ -2045,7 +2045,7 @@ const DashboardContent = {
                                 </div>
                                 ${req.status === 'pending' ? `
                                 <div class="request-actions">
-                                    <button class="btn btn-sm btn-primary" onclick="DashboardContent.showReviewModal('${req.requestId}', ${JSON.stringify(req).replace(/"/g, '&quot;')})">
+                                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); DashboardContent.showReviewModal('${req.requestId}', ${JSON.stringify(req).replace(/"/g, '&quot;')})">
                                         Xét duyệt
                                     </button>
                                 </div>
@@ -2268,6 +2268,118 @@ const DashboardContent = {
                     </div>
                     <div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
                         <button class="btn btn-secondary" onclick="document.getElementById('attendanceDetailModal').remove()" style="padding: 10px 20px; background: var(--bg-secondary, #2d3139); color: var(--text-primary, #e4e6eb); border: none; border-radius: 8px; cursor: pointer;">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    },
+    
+    /**
+     * Show request detail modal
+     */
+    showRequestDetail(request) {
+        if (!request) return;
+        
+        // Close any existing modal
+        const existingModal = document.getElementById('requestDetailModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const statusClass = {
+            'pending': 'warning',
+            'approved': 'success',
+            'rejected': 'danger'
+        }[request.status] || 'info';
+        
+        const statusText = {
+            'pending': 'Chờ duyệt',
+            'approved': 'Đã duyệt',
+            'rejected': 'Đã từ chối'
+        }[request.status] || request.status;
+        
+        // Format date range or single date
+        let timeDisplay = '';
+        if (request.fromDate && request.toDate) {
+            timeDisplay = `${request.fromDate}${request.toDate !== request.fromDate ? ' đến ' + request.toDate : ''}`;
+        } else if (request.requestDate) {
+            timeDisplay = request.requestDate;
+        } else if (request.currentShiftDate && request.requestedShiftDate) {
+            timeDisplay = `Từ ${request.currentShiftDate} sang ${request.requestedShiftDate}`;
+        } else {
+            timeDisplay = 'Không rõ';
+        }
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="requestDetailModal" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
+                <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-card, #1e2228); border-radius: 12px; max-width: 450px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <h3 style="margin: 0; color: var(--text-primary, #e4e6eb);">Chi tiết đơn từ</h3>
+                        <button class="close-btn" onclick="document.getElementById('requestDetailModal').remove()" style="background: transparent; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; padding: 4px;">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 20px;">
+                        <div class="request-detail-card">
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Loại đơn:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${this.getRequestTypeName(request.requestType)}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</span>
+                                <span class="badge badge-${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Nhân viên:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.employeeName || request.employeeId}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${timeDisplay}</span>
+                            </div>
+                            <div class="detail-section" style="margin: 16px 0; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <h4 style="color: var(--text-secondary, #b0b3b8); margin: 0 0 8px 0; font-size: 14px;">Lý do:</h4>
+                                <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.reason || request.description || 'Không có'}</p>
+                            </div>
+                            ${request.swapWithEmployeeId ? `
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đổi ca với:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.swapWithEmployeeId}</span>
+                            </div>
+                            ` : ''}
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tạo lúc:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.createdAt).toLocaleString('vi-VN')}</span>
+                            </div>
+                            ${request.reviewedBy ? `
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Duyệt bởi:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.reviewerName || 'Quản lý'}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Duyệt lúc:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.reviewedAt).toLocaleString('vi-VN')}</span>
+                            </div>
+                            ${request.rejectionReason ? `
+                            <div class="detail-section" style="margin: 16px 0; padding: 12px 0;">
+                                <h4 style="color: var(--error, #f85149); margin: 0 0 8px 0; font-size: 14px;">Lý do từ chối:</h4>
+                                <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.rejectionReason}</p>
+                            </div>
+                            ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
+                        ${request.status === 'pending' ? `
+                        <button class="btn btn-primary" onclick="document.getElementById('requestDetailModal').remove(); DashboardContent.showReviewModal('${request.requestId}', ${JSON.stringify(request).replace(/"/g, '&quot;')})" style="padding: 10px 20px; background: var(--brand, #0969da); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Xét duyệt
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-secondary" onclick="document.getElementById('requestDetailModal').remove()" style="padding: 10px 20px; background: var(--bg-secondary, #2d3139); color: var(--text-primary, #e4e6eb); border: none; border-radius: 8px; cursor: pointer;">
                             Đóng
                         </button>
                     </div>
