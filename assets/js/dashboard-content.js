@@ -907,15 +907,16 @@ const DashboardContent = {
                 
                 if (record) {
                     dayClass += ' clickable'; // Add clickable class
+                    const hours = record.hoursWorked || 0;
                     if (record.status === 'present') {
                         dayClass += ' present';
-                        statusHTML = `<span class="day-status success">✓</span>`;
+                        statusHTML = `<span class="day-status success">${hours}h</span>`;
                     } else if (record.status === 'absent') {
                         dayClass += ' absent';
-                        statusHTML = `<span class="day-status error">✗</span>`;
+                        statusHTML = `<span class="day-status error">0h</span>`;
                     } else if (record.status === 'late') {
                         dayClass += ' late';
-                        statusHTML = `<span class="day-status warning">Trễ</span>`;
+                        statusHTML = `<span class="day-status warning">${hours}h</span>`;
                     }
                 } else {
                     statusHTML = '<span class="day-status">-</span>';
@@ -2023,25 +2024,25 @@ const DashboardContent = {
                                 <div class="request-header">
                                     <div class="request-info">
                                         <div class="request-type">
-                                            <span class="material-icons-round">${this.getRequestIcon(req.type)}</span>
-                                            <strong>${this.getRequestTypeName(req.type)}</strong>
+                                            <span class="material-icons-round">${this.getRequestIcon(req.requestType || req.type)}</span>
+                                            <strong>${this.getRequestTypeName(req.requestType || req.type)}</strong>
                                         </div>
                                         <div class="employee-info">
                                             <span class="material-icons-round">person</span>
                                             ${req.employeeName || req.employeeId}
                                         </div>
+                                        <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
+                                            ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
+                                        </span>
                                     </div>
-                                    <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
-                                        ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
-                                    </span>
                                 </div>
                                 <div class="request-body">
-                                    <p><strong>Lý do:</strong> ${req.reason}</p>
-                                    <p><strong>Thời gian:</strong> ${req.startDate}${req.endDate ? ' đến ' + req.endDate : ''}</p>
+                                    <p><strong>Lý do:</strong> ${req.reason || req.description || 'Không có'}</p>
+                                    <p><strong>Thời gian:</strong> ${req.fromDate || req.requestDate || req.startDate || ''}${req.toDate && req.toDate !== req.fromDate ? ' đến ' + req.toDate : ''}</p>
                                     <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
                                     ${req.reviewedBy ? `
-                                    <p><small>Duyệt bởi: ${req.reviewerName} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
-                                    ${req.reviewNote ? `<p><small>Ghi chú: ${req.reviewNote}</small></p>` : ''}
+                                    <p><small>Duyệt bởi: ${req.reviewerName || 'Quản lý'} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
+                                    ${req.rejectionReason ? `<p><small>Lý do từ chối: ${req.rejectionReason}</small></p>` : ''}
                                     ` : ''}
                                 </div>
                                 ${req.status === 'pending' ? `
@@ -2135,8 +2136,12 @@ const DashboardContent = {
             'leave': 'event_busy',
             'overtime': 'schedule',
             'shift_change': 'swap_horiz',
+            'shift_swap': 'swap_calls',
+            'forgot_checkin': 'login',
+            'forgot_checkout': 'logout',
             'early_leave': 'exit_to_app',
-            'late_arrival': 'login',
+            'late_arrival': 'access_time',
+            'general': 'help_outline',
             'other': 'help_outline'
         };
         return icons[type] || 'assignment';
@@ -2147,9 +2152,12 @@ const DashboardContent = {
             'leave': 'Nghỉ phép',
             'overtime': 'Tăng ca',
             'shift_change': 'Đổi ca',
+            'shift_swap': 'Đổi ca với đồng nghiệp',
+            'forgot_checkin': 'Quên chấm công vào',
+            'forgot_checkout': 'Quên chấm công ra',
             'early_leave': 'Về sớm',
             'late_arrival': 'Đi muộn',
-            'forgot_checkin': 'Quên chấm công',
+            'general': 'Yêu cầu chung',
             'other': 'Khác'
         };
         return names[type] || type;
@@ -2174,44 +2182,44 @@ const DashboardContent = {
         }[record.status] || 'info';
         
         const modalHTML = `
-            <div class="modal-overlay" id="attendanceDetailModal" onclick="this.remove()">
-                <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 400px;">
-                    <div class="modal-header">
-                        <h3>Chi tiết chấm công</h3>
-                        <button class="close-btn" onclick="document.getElementById('attendanceDetailModal').remove()">
+            <div class="modal-overlay" id="attendanceDetailModal" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
+                <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-card, #1e2228); border-radius: 12px; max-width: 400px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <h3 style="margin: 0; color: var(--text-primary, #e4e6eb);">Chi tiết chấm công</h3>
+                        <button class="close-btn" onclick="document.getElementById('attendanceDetailModal').remove()" style="background: transparent; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; padding: 4px;">
                             <span class="material-icons-round">close</span>
                         </button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body" style="padding: 20px;">
                         <div class="attendance-detail-card">
-                            <div class="detail-row">
-                                <span class="detail-label">Ngày:</span>
-                                <span class="detail-value"><strong>${new Date(record.date).toLocaleDateString('vi-VN')}</strong></span>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày:</span>
+                                <span class="detail-value"><strong style="color: var(--text-primary, #e4e6eb);">${new Date(record.date).toLocaleDateString('vi-VN')}</strong></span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Ca làm:</span>
-                                <span class="detail-value">${record.shiftName || 'N/A'}</span>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca làm:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${record.shiftName || 'N/A'}</span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Giờ vào:</span>
-                                <span class="detail-value"><strong>${record.checkIn || 'N/A'}</strong></span>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ vào:</span>
+                                <span class="detail-value"><strong style="color: var(--text-primary, #e4e6eb);">${record.checkIn || 'N/A'}</strong></span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Giờ ra:</span>
-                                <span class="detail-value"><strong>${record.checkOut || 'N/A'}</strong></span>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ ra:</span>
+                                <span class="detail-value"><strong style="color: var(--text-primary, #e4e6eb);">${record.checkOut || 'N/A'}</strong></span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Số giờ làm:</span>
-                                <span class="detail-value">${record.hoursWorked || 0} giờ</span>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Số giờ làm:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${record.hoursWorked || 0} giờ</span>
                             </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Trạng thái:</span>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</span>
                                 <span class="badge badge-${statusClass}">${statusText}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="document.getElementById('attendanceDetailModal').remove()">
+                    <div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
+                        <button class="btn btn-secondary" onclick="document.getElementById('attendanceDetailModal').remove()" style="padding: 10px 20px; background: var(--bg-secondary, #2d3139); color: var(--text-primary, #e4e6eb); border: none; border-radius: 8px; cursor: pointer;">
                             Đóng
                         </button>
                     </div>
