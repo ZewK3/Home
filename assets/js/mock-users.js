@@ -820,62 +820,105 @@ const MockAPI = {
         }
         
         if (endpoint.includes('/timesheet')) {
+            const userData = SimpleStorage.get('userData');
+            const employeeId = params?.employeeId || userData?.employeeId || 'E101';
+            const requestedMonth = params?.month || new Date().getMonth() + 1;
+            const requestedYear = params?.year || new Date().getFullYear();
+            
+            // Check if we have specific attendance data for this employee
+            const attendanceData = MockAttendanceData[employeeId];
+            
+            if (attendanceData && requestedYear === 2025 && requestedMonth === 1) {
+                // Return actual mock attendance data for January 2025
+                const records = attendanceData.records.map(record => ({
+                    date: record.date,
+                    checkIn: record.checkIn,
+                    checkOut: record.checkOut,
+                    checkTime: record.checkIn, // For tooltip
+                    status: record.status,
+                    hoursWorked: record.hoursWorked,
+                    shiftId: record.shiftId,
+                    shiftName: SHIFT_DEFINITIONS[record.shiftId]?.name || 'Ca làm'
+                }));
+                
+                const presentDays = records.filter(r => r.status === 'present').length;
+                const lateDays = records.filter(r => r.status === 'late').length;
+                const totalHours = records.reduce((sum, r) => sum + r.hoursWorked, 0);
+                
+                return Promise.resolve({
+                    success: true,
+                    data: {
+                        employeeId: employeeId,
+                        month: requestedMonth,
+                        year: requestedYear,
+                        totalDays: 22, // Work days in January 2025
+                        presentDays: presentDays,
+                        absentDays: 0,
+                        lateDays: lateDays,
+                        totalHours: totalHours,
+                        overtimeHours: 0,
+                        records: records
+                    }
+                });
+            }
+            
+            // Fallback: generate timesheet for current or requested month
             const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
+            const year = requestedYear;
+            const month = requestedMonth - 1; // JS months are 0-indexed
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const currentDay = today.getDate();
+            const currentDay = year === today.getFullYear() && month === today.getMonth() ? today.getDate() : daysInMonth;
             
             // Count work days (excluding weekends)
             let workDays = 0;
             let presentDays = 0;
+            const records = [];
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
-                if (date.getDay() !== 0 && date.getDay() !== 6) {
-                    workDays++;
-                    if (day <= currentDay) {
-                        presentDays++;
-                    }
+                const dayOfWeek = date.getDay();
+                
+                // Skip weekends
+                if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+                
+                workDays++;
+                if (day <= currentDay) {
+                    presentDays++;
+                    const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    const checkInHour = 8 + Math.floor(Math.random() * 2);
+                    const checkInMin = Math.floor(Math.random() * 60);
+                    const checkOutHour = 17 + Math.floor(Math.random() * 2);
+                    const checkOutMin = Math.floor(Math.random() * 60);
+                    
+                    records.push({
+                        date: dateStr,
+                        checkIn: `${checkInHour.toString().padStart(2, '0')}:${checkInMin.toString().padStart(2, '0')}`,
+                        checkOut: `${checkOutHour.toString().padStart(2, '0')}:${checkOutMin.toString().padStart(2, '0')}`,
+                        checkTime: `${checkInHour.toString().padStart(2, '0')}:${checkInMin.toString().padStart(2, '0')}`,
+                        status: checkInMin > 10 ? 'late' : 'present',
+                        hoursWorked: 8,
+                        shiftName: day % 2 === 0 ? 'Ca Sáng' : 'Ca Chiều'
+                    });
                 }
             }
+            
+            const lateDays = records.filter(r => r.status === 'late').length;
             
             return Promise.resolve({
                 success: true,
                 data: {
-                    employeeId: params?.employeeId || 'E101',
-                    month: month + 1,
-                    year: year,
+                    employeeId: employeeId,
+                    month: requestedMonth,
+                    year: requestedYear,
                     totalDays: workDays,
                     presentDays: presentDays,
                     absentDays: 0,
-                    lateDays: Math.floor(presentDays * 0.1), // 10% late
+                    lateDays: lateDays,
                     totalHours: presentDays * 8,
                     overtimeHours: 0,
-                    details: generateTimesheetDetails(year, month, currentDay)
+                    records: records
                 }
             });
-        }
-        
-        // Helper function to generate detailed timesheet data
-        function generateTimesheetDetails(year, month, currentDay) {
-            const details = [];
-            for (let day = 1; day <= currentDay; day++) {
-                const date = new Date(year, month, day);
-                // Skip weekends
-                if (date.getDay() === 0 || date.getDay() === 6) continue;
-                
-                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                details.push({
-                    date: dateStr,
-                    dayOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()],
-                    shiftName: day % 2 === 0 ? 'Ca Sáng' : 'Ca Chiều',
-                    checkInTime: day % 2 === 0 ? '08:00:00' : '13:00:00',
-                    checkOutTime: day % 2 === 0 ? '12:00:00' : '17:00:00',
-                    workHours: 4,
-                    status: 'present'
-                });
-            }
-            return details;
         }
         
         if (endpoint.includes('/employees')) {
@@ -938,9 +981,12 @@ const MockAPI = {
                         requestId: 1,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'leave',
                         requestType: 'leave',
                         title: 'Nghỉ phép',
                         description: 'Xin nghỉ phép 2 ngày',
+                        startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         fromDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         toDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         reason: 'Nghỉ phép chăm sóc người thân',
@@ -951,9 +997,12 @@ const MockAPI = {
                         requestId: 2,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'overtime',
                         requestType: 'overtime',
                         title: 'Đăng ký tăng ca',
                         requestDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         fromDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         toDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         description: 'Tăng ca từ 17:00-20:00',
@@ -969,10 +1018,13 @@ const MockAPI = {
                         requestId: 3,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'shift_change',
                         requestType: 'shift_change',
                         title: 'Đổi ca làm việc',
                         currentShiftDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         requestedShiftDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        startDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         description: 'Đổi từ ca sáng sang ca chiều',
                         reason: 'Xin đổi ca với đồng nghiệp do có việc cá nhân',
                         status: 'approved',
@@ -986,9 +1038,12 @@ const MockAPI = {
                         requestId: 4,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
+                        type: 'forgot_checkin',
                         requestType: 'forgot_checkin',
                         title: 'Quên chấm công vào',
                         requestDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        startDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        endDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         description: 'Quên chấm công vào lúc 08:00',
                         reason: 'Điện thoại hết pin, đã vào làm đúng giờ',
                         status: 'rejected',

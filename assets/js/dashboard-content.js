@@ -800,16 +800,32 @@ const DashboardContent = {
      */
     async renderTimesheet() {
         const today = new Date();
-        const month = today.getMonth() + 1;
-        const year = today.getFullYear();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+        
+        // Store current selection in instance variables
+        this.selectedMonth = this.selectedMonth || currentMonth;
+        this.selectedYear = this.selectedYear || currentYear;
 
         const content = `
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
                         <span class="material-icons-round">table_chart</span>
-                        Bảng công tháng ${month}/${year}
+                        Bảng công tháng ${this.selectedMonth}/${this.selectedYear}
                     </h2>
+                    <div class="month-year-selector" style="display: flex; gap: 10px; margin-top: 10px;">
+                        <select id="monthSelector" class="form-select" style="flex: 1;">
+                            ${Array.from({length: 12}, (_, i) => i + 1).map(m => 
+                                `<option value="${m}" ${m === this.selectedMonth ? 'selected' : ''}>Tháng ${m}</option>`
+                            ).join('')}
+                        </select>
+                        <select id="yearSelector" class="form-select" style="flex: 1;">
+                            ${[currentYear, currentYear - 1, currentYear - 2].map(y => 
+                                `<option value="${y}" ${y === this.selectedYear ? 'selected' : ''}>${y}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div id="timesheetData">
@@ -819,9 +835,32 @@ const DashboardContent = {
             </div>
         `;
 
-        setTimeout(() => this.loadTimesheet(month, year), 100);
+        setTimeout(() => {
+            this.loadTimesheet(this.selectedMonth, this.selectedYear);
+            this.attachTimesheetSelectors();
+        }, 100);
 
         return content;
+    },
+    
+    /**
+     * Attach event listeners for month/year selectors
+     */
+    attachTimesheetSelectors() {
+        const monthSelector = document.getElementById('monthSelector');
+        const yearSelector = document.getElementById('yearSelector');
+        
+        if (monthSelector && yearSelector) {
+            monthSelector.addEventListener('change', () => {
+                this.selectedMonth = parseInt(monthSelector.value);
+                this.loadTimesheet(this.selectedMonth, this.selectedYear);
+            });
+            
+            yearSelector.addEventListener('change', () => {
+                this.selectedYear = parseInt(yearSelector.value);
+                this.loadTimesheet(this.selectedMonth, this.selectedYear);
+            });
+        }
     },
 
     async loadTimesheet(month, year) {
@@ -867,6 +906,7 @@ const DashboardContent = {
                 let statusHTML = '';
                 
                 if (record) {
+                    dayClass += ' clickable'; // Add clickable class
                     if (record.status === 'present') {
                         dayClass += ' present';
                         statusHTML = `<span class="day-status success">✓</span>`;
@@ -881,8 +921,14 @@ const DashboardContent = {
                     statusHTML = '<span class="day-status">-</span>';
                 }
                 
+                // Store record data as JSON for click handler
+                const recordData = record ? JSON.stringify(record).replace(/"/g, '&quot;') : null;
+                
                 calendarHTML += `
-                    <div class="${dayClass}" title="${record ? record.checkTime : 'Chưa chấm công'}">
+                    <div class="${dayClass}" 
+                         title="${record ? record.checkTime : 'Chưa chấm công'}"
+                         ${record ? `onclick="DashboardContent.showAttendanceDetail(${recordData})"` : ''}
+                         style="${record ? 'cursor: pointer;' : ''}">
                         <div class="day-number">${day}</div>
                         ${statusHTML}
                     </div>
@@ -2103,8 +2149,76 @@ const DashboardContent = {
             'shift_change': 'Đổi ca',
             'early_leave': 'Về sớm',
             'late_arrival': 'Đi muộn',
+            'forgot_checkin': 'Quên chấm công',
             'other': 'Khác'
         };
         return names[type] || type;
+    },
+    
+    /**
+     * Show attendance detail modal for a calendar day
+     */
+    showAttendanceDetail(record) {
+        if (!record) return;
+        
+        const statusText = {
+            'present': 'Có mặt',
+            'late': 'Đi trễ',
+            'absent': 'Vắng'
+        }[record.status] || record.status;
+        
+        const statusClass = {
+            'present': 'success',
+            'late': 'warning',
+            'absent': 'danger'
+        }[record.status] || 'info';
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="attendanceDetailModal" onclick="this.remove()">
+                <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 400px;">
+                    <div class="modal-header">
+                        <h3>Chi tiết chấm công</h3>
+                        <button class="close-btn" onclick="document.getElementById('attendanceDetailModal').remove()">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="attendance-detail-card">
+                            <div class="detail-row">
+                                <span class="detail-label">Ngày:</span>
+                                <span class="detail-value"><strong>${new Date(record.date).toLocaleDateString('vi-VN')}</strong></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Ca làm:</span>
+                                <span class="detail-value">${record.shiftName || 'N/A'}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Giờ vào:</span>
+                                <span class="detail-value"><strong>${record.checkIn || 'N/A'}</strong></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Giờ ra:</span>
+                                <span class="detail-value"><strong>${record.checkOut || 'N/A'}</strong></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Số giờ làm:</span>
+                                <span class="detail-value">${record.hoursWorked || 0} giờ</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Trạng thái:</span>
+                                <span class="badge badge-${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="document.getElementById('attendanceDetailModal').remove()">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
 };
