@@ -2179,31 +2179,61 @@ const DashboardContent = {
             'absent': 'danger'
         }[record.status] || 'info';
         
-        // Generate checkTimes list HTML
-        const checkTimesHTML = (record.checkTimes || []).map((ct, index) => `
-            <div class="check-time-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                <span style="color: var(--text-secondary, #b0b3b8);">${ct.checkType === 'in' ? 'Chấm vào:' : 'Chấm ra:'}</span>
-                <span style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${ct.checkTime}</span>
-            </div>
-        `).join('');
+        // Combine checkTimes and related requests into activity list
+        const activityList = [];
         
-        // Generate related requests HTML if any
-        const relatedRequestsHTML = (record.relatedRequests && record.relatedRequests.length > 0) ? `
-            <div class="detail-section" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color, #2d3139);">
-                <h4 style="color: var(--text-primary, #e4e6eb); margin: 0 0 12px 0; font-size: 14px;">Đơn từ liên quan:</h4>
-                ${record.relatedRequests.map(req => `
-                    <div class="request-item-small" style="background: var(--bg-secondary, #2d3139); padding: 10px; border-radius: 8px; margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                            <span style="color: var(--text-primary, #e4e6eb); font-weight: 600; font-size: 13px;">${this.getRequestTypeName(req.requestType)}</span>
-                            <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}" style="font-size: 11px; padding: 2px 8px;">
-                                ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}
-                            </span>
-                        </div>
-                        <div style="color: var(--text-secondary, #b0b3b8); font-size: 12px;">${req.reason || req.description || ''}</div>
+        // Add check times as activities
+        if (record.checkTimes && record.checkTimes.length > 0) {
+            record.checkTimes.forEach(ct => {
+                activityList.push({
+                    type: 'attendance',
+                    time: ct.checkTime,
+                    label: 'Chấm công'
+                });
+            });
+        }
+        
+        // Add related requests as activities
+        if (record.relatedRequests && record.relatedRequests.length > 0) {
+            record.relatedRequests.forEach(req => {
+                activityList.push({
+                    type: 'request',
+                    time: req.requestDate || req.fromDate || req.createdAt,
+                    label: 'Đơn từ',
+                    requestType: this.getRequestTypeName(req.requestType),
+                    status: req.status,
+                    reason: req.reason || req.description
+                });
+            });
+        }
+        
+        // Sort by time if available
+        activityList.sort((a, b) => {
+            if (!a.time || !b.time) return 0;
+            return a.time.localeCompare(b.time);
+        });
+        
+        // Generate activity list HTML
+        const activityListHTML = activityList.length > 0 ? activityList.map(activity => {
+            if (activity.type === 'attendance') {
+                return `
+                    <div class="activity-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span style="color: var(--text-secondary, #b0b3b8);">${activity.label}</span>
+                        <span style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${activity.time}</span>
                     </div>
-                `).join('')}
-            </div>
-        ` : '';
+                `;
+            } else {
+                return `
+                    <div class="activity-item" style="padding: 10px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="color: var(--text-secondary, #b0b3b8);">${activity.label} - ${activity.requestType}</span>
+                            <span style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${activity.time ? new Date(activity.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'}) : ''}</span>
+                        </div>
+                        ${activity.reason ? `<div style="color: var(--text-secondary, #b0b3b8); font-size: 12px; margin-top: 4px;">${activity.reason}</div>` : ''}
+                    </div>
+                `;
+            }
+        }).join('') : '<div style="color: var(--text-secondary, #b0b3b8); font-size: 13px; padding: 10px 0;">Chưa có dữ liệu</div>';
         
         const modalHTML = `
             <div class="modal-overlay" id="attendanceDetailModal" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
@@ -2226,11 +2256,9 @@ const DashboardContent = {
                             </div>
                             
                             <div class="detail-section" style="margin: 16px 0;">
-                                <h4 style="color: var(--text-primary, #e4e6eb); margin: 0 0 8px 0; font-size: 14px;">Lịch sử chấm công:</h4>
-                                ${checkTimesHTML || '<div style="color: var(--text-secondary, #b0b3b8); font-size: 13px;">Chưa có dữ liệu</div>'}
+                                <h4 style="color: var(--text-primary, #e4e6eb); margin: 0 0 12px 0; font-size: 14px;">Hoạt động trong ngày:</h4>
+                                ${activityListHTML}
                             </div>
-                            
-                            ${relatedRequestsHTML}
                             
                             <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-top: 16px; border-top: 1px solid var(--border-color, #2d3139);">
                                 <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Số giờ làm:</span>
