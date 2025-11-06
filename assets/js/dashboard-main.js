@@ -104,8 +104,8 @@ async function initMobileDashboard() {
         if (loader) loader.classList.add('hidden');
     }, 500);
 
-    // Apply role-based menu filtering
-    filterMenuByRole();
+    // Apply permission-based menu filtering
+    filterMenuByPermissions();
 
     // Drawer menu toggle
     const menuBtn = document.getElementById('menuBtn');
@@ -204,8 +204,8 @@ if (document.readyState === 'loading') {
 // Export for use by dashboard-loader
 window.initMobileDashboard = initMobileDashboard;
 
-// Role-based menu filtering
-function filterMenuByRole() {
+// Permission-based menu filtering
+function filterMenuByPermissions() {
     // Get current user data from encrypted localStorage
     const userData = SimpleStorage.get('userData');
     if (!userData) {
@@ -213,42 +213,37 @@ function filterMenuByRole() {
         return;
     }
 
-    const userPosition = userData.position || 'NV'; // Default to NV (Employee)
+    const permissions = userData.permissions || '';
+    const permissionList = permissions.split(',').map(p => p.trim());
     
-    console.log('Filtering menu for role:', userPosition);
+    console.log('Filtering menu for permissions:', permissionList);
 
-    // Role hierarchy: AD > QL > NV
-    const roleHierarchy = {
-        'NV': 0,      // Employee/Worker
-        'EMPLOYEE': 0,
-        'QL': 1,      // Manager
-        'MANAGER': 1,
-        'AD': 2,      // Admin
-        'ADMIN': 2
-    };
-
-    const userLevel = roleHierarchy[userPosition.toUpperCase()] || 0;
-
-    // Hide menu items based on required role
-    const menuItems = document.querySelectorAll('[data-min-role]');
+    // Hide menu items based on required permissions
+    const menuItems = document.querySelectorAll('[data-required-permission]');
     menuItems.forEach(item => {
-        const requiredRole = item.getAttribute('data-min-role');
-        const requiredLevel = roleHierarchy[requiredRole] || 0;
+        const requiredPermission = item.getAttribute('data-required-permission');
+        const hasPermission = permissionList.includes(requiredPermission);
 
-        if (userLevel < requiredLevel) {
+        if (!hasPermission) {
             item.style.display = 'none';
         }
     });
 
-    // Hide entire admin section if user is NV (worker)
-    const adminSection = document.querySelector('[data-role-section="admin"]');
-    if (adminSection && userLevel === 0) {
-        adminSection.style.display = 'none';
-    }
+    // Hide entire sections if user has no permissions for that section
+    const sections = document.querySelectorAll('[data-permission-section]');
+    sections.forEach(section => {
+        const sectionPermissions = section.getAttribute('data-permission-section').split(',');
+        const hasAnyPermission = sectionPermissions.some(perm => permissionList.includes(perm.trim()));
+        
+        if (!hasAnyPermission) {
+            section.style.display = 'none';
+        }
+    });
 
     // Log visible menu items for debugging
-    console.log(`User role: ${userPosition} (level ${userLevel})`);
-    console.log(`Visible menu items: ${document.querySelectorAll('.menu-item[data-function]').length - document.querySelectorAll('[data-min-role][style*="display: none"]').length}`);
+    const visibleItems = document.querySelectorAll('.menu-item[data-function]:not([style*="display: none"])');
+    console.log(`User permissions: ${permissionList.length} permissions`);
+    console.log(`Visible menu items: ${visibleItems.length}`);
 }
 
 function handleHashChange() {
@@ -304,12 +299,23 @@ async function renderContent(functionName) {
         'approve-registration': 'renderApproveRegistration',
         'grant-access': 'renderGrantAccess'
     };
+    
+    // Init methods that should be called after rendering
+    const initMethods = {
+        'process-requests': 'initProcessRequests'
+    };
 
     const methodName = contentMethods[functionName] || 'renderHome';
     
     if (typeof DashboardContent[methodName] === 'function') {
         const content = await DashboardContent[methodName]();
         mainContent.innerHTML = content;
+        
+        // Call init method if exists
+        const initMethod = initMethods[functionName];
+        if (initMethod && typeof DashboardContent[initMethod] === 'function') {
+            setTimeout(() => DashboardContent[initMethod](), 100);
+        }
     } else {
         mainContent.innerHTML = await DashboardContent.renderHome();
     }
@@ -317,7 +323,7 @@ async function renderContent(functionName) {
 
 // Make functions globally available for onclick handlers
 window.navigateToFunction = navigateToFunction;
-window.filterMenuByRole = filterMenuByRole;
+window.filterMenuByPermissions = filterMenuByPermissions;
 }
 
 // Export for use in dashboard-loader.js

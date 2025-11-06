@@ -8,286 +8,384 @@
  * 3. MockAPI.login(username, password) to simulate login
  */
 
+// Shift Definitions
+const SHIFT_DEFINITIONS = {
+    S4_08_12: { id: "S4_08-12", name: "Ca 4", start: "08:00", end: "12:00", hours: 4 },
+    S8_08_17: { id: "S8_08-17", name: "Ca 8", start: "08:00", end: "17:00", hours: 8 },
+    S8_13_22: { id: "S8_13-22", name: "Ca tối", start: "13:00", end: "22:00", hours: 8 },
+    S8_22_06: { id: "S8_22-06", name: "Ca đêm", start: "22:00", end: "06:00", hours: 8 }
+};
+
 const MockUsers = {
     // VP - Admin (Full Access)
+    // Only fields from SQL schema: employees table + permissions from positions table
     admin: {
+        // From employees table
         employeeId: "E001",
-        username: "admin",
-        password: "123456",
         fullName: "Nguyễn Văn Admin",
-        email: "admin@company.com",
         phone: "0901234567",
+        email: "admin@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_ADMIN",
-        positionName: "Quản Trị Viên",
-        positionCode: "ADMIN",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin",
+        
+        // Mock API only
+        username: "admin",
         authToken: "mock_token_admin"
     },
 
     // VP - Quản Lý Khu Vực (Manager)
     quanly_vp: {
+        // From employees table
         employeeId: "E002",
-        username: "quanly_vp",
-        password: "123456",
         fullName: "Trần Thị Quản Lý",
-        email: "quanly@company.com",
         phone: "0902345678",
+        email: "quanly@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_QLKV",
-        positionName: "Quản Lý Khu Vực",
-        positionCode: "QLKV",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-02-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-02-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_manage,salary_manage,timesheet_approve,reports_view,schedule_manage,request_approve",
+        
+        // Mock API only
+        username: "quanly_vp",
         authToken: "mock_token_qlvp"
     },
 
     // VP - Kế Toán
     ketoan: {
+        // From employees table
         employeeId: "E003",
-        username: "ketoan",
-        password: "123456",
         fullName: "Lê Văn Toán",
-        email: "ketoan@company.com",
         phone: "0903456789",
+        email: "ketoan@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_KT",
-        positionName: "Kế Toán",
-        positionCode: "KT",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-03-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-03-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_view,salary_manage,reports_view,timesheet_view",
+        
+        // Mock API only
+        username: "ketoan",
         authToken: "mock_token_ketoan"
     },
 
     // VP - IT
     it: {
+        // From employees table
         employeeId: "E004",
-        username: "it",
-        password: "123456",
         fullName: "Phạm Thị IT",
-        email: "it@company.com",
         phone: "0904567890",
+        email: "it@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_IT",
-        positionName: "Nhân Viên IT",
-        positionCode: "IT",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-04-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-04-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_view,system_admin,department_manage,position_manage,reports_view",
+        
+        // Mock API only
+        username: "it",
         authToken: "mock_token_it"
     },
 
     // VP - Giám Sát
     giamsat_vp: {
+        // From employees table
         employeeId: "E005",
-        username: "giamsat_vp",
-        password: "123456",
         fullName: "Hoàng Văn Sát",
-        email: "giamsat@company.com",
         phone: "0905678901",
+        email: "giamsat@company.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "VP_GS",
-        positionName: "Giám Sát",
-        positionCode: "GS",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-05-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-05-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "timesheet_approve,request_approve,shift_manage,attendance_approve",
+        
+        // Mock API only
+        username: "giamsat_vp",
         authToken: "mock_token_gsvp"
     },
 
     // CH - Quản Lý LV2 (Store Manager)
     quanly2: {
+        // From employees table
         employeeId: "E101",
-        username: "quanly2",
-        password: "123456",
         fullName: "Nguyễn Thị Lan",
-        email: "lanql@store.com",
         phone: "0911234567",
+        email: "lanql@store.com",
+        password: "123456",
+        storeId: "S001",
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "CH_QL_LV2",
-        positionName: "Quản Lý LV2",
-        positionCode: "QL_LV2",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2016-03-01",
+        last_login_at: "2024-11-05T08:30:00Z",
+        created_at: "2016-03-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,timesheet_approve,salary_view,request_create,request_approve,notification_view,profile_view",
+        
+        // Mock API only
+        username: "quanly2",
         authToken: "mock_token_ql2"
     },
 
     // CH - Quản Lý LV1
     quanly1: {
+        // From employees table
         employeeId: "E102",
-        username: "quanly1",
-        password: "123456",
         fullName: "Trần Văn Minh",
-        email: "minhql@store.com",
         phone: "0912345678",
-        dateOfBirth: "1985-03-20",
-        gender: "male",
-        address: "456 Đường XYZ, Quận 3, TP.HCM",
-        identityNumber: "079085012345",
-        departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        positionId: "CH_QL_LV1",
-        positionName: "Quản Lý LV1",
+        email: "minhql@store.com",
+        password: "123456",
         storeId: "S001",
-        storeName: "Cửa hàng Trung tâm",
-        hireDate: "2018-06-15",
-        contractType: "full_time",
-        baseSalary: 15000000,
-        status: "active",
-        permissions: "attendance_self,attendance_approve,schedule_manage,shift_manage,timesheet_view,salary_view,request_create,request_approve,notification_view,profile_view,profile_edit",
+        departmentId: "CH",
+        positionId: "CH_QL_LV1",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2018-06-15",
+        last_login_at: "2024-11-05T07:45:00Z",
+        created_at: "2018-06-15T08:00:00Z",
+        
+        // From positions table (via JOIN)
+        permissions: "attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view",
+        
+        // Mock API only
+        username: "quanly1",
         authToken: "mock_token_ql1"
     },
 
     // CH - Nhân Viên LV2
     nhanvien2: {
+        // From employees table
         employeeId: "E103",
-        username: "nhanvien2",
-        password: "123456",
         fullName: "Lê Thị Hoa",
-        email: "hoanv@store.com",
         phone: "0913456789",
+        email: "hoanv@store.com",
+        password: "123456",
+        storeId: "S001",
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "CH_NV_LV2",
-        positionName: "Nhân Viên LV2",
-        positionCode: "NV_LV2",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2020-07-15",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2020-07-15T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
+        
+        // Mock API only
+        username: "nhanvien2",
         authToken: "mock_token_nv2"
     },
 
     // CH - Nhân Viên LV1
     nhanvien1: {
+        // From employees table
         employeeId: "E104",
-        username: "nhanvien1",
-        password: "123456",
         fullName: "Phạm Văn Đức",
-        email: "ducnv@store.com",
         phone: "0914567890",
-        dateOfBirth: "1995-07-10",
-        gender: "male",
-        address: "789 Đường DEF, Quận 10, TP.HCM",
-        identityNumber: "079095056789",
-        departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        positionId: "CH_NV_LV1",
-        positionName: "Nhân Viên LV1",
+        email: "ducnv@store.com",
+        password: "123456",
         storeId: "S001",
-        storeName: "Cửa hàng Trung tâm",
-        hireDate: "2021-09-01",
-        contractType: "full_time",
-        baseSalary: 8000000,
-        status: "active",
-        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view,profile_edit",
+        departmentId: "CH",
+        positionId: "CH_NV_LV1",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2021-09-01",
+        last_login_at: "2024-11-05T07:30:00Z",
+        created_at: "2021-09-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
+        permissions: "attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view",
+        
+        // Mock API only
+        username: "nhanvien1",
         authToken: "mock_token_nv1"
     },
 
     // CH - Ca Trưởng (Shift Leader)
     catruong: {
+        // From employees table
         employeeId: "E105",
-        username: "catruong",
-        password: "123456",
         fullName: "Vũ Thị Mai",
-        email: "maict@store.com",
         phone: "0915678901",
+        email: "maict@store.com",
+        password: "123456",
+        storeId: "S001",
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "CH_CT",
-        positionName: "Ca Trưởng",
-        positionCode: "CT",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2019-08-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2019-08-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "attendance_self,attendance_approve,schedule_view,shift_manage,timesheet_view,salary_view,request_create,notification_view,profile_view",
+        
+        // Mock API only
+        username: "catruong",
         authToken: "mock_token_ct"
     },
 
     // Testing Users
     test_none: {
+        // From employees table
         employeeId: "T001",
-        username: "test_none",
-        password: "123456",
         fullName: "Test None",
-        email: "test@test.com",
         phone: "0900000000",
+        email: "test@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "TEST_NONE",
-        positionName: "No Permissions",
-        positionCode: "NONE",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "",
+        
+        // Mock API only
+        username: "test_none",
         authToken: "mock_token_none"
     },
 
     test_view: {
+        // From employees table
         employeeId: "T002",
-        username: "test_view",
-        password: "123456",
         fullName: "Test Viewer",
-        email: "viewer@test.com",
         phone: "0900000001",
+        email: "viewer@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "TEST_VIEW",
-        positionName: "View Only",
-        positionCode: "VIEW",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_view,timesheet_view,salary_view,schedule_view,notification_view,profile_view",
+        
+        // Mock API only
+        username: "test_view",
         authToken: "mock_token_view"
     },
 
     test_approve: {
+        // From employees table
         employeeId: "T003",
-        username: "test_approve",
-        password: "123456",
         fullName: "Test Approver",
-        email: "approver@test.com",
         phone: "0900000002",
+        email: "approver@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "TEST_APPROVE",
-        positionName: "Approver",
-        positionCode: "APPROVE",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "registration_approve,timesheet_approve,attendance_approve,request_approve",
+        
+        // Mock API only
+        username: "test_approve",
         authToken: "mock_token_approve"
     },
 
     test_create: {
+        // From employees table
         employeeId: "T004",
-        username: "test_create",
-        password: "123456",
         fullName: "Test Creator",
-        email: "creator@test.com",
         phone: "0900000003",
+        email: "creator@test.com",
+        password: "123456",
+        storeId: "S001",
         departmentId: "CH",
-        departmentName: "Cửa Hàng",
-        departmentCode: "CH",
         positionId: "TEST_CREATE",
-        positionName: "Creator",
-        positionCode: "CREATE",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "request_create,notification_view",
+        
+        // Mock API only
+        username: "test_create",
         authToken: "mock_token_create"
     },
 
     test_full: {
+        // From employees table
         employeeId: "T005",
-        username: "test_full",
-        password: "123456",
         fullName: "Test Full Access",
-        email: "full@test.com",
         phone: "0900000004",
+        email: "full@test.com",
+        password: "123456",
+        storeId: null,
         departmentId: "VP",
-        departmentName: "Văn Phòng",
-        departmentCode: "VP",
         positionId: "TEST_FULL",
-        positionName: "Full Access",
-        positionCode: "FULL",
+        approval_status: "approved",
+        is_active: 1,
+        hire_date: "2024-01-01",
+        last_login_at: "2024-11-05T08:00:00Z",
+        created_at: "2024-01-01T08:00:00Z",
+        
+        // From positions table (via JOIN)
         permissions: "employee_manage,employee_view,registration_approve,department_manage,position_manage,salary_manage,salary_view,timesheet_approve,timesheet_view,attendance_self,attendance_approve,schedule_manage,schedule_view,shift_manage,request_create,request_approve,reports_view,system_admin,notification_view,profile_view",
+        
+        // Mock API only
+        username: "test_full",
         authToken: "mock_token_full"
     }
 };
@@ -375,8 +473,8 @@ const MockAuth = {
         localStorage.setItem('userData', JSON.stringify(user));
         
         console.log('✅ Switched to user:', user.fullName);
-        console.log('   Department:', user.departmentName);
-        console.log('   Position:', user.positionName);
+        console.log('   Department ID:', user.departmentId);
+        console.log('   Position ID:', user.positionId);
         console.log('   Permissions:', user.permissions);
         
         return true;
@@ -391,8 +489,8 @@ const MockAuth = {
             return {
                 username: user.username,
                 fullName: user.fullName,
-                department: user.departmentName,
-                position: user.positionName,
+                departmentId: user.departmentId,
+                positionId: user.positionId,
                 permissionCount: user.permissions ? user.permissions.split(',').length : 0
             };
         });
@@ -408,23 +506,89 @@ const MockAuth = {
     }
 };
 
+// Mock Attendance Data with Shift Assignments
+const MockAttendanceData = {
+    // quanly2 (E101) attendance records with shifts
+    E101: {
+        shiftAssignment: {
+            monday: "S8_08-17",
+            tuesday: "S8_08-17",
+            wednesday: "S8_08-17",
+            thursday: "S8_08-17",
+            friday: "S8_08-17",
+            saturday: null,
+            sunday: null
+        },
+        records: [
+            // January 2025 records
+            { date: "2025-01-02", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:10", status: "present", hoursWorked: 8 },
+            { date: "2025-01-03", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
+            { date: "2025-01-06", shiftId: "S8_08-17", checkIn: "08:10", checkOut: "17:08", status: "late", hoursWorked: 8 },
+            { date: "2025-01-07", shiftId: "S8_08-17", checkIn: "08:00", checkOut: "17:03", status: "present", hoursWorked: 8 },
+            { date: "2025-01-08", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:12", status: "present", hoursWorked: 8 },
+            { date: "2025-01-09", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:06", status: "present", hoursWorked: 8 },
+            { date: "2025-01-10", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8 },
+            { date: "2025-01-13", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:02", status: "present", hoursWorked: 8 },
+            { date: "2025-01-14", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:09", status: "present", hoursWorked: 8 },
+            { date: "2025-01-15", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
+            { date: "2025-01-16", shiftId: "S8_08-17", checkIn: "08:08", checkOut: "17:07", status: "present", hoursWorked: 8 },
+            { date: "2025-01-17", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:11", status: "present", hoursWorked: 8 }
+        ]
+    },
+    // nhanvien2 (E103) attendance records with 4-hour shifts
+    E103: {
+        shiftAssignment: {
+            monday: "S4_08-12",
+            tuesday: "S4_08-12",
+            wednesday: "S4_08-12",
+            thursday: "S4_08-12",
+            friday: "S4_08-12",
+            saturday: "S4_08-12", // Works on Saturday
+            sunday: null
+        },
+        records: [
+            { date: "2025-01-02", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
+            { date: "2025-01-03", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:03", status: "present", hoursWorked: 4 },
+            { date: "2025-01-04", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:08", status: "present", hoursWorked: 4 },
+            { date: "2025-01-06", shiftId: "S4_08-12", checkIn: "08:12", checkOut: "12:06", status: "late", hoursWorked: 4 },
+            { date: "2025-01-07", shiftId: "S4_08-12", checkIn: "08:00", checkOut: "12:02", status: "present", hoursWorked: 4 },
+            { date: "2025-01-08", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 },
+            { date: "2025-01-09", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:07", status: "present", hoursWorked: 4 },
+            { date: "2025-01-10", shiftId: "S4_08-12", checkIn: "08:04", checkOut: "12:05", status: "present", hoursWorked: 4 },
+            { date: "2025-01-11", shiftId: "S4_08-12", checkIn: "08:05", checkOut: "12:10", status: "present", hoursWorked: 4 }, // Saturday
+            { date: "2025-01-13", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:02", status: "present", hoursWorked: 4 },
+            { date: "2025-01-14", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:06", status: "present", hoursWorked: 4 },
+            { date: "2025-01-15", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
+            { date: "2025-01-16", shiftId: "S4_08-12", checkIn: "08:06", checkOut: "12:08", status: "present", hoursWorked: 4 },
+            { date: "2025-01-17", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 }
+        ]
+    }
+};
+
 // Mock API Client
 const MockAPI = {
     /**
      * Simulate login API call
-     * @param {string} username 
+     * Supports both username and employeeId for backward compatibility
+     * @param {string} usernameOrEmployeeId - Username or employeeId
      * @param {string} password 
      */
-    login(username, password) {
+    login(usernameOrEmployeeId, password) {
         return new Promise((resolve, reject) => {
             // Simulate network delay
             setTimeout(() => {
-                const user = MockUsers[username];
+                // First try to find by username (for backward compatibility)
+                let user = MockUsers[usernameOrEmployeeId];
+                
+                // If not found by username, search by employeeId
+                if (!user) {
+                    user = Object.values(MockUsers).find(u => u.employeeId === usernameOrEmployeeId);
+                }
                 
                 if (!user) {
                     reject({
                         success: false,
-                        message: 'Tên đăng nhập không tồn tại'
+                        message: 'Thông tin đăng nhập không tồn tại'
                     });
                     return;
                 }
@@ -453,11 +617,7 @@ const MockAPI = {
                     email: user.email,
                     phone: user.phone,
                     departmentId: user.departmentId,
-                    departmentName: user.departmentName,
-                    departmentCode: user.departmentCode,
                     positionId: user.positionId,
-                    positionName: user.positionName,
-                    positionCode: user.positionCode,
                     permissions: permissionsWithDefaults  // Always includes default permissions
                 });
             }, 500);
@@ -505,40 +665,49 @@ const MockAPI = {
         }
         
         if (endpoint.includes('/attendance')) {
-            // Generate comprehensive attendance data for current month
+            const userData = SimpleStorage.get('userData');
+            const employeeId = params?.employeeId || userData?.employeeId;
+            const attendanceData = MockAttendanceData[employeeId];
+            
+            if (attendanceData) {
+                return Promise.resolve({
+                    success: true,
+                    data: attendanceData.records,
+                    shiftAssignment: attendanceData.shiftAssignment,
+                    total: attendanceData.records.length
+                });
+            }
+            
+            // Fallback: generate basic attendance data
             const today = new Date();
             const year = today.getFullYear();
             const month = today.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const currentDay = today.getDate();
             
-            const attendanceData = [];
-            // Generate attendance records for each day of current month up to today
+            const records = [];
             for (let day = 1; day <= Math.min(currentDay, daysInMonth); day++) {
-                // Skip weekends (Saturday=6, Sunday=0)
                 const date = new Date(year, month, day);
                 if (date.getDay() === 0 || date.getDay() === 6) continue;
                 
-                // Morning check-in (08:00 - 08:30)
                 const morningMinutes = Math.floor(Math.random() * 30);
                 const morningTime = `08:${morningMinutes.toString().padStart(2, '0')}:00`;
                 
-                attendanceData.push({
+                records.push({
                     attendanceId: `a${day}m`,
-                    employeeId: params?.employeeId || 'E101',
+                    employeeId: employeeId,
                     checkDate: `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
                     checkTime: morningTime,
                     checkLocation: 'Cửa Hàng 74 Đồng Đen',
                     createdAt: new Date(year, month, day, 8, morningMinutes).toISOString()
                 });
                 
-                // Afternoon check-in (13:00 - 13:30)
                 const afternoonMinutes = Math.floor(Math.random() * 30);
                 const afternoonTime = `13:${afternoonMinutes.toString().padStart(2, '0')}:00`;
                 
-                attendanceData.push({
+                records.push({
                     attendanceId: `a${day}a`,
-                    employeeId: params?.employeeId || 'E101',
+                    employeeId: employeeId,
                     checkDate: `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`,
                     checkTime: afternoonTime,
                     checkLocation: 'Cửa Hàng 74 Đồng Đen',
@@ -548,8 +717,8 @@ const MockAPI = {
             
             return Promise.resolve({
                 success: true,
-                data: attendanceData,
-                total: attendanceData.length
+                data: records,
+                total: records.length
             });
         }
         
@@ -616,11 +785,15 @@ const MockAPI = {
             // Calculate based on position
             const user = MockAuth.getCurrentUser();
             let baseSalary = 8000000; // Default for staff
-            if (user && user.positionName) {
-                if (user.positionName.includes('Quản Lý')) {
-                    baseSalary = 15000000;
-                } else if (user.positionName.includes('Nhân Viên LV2')) {
-                    baseSalary = 10000000;
+            // Determine salary based on department and permissions
+            if (user) {
+                if (user.departmentId === 'CH') {
+                    // CH department: hourly rate (use default for calculation)
+                    baseSalary = 25000 * 160; // Assuming 160 hours/month
+                } else if (user.permissions && user.permissions.includes('employee_manage')) {
+                    baseSalary = 15000000; // Manager level
+                } else if (user.permissions && user.permissions.includes('salary_manage')) {
+                    baseSalary = 10000000; // Specialized staff
                 }
             }
             
@@ -731,7 +904,7 @@ const MockAPI = {
         if (endpoint.includes('/profile') || endpoint.includes('/employee/')) {
             const userData = SimpleStorage.get('userData');
             // Find user by employeeId since userData stores employeeId, not username
-            const currentUser = Object.values(MockAPI.users).find(u => u.employeeId === userData?.employeeId) || MockAPI.users.nhanvien1;
+            const currentUser = MockUsers && Object.values(MockUsers).find(u => u.employeeId === userData?.employeeId) || MockUsers.nhanvien1;
             
             return Promise.resolve({
                 success: true,
@@ -740,20 +913,14 @@ const MockAPI = {
                     fullName: currentUser.fullName,
                     email: currentUser.email,
                     phone: currentUser.phone || '0901234567',
-                    dateOfBirth: currentUser.dateOfBirth || '1990-01-15',
-                    gender: currentUser.gender || 'male',
-                    address: currentUser.address || '123 Đường ABC, Quận 1, TP.HCM',
-                    identityNumber: currentUser.identityNumber || '012345678901',
                     positionId: currentUser.positionId,
-                    positionName: currentUser.positionName,
                     departmentId: currentUser.departmentId,
-                    departmentName: currentUser.departmentName,
-                    storeId: currentUser.storeId || 'S001',
-                    storeName: currentUser.storeName || 'Cửa hàng Trung tâm',
-                    hireDate: currentUser.hireDate || '2020-01-01',
-                    contractType: currentUser.contractType || 'full_time',
-                    baseSalary: currentUser.baseSalary || 8000000,
-                    status: currentUser.status || 'active',
+                    storeId: currentUser.storeId || null,
+                    hire_date: currentUser.hire_date || '2020-01-01',
+                    approval_status: currentUser.approval_status || 'approved',
+                    is_active: currentUser.is_active || 1,
+                    created_at: currentUser.created_at || new Date().toISOString(),
+                    last_login_at: currentUser.last_login_at || new Date().toISOString(),
                     permissions: currentUser.permissions
                 }
             });
@@ -761,18 +928,75 @@ const MockAPI = {
         
         // Requests endpoints
         if (endpoint.includes('/requests') || endpoint.includes('/attendance-requests')) {
+            const userData = SimpleStorage.get('userData');
+            const currentEmployeeId = userData?.employeeId || 'E101';
+            
             return Promise.resolve({
                 success: true,
                 data: [
                     {
-                        requestId: 'R001',
-                        employeeId: 'E001',
-                        employeeName: 'Nguyễn Văn A',
-                        type: 'leave',
-                        reason: 'Nghỉ phép',
-                        date: new Date().toISOString().split('T')[0],
+                        requestId: 1,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'leave',
+                        title: 'Nghỉ phép',
+                        description: 'Xin nghỉ phép 2 ngày',
+                        fromDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        toDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        reason: 'Nghỉ phép chăm sóc người thân',
                         status: 'pending',
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                    },
+                    {
+                        requestId: 2,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'overtime',
+                        title: 'Đăng ký tăng ca',
+                        requestDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        fromDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        toDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        description: 'Tăng ca từ 17:00-20:00',
+                        reason: 'Đăng ký tăng ca làm thêm giờ cuối tuần',
+                        status: 'approved',
+                        reviewedBy: 'E101',
+                        reviewerName: 'Nguyễn Thị Lan',
+                        reviewedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        rejectionReason: null,
+                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                    },
+                    {
+                        requestId: 3,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'shift_change',
+                        title: 'Đổi ca làm việc',
+                        currentShiftDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        requestedShiftDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        description: 'Đổi từ ca sáng sang ca chiều',
+                        reason: 'Xin đổi ca với đồng nghiệp do có việc cá nhân',
+                        status: 'approved',
+                        reviewedBy: 'E101',
+                        reviewerName: 'Nguyễn Thị Lan',
+                        reviewedAt: new Date().toISOString().replace('T', ' ').split('.')[0],
+                        rejectionReason: null,
+                        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                    },
+                    {
+                        requestId: 4,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'forgot_checkin',
+                        title: 'Quên chấm công vào',
+                        requestDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        description: 'Quên chấm công vào lúc 08:00',
+                        reason: 'Điện thoại hết pin, đã vào làm đúng giờ',
+                        status: 'rejected',
+                        reviewedBy: 'E101',
+                        reviewerName: 'Nguyễn Thị Lan',
+                        reviewedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        rejectionReason: 'Không có bằng chứng hỗ trợ',
+                        createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
                     }
                 ]
             });
@@ -897,8 +1121,33 @@ const MockAPI = {
             });
         }
         
-        // Request submissions
-        if (endpoint.includes('/requests/submit') || endpoint.includes('/attendance-request')) {
+        // Request submissions (handle both /requests and /requests/submit)
+        if (endpoint.includes('/requests') && !endpoint.includes('/requests/')) {
+            return Promise.resolve({
+                success: true,
+                message: 'Gửi yêu cầu thành công',
+                data: { 
+                    requestId: 'R' + Date.now(),
+                    ...data,
+                    createdAt: new Date().toISOString()
+                }
+            });
+        }
+        
+        // Request approvals
+        if (endpoint.includes('/requests/') && (endpoint.includes('/approve') || endpoint.includes('/reject'))) {
+            return Promise.resolve({
+                success: true,
+                message: endpoint.includes('/approve') ? 'Đã duyệt yêu cầu' : 'Đã từ chối yêu cầu',
+                data: { 
+                    status: endpoint.includes('/approve') ? 'approved' : 'rejected',
+                    reviewedAt: new Date().toISOString()
+                }
+            });
+        }
+        
+        // Legacy attendance-request endpoint
+        if (endpoint.includes('/attendance-request')) {
             return Promise.resolve({
                 success: true,
                 message: 'Gửi yêu cầu thành công',
