@@ -274,7 +274,12 @@ function navigateToFunction(functionName) {
         'process-requests': 'Xử lý yêu cầu',
         'approve-registration': 'Duyệt đăng ký',
         'grant-access': 'Phân quyền',
-        'system-settings': 'Cài Đặt Hệ Thống'
+        'system-settings': 'Cài Đặt Hệ Thống',
+        'attendance-approval': 'Duyệt Chấm Công',
+        'timesheet-approval': 'Duyệt Bảng Công',
+        'salary-management': 'Quản Lý Lương',
+        'employee-management': 'Quản Lý Nhân Viên',
+        'schedule-management': 'Xếp Lịch Làm Việc'
     };
     headerTitle.textContent = titles[functionName] || 'Dashboard';
 
@@ -299,13 +304,23 @@ async function renderContent(functionName) {
         'process-requests': 'renderProcessRequests',
         'approve-registration': 'renderApproveRegistration',
         'grant-access': 'renderGrantAccess',
-        'system-settings': 'renderSystemSettings'
+        'system-settings': 'renderSystemSettings',
+        'attendance-approval': 'renderAttendanceApproval',
+        'timesheet-approval': 'renderTimesheetApproval',
+        'salary-management': 'renderSalaryManagement',
+        'employee-management': 'renderEmployeeManagement',
+        'schedule-management': 'renderScheduleManagement'
     };
     
     // Init methods that should be called after rendering
     const initMethods = {
         'process-requests': 'initProcessRequests',
-        'system-settings': 'initSystemSettings'
+        'system-settings': 'initSystemSettings',
+        'attendance-approval': 'initAttendanceApproval',
+        'timesheet-approval': 'initTimesheetApproval',
+        'salary-management': 'initSalaryManagement',
+        'employee-management': 'initEmployeeManagement',
+        'schedule-management': 'initScheduleManagement'
     };
 
     const methodName = contentMethods[functionName] || 'renderHome';

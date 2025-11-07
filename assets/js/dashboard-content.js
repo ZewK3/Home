@@ -2843,3 +2843,837 @@ const DashboardContent = {
         }
     }
 };
+,
+
+    /**
+     * ATTENDANCE APPROVAL MODULE
+     * Manager approves daily attendance records
+     */
+    async renderAttendanceApproval() {
+        const userData = this.getUserData();
+        
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">fact_check</span>
+                    Duyệt Chấm Công
+                </h1>
+            </div>
+            
+            <div class="content-body">
+                <!-- Filter Section -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày:</label>
+                            <input type="date" id="filterDate" class="form-control" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Phòng ban:</label>
+                            <select id="filterDepartment" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="IT">Công nghệ thông tin</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="SALES">Kinh doanh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="pending">Chờ duyệt</option>
+                                <option value="all">Tất cả</option>
+                                <option value="approved">Đã duyệt</option>
+                                <option value="rejected">Đã từ chối</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btnFilterAttendance" class="btn btn-primary" style="width: 100%;">
+                                <span class="material-icons" style="font-size: 18px;">search</span>
+                                Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance List -->
+                <div id="attendanceApprovalList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initAttendanceApproval() {
+        await this.loadAttendanceForApproval();
+        
+        document.getElementById('btnFilterAttendance')?.addEventListener('click', () => {
+            this.loadAttendanceForApproval();
+        });
+    },
+
+    async loadAttendanceForApproval() {
+        const container = document.getElementById('attendanceApprovalList');
+        if (!container) return;
+        
+        const date = document.getElementById('filterDate')?.value || new Date().toISOString().split('T')[0];
+        const department = document.getElementById('filterDepartment')?.value || '';
+        const status = document.getElementById('filterStatus')?.value || 'pending';
+        
+        // Mock data - replace with actual API call
+        const mockAttendance = [
+            {
+                id: 1,
+                employeeId: 'E102',
+                employeeName: 'Trần Văn B',
+                department: 'IT',
+                date: date,
+                checkIn: '08:05',
+                checkOut: '17:30',
+                shift: 'Ca sáng (08:00-17:00)',
+                status: 'pending',
+                hours: 9.5,
+                isLate: true,
+                lateMinutes: 5
+            },
+            {
+                id: 2,
+                employeeId: 'E103',
+                employeeName: 'Phạm Thị C',
+                department: 'HR',
+                date: date,
+                checkIn: '08:00',
+                checkOut: '18:00',
+                shift: 'Ca sáng (08:00-17:00)',
+                status: 'pending',
+                hours: 10,
+                overtime: 1
+            },
+            {
+                id: 3,
+                employeeId: 'E104',
+                employeeName: 'Lê Văn D',
+                department: 'SALES',
+                date: date,
+                checkIn: '08:00',
+                checkOut: null,
+                shift: 'Ca sáng (08:00-17:00)',
+                status: 'pending',
+                hours: 0,
+                missingCheckout: true
+            }
+        ];
+        
+        const filtered = mockAttendance.filter(record => {
+            if (department && record.department !== department) return false;
+            if (status !== 'all' && record.status !== status) return false;
+            return true;
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state">Không có dữ liệu chấm công</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(record => {
+            const statusBadge = {
+                'pending': '<span class="badge badge-warning">Chờ duyệt</span>',
+                'approved': '<span class="badge badge-success">Đã duyệt</span>',
+                'rejected': '<span class="badge badge-danger">Từ chối</span>'
+            }[record.status];
+            
+            const issues = [];
+            if (record.isLate) issues.push(`Trễ ${record.lateMinutes} phút`);
+            if (record.missingCheckout) issues.push('Thiếu chấm ra');
+            if (record.overtime) issues.push(`OT: ${record.overtime}h`);
+            
+            return `
+                <div class="list-item" style="cursor: pointer;" data-attendance-id="${record.id}">
+                    <div class="list-item-content">
+                        <div class="list-item-title">
+                            ${record.employeeName} (${record.employeeId})
+                            ${statusBadge}
+                        </div>
+                        <div class="list-item-subtitle">
+                            ${record.shift} | ${record.department}
+                        </div>
+                        <div class="list-item-meta">
+                            Vào: ${record.checkIn || 'N/A'} | Ra: ${record.checkOut || 'N/A'} | ${record.hours}h
+                            ${issues.length > 0 ? `<br><span style="color: var(--warning, #ffa500);">${issues.join(' • ')}</span>` : ''}
+                        </div>
+                    </div>
+                    ${record.status === 'pending' ? `
+                    <div class="list-item-action">
+                        <button class="btn btn-sm btn-success approve-attendance" data-id="${record.id}">
+                            <span class="material-icons">check</span>
+                        </button>
+                        <button class="btn btn-sm btn-danger reject-attendance" data-id="${record.id}">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+        
+        // Add event listeners
+        document.querySelectorAll('.approve-attendance').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.approveAttendance(btn.getAttribute('data-id'));
+            });
+        });
+        
+        document.querySelectorAll('.reject-attendance').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.rejectAttendance(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    async approveAttendance(id) {
+        if (!confirm('Xác nhận duyệt chấm công này?')) return;
+        
+        try {
+            // await apiClient.post(`/attendance/${id}/approve`);
+            showNotification('Đã duyệt chấm công', 'success');
+            await this.loadAttendanceForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi duyệt chấm công', 'error');
+        }
+    },
+
+    async rejectAttendance(id) {
+        const reason = prompt('Lý do từ chối:');
+        if (!reason) return;
+        
+        try {
+            // await apiClient.post(`/attendance/${id}/reject`, { reason });
+            showNotification('Đã từ chối chấm công', 'success');
+            await this.loadAttendanceForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi từ chối chấm công', 'error');
+        }
+    },
+
+    /**
+     * TIMESHEET APPROVAL MODULE
+     * Manager approves monthly timesheets
+     */
+    async renderTimesheetApproval() {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">assignment_turned_in</span>
+                    Duyệt Bảng Công
+                </h1>
+            </div>
+            
+            <div class="content-body">
+                <!-- Filter Section -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tháng:</label>
+                            <select id="filterMonth" class="form-control">
+                                ${Array.from({length: 12}, (_, i) => `<option value="${i+1}" ${i+1 === currentMonth ? 'selected' : ''}>Tháng ${i+1}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Năm:</label>
+                            <select id="filterYear" class="form-control">
+                                <option value="2024">2024</option>
+                                <option value="2025" selected>2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Phòng ban:</label>
+                            <select id="filterDeptTimesheet" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="IT">Công nghệ thông tin</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="SALES">Kinh doanh</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btnFilterTimesheet" class="btn btn-primary" style="width: 100%;">
+                                <span class="material-icons" style="font-size: 18px;">search</span>
+                                Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timesheet List -->
+                <div id="timesheetApprovalList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initTimesheetApproval() {
+        await this.loadTimesheetForApproval();
+        
+        document.getElementById('btnFilterTimesheet')?.addEventListener('click', () => {
+            this.loadTimesheetForApproval();
+        });
+    },
+
+    async loadTimesheetForApproval() {
+        const container = document.getElementById('timesheetApprovalList');
+        if (!container) return;
+        
+        const month = document.getElementById('filterMonth')?.value || new Date().getMonth() + 1;
+        const year = document.getElementById('filterYear')?.value || new Date().getFullYear();
+        const department = document.getElementById('filterDeptTimesheet')?.value || '';
+        
+        // Mock data
+        const mockTimesheets = [
+            {
+                employeeId: 'E102',
+                employeeName: 'Trần Văn B',
+                department: 'IT',
+                month: month,
+                year: year,
+                workDays: 22,
+                actualDays: 20,
+                leaveDays: 2,
+                lateDays: 3,
+                overtimeHours: 5,
+                totalHours: 176,
+                status: 'pending'
+            },
+            {
+                employeeId: 'E103',
+                employeeName: 'Phạm Thị C',
+                department: 'HR',
+                month: month,
+                year: year,
+                workDays: 22,
+                actualDays: 22,
+                leaveDays: 0,
+                lateDays: 0,
+                overtimeHours: 0,
+                totalHours: 176,
+                status: 'pending'
+            }
+        ];
+        
+        const filtered = mockTimesheets.filter(ts => {
+            if (department && ts.department !== department) return false;
+            return true;
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state">Không có bảng công</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(ts => `
+            <div class="list-item" style="cursor: pointer;" data-employee-id="${ts.employeeId}">
+                <div class="list-item-content">
+                    <div class="list-item-title">
+                        ${ts.employeeName} (${ts.employeeId})
+                        <span class="badge badge-warning">Chờ duyệt</span>
+                    </div>
+                    <div class="list-item-subtitle">
+                        ${ts.department} | Tháng ${ts.month}/${ts.year}
+                    </div>
+                    <div class="list-item-meta">
+                        Công: ${ts.actualDays}/${ts.workDays} ngày | Nghỉ: ${ts.leaveDays} | Trễ: ${ts.lateDays} | OT: ${ts.overtimeHours}h
+                    </div>
+                </div>
+                ${ts.status === 'pending' ? `
+                <div class="list-item-action">
+                    <button class="btn btn-sm btn-success approve-timesheet" data-id="${ts.employeeId}">
+                        <span class="material-icons">check</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger reject-timesheet" data-id="${ts.employeeId}">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+        // Add event listeners
+        document.querySelectorAll('.approve-timesheet').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.approveTimesheet(btn.getAttribute('data-id'));
+            });
+        });
+        
+        document.querySelectorAll('.reject-timesheet').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.rejectTimesheet(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    async approveTimesheet(employeeId) {
+        if (!confirm('Xác nhận duyệt bảng công?')) return;
+        
+        try {
+            // await apiClient.post(`/timesheets/${employeeId}/approve`);
+            showNotification('Đã duyệt bảng công', 'success');
+            await this.loadTimesheetForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi duyệt bảng công', 'error');
+        }
+    },
+
+    async rejectTimesheet(employeeId) {
+        const reason = prompt('Lý do từ chối:');
+        if (!reason) return;
+        
+        try {
+            // await apiClient.post(`/timesheets/${employeeId}/reject`, { reason });
+            showNotification('Đã từ chối bảng công', 'success');
+            await this.loadTimesheetForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi từ chối bảng công', 'error');
+        }
+    },
+
+    /**
+     * SALARY MANAGEMENT MODULE
+     * Admin manages employee salaries
+     */
+    async renderSalaryManagement() {
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">payments</span>
+                    Quản Lý Lương
+                </h1>
+                <button id="btnAddSalary" class="btn btn-primary">
+                    <span class="material-icons">add</span>
+                    Thêm Lương
+                </button>
+            </div>
+            
+            <div class="content-body">
+                <!-- Filter Section -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tháng:</label>
+                            <select id="filterSalaryMonth" class="form-control">
+                                ${Array.from({length: 12}, (_, i) => `<option value="${i+1}">Tháng ${i+1}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Phòng ban:</label>
+                            <select id="filterSalaryDept" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="IT">Công nghệ thông tin</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="SALES">Kinh doanh</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btnFilterSalary" class="btn btn-primary" style="width: 100%;">
+                                <span class="material-icons" style="font-size: 18px;">search</span>
+                                Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary List -->
+                <div id="salaryList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initSalaryManagement() {
+        await this.loadSalaries();
+        
+        document.getElementById('btnAddSalary')?.addEventListener('click', () => {
+            this.showAddSalaryForm();
+        });
+        
+        document.getElementById('btnFilterSalary')?.addEventListener('click', () => {
+            this.loadSalaries();
+        });
+    },
+
+    async loadSalaries() {
+        const container = document.getElementById('salaryList');
+        if (!container) return;
+        
+        // Mock data
+        const mockSalaries = [
+            {
+                employeeId: 'E102',
+                employeeName: 'Trần Văn B',
+                department: 'IT',
+                position: 'Developer',
+                baseSalary: 15000000,
+                allowances: 2000000,
+                bonus: 1000000,
+                deductions: 500000,
+                netSalary: 17500000,
+                month: 11,
+                year: 2025,
+                status: 'paid'
+            },
+            {
+                employeeId: 'E103',
+                employeeName: 'Phạm Thị C',
+                department: 'HR',
+                position: 'HR Manager',
+                baseSalary: 20000000,
+                allowances: 3000000,
+                bonus: 2000000,
+                deductions: 1000000,
+                netSalary: 24000000,
+                month: 11,
+                year: 2025,
+                status: 'pending'
+            }
+        ];
+        
+        container.innerHTML = mockSalaries.map(salary => `
+            <div class="list-item" style="cursor: pointer;" data-employee-id="${salary.employeeId}">
+                <div class="list-item-content">
+                    <div class="list-item-title">
+                        ${salary.employeeName} (${salary.employeeId})
+                        ${salary.status === 'paid' ? 
+                            '<span class="badge badge-success">Đã chi trả</span>' : 
+                            '<span class="badge badge-warning">Chờ chi trả</span>'}
+                    </div>
+                    <div class="list-item-subtitle">
+                        ${salary.department} - ${salary.position} | Tháng ${salary.month}/${salary.year}
+                    </div>
+                    <div class="list-item-meta">
+                        Lương CB: ${this.formatCurrency(salary.baseSalary)} | 
+                        Phụ cấp: ${this.formatCurrency(salary.allowances)} | 
+                        Thưởng: ${this.formatCurrency(salary.bonus)} | 
+                        <strong>Thực lĩnh: ${this.formatCurrency(salary.netSalary)}</strong>
+                    </div>
+                </div>
+                <div class="list-item-action">
+                    <button class="btn btn-sm btn-secondary edit-salary" data-id="${salary.employeeId}">
+                        <span class="material-icons">edit</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.edit-salary').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showEditSalaryForm(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', { 
+            style: 'currency', 
+            currency: 'VND' 
+        }).format(amount);
+    },
+
+    showAddSalaryForm() {
+        showNotification('Chức năng thêm lương sẽ được phát triển', 'info');
+    },
+
+    showEditSalaryForm(employeeId) {
+        showNotification(`Chỉnh sửa lương cho ${employeeId}`, 'info');
+    },
+
+    /**
+     * EMPLOYEE MANAGEMENT MODULE
+     * Admin manages employee records
+     */
+    async renderEmployeeManagement() {
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">people</span>
+                    Quản Lý Nhân Viên
+                </h1>
+                <button id="btnAddEmployee" class="btn btn-primary">
+                    <span class="material-icons">person_add</span>
+                    Thêm Nhân Viên
+                </button>
+            </div>
+            
+            <div class="content-body">
+                <!-- Search and Filter -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px;">
+                        <input type="text" id="searchEmployee" class="form-control" placeholder="Tìm kiếm theo tên hoặc mã NV...">
+                        <button id="btnSearchEmployee" class="btn btn-primary">
+                            <span class="material-icons">search</span>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Employee List -->
+                <div id="employeeList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initEmployeeManagement() {
+        await this.loadEmployees();
+        
+        document.getElementById('btnAddEmployee')?.addEventListener('click', () => {
+            this.showAddEmployeeForm();
+        });
+        
+        document.getElementById('btnSearchEmployee')?.addEventListener('click', () => {
+            this.loadEmployees();
+        });
+        
+        document.getElementById('searchEmployee')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.loadEmployees();
+            }
+        });
+    },
+
+    async loadEmployees() {
+        const container = document.getElementById('employeeList');
+        if (!container) return;
+        
+        const searchTerm = document.getElementById('searchEmployee')?.value.toLowerCase() || '';
+        
+        // Mock data
+        const mockEmployees = [
+            {
+                employeeId: 'E101',
+                fullName: 'Nguyễn Thị Lan',
+                email: 'lan.nguyen@company.com',
+                phone: '0901234567',
+                department: 'HR',
+                position: 'Manager',
+                status: 'active',
+                joinDate: '2023-01-15'
+            },
+            {
+                employeeId: 'E102',
+                fullName: 'Trần Văn B',
+                email: 'b.tran@company.com',
+                phone: '0912345678',
+                department: 'IT',
+                position: 'Developer',
+                status: 'active',
+                joinDate: '2023-03-20'
+            },
+            {
+                employeeId: 'E103',
+                fullName: 'Phạm Thị C',
+                email: 'c.pham@company.com',
+                phone: '0923456789',
+                department: 'SALES',
+                position: 'Sales Executive',
+                status: 'inactive',
+                joinDate: '2022-06-10'
+            }
+        ];
+        
+        const filtered = mockEmployees.filter(emp => {
+            if (!searchTerm) return true;
+            return emp.employeeId.toLowerCase().includes(searchTerm) ||
+                   emp.fullName.toLowerCase().includes(searchTerm);
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state">Không tìm thấy nhân viên</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(emp => `
+            <div class="list-item" style="cursor: pointer;" data-employee-id="${emp.employeeId}">
+                <div class="list-item-content">
+                    <div class="list-item-title">
+                        ${emp.fullName} (${emp.employeeId})
+                        ${emp.status === 'active' ? 
+                            '<span class="badge badge-success">Đang làm việc</span>' : 
+                            '<span class="badge badge-secondary">Đã nghỉ</span>'}
+                    </div>
+                    <div class="list-item-subtitle">
+                        ${emp.department} - ${emp.position}
+                    </div>
+                    <div class="list-item-meta">
+                        ${emp.email} | ${emp.phone} | Vào: ${emp.joinDate}
+                    </div>
+                </div>
+                <div class="list-item-action">
+                    <button class="btn btn-sm btn-secondary edit-employee" data-id="${emp.employeeId}">
+                        <span class="material-icons">edit</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-employee" data-id="${emp.employeeId}">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.edit-employee').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showEditEmployeeForm(btn.getAttribute('data-id'));
+            });
+        });
+        
+        document.querySelectorAll('.delete-employee').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteEmployee(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    showAddEmployeeForm() {
+        showNotification('Form thêm nhân viên sẽ được phát triển', 'info');
+    },
+
+    showEditEmployeeForm(employeeId) {
+        showNotification(`Chỉnh sửa thông tin ${employeeId}`, 'info');
+    },
+
+    deleteEmployee(employeeId) {
+        if (!confirm(`Xác nhận xóa nhân viên ${employeeId}?`)) return;
+        showNotification('Đã xóa nhân viên', 'success');
+        this.loadEmployees();
+    },
+
+    /**
+     * SCHEDULE MANAGEMENT MODULE
+     * Manager creates and assigns schedules
+     */
+    async renderScheduleManagement() {
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
+        
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">event</span>
+                    Xếp Lịch Làm Việc
+                </h1>
+                <button id="btnCreateSchedule" class="btn btn-primary">
+                    <span class="material-icons">add</span>
+                    Tạo Lịch
+                </button>
+            </div>
+            
+            <div class="content-body">
+                <!-- Week Selector -->
+                <div class="week-selector" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="btnPrevWeek" class="btn btn-secondary">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <h3 id="weekDisplay" style="margin: 0;">Tuần ${this.getWeekNumber(startOfWeek)}</h3>
+                    <button id="btnNextWeek" class="btn btn-secondary">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                </div>
+
+                <!-- Schedule Grid -->
+                <div id="scheduleGrid" style="overflow-x: auto;">
+                    <div class="loading">Đang tải lịch...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initScheduleManagement() {
+        this.currentWeekStart = this.getMonday(new Date());
+        await this.loadScheduleGrid();
+        
+        document.getElementById('btnPrevWeek')?.addEventListener('click', () => {
+            this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+            this.loadScheduleGrid();
+        });
+        
+        document.getElementById('btnNextWeek')?.addEventListener('click', () => {
+            this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+            this.loadScheduleGrid();
+        });
+        
+        document.getElementById('btnCreateSchedule')?.addEventListener('click', () => {
+            this.showCreateScheduleForm();
+        });
+    },
+
+    getMonday(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    },
+
+    getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    },
+
+    async loadScheduleGrid() {
+        const container = document.getElementById('scheduleGrid');
+        if (!container) return;
+        
+        const weekDisplay = document.getElementById('weekDisplay');
+        if (weekDisplay) {
+            weekDisplay.textContent = `Tuần ${this.getWeekNumber(this.currentWeekStart)}`;
+        }
+        
+        // Mock employees
+        const employees = ['E101 - Nguyễn Thị Lan', 'E102 - Trần Văn B', 'E103 - Phạm Thị C'];
+        const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+        const shifts = ['Ca sáng', 'Ca chiều', 'Ca tối', 'OFF'];
+        
+        let html = `
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--card-bg, #242526);">
+                        <th style="padding: 12px; border: 1px solid var(--border-color, #3a3b3c); text-align: left;">Nhân viên</th>
+                        ${days.map(day => `<th style="padding: 12px; border: 1px solid var(--border-color, #3a3b3c); text-align: center;">${day}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        employees.forEach(emp => {
+            html += '<tr>';
+            html += `<td style="padding: 12px; border: 1px solid var(--border-color, #3a3b3c);">${emp}</td>`;
+            days.forEach((_, idx) => {
+                const shift = shifts[Math.floor(Math.random() * shifts.length)];
+                const bgColor = shift === 'OFF' ? 'var(--danger, #e74c3c)' : 
+                                shift === 'Ca sáng' ? 'var(--info, #3498db)' :
+                                shift === 'Ca chiều' ? 'var(--warning, #f39c12)' :
+                                'var(--secondary, #95a5a6)';
+                html += `<td style="padding: 8px; border: 1px solid var(--border-color, #3a3b3c); text-align: center; background: ${bgColor}20;">
+                    <div style="font-size: 12px;">${shift}</div>
+                </td>`;
+            });
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    },
+
+    showCreateScheduleForm() {
+        showNotification('Form tạo lịch sẽ được phát triển', 'info');
+    }
