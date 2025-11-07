@@ -2841,9 +2841,7 @@ const DashboardContent = {
             console.error('Error saving settings:', error);
             showNotification('Lỗi khi lưu cài đặt', 'error');
         }
-    }
-};
-,
+    },
 
     /**
      * ATTENDANCE APPROVAL MODULE
@@ -3677,3 +3675,4 @@ const DashboardContent = {
     showCreateScheduleForm() {
         showNotification('Form tạo lịch sẽ được phát triển', 'info');
     }
+};
