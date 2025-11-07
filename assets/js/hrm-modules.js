@@ -1429,8 +1429,7 @@ const HRMModules = {
                                         <option value="leave">Nghỉ phép</option>
                                         <option value="overtime">Đăng ký tăng ca</option>
                                         <option value="shift_change">Đổi ca làm việc</option>
-                                        <option value="forgot_checkin">Quên chấm công vào</option>
-                                        <option value="forgot_checkout">Quên chấm công ra</option>
+                                        <option value="forgot_attendance">Quên chấm công</option>
                                         <option value="early_leave">Xin về sớm</option>
                                         <option value="late_arrival">Xin đi muộn</option>
                                         <option value="other">Khác</option>
@@ -1555,6 +1554,7 @@ const HRMModules = {
                     if (desiredShiftGroup) desiredShiftGroup.style.display = 'block';
                     break;
                     
+                case 'forgot_attendance':
                 case 'forgot_checkin':
                 case 'forgot_checkout':
                     // Date + actual time + reason
@@ -1694,8 +1694,9 @@ const HRMModules = {
                 'leave': 'event_busy',
                 'overtime': 'schedule',
                 'shift_change': 'swap_horiz',
-                'forgot_checkin': 'login',
-                'forgot_checkout': 'logout',
+                'forgot_attendance': 'schedule',
+                'forgot_checkin': 'schedule',
+                'forgot_checkout': 'schedule',
                 'shift_swap': 'swap_calls',
                 'general': 'help_outline',
                 // Legacy support
@@ -1711,8 +1712,9 @@ const HRMModules = {
                 'leave': 'Nghỉ phép',
                 'overtime': 'Tăng ca',
                 'shift_change': 'Đổi ca',
-                'forgot_checkin': 'Quên chấm công vào',
-                'forgot_checkout': 'Quên chấm công ra',
+                'forgot_attendance': 'Quên chấm công',
+                'forgot_checkin': 'Quên chấm công',
+                'forgot_checkout': 'Quên chấm công',
                 'shift_swap': 'Đổi ca với đồng nghiệp',
                 'general': 'Yêu cầu chung',
                 // Legacy support
@@ -1794,17 +1796,28 @@ const HRMModules = {
                     `;
                     break;
                     
+                case 'forgot_attendance':
                 case 'forgot_checkin':
                 case 'forgot_checkout':
+                    // Quên chấm công: requestDate, actualTime (extracted from description), reason
+                    // Extract time from description if present (e.g., "Quên chấm công vào lúc 08:00")
+                    let forgotTime = request.actualTime || '';
+                    if (!forgotTime && request.description) {
+                        const timeMatch = request.description.match(/(\d{1,2}:\d{2})/);
+                        if (timeMatch) {
+                            forgotTime = timeMatch[1];
+                        }
+                    }
+                    
                     typeSpecificFields = `
                         <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
                             <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày quên chấm:</span>
                             <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
                         </div>
-                        ${request.actualTime ? `
+                        ${forgotTime ? `
                         <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian thực tế:</span>
-                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.actualTime}</span>
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ quên chấm công:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${forgotTime}</span>
                         </div>
                         ` : ''}
                     `;

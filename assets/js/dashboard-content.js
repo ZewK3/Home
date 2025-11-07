@@ -796,10 +796,10 @@ const DashboardContent = {
         let html = '<div class="list">';
         todayRecords.forEach(record => {
             const checkTypeName = {
-                'in': 'Chấm vào',
-                'out': 'Chấm ra',
-                'checkin': 'Chấm vào',
-                'checkout': 'Chấm ra'
+                'in': 'Chấm công',
+                'out': 'Chấm công',
+                'checkin': 'Chấm công',
+                'checkout': 'Chấm công'
             }[record.checkType] || 'Chấm công';
 
             html += `
@@ -1014,8 +1014,7 @@ const DashboardContent = {
                                 <option value="leave">Nghỉ phép</option>
                                 <option value="overtime">Làm thêm giờ</option>
                                 <option value="shift_change">Điều chỉnh ca</option>
-                                <option value="forgot_checkin">Quên chấm công vào</option>
-                                <option value="forgot_checkout">Quên chấm công ra</option>
+                                <option value="forgot_attendance">Quên chấm công</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -2188,8 +2187,9 @@ const DashboardContent = {
             'overtime': 'schedule',
             'shift_change': 'swap_horiz',
             'shift_swap': 'swap_calls',
-            'forgot_checkin': 'login',
-            'forgot_checkout': 'logout',
+            'forgot_attendance': 'schedule',
+            'forgot_checkin': 'schedule',
+            'forgot_checkout': 'schedule',
             'early_leave': 'exit_to_app',
             'late_arrival': 'access_time',
             'general': 'help_outline',
@@ -2204,8 +2204,9 @@ const DashboardContent = {
             'overtime': 'Tăng ca',
             'shift_change': 'Đổi ca',
             'shift_swap': 'Đổi ca với đồng nghiệp',
-            'forgot_checkin': 'Quên chấm công vào',
-            'forgot_checkout': 'Quên chấm công ra',
+            'forgot_attendance': 'Quên chấm công',
+            'forgot_checkin': 'Quên chấm công',
+            'forgot_checkout': 'Quên chấm công',
             'early_leave': 'Về sớm',
             'late_arrival': 'Đi muộn',
             'general': 'Yêu cầu chung',
@@ -2427,18 +2428,28 @@ const DashboardContent = {
                 `;
                 break;
                 
+            case 'forgot_attendance':
             case 'forgot_checkin':
             case 'forgot_checkout':
-                // Quên chấm công: requestDate, actualTime, reason
+                // Quên chấm công: requestDate, actualTime (extracted from description), reason
+                // Extract time from description if present (e.g., "Quên chấm công vào lúc 08:00")
+                let forgotTime = request.actualTime || '';
+                if (!forgotTime && request.description) {
+                    const timeMatch = request.description.match(/(\d{1,2}:\d{2})/);
+                    if (timeMatch) {
+                        forgotTime = timeMatch[1];
+                    }
+                }
+                
                 typeSpecificFields = `
                     <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
                         <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày quên chấm:</span>
                         <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
                     </div>
-                    ${request.actualTime ? `
+                    ${forgotTime ? `
                     <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian thực tế:</span>
-                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.actualTime}</span>
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ quên chấm công:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${forgotTime}</span>
                     </div>
                     ` : ''}
                 `;
