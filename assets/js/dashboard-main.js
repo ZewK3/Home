@@ -273,7 +273,8 @@ function navigateToFunction(functionName) {
         'leave-request': 'Đơn Từ',
         'process-requests': 'Xử lý yêu cầu',
         'approve-registration': 'Duyệt đăng ký',
-        'grant-access': 'Phân quyền'
+        'grant-access': 'Phân quyền',
+        'system-settings': 'Cài Đặt Hệ Thống'
     };
     headerTitle.textContent = titles[functionName] || 'Dashboard';
 
@@ -297,12 +298,14 @@ async function renderContent(functionName) {
         'leave-request': 'renderLeaveRequest',
         'process-requests': 'renderProcessRequests',
         'approve-registration': 'renderApproveRegistration',
-        'grant-access': 'renderGrantAccess'
+        'grant-access': 'renderGrantAccess',
+        'system-settings': 'renderSystemSettings'
     };
     
     // Init methods that should be called after rendering
     const initMethods = {
-        'process-requests': 'initProcessRequests'
+        'process-requests': 'initProcessRequests',
+        'system-settings': 'initSystemSettings'
     };
 
     const methodName = contentMethods[functionName] || 'renderHome';

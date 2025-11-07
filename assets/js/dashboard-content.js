@@ -2534,5 +2534,301 @@ const DashboardContent = {
                 });
             }
         }
+    },
+    
+    /**
+     * System Settings Module
+     */
+    async renderSystemSettings() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">settings</span>
+                        Cài Đặt Hệ Thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="settings-tabs">
+                        <button class="tab-btn active" data-tab="general">
+                            <span class="material-icons-round">tune</span>
+                            Chung
+                        </button>
+                        <button class="tab-btn" data-tab="attendance">
+                            <span class="material-icons-round">schedule</span>
+                            Chấm công
+                        </button>
+                        <button class="tab-btn" data-tab="notifications">
+                            <span class="material-icons-round">notifications</span>
+                            Thông báo
+                        </button>
+                        <button class="tab-btn" data-tab="security">
+                            <span class="material-icons-round">security</span>
+                            Bảo mật
+                        </button>
+                    </div>
+                    
+                    <div class="settings-content">
+                        <!-- General Settings Tab -->
+                        <div class="tab-content active" id="general-tab">
+                            <h3 class="section-title">Cài Đặt Chung</h3>
+                            <form id="generalSettingsForm">
+                                <div class="form-group">
+                                    <label for="companyName">Tên công ty</label>
+                                    <input type="text" id="companyName" class="form-control" value="Công Ty TNHH ABC" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="timezone">Múi giờ</label>
+                                    <select id="timezone" class="form-control">
+                                        <option value="Asia/Ho_Chi_Minh" selected>Việt Nam (GMT+7)</option>
+                                        <option value="Asia/Bangkok">Thailand (GMT+7)</option>
+                                        <option value="Asia/Singapore">Singapore (GMT+8)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="language">Ngôn ngữ</label>
+                                    <select id="language" class="form-control">
+                                        <option value="vi" selected>Tiếng Việt</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dateFormat">Định dạng ngày</label>
+                                    <select id="dateFormat" class="form-control">
+                                        <option value="dd/MM/yyyy" selected>DD/MM/YYYY</option>
+                                        <option value="MM/dd/yyyy">MM/DD/YYYY</option>
+                                        <option value="yyyy-MM-dd">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Attendance Settings Tab -->
+                        <div class="tab-content" id="attendance-tab">
+                            <h3 class="section-title">Cài Đặt Chấm Công</h3>
+                            <form id="attendanceSettingsForm">
+                                <div class="form-group">
+                                    <label for="gpsRadius">Bán kính GPS cho phép (mét)</label>
+                                    <input type="number" id="gpsRadius" class="form-control" value="100" min="10" max="1000" required>
+                                    <small class="form-text">Nhân viên phải ở trong bán kính này để chấm công</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lateThreshold">Thời gian trễ tối đa (phút)</label>
+                                    <input type="number" id="lateThreshold" class="form-control" value="15" min="0" max="60" required>
+                                    <small class="form-text">Số phút trễ được xem là "Đi trễ" thay vì "Vắng"</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="requirePhoto">
+                                        <input type="checkbox" id="requirePhoto" checked>
+                                        Yêu cầu chụp ảnh khi chấm công
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="allowMultipleCheckins">
+                                        <input type="checkbox" id="allowMultipleCheckins" checked>
+                                        Cho phép chấm công nhiều lần trong ngày
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="autoApproveOvertimeHours">Số giờ tăng ca tự động duyệt</label>
+                                    <input type="number" id="autoApproveOvertimeHours" class="form-control" value="0" min="0" max="24" step="0.5">
+                                    <small class="form-text">0 = Không tự động duyệt</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Notification Settings Tab -->
+                        <div class="tab-content" id="notifications-tab">
+                            <h3 class="section-title">Cài Đặt Thông Báo</h3>
+                            <form id="notificationSettingsForm">
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="emailNotifications" checked>
+                                        Gửi email thông báo
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="smsNotifications">
+                                        Gửi SMS thông báo
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="pushNotifications" checked>
+                                        Thông báo đẩy (Push notification)
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <h4>Loại thông báo</h4>
+                                    <label>
+                                        <input type="checkbox" id="notifyRequests" checked>
+                                        Yêu cầu mới từ nhân viên
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="notifyTimesheet" checked>
+                                        Bảng công cần duyệt
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="notifySchedule" checked>
+                                        Lịch làm việc mới
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="notifyBirthday" checked>
+                                        Sinh nhật nhân viên
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Security Settings Tab -->
+                        <div class="tab-content" id="security-tab">
+                            <h3 class="section-title">Cài Đặt Bảo Mật</h3>
+                            <form id="securitySettingsForm">
+                                <div class="form-group">
+                                    <label for="sessionTimeout">Thời gian hết phiên (phút)</label>
+                                    <input type="number" id="sessionTimeout" class="form-control" value="30" min="5" max="480" required>
+                                    <small class="form-text">Tự động đăng xuất sau thời gian không hoạt động</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwordMinLength">Độ dài mật khẩu tối thiểu</label>
+                                    <input type="number" id="passwordMinLength" class="form-control" value="8" min="6" max="32" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="requirePasswordComplex" checked>
+                                        Yêu cầu mật khẩu phức tạp (chữ hoa, chữ thường, số, ký tự đặc biệt)
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwordExpiryDays">Mật khẩu hết hạn sau (ngày)</label>
+                                    <input type="number" id="passwordExpiryDays" class="form-control" value="90" min="0" max="365">
+                                    <small class="form-text">0 = Không hết hạn</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="maxLoginAttempts">Số lần đăng nhập sai tối đa</label>
+                                    <input type="number" id="maxLoginAttempts" class="form-control" value="5" min="3" max="10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lockoutDuration">Thời gian khóa tài khoản (phút)</label>
+                                    <input type="number" id="lockoutDuration" class="form-control" value="15" min="5" max="120" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="enable2FA">
+                                        Bật xác thực hai yếu tố (2FA)
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    
+    async initSystemSettings() {
+        // Load current settings
+        await this.loadSystemSettings();
+        
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.getAttribute('data-tab');
+                this.switchSettingsTab(tab);
+            });
+        });
+        
+        // Form submissions
+        const forms = [
+            'generalSettingsForm',
+            'attendanceSettingsForm',
+            'notificationSettingsForm',
+            'securitySettingsForm'
+        ];
+        
+        forms.forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSettings(formId);
+                });
+            }
+        });
+    },
+    
+    switchSettingsTab(tabName) {
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        // Update active tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    },
+    
+    async loadSystemSettings() {
+        try {
+            const settings = await apiClient.get('/settings');
+            
+            if (settings && settings.data) {
+                // Populate form fields with saved settings
+                Object.keys(settings.data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = settings.data[key];
+                        } else {
+                            element.value = settings.data[key];
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            // Use default values from HTML
+        }
+    },
+    
+    async saveSettings(formId) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        
+        const formData = new FormData(form);
+        const settings = {};
+        
+        // Get all form inputs
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox') {
+                settings[input.id] = input.checked;
+            } else {
+                settings[input.id] = input.value;
+            }
+        });
+        
+        try {
+            await apiClient.post('/settings', settings);
+            showNotification('Đã lưu cài đặt thành công', 'success');
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            showNotification('Lỗi khi lưu cài đặt', 'error');
+        }
     }
 };
