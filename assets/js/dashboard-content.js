@@ -766,25 +766,48 @@ const DashboardContent = {
         const container = document.getElementById('attendanceHistory');
         if (!container) return;
 
+        // Only get today's attendance records
         const today = new Date();
-        const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-        const endDate = today.toISOString().split('T')[0];
+        const todayStr = today.toISOString().split('T')[0];
 
-        const attendance = await apiClient.get('/attendance', { employeeId: this.employeeId, startDate, endDate });
+        const attendance = await apiClient.get('/attendance', { 
+            employeeId: this.employeeId, 
+            startDate: todayStr, 
+            endDate: todayStr 
+        });
         
         if (!attendance || !attendance.data || attendance.data.length === 0) {
-            container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công</div>';
+            container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công hôm nay</div>';
+            return;
+        }
+
+        // Filter to only show today's records and records with valid checkTime
+        const todayRecords = attendance.data.filter(record => {
+            if (!record.checkDate || !record.checkTime) return false;
+            const recordDate = new Date(record.checkDate).toISOString().split('T')[0];
+            return recordDate === todayStr;
+        });
+
+        if (todayRecords.length === 0) {
+            container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công hôm nay</div>';
             return;
         }
 
         let html = '<div class="list">';
-        attendance.data.forEach(record => {
+        todayRecords.forEach(record => {
+            const checkTypeName = {
+                'in': 'Chấm vào',
+                'out': 'Chấm ra',
+                'checkin': 'Chấm vào',
+                'checkout': 'Chấm ra'
+            }[record.checkType] || 'Chấm công';
+
             html += `
                 <div class="list-item">
                     <div class="list-item-content">
-                        <div class="list-item-title">${record.checkDate}</div>
+                        <div class="list-item-title">${checkTypeName}</div>
                         <div class="list-item-subtitle">
-                            Thời gian: ${record.checkTime || 'N/A'}
+                            Thời gian: ${record.checkTime}
                         </div>
                     </div>
                 </div>
@@ -2332,16 +2355,107 @@ const DashboardContent = {
             'rejected': 'Đã từ chối'
         }[request.status] || request.status;
         
-        // Format date range or single date
-        let timeDisplay = '';
-        if (request.fromDate && request.toDate) {
-            timeDisplay = `${request.fromDate}${request.toDate !== request.fromDate ? ' đến ' + request.toDate : ''}`;
-        } else if (request.requestDate) {
-            timeDisplay = request.requestDate;
-        } else if (request.currentShiftDate && request.requestedShiftDate) {
-            timeDisplay = `Từ ${request.currentShiftDate} sang ${request.requestedShiftDate}`;
-        } else {
-            timeDisplay = 'Không rõ';
+        // Build type-specific fields based on requestType
+        let typeSpecificFields = '';
+        
+        switch(request.requestType) {
+            case 'leave':
+                // Nghỉ phép: fromDate, toDate, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Từ ngày:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.fromDate || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đến ngày:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.toDate || 'N/A'}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'overtime':
+                // Tăng ca: requestDate, startTime, endTime, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày tăng ca:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
+                    </div>
+                    ${request.startTime ? `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ bắt đầu:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.startTime}</span>
+                    </div>
+                    ` : ''}
+                    ${request.endTime ? `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ kết thúc:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.endTime}</span>
+                    </div>
+                    ` : ''}
+                `;
+                break;
+                
+            case 'shift_change':
+                // Đổi ca: currentShiftDate, currentShiftId, requestedShiftDate, requestedShiftId, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca hiện tại:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.currentShiftDate || 'N/A'} ${request.currentShiftId ? `(${request.currentShiftId})` : ''}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca muốn đổi:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestedShiftDate || 'N/A'} ${request.requestedShiftId ? `(${request.requestedShiftId})` : ''}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'shift_swap':
+                // Đổi ca với đồng nghiệp: currentShiftDate, requestedShiftDate, swapWithEmployeeId, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca hiện tại:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.currentShiftDate || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca muốn đổi:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestedShiftDate || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đổi với nhân viên:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.swapWithEmployeeId || 'N/A'}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'forgot_checkin':
+            case 'forgot_checkout':
+                // Quên chấm công: requestDate, actualTime, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày quên chấm:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
+                    </div>
+                    ${request.actualTime ? `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian thực tế:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.actualTime}</span>
+                    </div>
+                    ` : ''}
+                `;
+                break;
+                
+            case 'general':
+            default:
+                // Yêu cầu chung: requestDate, reason, description
+                if (request.requestDate) {
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày yêu cầu:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate}</span>
+                        </div>
+                    `;
+                }
+                break;
         }
         
         const modalHTML = `
@@ -2367,20 +2481,11 @@ const DashboardContent = {
                                 <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Nhân viên:</span>
                                 <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.employeeName || request.employeeId}</span>
                             </div>
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian:</span>
-                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${timeDisplay}</span>
-                            </div>
+                            ${typeSpecificFields}
                             <div class="detail-section" style="margin: 16px 0; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
                                 <h4 style="color: var(--text-secondary, #b0b3b8); margin: 0 0 8px 0; font-size: 14px;">Lý do:</h4>
                                 <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.reason || request.description || 'Không có'}</p>
                             </div>
-                            ${request.swapWithEmployeeId ? `
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đổi ca với:</span>
-                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.swapWithEmployeeId}</span>
-                            </div>
-                            ` : ''}
                             <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
                                 <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tạo lúc:</span>
                                 <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.createdAt).toLocaleString('vi-VN')}</span>

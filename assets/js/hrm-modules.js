@@ -1726,6 +1726,103 @@ const HRMModules = {
         showRequestDetail(request) {
             if (!request) return;
             
+            // Build type-specific fields based on requestType
+            let typeSpecificFields = '';
+            
+            switch(request.requestType) {
+                case 'leave':
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Từ ngày:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.fromDate || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đến ngày:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.toDate || 'N/A'}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'overtime':
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày tăng ca:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
+                        </div>
+                        ${request.startTime ? `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ bắt đầu:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.startTime}</span>
+                        </div>
+                        ` : ''}
+                        ${request.endTime ? `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ kết thúc:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.endTime}</span>
+                        </div>
+                        ` : ''}
+                    `;
+                    break;
+                    
+                case 'shift_change':
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca hiện tại:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.currentShiftDate || 'N/A'} ${request.currentShiftId ? `(${request.currentShiftId})` : ''}</span>
+                        </div>
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca muốn đổi:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestedShiftDate || 'N/A'} ${request.requestedShiftId ? `(${request.requestedShiftId})` : ''}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'shift_swap':
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca hiện tại:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.currentShiftDate || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca muốn đổi:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestedShiftDate || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đổi với nhân viên:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.swapWithEmployeeId || 'N/A'}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'forgot_checkin':
+                case 'forgot_checkout':
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày quên chấm:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
+                        </div>
+                        ${request.actualTime ? `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian thực tế:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.actualTime}</span>
+                        </div>
+                        ` : ''}
+                    `;
+                    break;
+                    
+                case 'general':
+                default:
+                    if (request.requestDate) {
+                        typeSpecificFields = `
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày yêu cầu:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate}</span>
+                            </div>
+                        `;
+                    }
+                    break;
+            }
+            
             const modalHTML = `
                 <div id="requestDetailModal" class="modal" style="display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; align-items: center; justify-content: center;">
                     <div class="modal-content" style="background: var(--bg-primary, #1c1e26); border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
@@ -1746,13 +1843,10 @@ const HRMModules = {
                                     ${request.status === 'approved' ? 'Đã duyệt' : request.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
                                 </span>
                             </div>
+                            ${typeSpecificFields}
                             <div class="detail-section" style="margin: 16px 0; padding: 12px 0;">
                                 <h4 style="color: var(--text-secondary, #b0b3b8); margin: 0 0 8px 0; font-size: 14px;">Lý do:</h4>
                                 <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.reason || request.description || 'Không có'}</p>
-                            </div>
-                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
-                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian:</span>
-                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.fromDate || request.requestDate || request.currentShiftDate || ''}${request.toDate && request.toDate !== request.fromDate ? ' đến ' + request.toDate : request.requestedShiftDate && request.requestedShiftDate !== request.currentShiftDate ? ' đến ' + request.requestedShiftDate : ''}</span>
                             </div>
                             <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
                                 <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tạo lúc:</span>
