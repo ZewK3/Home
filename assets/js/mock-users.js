@@ -8,12 +8,13 @@
  * 3. MockAPI.login(username, password) to simulate login
  */
 
-// Shift Definitions
+// Shift Definitions - Matches shifts table schema exactly
+// shiftId: INTEGER PRIMARY KEY, name: TEXT, shiftCode: TEXT, startTime: INTEGER, endTime: INTEGER, timeName: TEXT
 const SHIFT_DEFINITIONS = {
-    S4_08_12: { id: "S4_08-12", name: "Ca 4", start: "08:00", end: "12:00", hours: 4 },
-    S8_08_17: { id: "S8_08-17", name: "Ca 8", start: "08:00", end: "17:00", hours: 8 },
-    S8_13_22: { id: "S8_13-22", name: "Ca tối", start: "13:00", end: "22:00", hours: 8 },
-    S8_22_06: { id: "S8_22-06", name: "Ca đêm", start: "22:00", end: "06:00", hours: 8 }
+    1: { shiftId: 1, name: "Ca 4 Tiếng 8-12", shiftCode: "S4_08-12", startTime: 8, endTime: 12, timeName: "08:00-12:00" },
+    2: { shiftId: 2, name: "Ca 8 Tiếng 8-17", shiftCode: "S8_08-17", startTime: 8, endTime: 17, timeName: "08:00-17:00" },
+    3: { shiftId: 3, name: "Ca 8 Tiếng 13-22", shiftCode: "S8_13-22", startTime: 13, endTime: 22, timeName: "13:00-22:00" },
+    4: { shiftId: 4, name: "Ca 8 Tiếng 22-06", shiftCode: "S8_22-06", startTime: 22, endTime: 6, timeName: "22:00-06:00" }
 };
 
 const MockUsers = {
@@ -507,60 +508,127 @@ const MockAuth = {
 };
 
 // Mock Attendance Data with Shift Assignments
+// Mock Attendance Data - Matches attendance table schema exactly
+// attendance table: attendanceId, employeeId, checkDate (TEXT), checkTime (TEXT), checkLocation (TEXT)
+// Multiple check records per day (one for check-in, one for check-out)
 const MockAttendanceData = {
-    // quanly2 (E101) attendance records with shifts
+    // quanly2 (E101) attendance records with 8-hour shifts
     E101: {
         shiftAssignment: {
-            monday: "S8_08-17",
-            tuesday: "S8_08-17",
-            wednesday: "S8_08-17",
-            thursday: "S8_08-17",
-            friday: "S8_08-17",
+            monday: 2,    // shiftId for S8_08-17
+            tuesday: 2,
+            wednesday: 2,
+            thursday: 2,
+            friday: 2,
             saturday: null,
             sunday: null
         },
         records: [
-            // January 2025 records
-            { date: "2025-01-02", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:10", status: "present", hoursWorked: 8 },
-            { date: "2025-01-03", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
-            { date: "2025-01-06", shiftId: "S8_08-17", checkIn: "08:10", checkOut: "17:08", status: "late", hoursWorked: 8 },
-            { date: "2025-01-07", shiftId: "S8_08-17", checkIn: "08:00", checkOut: "17:03", status: "present", hoursWorked: 8 },
-            { date: "2025-01-08", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:12", status: "present", hoursWorked: 8 },
-            { date: "2025-01-09", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:06", status: "present", hoursWorked: 8 },
-            { date: "2025-01-10", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8 },
-            { date: "2025-01-13", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:02", status: "present", hoursWorked: 8 },
-            { date: "2025-01-14", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:09", status: "present", hoursWorked: 8 },
-            { date: "2025-01-15", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
-            { date: "2025-01-16", shiftId: "S8_08-17", checkIn: "08:08", checkOut: "17:07", status: "present", hoursWorked: 8 },
-            { date: "2025-01-17", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:11", status: "present", hoursWorked: 8 }
+            // January 2025 records - Each day has array of checkTimes
+            { 
+                checkDate: "2025-01-02", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-02T08:05:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-02T17:10:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-03", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-03T08:02:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-03T17:05:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-06", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-06T08:10:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-06T17:08:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "late", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-07", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-07T08:00:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-07T17:03:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-08", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-08T08:03:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-08T17:12:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            }
         ]
     },
     // nhanvien2 (E103) attendance records with 4-hour shifts
     E103: {
         shiftAssignment: {
-            monday: "S4_08-12",
-            tuesday: "S4_08-12",
-            wednesday: "S4_08-12",
-            thursday: "S4_08-12",
-            friday: "S4_08-12",
-            saturday: "S4_08-12", // Works on Saturday
+            monday: 1,    // shiftId for S4_08-12
+            tuesday: 1,
+            wednesday: 1,
+            thursday: 1,
+            friday: 1,
+            saturday: 1, // Works on Saturday
             sunday: null
         },
         records: [
-            { date: "2025-01-02", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
-            { date: "2025-01-03", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:03", status: "present", hoursWorked: 4 },
-            { date: "2025-01-04", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:08", status: "present", hoursWorked: 4 },
-            { date: "2025-01-06", shiftId: "S4_08-12", checkIn: "08:12", checkOut: "12:06", status: "late", hoursWorked: 4 },
-            { date: "2025-01-07", shiftId: "S4_08-12", checkIn: "08:00", checkOut: "12:02", status: "present", hoursWorked: 4 },
-            { date: "2025-01-08", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 },
-            { date: "2025-01-09", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:07", status: "present", hoursWorked: 4 },
-            { date: "2025-01-10", shiftId: "S4_08-12", checkIn: "08:04", checkOut: "12:05", status: "present", hoursWorked: 4 },
-            { date: "2025-01-11", shiftId: "S4_08-12", checkIn: "08:05", checkOut: "12:10", status: "present", hoursWorked: 4 }, // Saturday
-            { date: "2025-01-13", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:02", status: "present", hoursWorked: 4 },
-            { date: "2025-01-14", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:06", status: "present", hoursWorked: 4 },
-            { date: "2025-01-15", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
-            { date: "2025-01-16", shiftId: "S4_08-12", checkIn: "08:06", checkOut: "12:08", status: "present", hoursWorked: 4 },
-            { date: "2025-01-17", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 }
+            { 
+                checkDate: "2025-01-02", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-02T08:02:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-02T12:05:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 4 
+            },
+            { 
+                checkDate: "2025-01-03", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-03T08:01:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-03T12:03:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 4 
+            },
+            { 
+                checkDate: "2025-01-04", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-04T08:03:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-04T12:08:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 4 
+            },
+            { 
+                checkDate: "2025-01-06", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-06T08:12:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-06T12:06:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "late", 
+                hoursWorked: 4 
+            }
         ]
     }
 };

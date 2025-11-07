@@ -2918,6 +2918,7 @@ const DashboardContent = {
         const status = document.getElementById('filterStatus')?.value || 'pending';
         
         // Mock data - replace with actual API call
+        // Using checkTimes array to match attendance table schema
         const mockAttendance = [
             {
                 id: 1,
@@ -2925,8 +2926,10 @@ const DashboardContent = {
                 employeeName: 'Trần Văn B',
                 department: 'IT',
                 date: date,
-                checkIn: '08:05',
-                checkOut: '17:30',
+                checkTimes: [
+                    { checkTime: date + 'T08:05:00', checkType: 'in' },
+                    { checkTime: date + 'T17:30:00', checkType: 'out' }
+                ],
                 shift: 'Ca sáng (08:00-17:00)',
                 status: 'pending',
                 hours: 9.5,
@@ -2939,8 +2942,10 @@ const DashboardContent = {
                 employeeName: 'Phạm Thị C',
                 department: 'HR',
                 date: date,
-                checkIn: '08:00',
-                checkOut: '18:00',
+                checkTimes: [
+                    { checkTime: date + 'T08:00:00', checkType: 'in' },
+                    { checkTime: date + 'T18:00:00', checkType: 'out' }
+                ],
                 shift: 'Ca sáng (08:00-17:00)',
                 status: 'pending',
                 hours: 10,
@@ -2952,8 +2957,9 @@ const DashboardContent = {
                 employeeName: 'Lê Văn D',
                 department: 'SALES',
                 date: date,
-                checkIn: '08:00',
-                checkOut: null,
+                checkTimes: [
+                    { checkTime: date + 'T08:00:00', checkType: 'in' }
+                ],
                 shift: 'Ca sáng (08:00-17:00)',
                 status: 'pending',
                 hours: 0,
@@ -2995,7 +3001,13 @@ const DashboardContent = {
                             ${record.shift} | ${record.department}
                         </div>
                         <div class="list-item-meta">
-                            Vào: ${record.checkIn || 'N/A'} | Ra: ${record.checkOut || 'N/A'} | ${record.hours}h
+                            ${(() => {
+                                const inTime = record.checkTimes?.find(t => t.checkType === 'in');
+                                const outTime = record.checkTimes?.find(t => t.checkType === 'out');
+                                const inStr = inTime ? inTime.checkTime.substring(11, 16) : 'N/A';
+                                const outStr = outTime ? outTime.checkTime.substring(11, 16) : 'N/A';
+                                return `Vào: ${inStr} | Ra: ${outStr} | ${record.hours}h`;
+                            })()}
                             ${issues.length > 0 ? `<br><span style="color: var(--warning, #ffa500);">${issues.join(' • ')}</span>` : ''}
                         </div>
                     </div>
