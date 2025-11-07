@@ -1586,30 +1586,43 @@ const HRMModules = {
                 if (requests.data && requests.data.length > 0) {
                     container.innerHTML = `
                         <div class="requests-list">
-                            ${requests.data.map(req => `
-                                <div class="request-item ${req.status}">
+                            ${requests.data.map((req, index) => `
+                                <div class="request-item ${req.status}" data-request-index="${index}" style="cursor: pointer;">
                                     <div class="request-header">
                                         <div class="request-type">
-                                            <span class="material-icons-round">${this.getRequestIcon(req.type)}</span>
-                                            <strong>${this.getRequestTypeName(req.type)}</strong>
+                                            <span class="material-icons-round">${this.getRequestIcon(req.requestType)}</span>
+                                            <strong>${this.getRequestTypeName(req.requestType)}</strong>
                                         </div>
                                         <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
                                             ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Từ chối' : 'Chờ duyệt'}
                                         </span>
                                     </div>
                                     <div class="request-body">
-                                        <p><strong>Lý do:</strong> ${req.reason}</p>
-                                        <p><strong>Thời gian:</strong> ${req.startDate}${req.endDate ? ' đến ' + req.endDate : ''}</p>
+                                        <p><strong>Lý do:</strong> ${req.reason || req.description || 'Không có'}</p>
+                                        <p><strong>Thời gian:</strong> ${req.fromDate || req.requestDate || req.currentShiftDate || ''}${req.toDate && req.toDate !== req.fromDate ? ' đến ' + req.toDate : req.requestedShiftDate && req.requestedShiftDate !== req.currentShiftDate ? ' đến ' + req.requestedShiftDate : ''}</p>
                                         <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
                                         ${req.reviewedBy ? `
-                                        <p><small>Duyệt bởi: ${req.reviewerName} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
-                                        ${req.reviewNote ? `<p><small>Ghi chú: ${req.reviewNote}</small></p>` : ''}
+                                        <p><small>Duyệt bởi: ${req.reviewerName || 'Quản lý'} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
+                                        ${req.rejectionReason ? `<p><small>Lý do từ chối: ${req.rejectionReason}</small></p>` : ''}
                                         ` : ''}
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
                     `;
+                    
+                    // Store requests data for click handlers
+                    this.currentRequests = requests.data;
+                    
+                    // Add click event listeners to request items
+                    const requestItems = container.querySelectorAll('.request-item');
+                    requestItems.forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            const index = parseInt(item.getAttribute('data-request-index'));
+                            const request = this.currentRequests[index];
+                            this.showRequestDetail(request);
+                        });
+                    });
                 } else {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -1678,9 +1691,14 @@ const HRMModules = {
         
         getRequestIcon(type) {
             const icons = {
-                'leave': 'beach_access',
+                'leave': 'event_busy',
                 'overtime': 'schedule',
                 'shift_change': 'swap_horiz',
+                'forgot_checkin': 'login',
+                'forgot_checkout': 'logout',
+                'shift_swap': 'swap_calls',
+                'general': 'help_outline',
+                // Legacy support
                 'early_leave': 'logout',
                 'late_arrival': 'login',
                 'other': 'help'
@@ -1691,13 +1709,82 @@ const HRMModules = {
         getRequestTypeName(type) {
             const names = {
                 'leave': 'Nghỉ phép',
-                'overtime': 'Đăng ký tăng ca',
-                'shift_change': 'Đổi ca làm việc',
+                'overtime': 'Tăng ca',
+                'shift_change': 'Đổi ca',
+                'forgot_checkin': 'Quên chấm công vào',
+                'forgot_checkout': 'Quên chấm công ra',
+                'shift_swap': 'Đổi ca với đồng nghiệp',
+                'general': 'Yêu cầu chung',
+                // Legacy support
                 'early_leave': 'Xin về sớm',
                 'late_arrival': 'Xin đi muộn',
                 'other': 'Yêu cầu khác'
             };
             return names[type] || type;
+        },
+        
+        showRequestDetail(request) {
+            if (!request) return;
+            
+            const modalHTML = `
+                <div id="requestDetailModal" class="modal" style="display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; align-items: center; justify-content: center;">
+                    <div class="modal-content" style="background: var(--bg-primary, #1c1e26); border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                        <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139); display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="margin: 0; color: var(--text-primary, #e4e6eb); font-size: 20px;">Chi tiết đơn từ</h3>
+                            <button onclick="document.getElementById('requestDetailModal').remove()" style="background: none; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; font-size: 24px; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                <span class="material-icons-round">close</span>
+                            </button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px;">
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Loại đơn:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 500;">${this.getRequestTypeName(request.requestType)}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</span>
+                                <span class="badge badge-${request.status === 'approved' ? 'success' : request.status === 'rejected' ? 'danger' : 'warning'}">
+                                    ${request.status === 'approved' ? 'Đã duyệt' : request.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
+                                </span>
+                            </div>
+                            <div class="detail-section" style="margin: 16px 0; padding: 12px 0;">
+                                <h4 style="color: var(--text-secondary, #b0b3b8); margin: 0 0 8px 0; font-size: 14px;">Lý do:</h4>
+                                <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.reason || request.description || 'Không có'}</p>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Thời gian:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.fromDate || request.requestDate || request.currentShiftDate || ''}${request.toDate && request.toDate !== request.fromDate ? ' đến ' + request.toDate : request.requestedShiftDate && request.requestedShiftDate !== request.currentShiftDate ? ' đến ' + request.requestedShiftDate : ''}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tạo lúc:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.createdAt).toLocaleString('vi-VN')}</span>
+                            </div>
+                            ${request.reviewedBy ? `
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Duyệt bởi:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.reviewerName || 'Quản lý'}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Duyệt lúc:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.reviewedAt).toLocaleString('vi-VN')}</span>
+                            </div>
+                            ${request.rejectionReason ? `
+                            <div class="detail-section" style="margin: 16px 0; padding: 12px 0;">
+                                <h4 style="color: var(--error, #f85149); margin: 0 0 8px 0; font-size: 14px;">Lý do từ chối:</h4>
+                                <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.rejectionReason}</p>
+                            </div>
+                            ` : ''}
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
+                            <button class="btn btn-secondary" onclick="document.getElementById('requestDetailModal').remove()" style="padding: 10px 20px; background: var(--bg-secondary, #2d3139); color: var(--text-primary, #e4e6eb); border: none; border-radius: 8px; cursor: pointer;">
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         },
         
         /**
