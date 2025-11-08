@@ -65,14 +65,13 @@ const HRMModules = {
                         </div>
                     </div>
                     
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h3>Đăng Ký Chờ Duyệt</h3>
+                    <div class="section">
+                        <h3 class="section-title">Đăng Ký Chờ Duyệt</h3>
                             <button class="btn btn-primary btn-sm" onclick="HRMRouter.navigateTo('approve-registration')">
                                 Xem Tất Cả
                             </button>
                         </div>
-                        <div class="card-body">
+                        <div class="section-body">
                             ${pendingRegs.data?.length > 0 ? 
                                 `<div class="list-group">
                                     ${pendingRegs.data.slice(0, 5).map(reg => `
@@ -107,15 +106,14 @@ const HRMModules = {
          */
         async renderEmployeeManagement() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Quản Lý Nhân Viên</h3>
+                <div class="section">
+                    <h3 class="section-title">Quản Lý Nhân Viên</h3>
                         <button class="btn btn-primary" onclick="HRMModules.VP.showAddEmployeeForm()">
                             <span class="material-icons-round">person_add</span>
                             Thêm Nhân Viên
                         </button>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <div class="filters mb-3">
                             <select id="filterDepartment" class="form-select">
                                 <option value="">Tất cả phòng ban</option>
@@ -232,11 +230,10 @@ const HRMModules = {
          */
         async renderApproveRegistration() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Duyệt Đăng Ký</h3>
+                <div class="section">
+                    <h3 class="section-title">Duyệt Đăng Ký</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <div id="registrationList">
                             <div class="loading-container">
                                 <div class="spinner"></div>
@@ -326,11 +323,10 @@ const HRMModules = {
          */
         async renderDepartments() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Danh Sách Phòng Ban</h3>
+                <div class="section">
+                    <h3 class="section-title">Danh Sách Phòng Ban</h3>
                     </div>
-                    <div class="card-body" id="departmentList">
+                    <div class="section-body" id="departmentList">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -349,7 +345,7 @@ const HRMModules = {
                     listEl.innerHTML = `
                         <div class="grid grid-cols-2">
                             ${result.data.map(dept => `
-                                <div class="card">
+                                <div class="section">
                                     <h4>${dept.departmentName}</h4>
                                     <p>Mã: ${dept.departmentCode}</p>
                                     <p>Giờ làm: ${dept.workHoursPerDay}h/ngày</p>
@@ -371,14 +367,13 @@ const HRMModules = {
          */
         async renderPositions() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Danh Sách Chức Vụ</h3>
+                <div class="section">
+                    <h3 class="section-title">Danh Sách Chức Vụ</h3>
                         <select id="positionDepartmentFilter" class="form-select">
                             <option value="">Tất cả phòng ban</option>
                         </select>
                     </div>
-                    <div class="card-body" id="positionList">
+                    <div class="section-body" id="positionList">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -452,9 +447,8 @@ const HRMModules = {
          */
         async renderSalaryManagement() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Quản Lý Lương</h3>
+                <div class="section">
+                    <h3 class="section-title">Quản Lý Lương</h3>
                         <div class="filters">
                             <select id="salaryMonth" class="form-select">
                                 ${Array.from({length: 12}, (_, i) => `<option value="${i+1}">Tháng ${i+1}</option>`).join('')}
@@ -470,7 +464,7 @@ const HRMModules = {
                             </button>
                         </div>
                     </div>
-                    <div class="card-body" id="salaryList">
+                    <div class="section-body" id="salaryList">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -616,11 +610,10 @@ const HRMModules = {
          */
         async renderTimesheetApproval() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Duyệt Bảng Công</h3>
+                <div class="section">
+                    <h3 class="section-title">Duyệt Bảng Công</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <p class="text-muted">Chức năng đang được phát triển</p>
                     </div>
                 </div>
@@ -636,11 +629,10 @@ const HRMModules = {
          */
         async renderReports() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Báo Cáo & Thống Kê</h3>
+                <div class="section">
+                    <h3 class="section-title">Báo Cáo & Thống Kê</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <p class="text-muted">Chức năng đang được phát triển</p>
                     </div>
                 </div>
@@ -665,7 +657,7 @@ const HRMModules = {
             
             return `
                 <div class="dashboard-welcome">
-                    <h2>Xin chào, ${userData?.fullName || 'User'}!</h2>
+                    <h2>Xin chào, ${userData?.fullName || 'User'}!</span>
                     <p>${userData?.positionName || 'Nhân viên'} - ${userData?.departmentName || 'Store'}</p>
                 </div>
                 
@@ -817,11 +809,10 @@ const HRMModules = {
          */
         async renderAttendance() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Chấm Công</h3>
+                <div class="section">
+                    <h3 class="section-title">Chấm Công</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <!-- Single Attendance Button -->
                         <div class="attendance-single-action">
                             <button class="btn-attendance-primary" id="attendanceBtn" onclick="HRMModules.CH.handleAttendance()">
@@ -1007,11 +998,10 @@ const HRMModules = {
          */
         async renderSchedule() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Lịch Làm Việc</h3>
+                <div class="section">
+                    <h3 class="section-title">Lịch Làm Việc</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <p class="text-muted">Chức năng đang được phát triển</p>
                     </div>
                 </div>
@@ -1027,9 +1017,8 @@ const HRMModules = {
          */
         async renderTimesheet() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Bảng Công</h3>
+                <div class="section">
+                    <h3 class="section-title">Bảng Công</h3>
                         <div class="filters">
                             <select id="timesheetMonth" class="form-select">
                                 ${Array.from({length: 12}, (_, i) => `<option value="${i+1}">Tháng ${i+1}</option>`).join('')}
@@ -1042,7 +1031,7 @@ const HRMModules = {
                             </select>
                         </div>
                     </div>
-                    <div class="card-body" id="timesheetData">
+                    <div class="section-body" id="timesheetData">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -1208,9 +1197,8 @@ const HRMModules = {
          */
         async renderSalary() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Lương</h3>
+                <div class="section">
+                    <h3 class="section-title">Lương</h3>
                         <div class="filters">
                             <select id="salaryMonth" class="form-select">
                                 ${Array.from({length: 12}, (_, i) => `<option value="${i+1}">Tháng ${i+1}</option>`).join('')}
@@ -1223,7 +1211,7 @@ const HRMModules = {
                             </select>
                         </div>
                     </div>
-                    <div class="card-body" id="salaryData">
+                    <div class="section-body" id="salaryData">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -1395,15 +1383,14 @@ const HRMModules = {
          */
         async renderRequests() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Yêu Cầu Của Tôi</h3>
+                <div class="section">
+                    <h3 class="section-title">Yêu Cầu Của Tôi</h3>
                         <button class="btn btn-primary" onclick="HRMModules.CH.showNewRequestForm()">
                             <span class="material-icons-round">add</span>
                             Tạo Yêu Cầu Mới
                         </button>
                     </div>
-                    <div class="card-body" id="requestsList">
+                    <div class="section-body" id="requestsList">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -1840,7 +1827,7 @@ const HRMModules = {
                 <div id="requestDetailModal" class="modal" style="display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); z-index: 9999; align-items: center; justify-content: center;">
                     <div class="modal-content" style="background: var(--bg-primary, #1c1e26); border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
                         <div class="modal-header" style="padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139); display: flex; justify-content: space-between; align-items: center;">
-                            <h3 style="margin: 0; color: var(--text-primary, #e4e6eb); font-size: 20px;">Chi tiết đơn từ</h3>
+                            <h3 style="margin: 0; color: var(--text-primary, #e4e6eb); font-size: 20px;">Chi tiết đơn từ</span>
                             <button onclick="document.getElementById('requestDetailModal').remove()" style="background: none; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; font-size: 24px; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                                 <span class="material-icons-round">close</span>
                             </button>
@@ -1899,14 +1886,13 @@ const HRMModules = {
          */
         async renderNotifications() {
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Thông Báo</h3>
+                <div class="section">
+                    <h3 class="section-title">Thông Báo</h3>
                         <button class="btn btn-sm" onclick="HRMModules.CH.markAllRead()">
                             Đánh dấu tất cả đã đọc
                         </button>
                     </div>
-                    <div class="card-body" id="notificationList">
+                    <div class="section-body" id="notificationList">
                         <div class="loading-container">
                             <div class="spinner"></div>
                         </div>
@@ -2005,11 +1991,10 @@ const HRMModules = {
             const userData = SimpleStorage.get('userData');
             
             return `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Thông Tin Cá Nhân</h3>
+                <div class="section">
+                    <h3 class="section-title">Thông Tin Cá Nhân</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="section-body">
                         <div class="profile-info">
                             <div class="profile-row">
                                 <span>Mã nhân viên:</span>
