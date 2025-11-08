@@ -354,7 +354,7 @@ async function renderContent(functionName) {
         const wrappedContent = `
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">${moduleTitle}</h2>
+                    <h3>${moduleTitle}</h3>
                 </div>
                 <div class="card-body" id="${functionName}-module">
                     ${content}
@@ -373,7 +373,7 @@ async function renderContent(functionName) {
         const wrappedContent = `
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Trang Chủ</h2>
+                    <h3>Trang Chủ</h3>
                 </div>
                 <div class="card-body" id="home-module">
                     ${content}

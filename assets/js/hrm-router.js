@@ -104,7 +104,7 @@ const HRMRouter = {
             const wrappedContent = `
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="card-title">${moduleConfig.title}</h2>
+                        <h3>${moduleConfig.title}</h3>
                     </div>
                     <div class="card-body" id="${moduleName}-module">
                         ${content}
