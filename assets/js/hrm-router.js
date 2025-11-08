@@ -100,7 +100,18 @@ const HRMRouter = {
         // Load module content
         try {
             const content = await moduleConfig.loader(params);
-            mainContent.innerHTML = content;
+            // Wrap content in standard card structure per module.html
+            const wrappedContent = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">${moduleConfig.title}</h2>
+                    </div>
+                    <div class="card-body" id="${moduleName}-module">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            mainContent.innerHTML = wrappedContent;
             
             // Execute module initialization if exists
             if (moduleConfig.onLoad) {

@@ -80,14 +80,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">bolt</span>
-                        Thao tác nhanh
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">bolt</span>
+                    Thao tác nhanh
+                </h3>
+                <div class="section-body">
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('attendance')">
                         <span class="material-icons-round">check_circle</span>
                         Chấm công
@@ -103,14 +101,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">history</span>
-                        Hoạt động gần đây
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">history</span>
+                    Hoạt động gần đây
+                </h3>
+                <div class="section-body">
                     <div id="recentActivities">
                         <div class="spinner-sm"></div>
                     </div>
@@ -141,14 +137,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">bolt</span>
-                        Thao tác nhanh
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">bolt</span>
+                    Thao tác nhanh
+                </h3>
+                <div class="section-body">
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('process-requests')">
                         <span class="material-icons-round">approval</span>
                         Xử lý yêu cầu
@@ -160,14 +154,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">people</span>
-                        Hiệu suất nhóm
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">people</span>
+                    Hiệu suất nhóm
+                </h3>
+                <div class="section-body">
                     <div id="teamPerformance">
                         <div class="spinner-sm"></div>
                     </div>
@@ -204,12 +196,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">bolt</span>
                         Thao tác nhanh
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('approve-registration')">
@@ -231,12 +223,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">cloud</span>
                         Cloudflare Analytics
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="cloudflareStats">
@@ -245,12 +237,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">storage</span>
                         Trạng thái hệ thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="systemStatus">
@@ -302,15 +294,15 @@ const DashboardContent = {
 
     async renderScheduleRegistration(weekStart) {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header schedule-header">
                     <button id="prevWeek" class="icon-btn-small" aria-label="Tuần trước">
                         <span class="material-icons-round">chevron_left</span>
                     </button>
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">calendar_month</span>
                         <span id="weekTitle">Tuần này</span>
-                    </h2>
+                    </span>
                     <button id="nextWeek" class="icon-btn-small" aria-label="Tuần sau">
                         <span class="material-icons-round">chevron_right</span>
                     </button>
@@ -447,15 +439,15 @@ const DashboardContent = {
 
     async renderScheduleManagement(weekStart) {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header schedule-header">
                     <button id="prevWeek" class="icon-btn-small" aria-label="Tuần trước">
                         <span class="material-icons-round">chevron_left</span>
                     </button>
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">calendar_month</span>
                         <span id="weekTitle">Xếp lịch nhóm</span>
-                    </h2>
+                    </span>
                     <button id="nextWeek" class="icon-btn-small" aria-label="Tuần sau">
                         <span class="material-icons-round">chevron_right</span>
                     </button>
@@ -580,12 +572,12 @@ const DashboardContent = {
      */
     async renderProfile() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">person</span>
                         Thông tin cá nhân
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="profileContent">
@@ -673,12 +665,12 @@ const DashboardContent = {
      */
     async renderAttendance() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">how_to_reg</span>
                         Chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-lg">
@@ -693,12 +685,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">history</span>
                         Lịch sử chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="attendanceHistory">
@@ -831,12 +823,12 @@ const DashboardContent = {
         this.selectedYear = this.selectedYear || currentYear;
 
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">table_chart</span>
                         Bảng công tháng ${this.selectedMonth}/${this.selectedYear}
-                    </h2>
+                    </span>
                     <div class="month-year-selector" style="display: flex; gap: 10px; margin-top: 10px;">
                         <select id="monthSelector" class="form-select" style="flex: 1;">
                             ${Array.from({length: 12}, (_, i) => i + 1).map(m => 
@@ -998,12 +990,12 @@ const DashboardContent = {
      */
     renderSubmitRequest() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">send</span>
                         Gửi yêu cầu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <form id="requestForm" onsubmit="event.preventDefault(); DashboardContent.submitRequest();">
@@ -1072,12 +1064,12 @@ const DashboardContent = {
      */
     async renderAttendanceRequest() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">assignment</span>
                         Đơn từ chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="requestsList">
@@ -1130,12 +1122,12 @@ const DashboardContent = {
      */
     async renderProcessRequests() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">pending_actions</span>
                         Xử lý yêu cầu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="pendingRequestsList">
@@ -1215,12 +1207,12 @@ const DashboardContent = {
      */
     async renderApproveRegistration() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">how_to_reg</span>
                         Duyệt đăng ký
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="pendingRegistrationsList">
@@ -1301,12 +1293,12 @@ const DashboardContent = {
      */
     async renderGrantAccess() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">admin_panel_settings</span>
                         Phân quyền
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="employeesList">
@@ -1377,7 +1369,7 @@ const DashboardContent = {
 
     // Placeholder functions for other features
     renderWorkManagement() {
-        return '<div class="card"><div class="card-body"><div class="message">Quản lý công</div></div></div>';
+        return '<div class="section"><div class="card-body"><div class="message">Quản lý công</div></div></div>';
     },
 
 
@@ -1387,12 +1379,12 @@ const DashboardContent = {
      */
     async renderNotifications() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">notifications</span>
                         Thông báo
-                    </h2>
+                    </span>
                     <button class="btn btn-sm" onclick="DashboardContent.markAllRead()">
                         <span class="material-icons-round">done_all</span>
                         Đánh dấu tất cả đã đọc
@@ -1502,12 +1494,12 @@ const DashboardContent = {
         const weekStart = this.getMonday(today);
         
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">event_available</span>
                         Đăng ký ca làm việc
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="schedule-week-nav">
@@ -1633,12 +1625,12 @@ const DashboardContent = {
 
     async renderScheduleManagement() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">calendar_month</span>
                         Quản lý ca làm việc
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message info">
@@ -1756,12 +1748,12 @@ const DashboardContent = {
     // Additional render methods for admin dashboard
     async renderEmployeeManagement() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">groups</span>
                         Quản lý nhân viên
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1775,12 +1767,12 @@ const DashboardContent = {
 
     async renderAttendanceApproval() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">fact_check</span>
                         Duyệt chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1794,12 +1786,12 @@ const DashboardContent = {
 
     async renderShiftManagement() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">schedule</span>
                         Quản lý ca làm việc
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="shiftsList">
@@ -1812,12 +1804,12 @@ const DashboardContent = {
 
     async renderReports() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">assessment</span>
                         Báo cáo tổng hợp
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1831,12 +1823,12 @@ const DashboardContent = {
 
     async renderAnalytics() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">analytics</span>
                         Phân tích dữ liệu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1850,12 +1842,12 @@ const DashboardContent = {
 
     async renderSystemSettings() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">settings</span>
                         Cài đặt hệ thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1869,12 +1861,12 @@ const DashboardContent = {
 
     async renderSystemLogs() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">history</span>
                         Nhật ký hệ thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1888,12 +1880,12 @@ const DashboardContent = {
 
     async renderWorkManagement() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">work</span>
                         Quản lý công việc
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1907,12 +1899,12 @@ const DashboardContent = {
 
     async renderSubmitRequest() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">send</span>
                         Gửi yêu cầu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1926,12 +1918,12 @@ const DashboardContent = {
 
     async renderShifts() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">schedule</span>
                         Ca làm
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="shiftsContent">
@@ -1959,12 +1951,12 @@ const DashboardContent = {
     async renderProcessRequests() {
         // Manager/Admin module for processing employee requests
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">pending_actions</span>
                         Xử Lý Yêu Cầu
-                    </h2>
+                    </span>
                     <div class="filters">
                         <select id="requestStatusFilter" class="form-select">
                             <option value="">Tất cả</option>
@@ -2552,12 +2544,12 @@ const DashboardContent = {
      */
     async renderSystemSettings() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">settings</span>
                         Cài Đặt Hệ Thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="settings-tabs">
