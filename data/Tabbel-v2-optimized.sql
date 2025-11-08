@@ -65,6 +65,7 @@ CREATE TABLE stores (
 CREATE TABLE departments (
     companyId TEXT PRIMARY KEY,       -- Example: VP, CH
     departmentName TEXT NOT NULL,        -- Example: Văn Phòng, Cửa Hàng
+    departmentCode TEXT,                 -- Example: VP, CH
     description TEXT,
     workHoursPerDay INTEGER DEFAULT 8,   -- Default work hours per day
     workDaysPerMonth INTEGER DEFAULT 26, -- Default work days per month
@@ -77,6 +78,7 @@ CREATE TABLE positions (
     positionId TEXT PRIMARY KEY,         -- Example: VP_KT, CH_NV_LV1
     companyId TEXT NOT NULL,          -- FK to departments
     positionName TEXT NOT NULL,          -- Example: Kế Toán, Nhân Viên LV1
+    positionCode TEXT,                   -- Example: KT, NV_LV1
     baseSalaryRate REAL DEFAULT 0,       -- Base salary rate (hourly/daily/monthly based on type)
     salaryType TEXT DEFAULT 'hourly' CHECK(salaryType IN ('hourly', 'daily', 'monthly')),
     description TEXT,
