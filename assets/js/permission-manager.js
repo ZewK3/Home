@@ -221,20 +221,27 @@ const PermissionManager = {
         const mainContent = document.getElementById('mainContent');
         if (mainContent) {
             mainContent.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 20px; text-align: center;">
-                    <span class="material-icons-round" style="font-size: 64px; color: #ef4444; margin-bottom: 16px;">
-                        block
-                    </span>
-                    <h2 style="color: #e8edf4; margin-bottom: 8px;">Không Có Quyền Truy Cập</h2>
-                    <p style="color: #c9d1d9; margin-bottom: 24px;">
-                        Bạn không có quyền truy cập chức năng <strong>${moduleName}</strong>.
-                        <br>Vui lòng liên hệ quản trị viên để được cấp quyền.
-                    </p>
-                    <button onclick="HRMRouter.navigateTo('home')" 
-                            style="background: #5b9ff9; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
-                        <span class="material-icons-round" style="vertical-align: middle; margin-right: 8px;">home</span>
-                        Về Trang Chủ
-                    </button>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Không Có Quyền Truy Cập</h2>
+                    </div>
+                    <div class="card-body" id="access-denied-module">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; padding: 20px; text-align: center;">
+                            <span class="material-icons-round" style="font-size: 64px; color: #ef4444; margin-bottom: 16px;">
+                                block
+                            </span>
+                            <h2 style="color: #e8edf4; margin-bottom: 8px;">Không Có Quyền Truy Cập</h2>
+                            <p style="color: #c9d1d9; margin-bottom: 24px;">
+                                Bạn không có quyền truy cập chức năng <strong>${moduleName}</strong>.
+                                <br>Vui lòng liên hệ quản trị viên để được cấp quyền.
+                            </p>
+                            <button onclick="HRMRouter.navigateTo('home')" 
+                                    style="background: #5b9ff9; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                                <span class="material-icons-round" style="vertical-align: middle; margin-right: 8px;">home</span>
+                                Về Trang Chủ
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
         }

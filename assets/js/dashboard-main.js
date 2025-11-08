@@ -290,6 +290,28 @@ function navigateToFunction(functionName) {
 async function renderContent(functionName) {
     const mainContent = document.getElementById('mainContent');
     
+    // Module titles for wrapping
+    const moduleTitles = {
+        'home': 'Trang Chủ',
+        'schedule': 'Lịch Làm Việc',
+        'shifts': 'Ca Làm Việc',
+        'timesheet': 'Bảng Công',
+        'salary': 'Bảng Lương',
+        'profile': 'Thông Tin Cá Nhân',
+        'attendance': 'Chấm Công',
+        'schedule-registration': 'Đăng Ký Lịch',
+        'leave-request': 'Đơn Từ',
+        'process-requests': 'Xử Lý Yêu Cầu',
+        'approve-registration': 'Duyệt Đăng Ký',
+        'grant-access': 'Phân Quyền',
+        'system-settings': 'Cài Đặt Hệ Thống',
+        'attendance-approval': 'Duyệt Chấm Công',
+        'timesheet-approval': 'Duyệt Bảng Công',
+        'salary-management': 'Quản Lý Lương',
+        'employee-management': 'Quản Lý Nhân Viên',
+        'schedule-management': 'Xếp Lịch Làm Việc'
+    };
+    
     // Content mapping to DashboardContent methods
     const contentMethods = {
         'home': 'renderHome',
@@ -324,10 +346,22 @@ async function renderContent(functionName) {
     };
 
     const methodName = contentMethods[functionName] || 'renderHome';
+    const moduleTitle = moduleTitles[functionName] || 'Dashboard';
     
     if (typeof DashboardContent[methodName] === 'function') {
         const content = await DashboardContent[methodName]();
-        mainContent.innerHTML = content;
+        // Wrap content in standard card structure following module.html
+        const wrappedContent = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">${moduleTitle}</h2>
+                </div>
+                <div class="card-body" id="${functionName}-module">
+                    ${content}
+                </div>
+            </div>
+        `;
+        mainContent.innerHTML = wrappedContent;
         
         // Call init method if exists
         const initMethod = initMethods[functionName];
@@ -335,7 +369,18 @@ async function renderContent(functionName) {
             setTimeout(() => DashboardContent[initMethod](), 100);
         }
     } else {
-        mainContent.innerHTML = await DashboardContent.renderHome();
+        const content = await DashboardContent.renderHome();
+        const wrappedContent = `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Trang Chủ</h2>
+                </div>
+                <div class="card-body" id="home-module">
+                    ${content}
+                </div>
+            </div>
+        `;
+        mainContent.innerHTML = wrappedContent;
     }
 }
 

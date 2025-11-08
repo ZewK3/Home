@@ -83,9 +83,16 @@ const HRMRouter = {
         
         // Show loading state
         mainContent.innerHTML = `
-            <div class="loading-container">
-                <div class="spinner"></div>
-                <p>Đang tải...</p>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Đang tải...</h2>
+                </div>
+                <div class="card-body" id="loading-module">
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <p>Đang tải...</p>
+                    </div>
+                </div>
             </div>
         `;
         
@@ -100,7 +107,9 @@ const HRMRouter = {
         // Load module content
         try {
             const content = await moduleConfig.loader(params);
-            mainContent.innerHTML = content;
+            // Wrap content in standard card structure
+            const wrappedContent = this.wrapModuleContent(moduleConfig.title, moduleName, content);
+            mainContent.innerHTML = wrappedContent;
             
             // Execute module initialization if exists
             if (moduleConfig.onLoad) {
@@ -110,6 +119,23 @@ const HRMRouter = {
             console.error(`Error loading module ${moduleName}:`, error);
             this.showError('Lỗi khi tải nội dung');
         }
+    },
+    
+    /**
+     * Wrap module content in standard card structure
+     * Following the structure from module.html
+     */
+    wrapModuleContent(moduleTitle, moduleName, content) {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">${moduleTitle}</h2>
+                </div>
+                <div class="card-body" id="${moduleName}-module">
+                    ${content}
+                </div>
+            </div>
+        `;
     },
     
     /**
@@ -296,13 +322,20 @@ const HRMRouter = {
         const mainContent = document.getElementById('mainContent');
         if (mainContent) {
             mainContent.innerHTML = `
-                <div class="error-container">
-                    <span class="material-icons-round" style="font-size: 64px; color: #f87171;">lock</span>
-                    <h3>Không có quyền truy cập</h3>
-                    <p>Bạn không có quyền truy cập module "${moduleName}"</p>
-                    <button class="btn btn-primary" onclick="HRMRouter.navigateTo('home')">
-                        Về trang chủ
-                    </button>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Không Có Quyền Truy Cập</h2>
+                    </div>
+                    <div class="card-body" id="error-module">
+                        <div class="error-container">
+                            <span class="material-icons-round" style="font-size: 64px; color: #f87171;">lock</span>
+                            <h3>Không có quyền truy cập</h3>
+                            <p>Bạn không có quyền truy cập module "${moduleName}"</p>
+                            <button class="btn btn-primary" onclick="HRMRouter.navigateTo('home')">
+                                Về trang chủ
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
         }
@@ -315,13 +348,20 @@ const HRMRouter = {
         const mainContent = document.getElementById('mainContent');
         if (mainContent) {
             mainContent.innerHTML = `
-                <div class="error-container">
-                    <span class="material-icons-round" style="font-size: 64px; color: #f87171;">error_outline</span>
-                    <h3>Có lỗi xảy ra</h3>
-                    <p>${message}</p>
-                    <button class="btn btn-primary" onclick="HRMRouter.navigateTo('home')">
-                        Về trang chủ
-                    </button>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Lỗi</h2>
+                    </div>
+                    <div class="card-body" id="error-module">
+                        <div class="error-container">
+                            <span class="material-icons-round" style="font-size: 64px; color: #f87171;">error_outline</span>
+                            <h3>Có lỗi xảy ra</h3>
+                            <p>${message}</p>
+                            <button class="btn btn-primary" onclick="HRMRouter.navigateTo('home')">
+                                Về trang chủ
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
         }
