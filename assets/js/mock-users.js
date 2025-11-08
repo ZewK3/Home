@@ -8,12 +8,13 @@
  * 3. MockAPI.login(username, password) to simulate login
  */
 
-// Shift Definitions
+// Shift Definitions - Matches shifts table schema exactly
+// shiftId: INTEGER PRIMARY KEY, name: TEXT, shiftCode: TEXT, startTime: INTEGER, endTime: INTEGER, timeName: TEXT
 const SHIFT_DEFINITIONS = {
-    S4_08_12: { id: "S4_08-12", name: "Ca 4", start: "08:00", end: "12:00", hours: 4 },
-    S8_08_17: { id: "S8_08-17", name: "Ca 8", start: "08:00", end: "17:00", hours: 8 },
-    S8_13_22: { id: "S8_13-22", name: "Ca tối", start: "13:00", end: "22:00", hours: 8 },
-    S8_22_06: { id: "S8_22-06", name: "Ca đêm", start: "22:00", end: "06:00", hours: 8 }
+    1: { shiftId: 1, name: "Ca 4 Tiếng 8-12", shiftCode: "S4_08-12", startTime: 8, endTime: 12, timeName: "08:00-12:00" },
+    2: { shiftId: 2, name: "Ca 8 Tiếng 8-17", shiftCode: "S8_08-17", startTime: 8, endTime: 17, timeName: "08:00-17:00" },
+    3: { shiftId: 3, name: "Ca 8 Tiếng 13-22", shiftCode: "S8_13-22", startTime: 13, endTime: 22, timeName: "13:00-22:00" },
+    4: { shiftId: 4, name: "Ca 8 Tiếng 22-06", shiftCode: "S8_22-06", startTime: 22, endTime: 6, timeName: "22:00-06:00" }
 };
 
 const MockUsers = {
@@ -27,7 +28,7 @@ const MockUsers = {
         email: "admin@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_ADMIN",
         approval_status: "approved",
         is_active: 1,
@@ -52,7 +53,7 @@ const MockUsers = {
         email: "quanly@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_QLKV",
         approval_status: "approved",
         is_active: 1,
@@ -77,7 +78,7 @@ const MockUsers = {
         email: "ketoan@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_KT",
         approval_status: "approved",
         is_active: 1,
@@ -102,7 +103,7 @@ const MockUsers = {
         email: "it@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_IT",
         approval_status: "approved",
         is_active: 1,
@@ -127,7 +128,7 @@ const MockUsers = {
         email: "giamsat@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_GS",
         approval_status: "approved",
         is_active: 1,
@@ -152,7 +153,7 @@ const MockUsers = {
         email: "lanql@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_QL_LV2",
         approval_status: "approved",
         is_active: 1,
@@ -177,7 +178,7 @@ const MockUsers = {
         email: "minhql@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_QL_LV1",
         approval_status: "approved",
         is_active: 1,
@@ -202,7 +203,7 @@ const MockUsers = {
         email: "hoanv@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_NV_LV2",
         approval_status: "approved",
         is_active: 1,
@@ -227,7 +228,7 @@ const MockUsers = {
         email: "ducnv@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_NV_LV1",
         approval_status: "approved",
         is_active: 1,
@@ -252,7 +253,7 @@ const MockUsers = {
         email: "maict@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_CT",
         approval_status: "approved",
         is_active: 1,
@@ -277,7 +278,7 @@ const MockUsers = {
         email: "test@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "TEST_NONE",
         approval_status: "approved",
         is_active: 1,
@@ -301,7 +302,7 @@ const MockUsers = {
         email: "viewer@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "TEST_VIEW",
         approval_status: "approved",
         is_active: 1,
@@ -325,7 +326,7 @@ const MockUsers = {
         email: "approver@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "TEST_APPROVE",
         approval_status: "approved",
         is_active: 1,
@@ -349,7 +350,7 @@ const MockUsers = {
         email: "creator@test.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "TEST_CREATE",
         approval_status: "approved",
         is_active: 1,
@@ -373,7 +374,7 @@ const MockUsers = {
         email: "full@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "TEST_FULL",
         approval_status: "approved",
         is_active: 1,
@@ -473,7 +474,7 @@ const MockAuth = {
         localStorage.setItem('userData', JSON.stringify(user));
         
         console.log('✅ Switched to user:', user.fullName);
-        console.log('   Department ID:', user.departmentId);
+        console.log('   Department ID:', user.companyId);
         console.log('   Position ID:', user.positionId);
         console.log('   Permissions:', user.permissions);
         
@@ -489,7 +490,7 @@ const MockAuth = {
             return {
                 username: user.username,
                 fullName: user.fullName,
-                departmentId: user.departmentId,
+                departmentId: user.companyId,
                 positionId: user.positionId,
                 permissionCount: user.permissions ? user.permissions.split(',').length : 0
             };
@@ -507,60 +508,127 @@ const MockAuth = {
 };
 
 // Mock Attendance Data with Shift Assignments
+// Mock Attendance Data - Matches attendance table schema exactly
+// attendance table: attendanceId, employeeId, checkDate (TEXT), checkTime (TEXT), checkLocation (TEXT)
+// Multiple check records per day (one for check-in, one for check-out)
 const MockAttendanceData = {
-    // quanly2 (E101) attendance records with shifts
+    // quanly2 (E101) attendance records with 8-hour shifts
     E101: {
         shiftAssignment: {
-            monday: "S8_08-17",
-            tuesday: "S8_08-17",
-            wednesday: "S8_08-17",
-            thursday: "S8_08-17",
-            friday: "S8_08-17",
+            monday: 2,    // shiftId for S8_08-17
+            tuesday: 2,
+            wednesday: 2,
+            thursday: 2,
+            friday: 2,
             saturday: null,
             sunday: null
         },
         records: [
-            // January 2025 records
-            { date: "2025-01-02", shiftId: "S8_08-17", checkIn: "08:05", checkOut: "17:10", status: "present", hoursWorked: 8 },
-            { date: "2025-01-03", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
-            { date: "2025-01-06", shiftId: "S8_08-17", checkIn: "08:10", checkOut: "17:08", status: "late", hoursWorked: 8 },
-            { date: "2025-01-07", shiftId: "S8_08-17", checkIn: "08:00", checkOut: "17:03", status: "present", hoursWorked: 8 },
-            { date: "2025-01-08", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:12", status: "present", hoursWorked: 8 },
-            { date: "2025-01-09", shiftId: "S8_08-17", checkIn: "08:07", checkOut: "17:06", status: "present", hoursWorked: 8 },
-            { date: "2025-01-10", shiftId: "S8_08-17", checkIn: "08:01", checkOut: "17:04", status: "present", hoursWorked: 8 },
-            { date: "2025-01-13", shiftId: "S8_08-17", checkIn: "08:04", checkOut: "17:02", status: "present", hoursWorked: 8 },
-            { date: "2025-01-14", shiftId: "S8_08-17", checkIn: "08:06", checkOut: "17:09", status: "present", hoursWorked: 8 },
-            { date: "2025-01-15", shiftId: "S8_08-17", checkIn: "08:02", checkOut: "17:05", status: "present", hoursWorked: 8 },
-            { date: "2025-01-16", shiftId: "S8_08-17", checkIn: "08:08", checkOut: "17:07", status: "present", hoursWorked: 8 },
-            { date: "2025-01-17", shiftId: "S8_08-17", checkIn: "08:03", checkOut: "17:11", status: "present", hoursWorked: 8 }
+            // January 2025 records - Each day has array of checkTimes
+            { 
+                checkDate: "2025-01-02", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-02T08:05:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-02T17:10:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-03", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-03T08:02:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-03T17:05:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-06", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-06T08:10:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-06T17:08:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "late", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-07", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-07T08:00:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-07T17:03:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            },
+            { 
+                checkDate: "2025-01-08", 
+                shiftId: 2,
+                checkTimes: [
+                    { checkTime: "2025-01-08T08:03:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-08T17:12:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 8 
+            }
         ]
     },
     // nhanvien2 (E103) attendance records with 4-hour shifts
     E103: {
         shiftAssignment: {
-            monday: "S4_08-12",
-            tuesday: "S4_08-12",
-            wednesday: "S4_08-12",
-            thursday: "S4_08-12",
-            friday: "S4_08-12",
-            saturday: "S4_08-12", // Works on Saturday
+            monday: 1,    // shiftId for S4_08-12
+            tuesday: 1,
+            wednesday: 1,
+            thursday: 1,
+            friday: 1,
+            saturday: 1, // Works on Saturday
             sunday: null
         },
         records: [
-            { date: "2025-01-02", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
-            { date: "2025-01-03", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:03", status: "present", hoursWorked: 4 },
-            { date: "2025-01-04", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:08", status: "present", hoursWorked: 4 },
-            { date: "2025-01-06", shiftId: "S4_08-12", checkIn: "08:12", checkOut: "12:06", status: "late", hoursWorked: 4 },
-            { date: "2025-01-07", shiftId: "S4_08-12", checkIn: "08:00", checkOut: "12:02", status: "present", hoursWorked: 4 },
-            { date: "2025-01-08", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 },
-            { date: "2025-01-09", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:07", status: "present", hoursWorked: 4 },
-            { date: "2025-01-10", shiftId: "S4_08-12", checkIn: "08:04", checkOut: "12:05", status: "present", hoursWorked: 4 },
-            { date: "2025-01-11", shiftId: "S4_08-12", checkIn: "08:05", checkOut: "12:10", status: "present", hoursWorked: 4 }, // Saturday
-            { date: "2025-01-13", shiftId: "S4_08-12", checkIn: "08:03", checkOut: "12:02", status: "present", hoursWorked: 4 },
-            { date: "2025-01-14", shiftId: "S4_08-12", checkIn: "08:01", checkOut: "12:06", status: "present", hoursWorked: 4 },
-            { date: "2025-01-15", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:05", status: "present", hoursWorked: 4 },
-            { date: "2025-01-16", shiftId: "S4_08-12", checkIn: "08:06", checkOut: "12:08", status: "present", hoursWorked: 4 },
-            { date: "2025-01-17", shiftId: "S4_08-12", checkIn: "08:02", checkOut: "12:04", status: "present", hoursWorked: 4 }
+            { 
+                checkDate: "2025-01-02", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-02T08:02:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-02T12:05:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 4 
+            },
+            { 
+                checkDate: "2025-01-03", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-03T08:01:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-03T12:03:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 4 
+            },
+            { 
+                checkDate: "2025-01-04", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-04T08:03:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-04T12:08:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "present", 
+                hoursWorked: 4 
+            },
+            { 
+                checkDate: "2025-01-06", 
+                shiftId: 1,
+                checkTimes: [
+                    { checkTime: "2025-01-06T08:12:00", checkType: "in", checkLocation: "Store entrance" },
+                    { checkTime: "2025-01-06T12:06:00", checkType: "out", checkLocation: "Store entrance" }
+                ],
+                status: "late", 
+                hoursWorked: 4 
+            }
         ]
     }
 };
@@ -616,7 +684,7 @@ const MockAPI = {
                     fullName: user.fullName,
                     email: user.email,
                     phone: user.phone,
-                    departmentId: user.departmentId,
+                    departmentId: user.companyId,
                     positionId: user.positionId,
                     permissions: permissionsWithDefaults  // Always includes default permissions
                 });
@@ -787,7 +855,7 @@ const MockAPI = {
             let baseSalary = 8000000; // Default for staff
             // Determine salary based on department and permissions
             if (user) {
-                if (user.departmentId === 'CH') {
+                if (user.companyId === 'CH') {
                     // CH department: hourly rate (use default for calculation)
                     baseSalary = 25000 * 160; // Assuming 160 hours/month
                 } else if (user.permissions && user.permissions.includes('employee_manage')) {
@@ -820,62 +888,124 @@ const MockAPI = {
         }
         
         if (endpoint.includes('/timesheet')) {
+            const userData = SimpleStorage.get('userData');
+            const employeeId = params?.employeeId || userData?.employeeId || 'E101';
+            const requestedMonth = params?.month || new Date().getMonth() + 1;
+            const requestedYear = params?.year || new Date().getFullYear();
+            
+            // Check if we have specific attendance data for this employee
+            const attendanceData = MockAttendanceData[employeeId];
+            
+            if (attendanceData && requestedYear === 2025 && requestedMonth === 1) {
+                // Return actual mock attendance data for January 2025
+                const records = attendanceData.records.map(record => ({
+                    date: record.date,
+                    checkIn: record.checkIn,
+                    checkOut: record.checkOut,
+                    checkTime: record.checkIn, // For tooltip
+                    status: record.status,
+                    hoursWorked: record.hoursWorked,
+                    shiftId: record.shiftId,
+                    shiftName: SHIFT_DEFINITIONS[record.shiftId]?.name || 'Ca làm'
+                }));
+                
+                const presentDays = records.filter(r => r.status === 'present').length;
+                const lateDays = records.filter(r => r.status === 'late').length;
+                const totalHours = records.reduce((sum, r) => sum + r.hoursWorked, 0);
+                
+                return Promise.resolve({
+                    success: true,
+                    data: {
+                        employeeId: employeeId,
+                        month: requestedMonth,
+                        year: requestedYear,
+                        totalDays: 22, // Work days in January 2025
+                        presentDays: presentDays,
+                        absentDays: 0,
+                        lateDays: lateDays,
+                        totalHours: totalHours,
+                        overtimeHours: 0,
+                        records: records
+                    }
+                });
+            }
+            
+            // Fallback: generate timesheet for current or requested month
             const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
+            const year = requestedYear;
+            const month = requestedMonth - 1; // JS months are 0-indexed
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const currentDay = today.getDate();
+            const currentDay = year === today.getFullYear() && month === today.getMonth() ? today.getDate() : daysInMonth;
             
             // Count work days (excluding weekends)
             let workDays = 0;
             let presentDays = 0;
+            const records = [];
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
-                if (date.getDay() !== 0 && date.getDay() !== 6) {
-                    workDays++;
-                    if (day <= currentDay) {
-                        presentDays++;
-                    }
+                const dayOfWeek = date.getDay();
+                
+                // Skip weekends
+                if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+                
+                workDays++;
+                if (day <= currentDay) {
+                    presentDays++;
+                    const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    const checkInHour = 8 + Math.floor(Math.random() * 2);
+                    const checkInMin = Math.floor(Math.random() * 60);
+                    const checkOutHour = 17 + Math.floor(Math.random() * 2);
+                    const checkOutMin = Math.floor(Math.random() * 60);
+                    
+                    // Generate shift information based on timeName format
+                    const shiftStart = checkInHour;
+                    const shiftEnd = checkOutHour + 1;
+                    const shiftTimeName = `${shiftStart.toString().padStart(2, '0')}:00-${shiftEnd.toString().padStart(2, '0')}:00`;
+                    const shiftName = `Ca ${shiftEnd - shiftStart} Tiếng ${shiftStart}-${shiftEnd}`;
+                    
+                    // Generate attendance check times
+                    const checkTimes = [
+                        {
+                            checkTime: `${checkInHour.toString().padStart(2, '0')}:${checkInMin.toString().padStart(2, '0')}`,
+                            checkType: 'in'
+                        },
+                        {
+                            checkTime: `${checkOutHour.toString().padStart(2, '0')}:${checkOutMin.toString().padStart(2, '0')}`,
+                            checkType: 'out'
+                        }
+                    ];
+                    
+                    records.push({
+                        date: dateStr,
+                        shiftTimeName: shiftTimeName,
+                        shiftName: shiftName,
+                        checkTimes: checkTimes,
+                        checkTime: checkTimes[0].checkTime, // For backward compatibility
+                        status: checkInMin > 10 ? 'late' : 'present',
+                        hoursWorked: 8,
+                        relatedRequests: [] // Will be populated if there are requests for this date
+                    });
                 }
             }
+            
+            const lateDays = records.filter(r => r.status === 'late').length;
             
             return Promise.resolve({
                 success: true,
                 data: {
-                    employeeId: params?.employeeId || 'E101',
-                    month: month + 1,
-                    year: year,
+                    employeeId: employeeId,
+                    month: requestedMonth,
+                    year: requestedYear,
                     totalDays: workDays,
                     presentDays: presentDays,
                     absentDays: 0,
-                    lateDays: Math.floor(presentDays * 0.1), // 10% late
+                    lateDays: lateDays,
                     totalHours: presentDays * 8,
                     overtimeHours: 0,
-                    details: generateTimesheetDetails(year, month, currentDay)
+                    records: records
                 }
             });
-        }
-        
-        // Helper function to generate detailed timesheet data
-        function generateTimesheetDetails(year, month, currentDay) {
-            const details = [];
-            for (let day = 1; day <= currentDay; day++) {
-                const date = new Date(year, month, day);
-                // Skip weekends
-                if (date.getDay() === 0 || date.getDay() === 6) continue;
-                
-                const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-                details.push({
-                    date: dateStr,
-                    dayOfWeek: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()],
-                    shiftName: day % 2 === 0 ? 'Ca Sáng' : 'Ca Chiều',
-                    checkInTime: day % 2 === 0 ? '08:00:00' : '13:00:00',
-                    checkOutTime: day % 2 === 0 ? '12:00:00' : '17:00:00',
-                    workHours: 4,
-                    status: 'present'
-                });
-            }
-            return details;
         }
         
         if (endpoint.includes('/employees')) {
@@ -914,7 +1044,7 @@ const MockAPI = {
                     email: currentUser.email,
                     phone: currentUser.phone || '0901234567',
                     positionId: currentUser.positionId,
-                    departmentId: currentUser.departmentId,
+                    departmentId: currentUser.companyId,
                     storeId: currentUser.storeId || null,
                     hire_date: currentUser.hire_date || '2020-01-01',
                     approval_status: currentUser.approval_status || 'approved',
@@ -934,6 +1064,7 @@ const MockAPI = {
             return Promise.resolve({
                 success: true,
                 data: [
+                    // Request 1: Leave request - Pending
                     {
                         requestId: 1,
                         employeeId: currentEmployeeId,
@@ -941,62 +1072,155 @@ const MockAPI = {
                         requestType: 'leave',
                         title: 'Nghỉ phép',
                         description: 'Xin nghỉ phép 2 ngày',
+                        requestDate: null,
                         fromDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         toDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         reason: 'Nghỉ phép chăm sóc người thân',
+                        currentShiftDate: null,
+                        requestedShiftDate: null,
+                        swapWithEmployeeId: null,
                         status: 'pending',
-                        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                        reviewedBy: null,
+                        reviewedAt: null,
+                        rejectionReason: null,
+                        createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
                     },
+                    // Request 2: Overtime - Approved
                     {
                         requestId: 2,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
                         requestType: 'overtime',
                         title: 'Đăng ký tăng ca',
+                        description: 'Tăng ca từ 17:00-20:00',
                         requestDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         fromDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         toDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                        description: 'Tăng ca từ 17:00-20:00',
                         reason: 'Đăng ký tăng ca làm thêm giờ cuối tuần',
+                        currentShiftDate: null,
+                        requestedShiftDate: null,
+                        swapWithEmployeeId: null,
                         status: 'approved',
                         reviewedBy: 'E101',
                         reviewerName: 'Nguyễn Thị Lan',
                         reviewedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
                         rejectionReason: null,
-                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
                     },
+                    // Request 3: Shift change - Approved
                     {
                         requestId: 3,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
                         requestType: 'shift_change',
                         title: 'Đổi ca làm việc',
+                        description: 'Đổi từ ca sáng sang ca chiều',
+                        requestDate: null,
+                        fromDate: null,
+                        toDate: null,
+                        reason: 'Có việc cá nhân cần xử lý vào buổi sáng',
                         currentShiftDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         requestedShiftDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                        description: 'Đổi từ ca sáng sang ca chiều',
-                        reason: 'Xin đổi ca với đồng nghiệp do có việc cá nhân',
+                        swapWithEmployeeId: null,
                         status: 'approved',
                         reviewedBy: 'E101',
                         reviewerName: 'Nguyễn Thị Lan',
                         reviewedAt: new Date().toISOString().replace('T', ' ').split('.')[0],
                         rejectionReason: null,
-                        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date().toISOString().replace('T', ' ').split('.')[0]
                     },
+                    // Request 4: Forgot check-in - Rejected
                     {
                         requestId: 4,
                         employeeId: currentEmployeeId,
                         employeeName: userData?.fullName || 'Nhân viên',
                         requestType: 'forgot_checkin',
                         title: 'Quên chấm công vào',
-                        requestDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         description: 'Quên chấm công vào lúc 08:00',
+                        requestDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        fromDate: null,
+                        toDate: null,
                         reason: 'Điện thoại hết pin, đã vào làm đúng giờ',
+                        currentShiftDate: null,
+                        requestedShiftDate: null,
+                        swapWithEmployeeId: null,
                         status: 'rejected',
                         reviewedBy: 'E101',
                         reviewerName: 'Nguyễn Thị Lan',
                         reviewedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
                         rejectionReason: 'Không có bằng chứng hỗ trợ',
-                        createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                        createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                    },
+                    // Request 5: Forgot check-out - Pending
+                    {
+                        requestId: 5,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'forgot_checkout',
+                        title: 'Quên chấm công ra',
+                        description: 'Quên chấm công ra lúc 17:00',
+                        requestDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        fromDate: null,
+                        toDate: null,
+                        reason: 'Quên chấm công ra khi rời văn phòng',
+                        currentShiftDate: null,
+                        requestedShiftDate: null,
+                        swapWithEmployeeId: null,
+                        status: 'pending',
+                        reviewedBy: null,
+                        reviewedAt: null,
+                        rejectionReason: null,
+                        createdAt: new Date(Date.now() - 22 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date(Date.now() - 22 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                    },
+                    // Request 6: Shift swap with colleague - Pending
+                    {
+                        requestId: 6,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'shift_swap',
+                        title: 'Đổi ca với đồng nghiệp',
+                        description: 'Xin đổi ca với Trần Văn Minh',
+                        requestDate: null,
+                        fromDate: null,
+                        toDate: null,
+                        reason: 'Đổi ca ngày 10/11 với đồng nghiệp',
+                        currentShiftDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        requestedShiftDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        swapWithEmployeeId: 'E102',
+                        status: 'pending',
+                        reviewedBy: null,
+                        reviewedAt: null,
+                        rejectionReason: null,
+                        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
+                    },
+                    // Request 7: General request - Approved
+                    {
+                        requestId: 7,
+                        employeeId: currentEmployeeId,
+                        employeeName: userData?.fullName || 'Nhân viên',
+                        requestType: 'general',
+                        title: 'Yêu cầu chung',
+                        description: 'Xin cấp thẻ ra vào mới',
+                        requestDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        fromDate: null,
+                        toDate: null,
+                        reason: 'Thẻ cũ bị mất',
+                        currentShiftDate: null,
+                        requestedShiftDate: null,
+                        swapWithEmployeeId: null,
+                        status: 'approved',
+                        reviewedBy: 'E002',
+                        reviewerName: 'Trần Thị Quản Lý',
+                        reviewedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        rejectionReason: null,
+                        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0],
+                        updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().replace('T', ' ').split('.')[0]
                     }
                 ]
             });

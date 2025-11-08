@@ -633,7 +633,7 @@ const DashboardContent = {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phòng ban</label>
-                    <input type="text" class="form-input" value="${profile.departmentId || ''}" disabled>
+                    <input type="text" class="form-input" value="${profile.companyId || ''}" disabled>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Chức vụ</label>
@@ -766,25 +766,48 @@ const DashboardContent = {
         const container = document.getElementById('attendanceHistory');
         if (!container) return;
 
+        // Only get today's attendance records
         const today = new Date();
-        const startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-        const endDate = today.toISOString().split('T')[0];
+        const todayStr = today.toISOString().split('T')[0];
 
-        const attendance = await apiClient.get('/attendance', { employeeId: this.employeeId, startDate, endDate });
+        const attendance = await apiClient.get('/attendance', { 
+            employeeId: this.employeeId, 
+            startDate: todayStr, 
+            endDate: todayStr 
+        });
         
         if (!attendance || !attendance.data || attendance.data.length === 0) {
-            container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công</div>';
+            container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công hôm nay</div>';
+            return;
+        }
+
+        // Filter to only show today's records and records with valid checkTime
+        const todayRecords = attendance.data.filter(record => {
+            if (!record.checkDate || !record.checkTime) return false;
+            const recordDate = new Date(record.checkDate).toISOString().split('T')[0];
+            return recordDate === todayStr;
+        });
+
+        if (todayRecords.length === 0) {
+            container.innerHTML = '<div class="message">Chưa có dữ liệu chấm công hôm nay</div>';
             return;
         }
 
         let html = '<div class="list">';
-        attendance.data.forEach(record => {
+        todayRecords.forEach(record => {
+            const checkTypeName = {
+                'in': 'Chấm công',
+                'out': 'Chấm công',
+                'checkin': 'Chấm công',
+                'checkout': 'Chấm công'
+            }[record.checkType] || 'Chấm công';
+
             html += `
                 <div class="list-item">
                     <div class="list-item-content">
-                        <div class="list-item-title">${record.checkDate}</div>
+                        <div class="list-item-title">${checkTypeName}</div>
                         <div class="list-item-subtitle">
-                            Thời gian: ${record.checkTime || 'N/A'}
+                            Thời gian: ${record.checkTime}
                         </div>
                     </div>
                 </div>
@@ -800,16 +823,32 @@ const DashboardContent = {
      */
     async renderTimesheet() {
         const today = new Date();
-        const month = today.getMonth() + 1;
-        const year = today.getFullYear();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+        
+        // Store current selection in instance variables
+        this.selectedMonth = this.selectedMonth || currentMonth;
+        this.selectedYear = this.selectedYear || currentYear;
 
         const content = `
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">
                         <span class="material-icons-round">table_chart</span>
-                        Bảng công tháng ${month}/${year}
+                        Bảng công tháng ${this.selectedMonth}/${this.selectedYear}
                     </h2>
+                    <div class="month-year-selector" style="display: flex; gap: 10px; margin-top: 10px;">
+                        <select id="monthSelector" class="form-select" style="flex: 1;">
+                            ${Array.from({length: 12}, (_, i) => i + 1).map(m => 
+                                `<option value="${m}" ${m === this.selectedMonth ? 'selected' : ''}>Tháng ${m}</option>`
+                            ).join('')}
+                        </select>
+                        <select id="yearSelector" class="form-select" style="flex: 1;">
+                            ${[currentYear, currentYear - 1, currentYear - 2].map(y => 
+                                `<option value="${y}" ${y === this.selectedYear ? 'selected' : ''}>${y}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div id="timesheetData">
@@ -819,9 +858,32 @@ const DashboardContent = {
             </div>
         `;
 
-        setTimeout(() => this.loadTimesheet(month, year), 100);
+        setTimeout(() => {
+            this.loadTimesheet(this.selectedMonth, this.selectedYear);
+            this.attachTimesheetSelectors();
+        }, 100);
 
         return content;
+    },
+    
+    /**
+     * Attach event listeners for month/year selectors
+     */
+    attachTimesheetSelectors() {
+        const monthSelector = document.getElementById('monthSelector');
+        const yearSelector = document.getElementById('yearSelector');
+        
+        if (monthSelector && yearSelector) {
+            monthSelector.addEventListener('change', () => {
+                this.selectedMonth = parseInt(monthSelector.value);
+                this.loadTimesheet(this.selectedMonth, this.selectedYear);
+            });
+            
+            yearSelector.addEventListener('change', () => {
+                this.selectedYear = parseInt(yearSelector.value);
+                this.loadTimesheet(this.selectedMonth, this.selectedYear);
+            });
+        }
     },
 
     async loadTimesheet(month, year) {
@@ -867,22 +929,30 @@ const DashboardContent = {
                 let statusHTML = '';
                 
                 if (record) {
+                    dayClass += ' clickable'; // Add clickable class
+                    const hours = record.hoursWorked || 0;
                     if (record.status === 'present') {
                         dayClass += ' present';
-                        statusHTML = `<span class="day-status success">✓</span>`;
+                        statusHTML = `<span class="day-status success">${hours}h</span>`;
                     } else if (record.status === 'absent') {
                         dayClass += ' absent';
-                        statusHTML = `<span class="day-status error">✗</span>`;
+                        statusHTML = `<span class="day-status error">0h</span>`;
                     } else if (record.status === 'late') {
                         dayClass += ' late';
-                        statusHTML = `<span class="day-status warning">Trễ</span>`;
+                        statusHTML = `<span class="day-status warning">${hours}h</span>`;
                     }
                 } else {
                     statusHTML = '<span class="day-status">-</span>';
                 }
                 
+                // Store record data as JSON for click handler
+                const recordData = record ? JSON.stringify(record).replace(/"/g, '&quot;') : null;
+                
                 calendarHTML += `
-                    <div class="${dayClass}" title="${record ? record.checkTime : 'Chưa chấm công'}">
+                    <div class="${dayClass}" 
+                         title="${record ? record.checkTime : 'Chưa chấm công'}"
+                         ${record ? `onclick="DashboardContent.showAttendanceDetail(${recordData})"` : ''}
+                         style="${record ? 'cursor: pointer;' : ''}">
                         <div class="day-number">${day}</div>
                         ${statusHTML}
                     </div>
@@ -944,8 +1014,7 @@ const DashboardContent = {
                                 <option value="leave">Nghỉ phép</option>
                                 <option value="overtime">Làm thêm giờ</option>
                                 <option value="shift_change">Điều chỉnh ca</option>
-                                <option value="forgot_checkin">Quên chấm công vào</option>
-                                <option value="forgot_checkout">Quên chấm công ra</option>
+                                <option value="forgot_attendance">Quên chấm công</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1972,35 +2041,33 @@ const DashboardContent = {
             if (requests.data && requests.data.length > 0) {
                 container.innerHTML = `
                     <div class="requests-list">
-                        ${requests.data.map(req => `
-                            <div class="request-item ${req.status}">
+                        ${requests.data.map((req, index) => `
+                            <div class="request-item ${req.status}" data-request-index="${index}" style="cursor: pointer;">
                                 <div class="request-header">
-                                    <div class="request-info">
-                                        <div class="request-type">
-                                            <span class="material-icons-round">${this.getRequestIcon(req.type)}</span>
-                                            <strong>${this.getRequestTypeName(req.type)}</strong>
-                                        </div>
-                                        <div class="employee-info">
-                                            <span class="material-icons-round">person</span>
-                                            ${req.employeeName || req.employeeId}
-                                        </div>
+                                    <div class="request-type">
+                                        <span class="material-icons-round">${this.getRequestIcon(req.requestType)}</span>
+                                        <strong>${this.getRequestTypeName(req.requestType)}</strong>
                                     </div>
                                     <span class="badge badge-${req.status === 'approved' ? 'success' : req.status === 'rejected' ? 'danger' : 'warning'}">
                                         ${req.status === 'approved' ? 'Đã duyệt' : req.status === 'rejected' ? 'Đã từ chối' : 'Chờ duyệt'}
                                     </span>
                                 </div>
                                 <div class="request-body">
-                                    <p><strong>Lý do:</strong> ${req.reason}</p>
-                                    <p><strong>Thời gian:</strong> ${req.startDate}${req.endDate ? ' đến ' + req.endDate : ''}</p>
+                                    <div class="employee-info">
+                                        <span class="material-icons-round">person</span>
+                                        ${req.employeeName || req.employeeId || ''}
+                                    </div>
+                                    <p><strong>Lý do:</strong> ${req.reason || req.description || 'Không có'}</p>
+                                    <p><strong>Thời gian:</strong> ${req.fromDate || req.requestDate || req.currentShiftDate || ''}${req.toDate && req.toDate !== req.fromDate ? ' đến ' + req.toDate : req.requestedShiftDate && req.requestedShiftDate !== req.currentShiftDate ? ' đến ' + req.requestedShiftDate : ''}</p>
                                     <p><small>Tạo lúc: ${new Date(req.createdAt).toLocaleString('vi-VN')}</small></p>
                                     ${req.reviewedBy ? `
-                                    <p><small>Duyệt bởi: ${req.reviewerName} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
-                                    ${req.reviewNote ? `<p><small>Ghi chú: ${req.reviewNote}</small></p>` : ''}
+                                    <p><small>Duyệt bởi: ${req.reviewerName || 'Quản lý'} - ${new Date(req.reviewedAt).toLocaleString('vi-VN')}</small></p>
+                                    ${req.rejectionReason ? `<p><small>Lý do từ chối: ${req.rejectionReason}</small></p>` : ''}
                                     ` : ''}
                                 </div>
                                 ${req.status === 'pending' ? `
                                 <div class="request-actions">
-                                    <button class="btn btn-sm btn-primary" onclick="DashboardContent.showReviewModal('${req.requestId}', ${JSON.stringify(req).replace(/"/g, '&quot;')})">
+                                    <button class="btn btn-sm btn-primary" data-request-id="${req.requestId}" data-action="review">
                                         Xét duyệt
                                     </button>
                                 </div>
@@ -2009,6 +2076,36 @@ const DashboardContent = {
                         `).join('')}
                     </div>
                 `;
+                
+                // Store requests data for later use
+                this.currentRequests = requests.data;
+                
+                // Add click event listeners
+                const requestItems = container.querySelectorAll('.request-item');
+                requestItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        // Don't trigger if clicking on the review button
+                        if (e.target.closest('[data-action="review"]')) {
+                            return;
+                        }
+                        const index = parseInt(item.getAttribute('data-request-index'));
+                        const request = this.currentRequests[index];
+                        this.showRequestDetail(request);
+                    });
+                });
+                
+                // Add click event listeners for review buttons
+                const reviewButtons = container.querySelectorAll('[data-action="review"]');
+                reviewButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const requestId = btn.getAttribute('data-request-id');
+                        const request = this.currentRequests.find(r => r.requestId == requestId);
+                        if (request) {
+                            this.showReviewModal(requestId, request);
+                        }
+                    });
+                });
             } else {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -2089,8 +2186,13 @@ const DashboardContent = {
             'leave': 'event_busy',
             'overtime': 'schedule',
             'shift_change': 'swap_horiz',
+            'shift_swap': 'swap_calls',
+            'forgot_attendance': 'schedule',
+            'forgot_checkin': 'schedule',
+            'forgot_checkout': 'schedule',
             'early_leave': 'exit_to_app',
-            'late_arrival': 'login',
+            'late_arrival': 'access_time',
+            'general': 'help_outline',
             'other': 'help_outline'
         };
         return icons[type] || 'assignment';
@@ -2101,10 +2203,1488 @@ const DashboardContent = {
             'leave': 'Nghỉ phép',
             'overtime': 'Tăng ca',
             'shift_change': 'Đổi ca',
+            'shift_swap': 'Đổi ca với đồng nghiệp',
+            'forgot_attendance': 'Quên chấm công',
+            'forgot_checkin': 'Quên chấm công',
+            'forgot_checkout': 'Quên chấm công',
             'early_leave': 'Về sớm',
             'late_arrival': 'Đi muộn',
+            'general': 'Yêu cầu chung',
             'other': 'Khác'
         };
         return names[type] || type;
+    },
+    
+    /**
+     * Show attendance detail modal for a calendar day
+     */
+    showAttendanceDetail(record) {
+        if (!record) return;
+        
+        const statusText = {
+            'present': 'Có mặt',
+            'late': 'Đi trễ',
+            'absent': 'Vắng'
+        }[record.status] || record.status;
+        
+        const statusClass = {
+            'present': 'success',
+            'late': 'warning',
+            'absent': 'danger'
+        }[record.status] || 'info';
+        
+        // Combine checkTimes and related requests into activity list
+        const activityList = [];
+        
+        // Add check times as activities
+        if (record.checkTimes && record.checkTimes.length > 0) {
+            record.checkTimes.forEach(ct => {
+                activityList.push({
+                    type: 'attendance',
+                    time: ct.checkTime,
+                    label: 'Chấm công'
+                });
+            });
+        }
+        
+        // Add related requests as activities
+        if (record.relatedRequests && record.relatedRequests.length > 0) {
+            record.relatedRequests.forEach(req => {
+                activityList.push({
+                    type: 'request',
+                    time: req.requestDate || req.fromDate || req.createdAt,
+                    label: 'Đơn từ',
+                    requestType: this.getRequestTypeName(req.requestType),
+                    status: req.status,
+                    reason: req.reason || req.description
+                });
+            });
+        }
+        
+        // Sort by time if available
+        activityList.sort((a, b) => {
+            if (!a.time || !b.time) return 0;
+            return a.time.localeCompare(b.time);
+        });
+        
+        // Generate activity list HTML
+        const activityListHTML = activityList.length > 0 ? activityList.map(activity => {
+            if (activity.type === 'attendance') {
+                return `
+                    <div class="activity-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span style="color: var(--text-secondary, #b0b3b8);">${activity.label}</span>
+                        <span style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${activity.time}</span>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="activity-item" style="padding: 10px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="color: var(--text-secondary, #b0b3b8);">${activity.label} - ${activity.requestType}</span>
+                            <span style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${activity.time ? new Date(activity.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'}) : ''}</span>
+                        </div>
+                        ${activity.reason ? `<div style="color: var(--text-secondary, #b0b3b8); font-size: 12px; margin-top: 4px;">${activity.reason}</div>` : ''}
+                    </div>
+                `;
+            }
+        }).join('') : '<div style="color: var(--text-secondary, #b0b3b8); font-size: 13px; padding: 10px 0;">Chưa có dữ liệu</div>';
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="attendanceDetailModal" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
+                <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-card, #1e2228); border-radius: 12px; max-width: 450px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <h3 style="margin: 0; color: var(--text-primary, #e4e6eb);">Chi tiết chấm công</h3>
+                        <button class="close-btn" onclick="document.getElementById('attendanceDetailModal').remove()" style="background: transparent; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; padding: 4px;">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 20px;">
+                        <div class="attendance-detail-card">
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày:</span>
+                                <span class="detail-value"><strong style="color: var(--text-primary, #e4e6eb);">${new Date(record.date).toLocaleDateString('vi-VN')}</strong></span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca làm:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${record.shiftTimeName || record.shiftName || 'N/A'}</span>
+                            </div>
+                            
+                            <div class="detail-section" style="margin: 16px 0;">
+                                <h4 style="color: var(--text-primary, #e4e6eb); margin: 0 0 12px 0; font-size: 14px;">Hoạt động trong ngày:</h4>
+                                ${activityListHTML}
+                            </div>
+                            
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-top: 16px; border-top: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Số giờ làm:</span>
+                                <span class="detail-value" style="color: var(--success, #3fb950); font-weight: 700; font-size: 16px;">${record.hoursWorked || 0} giờ</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="display: flex; justify-content: flex-end; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
+                        <button class="btn btn-secondary" onclick="document.getElementById('attendanceDetailModal').remove()" style="padding: 10px 20px; background: var(--bg-secondary, #2d3139); color: var(--text-primary, #e4e6eb); border: none; border-radius: 8px; cursor: pointer;">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    },
+    
+    /**
+     * Show request detail modal
+     */
+    showRequestDetail(request) {
+        if (!request) return;
+        
+        // Close any existing modal
+        const existingModal = document.getElementById('requestDetailModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        const statusClass = {
+            'pending': 'warning',
+            'approved': 'success',
+            'rejected': 'danger'
+        }[request.status] || 'info';
+        
+        const statusText = {
+            'pending': 'Chờ duyệt',
+            'approved': 'Đã duyệt',
+            'rejected': 'Đã từ chối'
+        }[request.status] || request.status;
+        
+        // Build type-specific fields based on requestType
+        let typeSpecificFields = '';
+        
+        switch(request.requestType) {
+            case 'leave':
+                // Nghỉ phép: fromDate, toDate, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Từ ngày:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.fromDate || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đến ngày:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.toDate || 'N/A'}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'overtime':
+                // Tăng ca: requestDate, startTime, endTime, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày tăng ca:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
+                    </div>
+                    ${request.startTime ? `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ bắt đầu:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.startTime}</span>
+                    </div>
+                    ` : ''}
+                    ${request.endTime ? `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ kết thúc:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.endTime}</span>
+                    </div>
+                    ` : ''}
+                `;
+                break;
+                
+            case 'shift_change':
+                // Đổi ca: currentShiftDate, currentShiftId, requestedShiftDate, requestedShiftId, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca hiện tại:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.currentShiftDate || 'N/A'} ${request.currentShiftId ? `(${request.currentShiftId})` : ''}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca muốn đổi:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestedShiftDate || 'N/A'} ${request.requestedShiftId ? `(${request.requestedShiftId})` : ''}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'shift_swap':
+                // Đổi ca với đồng nghiệp: currentShiftDate, requestedShiftDate, swapWithEmployeeId, reason
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca hiện tại:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.currentShiftDate || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ca muốn đổi:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestedShiftDate || 'N/A'}</span>
+                    </div>
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Đổi với nhân viên:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.swapWithEmployeeId || 'N/A'}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'forgot_attendance':
+            case 'forgot_checkin':
+            case 'forgot_checkout':
+                // Quên chấm công: requestDate, actualTime (extracted from description), reason
+                // Extract time from description if present (e.g., "Quên chấm công vào lúc 08:00")
+                let forgotTime = request.actualTime || '';
+                if (!forgotTime && request.description) {
+                    const timeMatch = request.description.match(/(\d{1,2}:\d{2})/);
+                    if (timeMatch) {
+                        forgotTime = timeMatch[1];
+                    }
+                }
+                
+                typeSpecificFields = `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày quên chấm:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate || 'N/A'}</span>
+                    </div>
+                    ${forgotTime ? `
+                    <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Giờ quên chấm công:</span>
+                        <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${forgotTime}</span>
+                    </div>
+                    ` : ''}
+                `;
+                break;
+                
+            case 'general':
+            default:
+                // Yêu cầu chung: requestDate, reason, description
+                if (request.requestDate) {
+                    typeSpecificFields = `
+                        <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                            <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày yêu cầu:</span>
+                            <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.requestDate}</span>
+                        </div>
+                    `;
+                }
+                break;
+        }
+        
+        const modalHTML = `
+            <div class="modal-overlay" id="requestDetailModal" onclick="this.remove()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;">
+                <div class="modal-content" onclick="event.stopPropagation()" style="background: var(--bg-card, #1e2228); border-radius: 12px; max-width: 450px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border-color, #2d3139);">
+                        <h3 style="margin: 0; color: var(--text-primary, #e4e6eb);">Chi tiết đơn từ</h3>
+                        <button class="close-btn" onclick="document.getElementById('requestDetailModal').remove()" style="background: transparent; border: none; color: var(--text-secondary, #b0b3b8); cursor: pointer; padding: 4px;">
+                            <span class="material-icons-round">close</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding: 20px;">
+                        <div class="request-detail-card">
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Loại đơn:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb); font-weight: 600;">${this.getRequestTypeName(request.requestType)}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</span>
+                                <span class="badge badge-${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Nhân viên:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.employeeName || request.employeeId}</span>
+                            </div>
+                            ${typeSpecificFields}
+                            <div class="detail-section" style="margin: 16px 0; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <h4 style="color: var(--text-secondary, #b0b3b8); margin: 0 0 8px 0; font-size: 14px;">Lý do:</h4>
+                                <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.reason || request.description || 'Không có'}</p>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tạo lúc:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.createdAt).toLocaleString('vi-VN')}</span>
+                            </div>
+                            ${request.reviewedBy ? `
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Duyệt bởi:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${request.reviewerName || 'Quản lý'}</span>
+                            </div>
+                            <div class="detail-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color, #2d3139);">
+                                <span class="detail-label" style="color: var(--text-secondary, #b0b3b8); font-size: 14px;">Duyệt lúc:</span>
+                                <span class="detail-value" style="color: var(--text-primary, #e4e6eb);">${new Date(request.reviewedAt).toLocaleString('vi-VN')}</span>
+                            </div>
+                            ${request.rejectionReason ? `
+                            <div class="detail-section" style="margin: 16px 0; padding: 12px 0;">
+                                <h4 style="color: var(--error, #f85149); margin: 0 0 8px 0; font-size: 14px;">Lý do từ chối:</h4>
+                                <p style="color: var(--text-primary, #e4e6eb); margin: 0; line-height: 1.6;">${request.rejectionReason}</p>
+                            </div>
+                            ` : ''}
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-color, #2d3139);">
+                        ${request.status === 'pending' ? `
+                        <button class="btn btn-primary" id="modalReviewBtn-${request.requestId}" style="padding: 10px 20px; background: var(--brand, #0969da); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            Xét duyệt
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-secondary" onclick="document.getElementById('requestDetailModal').remove()" style="padding: 10px 20px; background: var(--bg-secondary, #2d3139); color: var(--text-primary, #e4e6eb); border: none; border-radius: 8px; cursor: pointer;">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Add event listener for review button if it exists
+        if (request.status === 'pending') {
+            const reviewBtn = document.getElementById(`modalReviewBtn-${request.requestId}`);
+            if (reviewBtn) {
+                reviewBtn.addEventListener('click', () => {
+                    document.getElementById('requestDetailModal').remove();
+                    this.showReviewModal(request.requestId, request);
+                });
+            }
+        }
+    },
+    
+    /**
+     * System Settings Module
+     */
+    async renderSystemSettings() {
+        return `
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="material-icons-round">settings</span>
+                        Cài Đặt Hệ Thống
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="settings-tabs">
+                        <button class="tab-btn active" data-tab="general">
+                            <span class="material-icons-round">tune</span>
+                            Chung
+                        </button>
+                        <button class="tab-btn" data-tab="attendance">
+                            <span class="material-icons-round">schedule</span>
+                            Chấm công
+                        </button>
+                        <button class="tab-btn" data-tab="notifications">
+                            <span class="material-icons-round">notifications</span>
+                            Thông báo
+                        </button>
+                        <button class="tab-btn" data-tab="security">
+                            <span class="material-icons-round">security</span>
+                            Bảo mật
+                        </button>
+                    </div>
+                    
+                    <div class="settings-content">
+                        <!-- General Settings Tab -->
+                        <div class="tab-content active" id="general-tab">
+                            <h3 class="section-title">Cài Đặt Chung</h3>
+                            <form id="generalSettingsForm">
+                                <div class="form-group">
+                                    <label for="companyName">Tên công ty</label>
+                                    <input type="text" id="companyName" class="form-control" value="Công Ty TNHH ABC" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="timezone">Múi giờ</label>
+                                    <select id="timezone" class="form-control">
+                                        <option value="Asia/Ho_Chi_Minh" selected>Việt Nam (GMT+7)</option>
+                                        <option value="Asia/Bangkok">Thailand (GMT+7)</option>
+                                        <option value="Asia/Singapore">Singapore (GMT+8)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="language">Ngôn ngữ</label>
+                                    <select id="language" class="form-control">
+                                        <option value="vi" selected>Tiếng Việt</option>
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dateFormat">Định dạng ngày</label>
+                                    <select id="dateFormat" class="form-control">
+                                        <option value="dd/MM/yyyy" selected>DD/MM/YYYY</option>
+                                        <option value="MM/dd/yyyy">MM/DD/YYYY</option>
+                                        <option value="yyyy-MM-dd">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Attendance Settings Tab -->
+                        <div class="tab-content" id="attendance-tab">
+                            <h3 class="section-title">Cài Đặt Chấm Công</h3>
+                            <form id="attendanceSettingsForm">
+                                <div class="form-group">
+                                    <label for="gpsRadius">Bán kính GPS cho phép (mét)</label>
+                                    <input type="number" id="gpsRadius" class="form-control" value="100" min="10" max="1000" required>
+                                    <small class="form-text">Nhân viên phải ở trong bán kính này để chấm công</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lateThreshold">Thời gian trễ tối đa (phút)</label>
+                                    <input type="number" id="lateThreshold" class="form-control" value="15" min="0" max="60" required>
+                                    <small class="form-text">Số phút trễ được xem là "Đi trễ" thay vì "Vắng"</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="requirePhoto">
+                                        <input type="checkbox" id="requirePhoto" checked>
+                                        Yêu cầu chụp ảnh khi chấm công
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="allowMultipleCheckins">
+                                        <input type="checkbox" id="allowMultipleCheckins" checked>
+                                        Cho phép chấm công nhiều lần trong ngày
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="autoApproveOvertimeHours">Số giờ tăng ca tự động duyệt</label>
+                                    <input type="number" id="autoApproveOvertimeHours" class="form-control" value="0" min="0" max="24" step="0.5">
+                                    <small class="form-text">0 = Không tự động duyệt</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Notification Settings Tab -->
+                        <div class="tab-content" id="notifications-tab">
+                            <h3 class="section-title">Cài Đặt Thông Báo</h3>
+                            <form id="notificationSettingsForm">
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="emailNotifications" checked>
+                                        Gửi email thông báo
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="smsNotifications">
+                                        Gửi SMS thông báo
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="pushNotifications" checked>
+                                        Thông báo đẩy (Push notification)
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <h4>Loại thông báo</h4>
+                                    <label>
+                                        <input type="checkbox" id="notifyRequests" checked>
+                                        Yêu cầu mới từ nhân viên
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="notifyTimesheet" checked>
+                                        Bảng công cần duyệt
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="notifySchedule" checked>
+                                        Lịch làm việc mới
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="notifyBirthday" checked>
+                                        Sinh nhật nhân viên
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Security Settings Tab -->
+                        <div class="tab-content" id="security-tab">
+                            <h3 class="section-title">Cài Đặt Bảo Mật</h3>
+                            <form id="securitySettingsForm">
+                                <div class="form-group">
+                                    <label for="sessionTimeout">Thời gian hết phiên (phút)</label>
+                                    <input type="number" id="sessionTimeout" class="form-control" value="30" min="5" max="480" required>
+                                    <small class="form-text">Tự động đăng xuất sau thời gian không hoạt động</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwordMinLength">Độ dài mật khẩu tối thiểu</label>
+                                    <input type="number" id="passwordMinLength" class="form-control" value="8" min="6" max="32" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="requirePasswordComplex" checked>
+                                        Yêu cầu mật khẩu phức tạp (chữ hoa, chữ thường, số, ký tự đặc biệt)
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwordExpiryDays">Mật khẩu hết hạn sau (ngày)</label>
+                                    <input type="number" id="passwordExpiryDays" class="form-control" value="90" min="0" max="365">
+                                    <small class="form-text">0 = Không hết hạn</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="maxLoginAttempts">Số lần đăng nhập sai tối đa</label>
+                                    <input type="number" id="maxLoginAttempts" class="form-control" value="5" min="3" max="10" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lockoutDuration">Thời gian khóa tài khoản (phút)</label>
+                                    <input type="number" id="lockoutDuration" class="form-control" value="15" min="5" max="120" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <input type="checkbox" id="enable2FA">
+                                        Bật xác thực hai yếu tố (2FA)
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    
+    async initSystemSettings() {
+        // Load current settings
+        await this.loadSystemSettings();
+        
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.getAttribute('data-tab');
+                this.switchSettingsTab(tab);
+            });
+        });
+        
+        // Form submissions
+        const forms = [
+            'generalSettingsForm',
+            'attendanceSettingsForm',
+            'notificationSettingsForm',
+            'securitySettingsForm'
+        ];
+        
+        forms.forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveSettings(formId);
+                });
+            }
+        });
+    },
+    
+    switchSettingsTab(tabName) {
+        // Update active tab button
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+        
+        // Update active tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+    },
+    
+    async loadSystemSettings() {
+        try {
+            const settings = await apiClient.get('/settings');
+            
+            if (settings && settings.data) {
+                // Populate form fields with saved settings
+                Object.keys(settings.data).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = settings.data[key];
+                        } else {
+                            element.value = settings.data[key];
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            // Use default values from HTML
+        }
+    },
+    
+    async saveSettings(formId) {
+        const form = document.getElementById(formId);
+        if (!form) return;
+        
+        const formData = new FormData(form);
+        const settings = {};
+        
+        // Get all form inputs
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox') {
+                settings[input.id] = input.checked;
+            } else {
+                settings[input.id] = input.value;
+            }
+        });
+        
+        try {
+            await apiClient.post('/settings', settings);
+            showNotification('Đã lưu cài đặt thành công', 'success');
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            showNotification('Lỗi khi lưu cài đặt', 'error');
+        }
+    },
+
+    /**
+     * ATTENDANCE APPROVAL MODULE
+     * Manager approves daily attendance records
+     */
+    async renderAttendanceApproval() {
+        const userData = this.getUserData();
+        
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">fact_check</span>
+                    Duyệt Chấm Công
+                </h1>
+            </div>
+            
+            <div class="content-body">
+                <!-- Filter Section -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Ngày:</label>
+                            <input type="date" id="filterDate" class="form-control" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Phòng ban:</label>
+                            <select id="filterDepartment" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="IT">Công nghệ thông tin</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="SALES">Kinh doanh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Trạng thái:</label>
+                            <select id="filterStatus" class="form-control">
+                                <option value="pending">Chờ duyệt</option>
+                                <option value="all">Tất cả</option>
+                                <option value="approved">Đã duyệt</option>
+                                <option value="rejected">Đã từ chối</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btnFilterAttendance" class="btn btn-primary" style="width: 100%;">
+                                <span class="material-icons" style="font-size: 18px;">search</span>
+                                Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance List -->
+                <div id="attendanceApprovalList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initAttendanceApproval() {
+        await this.loadAttendanceForApproval();
+        
+        document.getElementById('btnFilterAttendance')?.addEventListener('click', () => {
+            this.loadAttendanceForApproval();
+        });
+    },
+
+    async loadAttendanceForApproval() {
+        const container = document.getElementById('attendanceApprovalList');
+        if (!container) return;
+        
+        const date = document.getElementById('filterDate')?.value || new Date().toISOString().split('T')[0];
+        const department = document.getElementById('filterDepartment')?.value || '';
+        const status = document.getElementById('filterStatus')?.value || 'pending';
+        
+        // Mock data - replace with actual API call
+        // Using checkTimes array to match attendance table schema
+        const mockAttendance = [
+            {
+                id: 1,
+                employeeId: 'E102',
+                employeeName: 'Trần Văn B',
+                department: 'IT',
+                date: date,
+                checkTimes: [
+                    { checkTime: date + 'T08:05:00', checkType: 'in' },
+                    { checkTime: date + 'T17:30:00', checkType: 'out' }
+                ],
+                shift: 'Ca sáng (08:00-17:00)',
+                status: 'pending',
+                hours: 9.5,
+                isLate: true,
+                lateMinutes: 5
+            },
+            {
+                id: 2,
+                employeeId: 'E103',
+                employeeName: 'Phạm Thị C',
+                department: 'HR',
+                date: date,
+                checkTimes: [
+                    { checkTime: date + 'T08:00:00', checkType: 'in' },
+                    { checkTime: date + 'T18:00:00', checkType: 'out' }
+                ],
+                shift: 'Ca sáng (08:00-17:00)',
+                status: 'pending',
+                hours: 10,
+                overtime: 1
+            },
+            {
+                id: 3,
+                employeeId: 'E104',
+                employeeName: 'Lê Văn D',
+                department: 'SALES',
+                date: date,
+                checkTimes: [
+                    { checkTime: date + 'T08:00:00', checkType: 'in' }
+                ],
+                shift: 'Ca sáng (08:00-17:00)',
+                status: 'pending',
+                hours: 0,
+                missingCheckout: true
+            }
+        ];
+        
+        const filtered = mockAttendance.filter(record => {
+            if (department && record.department !== department) return false;
+            if (status !== 'all' && record.status !== status) return false;
+            return true;
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state">Không có dữ liệu chấm công</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(record => {
+            const statusBadge = {
+                'pending': '<span class="badge badge-warning">Chờ duyệt</span>',
+                'approved': '<span class="badge badge-success">Đã duyệt</span>',
+                'rejected': '<span class="badge badge-danger">Từ chối</span>'
+            }[record.status];
+            
+            const issues = [];
+            if (record.isLate) issues.push(`Trễ ${record.lateMinutes} phút`);
+            if (record.missingCheckout) issues.push('Thiếu chấm ra');
+            if (record.overtime) issues.push(`OT: ${record.overtime}h`);
+            
+            return `
+                <div class="list-item" style="cursor: pointer;" data-attendance-id="${record.id}">
+                    <div class="list-item-content">
+                        <div class="list-item-title">
+                            ${record.employeeName} (${record.employeeId})
+                            ${statusBadge}
+                        </div>
+                        <div class="list-item-subtitle">
+                            ${record.shift} | ${record.department}
+                        </div>
+                        <div class="list-item-meta">
+                            ${(() => {
+                                const inTime = record.checkTimes?.find(t => t.checkType === 'in');
+                                const outTime = record.checkTimes?.find(t => t.checkType === 'out');
+                                const inStr = inTime ? inTime.checkTime.substring(11, 16) : 'N/A';
+                                const outStr = outTime ? outTime.checkTime.substring(11, 16) : 'N/A';
+                                return `Vào: ${inStr} | Ra: ${outStr} | ${record.hours}h`;
+                            })()}
+                            ${issues.length > 0 ? `<br><span style="color: var(--warning, #ffa500);">${issues.join(' • ')}</span>` : ''}
+                        </div>
+                    </div>
+                    ${record.status === 'pending' ? `
+                    <div class="list-item-action">
+                        <button class="btn btn-sm btn-success approve-attendance" data-id="${record.id}">
+                            <span class="material-icons">check</span>
+                        </button>
+                        <button class="btn btn-sm btn-danger reject-attendance" data-id="${record.id}">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+        
+        // Add event listeners
+        document.querySelectorAll('.approve-attendance').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.approveAttendance(btn.getAttribute('data-id'));
+            });
+        });
+        
+        document.querySelectorAll('.reject-attendance').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.rejectAttendance(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    async approveAttendance(id) {
+        if (!confirm('Xác nhận duyệt chấm công này?')) return;
+        
+        try {
+            // await apiClient.post(`/attendance/${id}/approve`);
+            showNotification('Đã duyệt chấm công', 'success');
+            await this.loadAttendanceForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi duyệt chấm công', 'error');
+        }
+    },
+
+    async rejectAttendance(id) {
+        const reason = prompt('Lý do từ chối:');
+        if (!reason) return;
+        
+        try {
+            // await apiClient.post(`/attendance/${id}/reject`, { reason });
+            showNotification('Đã từ chối chấm công', 'success');
+            await this.loadAttendanceForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi từ chối chấm công', 'error');
+        }
+    },
+
+    /**
+     * TIMESHEET APPROVAL MODULE
+     * Manager approves monthly timesheets
+     */
+    async renderTimesheetApproval() {
+        const currentMonth = new Date().getMonth() + 1;
+        const currentYear = new Date().getFullYear();
+        
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">assignment_turned_in</span>
+                    Duyệt Bảng Công
+                </h1>
+            </div>
+            
+            <div class="content-body">
+                <!-- Filter Section -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tháng:</label>
+                            <select id="filterMonth" class="form-control">
+                                ${Array.from({length: 12}, (_, i) => `<option value="${i+1}" ${i+1 === currentMonth ? 'selected' : ''}>Tháng ${i+1}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Năm:</label>
+                            <select id="filterYear" class="form-control">
+                                <option value="2024">2024</option>
+                                <option value="2025" selected>2025</option>
+                                <option value="2026">2026</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Phòng ban:</label>
+                            <select id="filterDeptTimesheet" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="IT">Công nghệ thông tin</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="SALES">Kinh doanh</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btnFilterTimesheet" class="btn btn-primary" style="width: 100%;">
+                                <span class="material-icons" style="font-size: 18px;">search</span>
+                                Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timesheet List -->
+                <div id="timesheetApprovalList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initTimesheetApproval() {
+        await this.loadTimesheetForApproval();
+        
+        document.getElementById('btnFilterTimesheet')?.addEventListener('click', () => {
+            this.loadTimesheetForApproval();
+        });
+    },
+
+    async loadTimesheetForApproval() {
+        const container = document.getElementById('timesheetApprovalList');
+        if (!container) return;
+        
+        const month = document.getElementById('filterMonth')?.value || new Date().getMonth() + 1;
+        const year = document.getElementById('filterYear')?.value || new Date().getFullYear();
+        const department = document.getElementById('filterDeptTimesheet')?.value || '';
+        
+        // Mock data
+        const mockTimesheets = [
+            {
+                employeeId: 'E102',
+                employeeName: 'Trần Văn B',
+                department: 'IT',
+                month: month,
+                year: year,
+                workDays: 22,
+                actualDays: 20,
+                leaveDays: 2,
+                lateDays: 3,
+                overtimeHours: 5,
+                totalHours: 176,
+                status: 'pending'
+            },
+            {
+                employeeId: 'E103',
+                employeeName: 'Phạm Thị C',
+                department: 'HR',
+                month: month,
+                year: year,
+                workDays: 22,
+                actualDays: 22,
+                leaveDays: 0,
+                lateDays: 0,
+                overtimeHours: 0,
+                totalHours: 176,
+                status: 'pending'
+            }
+        ];
+        
+        const filtered = mockTimesheets.filter(ts => {
+            if (department && ts.department !== department) return false;
+            return true;
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state">Không có bảng công</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(ts => `
+            <div class="list-item" style="cursor: pointer;" data-employee-id="${ts.employeeId}">
+                <div class="list-item-content">
+                    <div class="list-item-title">
+                        ${ts.employeeName} (${ts.employeeId})
+                        <span class="badge badge-warning">Chờ duyệt</span>
+                    </div>
+                    <div class="list-item-subtitle">
+                        ${ts.department} | Tháng ${ts.month}/${ts.year}
+                    </div>
+                    <div class="list-item-meta">
+                        Công: ${ts.actualDays}/${ts.workDays} ngày | Nghỉ: ${ts.leaveDays} | Trễ: ${ts.lateDays} | OT: ${ts.overtimeHours}h
+                    </div>
+                </div>
+                ${ts.status === 'pending' ? `
+                <div class="list-item-action">
+                    <button class="btn btn-sm btn-success approve-timesheet" data-id="${ts.employeeId}">
+                        <span class="material-icons">check</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger reject-timesheet" data-id="${ts.employeeId}">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+        // Add event listeners
+        document.querySelectorAll('.approve-timesheet').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.approveTimesheet(btn.getAttribute('data-id'));
+            });
+        });
+        
+        document.querySelectorAll('.reject-timesheet').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.rejectTimesheet(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    async approveTimesheet(employeeId) {
+        if (!confirm('Xác nhận duyệt bảng công?')) return;
+        
+        try {
+            // await apiClient.post(`/timesheets/${employeeId}/approve`);
+            showNotification('Đã duyệt bảng công', 'success');
+            await this.loadTimesheetForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi duyệt bảng công', 'error');
+        }
+    },
+
+    async rejectTimesheet(employeeId) {
+        const reason = prompt('Lý do từ chối:');
+        if (!reason) return;
+        
+        try {
+            // await apiClient.post(`/timesheets/${employeeId}/reject`, { reason });
+            showNotification('Đã từ chối bảng công', 'success');
+            await this.loadTimesheetForApproval();
+        } catch (error) {
+            showNotification('Lỗi khi từ chối bảng công', 'error');
+        }
+    },
+
+    /**
+     * SALARY MANAGEMENT MODULE
+     * Admin manages employee salaries
+     */
+    async renderSalaryManagement() {
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">payments</span>
+                    Quản Lý Lương
+                </h1>
+                <button id="btnAddSalary" class="btn btn-primary">
+                    <span class="material-icons">add</span>
+                    Thêm Lương
+                </button>
+            </div>
+            
+            <div class="content-body">
+                <!-- Filter Section -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Tháng:</label>
+                            <select id="filterSalaryMonth" class="form-control">
+                                ${Array.from({length: 12}, (_, i) => `<option value="${i+1}">Tháng ${i+1}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary, #b0b3b8); font-size: 14px;">Phòng ban:</label>
+                            <select id="filterSalaryDept" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="IT">Công nghệ thông tin</option>
+                                <option value="HR">Nhân sự</option>
+                                <option value="SALES">Kinh doanh</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: flex-end;">
+                            <button id="btnFilterSalary" class="btn btn-primary" style="width: 100%;">
+                                <span class="material-icons" style="font-size: 18px;">search</span>
+                                Lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary List -->
+                <div id="salaryList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initSalaryManagement() {
+        await this.loadSalaries();
+        
+        document.getElementById('btnAddSalary')?.addEventListener('click', () => {
+            this.showAddSalaryForm();
+        });
+        
+        document.getElementById('btnFilterSalary')?.addEventListener('click', () => {
+            this.loadSalaries();
+        });
+    },
+
+    async loadSalaries() {
+        const container = document.getElementById('salaryList');
+        if (!container) return;
+        
+        // Mock data
+        const mockSalaries = [
+            {
+                employeeId: 'E102',
+                employeeName: 'Trần Văn B',
+                department: 'IT',
+                position: 'Developer',
+                baseSalary: 15000000,
+                allowances: 2000000,
+                bonus: 1000000,
+                deductions: 500000,
+                netSalary: 17500000,
+                month: 11,
+                year: 2025,
+                status: 'paid'
+            },
+            {
+                employeeId: 'E103',
+                employeeName: 'Phạm Thị C',
+                department: 'HR',
+                position: 'HR Manager',
+                baseSalary: 20000000,
+                allowances: 3000000,
+                bonus: 2000000,
+                deductions: 1000000,
+                netSalary: 24000000,
+                month: 11,
+                year: 2025,
+                status: 'pending'
+            }
+        ];
+        
+        container.innerHTML = mockSalaries.map(salary => `
+            <div class="list-item" style="cursor: pointer;" data-employee-id="${salary.employeeId}">
+                <div class="list-item-content">
+                    <div class="list-item-title">
+                        ${salary.employeeName} (${salary.employeeId})
+                        ${salary.status === 'paid' ? 
+                            '<span class="badge badge-success">Đã chi trả</span>' : 
+                            '<span class="badge badge-warning">Chờ chi trả</span>'}
+                    </div>
+                    <div class="list-item-subtitle">
+                        ${salary.department} - ${salary.position} | Tháng ${salary.month}/${salary.year}
+                    </div>
+                    <div class="list-item-meta">
+                        Lương CB: ${this.formatCurrency(salary.baseSalary)} | 
+                        Phụ cấp: ${this.formatCurrency(salary.allowances)} | 
+                        Thưởng: ${this.formatCurrency(salary.bonus)} | 
+                        <strong>Thực lĩnh: ${this.formatCurrency(salary.netSalary)}</strong>
+                    </div>
+                </div>
+                <div class="list-item-action">
+                    <button class="btn btn-sm btn-secondary edit-salary" data-id="${salary.employeeId}">
+                        <span class="material-icons">edit</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.edit-salary').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showEditSalaryForm(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('vi-VN', { 
+            style: 'currency', 
+            currency: 'VND' 
+        }).format(amount);
+    },
+
+    showAddSalaryForm() {
+        showNotification('Chức năng thêm lương sẽ được phát triển', 'info');
+    },
+
+    showEditSalaryForm(employeeId) {
+        showNotification(`Chỉnh sửa lương cho ${employeeId}`, 'info');
+    },
+
+    /**
+     * EMPLOYEE MANAGEMENT MODULE
+     * Admin manages employee records
+     */
+    async renderEmployeeManagement() {
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">people</span>
+                    Quản Lý Nhân Viên
+                </h1>
+                <button id="btnAddEmployee" class="btn btn-primary">
+                    <span class="material-icons">person_add</span>
+                    Thêm Nhân Viên
+                </button>
+            </div>
+            
+            <div class="content-body">
+                <!-- Search and Filter -->
+                <div class="filter-section" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 12px;">
+                        <input type="text" id="searchEmployee" class="form-control" placeholder="Tìm kiếm theo tên hoặc mã NV...">
+                        <button id="btnSearchEmployee" class="btn btn-primary">
+                            <span class="material-icons">search</span>
+                            Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Employee List -->
+                <div id="employeeList" class="list">
+                    <div class="loading">Đang tải dữ liệu...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initEmployeeManagement() {
+        await this.loadEmployees();
+        
+        document.getElementById('btnAddEmployee')?.addEventListener('click', () => {
+            this.showAddEmployeeForm();
+        });
+        
+        document.getElementById('btnSearchEmployee')?.addEventListener('click', () => {
+            this.loadEmployees();
+        });
+        
+        document.getElementById('searchEmployee')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.loadEmployees();
+            }
+        });
+    },
+
+    async loadEmployees() {
+        const container = document.getElementById('employeeList');
+        if (!container) return;
+        
+        const searchTerm = document.getElementById('searchEmployee')?.value.toLowerCase() || '';
+        
+        // Mock data
+        const mockEmployees = [
+            {
+                employeeId: 'E101',
+                fullName: 'Nguyễn Thị Lan',
+                email: 'lan.nguyen@company.com',
+                phone: '0901234567',
+                department: 'HR',
+                position: 'Manager',
+                status: 'active',
+                joinDate: '2023-01-15'
+            },
+            {
+                employeeId: 'E102',
+                fullName: 'Trần Văn B',
+                email: 'b.tran@company.com',
+                phone: '0912345678',
+                department: 'IT',
+                position: 'Developer',
+                status: 'active',
+                joinDate: '2023-03-20'
+            },
+            {
+                employeeId: 'E103',
+                fullName: 'Phạm Thị C',
+                email: 'c.pham@company.com',
+                phone: '0923456789',
+                department: 'SALES',
+                position: 'Sales Executive',
+                status: 'inactive',
+                joinDate: '2022-06-10'
+            }
+        ];
+        
+        const filtered = mockEmployees.filter(emp => {
+            if (!searchTerm) return true;
+            return emp.employeeId.toLowerCase().includes(searchTerm) ||
+                   emp.fullName.toLowerCase().includes(searchTerm);
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state">Không tìm thấy nhân viên</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(emp => `
+            <div class="list-item" style="cursor: pointer;" data-employee-id="${emp.employeeId}">
+                <div class="list-item-content">
+                    <div class="list-item-title">
+                        ${emp.fullName} (${emp.employeeId})
+                        ${emp.status === 'active' ? 
+                            '<span class="badge badge-success">Đang làm việc</span>' : 
+                            '<span class="badge badge-secondary">Đã nghỉ</span>'}
+                    </div>
+                    <div class="list-item-subtitle">
+                        ${emp.department} - ${emp.position}
+                    </div>
+                    <div class="list-item-meta">
+                        ${emp.email} | ${emp.phone} | Vào: ${emp.joinDate}
+                    </div>
+                </div>
+                <div class="list-item-action">
+                    <button class="btn btn-sm btn-secondary edit-employee" data-id="${emp.employeeId}">
+                        <span class="material-icons">edit</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-employee" data-id="${emp.employeeId}">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        document.querySelectorAll('.edit-employee').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showEditEmployeeForm(btn.getAttribute('data-id'));
+            });
+        });
+        
+        document.querySelectorAll('.delete-employee').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteEmployee(btn.getAttribute('data-id'));
+            });
+        });
+    },
+
+    showAddEmployeeForm() {
+        showNotification('Form thêm nhân viên sẽ được phát triển', 'info');
+    },
+
+    showEditEmployeeForm(employeeId) {
+        showNotification(`Chỉnh sửa thông tin ${employeeId}`, 'info');
+    },
+
+    deleteEmployee(employeeId) {
+        if (!confirm(`Xác nhận xóa nhân viên ${employeeId}?`)) return;
+        showNotification('Đã xóa nhân viên', 'success');
+        this.loadEmployees();
+    },
+
+    /**
+     * SCHEDULE MANAGEMENT MODULE
+     * Manager creates and assigns schedules
+     */
+    async renderScheduleManagement() {
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay() + 1); // Monday
+        
+        return `
+            <div class="content-header">
+                <h1 class="page-title">
+                    <span class="material-icons">event</span>
+                    Xếp Lịch Làm Việc
+                </h1>
+                <button id="btnCreateSchedule" class="btn btn-primary">
+                    <span class="material-icons">add</span>
+                    Tạo Lịch
+                </button>
+            </div>
+            
+            <div class="content-body">
+                <!-- Week Selector -->
+                <div class="week-selector" style="background: var(--card-bg, #242526); padding: 16px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <button id="btnPrevWeek" class="btn btn-secondary">
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <h3 id="weekDisplay" style="margin: 0;">Tuần ${this.getWeekNumber(startOfWeek)}</h3>
+                    <button id="btnNextWeek" class="btn btn-secondary">
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                </div>
+
+                <!-- Schedule Grid -->
+                <div id="scheduleGrid" style="overflow-x: auto;">
+                    <div class="loading">Đang tải lịch...</div>
+                </div>
+            </div>
+        `;
+    },
+
+    async initScheduleManagement() {
+        this.currentWeekStart = this.getMonday(new Date());
+        await this.loadScheduleGrid();
+        
+        document.getElementById('btnPrevWeek')?.addEventListener('click', () => {
+            this.currentWeekStart.setDate(this.currentWeekStart.getDate() - 7);
+            this.loadScheduleGrid();
+        });
+        
+        document.getElementById('btnNextWeek')?.addEventListener('click', () => {
+            this.currentWeekStart.setDate(this.currentWeekStart.getDate() + 7);
+            this.loadScheduleGrid();
+        });
+        
+        document.getElementById('btnCreateSchedule')?.addEventListener('click', () => {
+            this.showCreateScheduleForm();
+        });
+    },
+
+    getMonday(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    },
+
+    getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    },
+
+    async loadScheduleGrid() {
+        const container = document.getElementById('scheduleGrid');
+        if (!container) return;
+        
+        const weekDisplay = document.getElementById('weekDisplay');
+        if (weekDisplay) {
+            weekDisplay.textContent = `Tuần ${this.getWeekNumber(this.currentWeekStart)}`;
+        }
+        
+        // Mock employees
+        const employees = ['E101 - Nguyễn Thị Lan', 'E102 - Trần Văn B', 'E103 - Phạm Thị C'];
+        const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+        const shifts = ['Ca sáng', 'Ca chiều', 'Ca tối', 'OFF'];
+        
+        let html = `
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--card-bg, #242526);">
+                        <th style="padding: 12px; border: 1px solid var(--border-color, #3a3b3c); text-align: left;">Nhân viên</th>
+                        ${days.map(day => `<th style="padding: 12px; border: 1px solid var(--border-color, #3a3b3c); text-align: center;">${day}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        employees.forEach(emp => {
+            html += '<tr>';
+            html += `<td style="padding: 12px; border: 1px solid var(--border-color, #3a3b3c);">${emp}</td>`;
+            days.forEach((_, idx) => {
+                const shift = shifts[Math.floor(Math.random() * shifts.length)];
+                const bgColor = shift === 'OFF' ? 'var(--danger, #e74c3c)' : 
+                                shift === 'Ca sáng' ? 'var(--info, #3498db)' :
+                                shift === 'Ca chiều' ? 'var(--warning, #f39c12)' :
+                                'var(--secondary, #95a5a6)';
+                html += `<td style="padding: 8px; border: 1px solid var(--border-color, #3a3b3c); text-align: center; background: ${bgColor}20;">
+                    <div style="font-size: 12px;">${shift}</div>
+                </td>`;
+            });
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    },
+
+    showCreateScheduleForm() {
+        showNotification('Form tạo lịch sẽ được phát triển', 'info');
     }
 };

@@ -4,7 +4,34 @@
 
 Hệ thống quản lý nhân sự (HRM) được thiết kế đặc biệt cho ngành F&B (Food & Beverage) với kiến trúc Single Page Application (SPA), hỗ trợ quản lý 2 phòng ban chính:
 - **VP (Văn Phòng/Office)**: Bộ phận hành chính, IT, kế toán
-- **CH (Cửa Hàng/Store)**: Nhân viên trực tiếp làm việc tại cửa hàng
+- **CH (Cửa Hàng/Store)**: Nhân viên trực tiếp làm việc tại cửa hàng với hệ thống phân ca
+
+## ✨ Tính Năng Chính
+
+### 📊 Bảng Công (Timesheet)
+- **Xem bảng công theo tháng**: Chọn tháng/năm để xem lịch sử chấm công
+- **Hiển thị giờ làm**: Mỗi ngày hiển thị số giờ làm việc (ví dụ: "8h")
+- **Chi tiết chấm công**: Click vào ngày để xem:
+  - Ngày và ca làm việc (timeName format: "08:00-19:00")
+  - Danh sách hoạt động: "Chấm công + thời gian" hoặc "Đơn từ + thời gian"
+  - Đơn từ liên quan (nếu có)
+  - Tổng số giờ làm việc
+
+### 📝 Quản Lý Đơn Từ
+Hệ thống hỗ trợ 7 loại đơn từ theo schema database:
+- **leave**: Nghỉ phép (sử dụng fromDate/toDate)
+- **overtime**: Đăng ký tăng ca (sử dụng requestDate)
+- **shift_change**: Đổi ca làm việc (sử dụng currentShiftDate/requestedShiftDate)
+- **shift_swap**: Đổi ca với đồng nghiệp (sử dụng swapWithEmployeeId)
+- **forgot_checkin**: Quên chấm công vào
+- **forgot_checkout**: Quên chấm công ra
+- **general**: Yêu cầu chung
+
+Mỗi đơn từ hiển thị:
+- Loại đơn và trạng thái (badge: pending/approved/rejected)
+- Thông tin nhân viên
+- Lý do và thời gian
+- Người duyệt và ghi chú (nếu đã xử lý)
 
 ## 🎯 Luồng Truy Cập Hệ Thống
 
