@@ -28,7 +28,7 @@ const MockUsers = {
         email: "admin@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_ADMIN",
         approval_status: "approved",
         is_active: 1,
@@ -53,7 +53,7 @@ const MockUsers = {
         email: "quanly@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_QLKV",
         approval_status: "approved",
         is_active: 1,
@@ -78,7 +78,7 @@ const MockUsers = {
         email: "ketoan@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_KT",
         approval_status: "approved",
         is_active: 1,
@@ -103,7 +103,7 @@ const MockUsers = {
         email: "it@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_IT",
         approval_status: "approved",
         is_active: 1,
@@ -128,7 +128,7 @@ const MockUsers = {
         email: "giamsat@company.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "VP_GS",
         approval_status: "approved",
         is_active: 1,
@@ -153,7 +153,7 @@ const MockUsers = {
         email: "lanql@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_QL_LV2",
         approval_status: "approved",
         is_active: 1,
@@ -178,7 +178,7 @@ const MockUsers = {
         email: "minhql@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_QL_LV1",
         approval_status: "approved",
         is_active: 1,
@@ -203,7 +203,7 @@ const MockUsers = {
         email: "hoanv@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_NV_LV2",
         approval_status: "approved",
         is_active: 1,
@@ -228,7 +228,7 @@ const MockUsers = {
         email: "ducnv@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_NV_LV1",
         approval_status: "approved",
         is_active: 1,
@@ -253,7 +253,7 @@ const MockUsers = {
         email: "maict@store.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "CH_CT",
         approval_status: "approved",
         is_active: 1,
@@ -278,7 +278,7 @@ const MockUsers = {
         email: "test@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "TEST_NONE",
         approval_status: "approved",
         is_active: 1,
@@ -302,7 +302,7 @@ const MockUsers = {
         email: "viewer@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "TEST_VIEW",
         approval_status: "approved",
         is_active: 1,
@@ -326,7 +326,7 @@ const MockUsers = {
         email: "approver@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "TEST_APPROVE",
         approval_status: "approved",
         is_active: 1,
@@ -350,7 +350,7 @@ const MockUsers = {
         email: "creator@test.com",
         password: "123456",
         storeId: "S001",
-        departmentId: "CH",
+        companyId: "COMP001",
         positionId: "TEST_CREATE",
         approval_status: "approved",
         is_active: 1,
@@ -374,7 +374,7 @@ const MockUsers = {
         email: "full@test.com",
         password: "123456",
         storeId: null,
-        departmentId: "VP",
+        companyId: "COMP001",
         positionId: "TEST_FULL",
         approval_status: "approved",
         is_active: 1,
@@ -474,7 +474,7 @@ const MockAuth = {
         localStorage.setItem('userData', JSON.stringify(user));
         
         console.log('✅ Switched to user:', user.fullName);
-        console.log('   Department ID:', user.departmentId);
+        console.log('   Department ID:', user.companyId);
         console.log('   Position ID:', user.positionId);
         console.log('   Permissions:', user.permissions);
         
@@ -490,7 +490,7 @@ const MockAuth = {
             return {
                 username: user.username,
                 fullName: user.fullName,
-                departmentId: user.departmentId,
+                departmentId: user.companyId,
                 positionId: user.positionId,
                 permissionCount: user.permissions ? user.permissions.split(',').length : 0
             };
@@ -684,7 +684,7 @@ const MockAPI = {
                     fullName: user.fullName,
                     email: user.email,
                     phone: user.phone,
-                    departmentId: user.departmentId,
+                    departmentId: user.companyId,
                     positionId: user.positionId,
                     permissions: permissionsWithDefaults  // Always includes default permissions
                 });
@@ -855,7 +855,7 @@ const MockAPI = {
             let baseSalary = 8000000; // Default for staff
             // Determine salary based on department and permissions
             if (user) {
-                if (user.departmentId === 'CH') {
+                if (user.companyId === 'CH') {
                     // CH department: hourly rate (use default for calculation)
                     baseSalary = 25000 * 160; // Assuming 160 hours/month
                 } else if (user.permissions && user.permissions.includes('employee_manage')) {
@@ -1044,7 +1044,7 @@ const MockAPI = {
                     email: currentUser.email,
                     phone: currentUser.phone || '0901234567',
                     positionId: currentUser.positionId,
-                    departmentId: currentUser.departmentId,
+                    departmentId: currentUser.companyId,
                     storeId: currentUser.storeId || null,
                     hire_date: currentUser.hire_date || '2020-01-01',
                     approval_status: currentUser.approval_status || 'approved',

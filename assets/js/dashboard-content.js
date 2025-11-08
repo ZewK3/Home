@@ -633,7 +633,7 @@ const DashboardContent = {
                 </div>
                 <div class="form-group">
                     <label class="form-label">Phòng ban</label>
-                    <input type="text" class="form-input" value="${profile.departmentId || ''}" disabled>
+                    <input type="text" class="form-input" value="${profile.companyId || ''}" disabled>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Chức vụ</label>

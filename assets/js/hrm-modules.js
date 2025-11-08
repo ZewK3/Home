@@ -149,7 +149,7 @@ const HRMModules = {
             
             departments.data?.forEach(dept => {
                 const option = document.createElement('option');
-                option.value = dept.departmentId;
+                option.value = dept.companyId;
                 option.textContent = dept.departmentName;
                 deptFilter.appendChild(option);
             });
@@ -175,7 +175,7 @@ const HRMModules = {
         async loadEmployeeList() {
             const listEl = document.getElementById('employeeList');
             const filters = {
-                departmentId: document.getElementById('filterDepartment')?.value,
+                companyId: document.getElementById('filterDepartment')?.value,
                 positionId: document.getElementById('filterPosition')?.value,
                 search: document.getElementById('searchEmployee')?.value
             };
@@ -394,7 +394,7 @@ const HRMModules = {
             
             departments.data?.forEach(dept => {
                 const option = document.createElement('option');
-                option.value = dept.departmentId;
+                option.value = dept.companyId;
                 option.textContent = dept.departmentName;
                 filter.appendChild(option);
             });
@@ -405,10 +405,10 @@ const HRMModules = {
         
         async loadPositions() {
             const listEl = document.getElementById('positionList');
-            const departmentId = document.getElementById('positionDepartmentFilter')?.value;
+            const companyId = document.getElementById('positionDepartmentFilter')?.value;
             
             try {
-                const params = departmentId ? { departmentId } : {};
+                const params = companyId ? { companyId } : {};
                 const result = await apiClient.get('/positions', params);
                 
                 if (result.data?.length > 0) {
@@ -1084,7 +1084,7 @@ const HRMModules = {
                     let weekdayHours = 0;
                     let weekendBonus = 0;
                     
-                    if (userData?.departmentId === 'CH') {
+                    if (userData?.companyId === 'CH') {
                         details.forEach(day => {
                             const date = new Date(day.date);
                             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
@@ -1126,7 +1126,7 @@ const HRMModules = {
                                 <h4>${data.overtimeHours || 0}</h4>
                                 <p>Tăng Ca</p>
                             </div>
-                            ${userData?.departmentId === 'CH' ? `
+                            ${userData?.companyId === 'CH' ? `
                             <div class="stat">
                                 <h4>${weekdayHours.toFixed(1)}</h4>
                                 <p>Giờ T2-T6</p>
@@ -1138,7 +1138,7 @@ const HRMModules = {
                             ` : ''}
                         </div>
                         
-                        ${userData?.departmentId === 'CH' && weekendHours > 0 ? `
+                        ${userData?.companyId === 'CH' && weekendHours > 0 ? `
                         <div class="weekend-bonus-alert">
                             <span class="material-icons-round">card_giftcard</span>
                             <div>
@@ -1258,7 +1258,7 @@ const HRMModules = {
                 
                 if (salary.data) {
                     const data = salary.data;
-                    const isCH = userData?.departmentId === 'CH';
+                    const isCH = userData?.companyId === 'CH';
                     // Use default rates from SQL schema if department is known
                     const salaryRate = isCH ? 25000 : 8000000; // CH hourly vs VP monthly
                     
