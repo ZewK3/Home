@@ -59,7 +59,7 @@ const PermissionManager = {
             
             return {
                 employeeId: user.employeeId,
-                departmentId: user.departmentId,
+                companyId: user.companyId,
                 positionId: user.positionId,
                 positionLevel: user.positionLevel || 1, // Keep for backward compatibility
                 permissions: permissionsList, // Array of permission strings
@@ -135,7 +135,7 @@ const PermissionManager = {
      */
     applyVPMenuPermissions() {
         const userPerms = this.getUserPermissions();
-        if (!userPerms || userPerms.departmentId !== 'VP') {
+        if (!userPerms || userPerms.companyId !== 'VP') {
             return;
         }
 
@@ -190,7 +190,7 @@ const PermissionManager = {
      */
     applyCHMenuPermissions() {
         const userPerms = this.getUserPermissions();
-        if (!userPerms || userPerms.departmentId !== 'CH') {
+        if (!userPerms || userPerms.companyId !== 'CH') {
             return;
         }
 
@@ -293,12 +293,12 @@ if (typeof document !== 'undefined') {
             }
             
             if (user) {
-                if (user.departmentId === 'VP') {
+                if (user.companyId === 'VP') {
                     PermissionManager.applyVPMenuPermissions();
-                } else if (user.departmentId === 'CH') {
+                } else if (user.companyId === 'CH') {
                     PermissionManager.applyCHMenuPermissions();
                 }
-                console.log('✅ Permissions applied for', user.departmentId, 'Level', user.positionLevel);
+                console.log('✅ Permissions applied for', user.companyId, 'Level', user.positionLevel);
             }
         }, 100);
     });

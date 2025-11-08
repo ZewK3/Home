@@ -490,7 +490,7 @@ const MockAuth = {
             return {
                 username: user.username,
                 fullName: user.fullName,
-                departmentId: user.companyId,
+                companyId: user.companyId,
                 positionId: user.positionId,
                 permissionCount: user.permissions ? user.permissions.split(',').length : 0
             };
@@ -684,7 +684,7 @@ const MockAPI = {
                     fullName: user.fullName,
                     email: user.email,
                     phone: user.phone,
-                    departmentId: user.companyId,
+                    companyId: user.companyId,
                     positionId: user.positionId,
                     permissions: permissionsWithDefaults  // Always includes default permissions
                 });
@@ -1044,7 +1044,7 @@ const MockAPI = {
                     email: currentUser.email,
                     phone: currentUser.phone || '0901234567',
                     positionId: currentUser.positionId,
-                    departmentId: currentUser.companyId,
+                    companyId: currentUser.companyId,
                     storeId: currentUser.storeId || null,
                     hire_date: currentUser.hire_date || '2020-01-01',
                     approval_status: currentUser.approval_status || 'approved',

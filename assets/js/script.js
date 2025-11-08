@@ -486,7 +486,7 @@ async function handleRegister(event) {
         email: elements.registerForm.email?.value.trim() || "",
         storeId: elements.registerForm.storeId?.value || "",
         position: "NV",
-        departmentId: "CH"  // Default to CH (Store) department for all registrations
+        companyId: "CH"  // Default to CH (Store) department for all registrations
     };
 
     // Validate store selection

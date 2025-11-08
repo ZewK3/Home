@@ -30,7 +30,7 @@ CREATE TABLE employees (
     email TEXT UNIQUE,
     password TEXT NOT NULL,              -- SHA-256 hashed, no salt needed
     storeId TEXT,
-    departmentId TEXT,                   -- FK to departments table
+    companyId TEXT,                   -- FK to departments table
     positionId TEXT,                     -- FK to positions table
     approval_status TEXT DEFAULT 'approved' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
     is_active INTEGER DEFAULT 1,
@@ -38,7 +38,7 @@ CREATE TABLE employees (
     last_login_at TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (storeId) REFERENCES stores(storeId),
-    FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    FOREIGN KEY (companyId) REFERENCES departments(companyId),
     FOREIGN KEY (positionId) REFERENCES positions(positionId)
 );
 
@@ -63,7 +63,7 @@ CREATE TABLE stores (
 
 -- Departments table - For organizational structure (VP: Office, CH: Store)
 CREATE TABLE departments (
-    departmentId TEXT PRIMARY KEY,       -- Example: VP, CH
+    companyId TEXT PRIMARY KEY,       -- Example: VP, CH
     departmentName TEXT NOT NULL,        -- Example: Văn Phòng, Cửa Hàng
     description TEXT,
     workHoursPerDay INTEGER DEFAULT 8,   -- Default work hours per day
@@ -75,7 +75,7 @@ CREATE TABLE departments (
 -- Positions table - For position hierarchy and salary management
 CREATE TABLE positions (
     positionId TEXT PRIMARY KEY,         -- Example: VP_KT, CH_NV_LV1
-    departmentId TEXT NOT NULL,          -- FK to departments
+    companyId TEXT NOT NULL,          -- FK to departments
     positionName TEXT NOT NULL,          -- Example: Kế Toán, Nhân Viên LV1
     baseSalaryRate REAL DEFAULT 0,       -- Base salary rate (hourly/daily/monthly based on type)
     salaryType TEXT DEFAULT 'hourly' CHECK(salaryType IN ('hourly', 'daily', 'monthly')),
@@ -83,7 +83,7 @@ CREATE TABLE positions (
     permissions TEXT,                    -- JSON or comma-separated permissions
     isActive INTEGER DEFAULT 1,
     createdAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (departmentId) REFERENCES departments(departmentId)
+    FOREIGN KEY (companyId) REFERENCES departments(companyId)
 );
 
 -- =====================================================
@@ -181,7 +181,7 @@ CREATE TABLE shifts (
 -- =====================================================
 
 -- Insert default departments (VP: Office, CH: Store)
-INSERT INTO departments (departmentId, departmentName, departmentCode, description, workHoursPerDay, workDaysPerMonth, requiresShiftAssignment) VALUES
+INSERT INTO departments (companyId, departmentName, departmentCode, description, workHoursPerDay, workDaysPerMonth, requiresShiftAssignment) VALUES
 ('VP', 'Văn Phòng', 'VP', 'Phòng ban văn phòng - làm việc hành chính', 8, 26, 0),
 ('CH', 'Cửa Hàng', 'CH', 'Cửa hàng bán lẻ - yêu cầu phân ca', 8, 26, 1);
 
@@ -190,14 +190,14 @@ INSERT INTO departments (departmentId, departmentName, departmentCode, descripti
 -- =====================================================
 
 -- Insert default positions for VP (Office)
-INSERT INTO positions (positionId, departmentId, positionName, positionCode, baseSalaryRate, salaryType, description, permissions) VALUES
+INSERT INTO positions (positionId, companyId, positionName, positionCode, baseSalaryRate, salaryType, description, permissions) VALUES
 ('VP_KT', 'VP', 'Kế Toán', 'KT', 8000000, 'monthly', 'Nhân viên kế toán văn phòng', 'employee_view,salary_manage,reports_view,timesheet_view'),
 ('VP_IT', 'VP', 'Nhân Viên IT', 'IT', 9000000, 'monthly', 'Nhân viên công nghệ thông tin', 'employee_view,system_admin,reports_view'),
 ('VP_QLKV', 'VP', 'Quản Lý Khu Vực', 'QLKV', 12000000, 'monthly', 'Quản lý khu vực văn phòng', 'employee_manage,salary_view,timesheet_approve,reports_view,schedule_manage,shift_manage,request_approve'),
 ('VP_ADMIN', 'VP', 'Quản Trị Viên', 'ADMIN', 15000000, 'monthly', 'Quản trị viên hệ thống', 'employee_manage,registration_approve,department_manage,position_manage,salary_manage,timesheet_approve,reports_view,system_admin');
 
 -- Insert default positions for CH (Store)
-INSERT INTO positions (positionId, departmentId, positionName, positionCode, baseSalaryRate, salaryType, description, permissions) VALUES
+INSERT INTO positions (positionId, companyId, positionName, positionCode, baseSalaryRate, salaryType, description, permissions) VALUES
 ('CH_NV_LV1', 'CH', 'Nhân Viên LV1', 'NV_LV1', 25000, 'hourly', 'Nhân viên cửa hàng cấp 1', 'attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view'),
 ('CH_NV_LV2', 'CH', 'Nhân Viên LV2', 'NV_LV2', 28000, 'hourly', 'Nhân viên cửa hàng cấp 2', 'attendance_self,schedule_view,timesheet_view,salary_view,request_create,notification_view,profile_view'),
 ('CH_QL_LV1', 'CH', 'Quản Lý LV1', 'QL_LV1', 35000, 'hourly', 'Quản lý ca cửa hàng cấp 1', 'attendance_self,timesheet_approve,shift_manage,request_approve,schedule_view,timesheet_view,salary_view,notification_view,profile_view'),
@@ -314,7 +314,7 @@ CREATE TABLE pending_registrations (
     fullName TEXT NOT NULL,              -- Synchronized with employees.fullName
     phone TEXT,
     storeId TEXT,                        -- FOREIGN KEY to stores(storeId)
-    departmentId TEXT,                   -- FOREIGN KEY to departments(departmentId)
+    companyId TEXT,                   -- FOREIGN KEY to departments(companyId)
     positionId TEXT,                     -- FOREIGN KEY to positions(positionId)
     verification_code TEXT,
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'verified', 'approved', 'rejected')),
@@ -323,7 +323,7 @@ CREATE TABLE pending_registrations (
     approved_at TEXT,
     approved_by TEXT,                    -- employeeId of approver
     FOREIGN KEY (storeId) REFERENCES stores(storeId),
-    FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    FOREIGN KEY (companyId) REFERENCES departments(companyId),
     FOREIGN KEY (positionId) REFERENCES positions(positionId),
     FOREIGN KEY (approved_by) REFERENCES employees(employeeId)
 );
@@ -348,7 +348,7 @@ CREATE TABLE salary_records (
     employeeId TEXT NOT NULL,
     month INTEGER NOT NULL,
     year INTEGER NOT NULL,
-    departmentId TEXT,
+    companyId TEXT,
     positionId TEXT,
     baseSalary REAL DEFAULT 0,           -- Base salary based on position
     workDays INTEGER DEFAULT 0,          -- Actual work days
@@ -366,7 +366,7 @@ CREATE TABLE salary_records (
     paidAt TEXT,
     notes TEXT,
     FOREIGN KEY (employeeId) REFERENCES employees(employeeId) ON DELETE CASCADE,
-    FOREIGN KEY (departmentId) REFERENCES departments(departmentId),
+    FOREIGN KEY (companyId) REFERENCES departments(companyId),
     FOREIGN KEY (positionId) REFERENCES positions(positionId),
     FOREIGN KEY (approvedBy) REFERENCES employees(employeeId),
     UNIQUE(employeeId, month, year)
@@ -413,7 +413,7 @@ CREATE INDEX idx_sessions_is_active ON sessions(is_active);
 
 -- Employee indexes
 CREATE INDEX idx_employees_email ON employees(email);
-CREATE INDEX idx_employees_departmentId ON employees(departmentId);
+CREATE INDEX idx_employees_companyId ON employees(companyId);
 CREATE INDEX idx_employees_positionId ON employees(positionId);
 CREATE INDEX idx_employees_approval_status ON employees(approval_status);
 CREATE INDEX idx_employees_storeId ON employees(storeId);
@@ -467,7 +467,7 @@ CREATE INDEX idx_departments_code ON departments(departmentCode);
 CREATE INDEX idx_departments_active ON departments(createdAt DESC);
 
 -- Positions indexes
-CREATE INDEX idx_positions_departmentId ON positions(departmentId);
+CREATE INDEX idx_positions_companyId ON positions(companyId);
 CREATE INDEX idx_positions_code ON positions(positionCode);
 CREATE INDEX idx_positions_active ON positions(isActive);
 
@@ -475,7 +475,7 @@ CREATE INDEX idx_positions_active ON positions(isActive);
 CREATE INDEX idx_salary_employeeId ON salary_records(employeeId);
 CREATE INDEX idx_salary_period ON salary_records(year DESC, month DESC);
 CREATE INDEX idx_salary_status ON salary_records(status);
-CREATE INDEX idx_salary_department ON salary_records(departmentId);
+CREATE INDEX idx_salary_department ON salary_records(companyId);
 CREATE INDEX idx_salary_position ON salary_records(positionId);
 
 -- =====================================================
@@ -559,7 +559,7 @@ ON sessions(session_token, is_active, expires_at);
 
 -- Employees by store + department + position (for manager queries)
 CREATE INDEX IF NOT EXISTS idx_employees_store_dept_position 
-ON employees(storeId, departmentId, positionId, is_active);
+ON employees(storeId, companyId, positionId, is_active);
 
 -- Employees by store + active status
 CREATE INDEX IF NOT EXISTS idx_employees_store_active 
@@ -589,7 +589,7 @@ ON employee_requests(requestType, status, createdAt DESC);
 
 -- Cover common employee list queries (no table lookup needed)
 CREATE INDEX IF NOT EXISTS idx_employees_list_covering 
-ON employees(is_active, departmentId, positionId, storeId, employeeId, fullName, email);
+ON employees(is_active, companyId, positionId, storeId, employeeId, fullName, email);
 
 -- Cover attendance dashboard queries
 CREATE INDEX IF NOT EXISTS idx_attendance_dashboard_covering 
