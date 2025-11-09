@@ -32,9 +32,11 @@ CREATE TABLE employees (
     storeId TEXT,
     companyId TEXT,                   -- FK to departments table
     positionId TEXT,                     -- FK to positions table
+    contract TEXT DEFAULT 'fulltime' CHECK(contract IN ('fulltime', 'parttime')), -- Contract type for salary calculation
+    birthdate TEXT,                      -- Date of birth (YYYY-MM-DD format)
+    hire_date TEXT,                      -- Date of hiring (YYYY-MM-DD format)
     approval_status TEXT DEFAULT 'approved' CHECK(approval_status IN ('pending', 'approved', 'rejected')),
     is_active INTEGER DEFAULT 1,
-    hire_date TEXT,                      -- Date of hiring
     last_login_at TEXT,
     created_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (storeId) REFERENCES stores(storeId),

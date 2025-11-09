@@ -265,23 +265,89 @@ const DashboardContent = {
      * PHASE 4: Mobile-Optimized Schedule UI (7-day swipe view)
      */
     async renderSchedule() {
-        const today = new Date();
-        const weekStart = this.getWeekStart(today);
-        const userData = SimpleStorage.get('userData');
+        const content = `
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">calendar_today</span>
+                    Lịch làm việc của tôi
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="scheduleWeekFilter" class="form-select" onchange="DashboardContent.filterSchedule()">
+                            <option value="current">Tuần này</option>
+                            <option value="next">Tuần sau</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <div id="scheduleContent">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">info</span>
+                    Thông tin lịch làm
+                </h3>
+                <div class="section-body">
+                    <div class="info-box">
+                        <p><strong>Tổng giờ làm tuần này:</strong> <span id="schedTotalHours">0</span> giờ</p>
+                        <p><strong>Số ca đã hoàn thành:</strong> <span id="schedCompletedShifts">0</span></p>
+                        <p><strong>Số ca sắp tới:</strong> <span id="schedUpcomingShifts">0</span></p>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        // Determine if user has schedule management permissions
-        const permissions = userData?.permissions || '';
-        const permissionList = permissions.split(',');
-        const isManager = permissionList.includes('schedule_manage') || permissionList.includes('shift_manage');
+        setTimeout(() => this.loadMySchedule(), 100);
+        return content;
+    },
+    
+    async loadMySchedule() {
+        const scheduleContainer = document.getElementById('scheduleContent');
+        if (!scheduleContainer) return;
         
-        // Permission-based schedule view
-        if (isManager) {
-            // Manager/Admin: Team schedule management
-            return this.renderScheduleManagement(weekStart);
-        } else {
-            // Worker: Personal schedule view with registration
-            return this.renderScheduleRegistration(weekStart);
-        }
+        // Mock schedule data - similar to shifts
+        const mySchedule = [
+            { id: 1, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' },
+            { id: 2, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca chiều', time: '13:00 - 17:00', status: 'upcoming' },
+            { id: 3, date: '2025-11-08', day: 'Chủ Nhật', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'completed' },
+            { id: 4, date: '2025-11-10', day: 'Thứ Ba', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' },
+            { id: 5, date: '2025-11-11', day: 'Thứ Tư', shift: 'Ca chiều', time: '13:00 - 17:00', status: 'upcoming' }
+        ];
+        
+        const html = mySchedule.map(sched => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <h4>${sched.shift} - ${sched.day}</h4>
+                    <p>${sched.date} • ${sched.time}</p>
+                </div>
+                <span class="badge ${sched.status === 'completed' ? 'badge-success' : 'badge-info'}">
+                    ${sched.status === 'completed' ? 'Đã làm' : 'Sắp tới'}
+                </span>
+            </div>
+        `).join('');
+        
+        scheduleContainer.innerHTML = html || '<p class="text-muted">Chưa có lịch làm việc</p>';
+        
+        // Update stats
+        const totalHours = mySchedule.filter(s => s.status === 'completed').length * 4;
+        const completed = mySchedule.filter(s => s.status === 'completed').length;
+        const upcoming = mySchedule.filter(s => s.status === 'upcoming').length;
+        
+        const totalHoursEl = document.getElementById('schedTotalHours');
+        const completedEl = document.getElementById('schedCompletedShifts');
+        const upcomingEl = document.getElementById('schedUpcomingShifts');
+        
+        if (totalHoursEl) totalHoursEl.textContent = totalHours;
+        if (completedEl) completedEl.textContent = completed;
+        if (upcomingEl) upcomingEl.textContent = upcoming;
+    },
+    
+    filterSchedule() {
+        // Reload schedule based on filter
+        this.loadMySchedule();
     },
 
     getWeekStart(date) {
