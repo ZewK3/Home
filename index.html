@@ -85,7 +85,6 @@
                 <div class="form-footer">
                     <div class="footer-row">
                         <a href="#" class="forgot-password">Quên mật khẩu?</a>
-                        <a href="#" id="goToRegister" class="form-link">Đăng ký ngay</a>
                     </div>
                 </div>
             </form>
@@ -127,7 +126,7 @@
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="storeSelectGroup" style="display:none;">
                     <div class="input-group">
                         <span class="material-icons-round input-icon">store</span>
                         <select id="storeId" name="storeId" required>
@@ -135,6 +134,20 @@
                         </select>
                         <label for="storeId">Cửa hàng</label>
                         <div class="input-border"></div>
+                    </div>
+                </div>
+                
+                <!-- Hidden fields for URL parameters -->
+                <input type="hidden" id="hiddenStoreId" name="hiddenStoreId">
+                <input type="hidden" id="hiddenCompanyId" name="hiddenCompanyId">
+                
+                <!-- Display store info when from link -->
+                <div class="form-group" id="storeInfoDisplay" style="display:none;">
+                    <div class="info-box">
+                        <span class="material-icons-round">store</span>
+                        <div>
+                            <strong>Cửa hàng:</strong> <span id="storeInfoText"></span>
+                        </div>
                     </div>
                 </div>
 
