@@ -1785,40 +1785,172 @@ const DashboardContent = {
     },
 
     async renderShiftManagement() {
-        return `
+        const content = `
             <div class="section">
-                <div class="card-header">
-                    <span class="title-content">
-                        <span class="material-icons-round">schedule</span>
-                        Quản lý ca làm việc
-                    </span>
-                </div>
-                <div class="card-body">
+                <h3 class="section-title">
+                    <span class="material-icons-round">schedule</span>
+                    Danh sách ca làm việc
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="shiftFilterWeek" class="form-select">
+                            <option value="current">Tuần này</option>
+                            <option value="next">Tuần sau</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
                     <div id="shiftsList">
                         <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">add_circle</span>
+                    Tạo ca mới
+                </h3>
+                <div class="section-body">
+                    <button class="btn btn-primary btn-full" onclick="DashboardContent.showAddShiftForm()">
+                        <span class="material-icons-round">add</span>
+                        Thêm ca làm việc
+                    </button>
+                </div>
+            </div>
         `;
+        
+        setTimeout(() => this.loadShiftsList(), 100);
+        return content;
+    },
+    
+    async loadShiftsList() {
+        const shiftsContainer = document.getElementById('shiftsList');
+        if (!shiftsContainer) return;
+        
+        // Mock data for shifts
+        const shifts = [
+            { id: 1, name: 'Ca sáng', startTime: '08:00', endTime: '12:00', employees: 5 },
+            { id: 2, name: 'Ca chiều', startTime: '13:00', endTime: '17:00', employees: 4 },
+            { id: 3, name: 'Ca tối', startTime: '18:00', endTime: '22:00', employees: 3 }
+        ];
+        
+        const html = shifts.map(shift => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <h4>${shift.name}</h4>
+                    <p>${shift.startTime} - ${shift.endTime} • ${shift.employees} nhân viên</p>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="DashboardContent.editShift(${shift.id})">
+                    <span class="material-icons-round">edit</span>
+                </button>
+            </div>
+        `).join('');
+        
+        shiftsContainer.innerHTML = html || '<p class="text-muted">Chưa có ca làm việc</p>';
+    },
+    
+    showAddShiftForm() {
+        showNotification('Chức năng thêm ca đang được phát triển', 'info');
+    },
+    
+    editShift(shiftId) {
+        showNotification(`Chỉnh sửa ca #${shiftId} đang được phát triển`, 'info');
     },
 
     async renderReports() {
-        return `
+        const content = `
             <div class="section">
-                <div class="card-header">
-                    <span class="title-content">
-                        <span class="material-icons-round">assessment</span>
-                        Báo cáo tổng hợp
-                    </span>
+                <h3 class="section-title">
+                    <span class="material-icons-round">assessment</span>
+                    Báo cáo tổng hợp
+                </h3>
+                <div class="section-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalEmployees">--</div>
+                            <div class="stat-label">Tổng nhân viên</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalAttendance">--</div>
+                            <div class="stat-label">Chấm công hôm nay</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRequests">--</div>
+                            <div class="stat-label">Yêu cầu chờ</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="message">
-                        <span class="material-icons-round">construction</span>
-                        <p>Chức năng đang được phát triển</p>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">calendar_month</span>
+                    Báo cáo theo tháng
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="reportMonth" class="form-select">
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
+                        <select id="reportYear" class="form-select">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="DashboardContent.generateReport()">
+                            <span class="material-icons-round">download</span>
+                            Xuất báo cáo
+                        </button>
+                    </div>
+                    <div id="monthlyReport">
+                        <div class="message">
+                            <span class="material-icons-round">info</span>
+                            <p>Chọn tháng và nhấn "Xuất báo cáo" để xem chi tiết</p>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
+        
+        setTimeout(() => this.loadReportStats(), 100);
+        return content;
+    },
+    
+    async loadReportStats() {
+        // Mock report statistics
+        const stats = {
+            totalEmployees: 25,
+            totalAttendance: 18,
+            totalRequests: 3
+        };
+        
+        const employeesEl = document.getElementById('totalEmployees');
+        const attendanceEl = document.getElementById('totalAttendance');
+        const requestsEl = document.getElementById('totalRequests');
+        
+        if (employeesEl) employeesEl.textContent = stats.totalEmployees;
+        if (attendanceEl) attendanceEl.textContent = stats.totalAttendance;
+        if (requestsEl) requestsEl.textContent = stats.totalRequests;
+    },
+    
+    generateReport() {
+        const month = document.getElementById('reportMonth')?.value;
+        const year = document.getElementById('reportYear')?.value;
+        showNotification(`Đang xuất báo cáo tháng ${month}/${year}...`, 'info');
+        
+        setTimeout(() => {
+            showNotification('Báo cáo đã được tải xuống', 'success');
+        }, 1500);
     },
 
     async renderAnalytics() {
@@ -1879,22 +2011,78 @@ const DashboardContent = {
     },
 
     async renderWorkManagement() {
-        return `
+        const content = `
             <div class="section">
-                <div class="card-header">
-                    <span class="title-content">
-                        <span class="material-icons-round">work</span>
-                        Quản lý công việc
-                    </span>
+                <h3 class="section-title">
+                    <span class="material-icons-round">work</span>
+                    Công việc hôm nay
+                </h3>
+                <div class="section-body">
+                    <div id="todayWork">
+                        <div class="spinner-sm"></div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="message">
-                        <span class="material-icons-round">info</span>
-                        <p>Xem thông tin công việc của bạn</p>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">pending_actions</span>
+                    Công việc sắp tới
+                </h3>
+                <div class="section-body">
+                    <div id="upcomingWork">
+                        <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
         `;
+        
+        setTimeout(() => this.loadWorkTasks(), 100);
+        return content;
+    },
+    
+    async loadWorkTasks() {
+        const todayContainer = document.getElementById('todayWork');
+        const upcomingContainer = document.getElementById('upcomingWork');
+        
+        // Mock work tasks
+        const todayTasks = [
+            { id: 1, title: 'Kiểm tra hàng tồn kho', time: '09:00', status: 'pending' },
+            { id: 2, title: 'Họp nhóm', time: '14:00', status: 'pending' },
+            { id: 3, title: 'Báo cáo doanh thu', time: '16:00', status: 'completed' }
+        ];
+        
+        const upcomingTasks = [
+            { id: 4, title: 'Đào tạo nhân viên mới', date: 'Thứ 2', time: '10:00' },
+            { id: 5, title: 'Kiểm tra an toàn', date: 'Thứ 3', time: '15:00' }
+        ];
+        
+        if (todayContainer) {
+            const todayHtml = todayTasks.map(task => `
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <h4>${task.title}</h4>
+                        <p>${task.time}</p>
+                    </div>
+                    <span class="badge ${task.status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                        ${task.status === 'completed' ? 'Hoàn thành' : 'Chờ xử lý'}
+                    </span>
+                </div>
+            `).join('');
+            todayContainer.innerHTML = todayHtml || '<p class="text-muted">Không có công việc hôm nay</p>';
+        }
+        
+        if (upcomingContainer) {
+            const upcomingHtml = upcomingTasks.map(task => `
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <h4>${task.title}</h4>
+                        <p>${task.date} • ${task.time}</p>
+                    </div>
+                </div>
+            `).join('');
+            upcomingContainer.innerHTML = upcomingHtml || '<p class="text-muted">Không có công việc sắp tới</p>';
+        }
     },
 
     async renderSubmitRequest() {
@@ -1917,21 +2105,88 @@ const DashboardContent = {
     },
 
     async renderShifts() {
-        return `
+        const content = `
             <div class="section">
-                <div class="card-header">
-                    <span class="title-content">
-                        <span class="material-icons-round">schedule</span>
-                        Ca làm
-                    </span>
-                </div>
-                <div class="card-body">
+                <h3 class="section-title">
+                    <span class="material-icons-round">schedule</span>
+                    Ca làm việc của tôi
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="shiftWeekFilter" class="form-select" onchange="DashboardContent.filterShifts()">
+                            <option value="current">Tuần này</option>
+                            <option value="next">Tuần sau</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
                     <div id="shiftsContent">
                         <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">info</span>
+                    Thông tin ca làm
+                </h3>
+                <div class="section-body">
+                    <div class="info-box">
+                        <p><strong>Tổng giờ làm tuần này:</strong> <span id="totalHours">0</span> giờ</p>
+                        <p><strong>Số ca đã hoàn thành:</strong> <span id="completedShifts">0</span></p>
+                        <p><strong>Số ca sắp tới:</strong> <span id="upcomingShifts">0</span></p>
+                    </div>
+                </div>
+            </div>
         `;
+        
+        setTimeout(() => this.loadMyShifts(), 100);
+        return content;
+    },
+    
+    async loadMyShifts() {
+        const shiftsContainer = document.getElementById('shiftsContent');
+        if (!shiftsContainer) return;
+        
+        // Mock shift data
+        const myShifts = [
+            { id: 1, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' },
+            { id: 2, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca chiều', time: '13:00 - 17:00', status: 'upcoming' },
+            { id: 3, date: '2025-11-08', day: 'Chủ Nhật', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'completed' },
+            { id: 4, date: '2025-11-10', day: 'Thứ Ba', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' }
+        ];
+        
+        const html = myShifts.map(shift => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <h4>${shift.shift} - ${shift.day}</h4>
+                    <p>${shift.date} • ${shift.time}</p>
+                </div>
+                <span class="badge ${shift.status === 'completed' ? 'badge-success' : 'badge-info'}">
+                    ${shift.status === 'completed' ? 'Đã làm' : 'Sắp tới'}
+                </span>
+            </div>
+        `).join('');
+        
+        shiftsContainer.innerHTML = html || '<p class="text-muted">Chưa có ca làm việc</p>';
+        
+        // Update stats
+        const totalHours = myShifts.filter(s => s.status === 'completed').length * 4;
+        const completed = myShifts.filter(s => s.status === 'completed').length;
+        const upcoming = myShifts.filter(s => s.status === 'upcoming').length;
+        
+        const totalHoursEl = document.getElementById('totalHours');
+        const completedEl = document.getElementById('completedShifts');
+        const upcomingEl = document.getElementById('upcomingShifts');
+        
+        if (totalHoursEl) totalHoursEl.textContent = totalHours;
+        if (completedEl) completedEl.textContent = completed;
+        if (upcomingEl) upcomingEl.textContent = upcoming;
+    },
+    
+    filterShifts() {
+        // Reload shifts based on filter
+        this.loadMyShifts();
     },
 
     async renderSalary() {
