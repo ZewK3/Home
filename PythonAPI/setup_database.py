@@ -7,7 +7,7 @@ import sqlite3
 import os
 from pathlib import Path
 
-def setup_database(db_path='hrm_database.db', sql_file='../data/Tabbel-v2-optimized.sql'):
+def setup_database(db_path='hrm_database.db', sql_file='Tabbel-v2-optimized.sql'):
     """
     Setup SQLite database using the schema file
     

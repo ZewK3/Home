@@ -11,6 +11,7 @@ import secrets
 import datetime
 from functools import wraps
 import os
+from math import radians, cos, sin, asin, sqrt
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -63,8 +64,10 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def generate_employee_id():
-    """Generate unique employee ID"""
-    return f"E{secrets.randbelow(9000) + 1000}"
+    """Generate a more unique employee ID"""
+    timestamp = int(datetime.datetime.now().timestamp() * 1000) % 1000000
+    random_part = secrets.randbelow(900) + 100
+    return f"E{timestamp}{random_part}"
 
 def get_hanoi_timestamp():
     """Get current timestamp in Hanoi timezone (UTC+7)"""
@@ -314,7 +317,6 @@ def check_gps_attendance():
             return jsonify({'success': False, 'message': 'Store not found'}), 404
         
         # Calculate distance using Haversine formula (simplified)
-        from math import radians, cos, sin, asin, sqrt
         
         lat1, lon1 = radians(store['latitude']), radians(store['longitude'])
         lat2, lon2 = radians(float(latitude)), radians(float(longitude))
