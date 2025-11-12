@@ -1246,9 +1246,20 @@ const HRMModules = {
                 
                 if (salary.data) {
                     const data = salary.data;
+                    const contract = userData?.contract || 'fulltime';
                     const isCH = userData?.companyId === 'CH';
+                    const isParttime = contract === 'parttime';
+                    
                     // Use default rates from SQL schema if department is known
-                    const salaryRate = isCH ? 25000 : 8000000; // CH hourly vs VP monthly
+                    // Contract types affect base rate: fulltime vs parttime
+                    let salaryRate;
+                    if (isCH) {
+                        // CH hourly rate - parttime gets lower rate
+                        salaryRate = isParttime ? 20000 : 25000;
+                    } else {
+                        // VP monthly rate - parttime gets prorated
+                        salaryRate = isParttime ? 5000000 : 8000000;
+                    }
                     
                     // Calculate salary components
                     let baseSalaryAmount = 0;
@@ -1287,13 +1298,17 @@ const HRMModules = {
                     
                     container.innerHTML = `
                         <div class="salary-detail">
+                            <div class="contract-info-banner">
+                                <span class="material-icons-round">badge</span>
+                                <span>Loại hợp đồng: <strong>${isParttime ? 'Bán thời gian (Parttime)' : 'Toàn thời gian (Fulltime)'}</strong></span>
+                            </div>
                             ${isCH ? `
                             <div class="salary-calculation-header">
                                 <span class="material-icons-round">calculate</span>
                                 <h4>Tính Lương Theo Giờ (CH)</h4>
                             </div>
                             <div class="salary-row">
-                                <span>Mức lương giờ:</span>
+                                <span>Mức lương giờ ${isParttime ? '(Parttime)' : '(Fulltime)'}:</span>
                                 <span><strong>${salaryRate.toLocaleString('vi-VN')} VNĐ/giờ</strong></span>
                             </div>
                             <div class="salary-row">
@@ -1990,6 +2005,37 @@ const HRMModules = {
         async renderProfile() {
             const userData = SimpleStorage.get('userData');
             
+            // Calculate seniority if hire_date exists
+            let seniorityText = '-';
+            if (userData?.hire_date) {
+                const hireDate = new Date(userData.hire_date);
+                const today = new Date();
+                const diffTime = Math.abs(today - hireDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const years = Math.floor(diffDays / 365);
+                const months = Math.floor((diffDays % 365) / 30);
+                
+                if (years > 0) {
+                    seniorityText = `${years} năm ${months} tháng`;
+                } else {
+                    seniorityText = `${months} tháng`;
+                }
+            }
+            
+            // Format birthdate
+            let birthdateFormatted = '-';
+            if (userData?.birthdate) {
+                const bdate = new Date(userData.birthdate);
+                birthdateFormatted = bdate.toLocaleDateString('vi-VN');
+            }
+            
+            // Format hire_date
+            let hireDateFormatted = '-';
+            if (userData?.hire_date) {
+                const hdate = new Date(userData.hire_date);
+                hireDateFormatted = hdate.toLocaleDateString('vi-VN');
+            }
+            
             return `
                 <div class="section">
                     <h3 class="section-title">Thông Tin Cá Nhân</h3>
@@ -2013,6 +2059,14 @@ const HRMModules = {
                                 <span>${userData?.phone || '-'}</span>
                             </div>
                             <div class="profile-row">
+                                <span>Ngày sinh:</span>
+                                <span>${birthdateFormatted}</span>
+                            </div>
+                            <div class="profile-row">
+                                <span>Loại hợp đồng:</span>
+                                <span><span class="badge badge-${userData?.contract === 'fulltime' ? 'success' : 'info'}">${userData?.contract === 'fulltime' ? 'Toàn thời gian' : 'Bán thời gian'}</span></span>
+                            </div>
+                            <div class="profile-row">
                                 <span>Phòng ban:</span>
                                 <span>${userData?.departmentName || '-'}</span>
                             </div>
@@ -2023,6 +2077,14 @@ const HRMModules = {
                             <div class="profile-row">
                                 <span>Cửa hàng:</span>
                                 <span>${userData?.storeName || '-'}</span>
+                            </div>
+                            <div class="profile-row">
+                                <span>Ngày vào làm:</span>
+                                <span>${hireDateFormatted}</span>
+                            </div>
+                            <div class="profile-row">
+                                <span>Thâm niên:</span>
+                                <span><strong>${seniorityText}</strong></span>
                             </div>
                         </div>
                         
