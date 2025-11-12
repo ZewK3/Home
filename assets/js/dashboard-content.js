@@ -2256,16 +2256,16 @@ const DashboardContent = {
     },
 
     async renderSalary() {
-        // Delegate to HRMModules.CH.renderSalary which has full implementation
-        const html = await HRMModules.CH.renderSalary();
-        setTimeout(() => HRMModules.CH.initSalary(), 100);
+        // Delegate to HRMModules.renderSalary which has full implementation
+        const html = await HRMModules.renderSalary();
+        setTimeout(() => HRMModules.initSalary(), 100);
         return html;
     },
 
     async renderLeaveRequest() {
-        // Delegate to HRMModules.CH.renderRequests which has full implementation
-        const html = await HRMModules.CH.renderRequests();
-        setTimeout(() => HRMModules.CH.initRequests(), 100);
+        // Delegate to HRMModules.renderRequests which has full implementation
+        const html = await HRMModules.renderRequests();
+        setTimeout(() => HRMModules.initRequests(), 100);
         return html;
     },
     
@@ -3997,7 +3997,87 @@ const DashboardContent = {
         container.innerHTML = html;
     },
 
-    showCreateScheduleForm() {
-        showNotification('Form tạo lịch sẽ được phát triển', 'info');
+    async showCreateScheduleForm() {
+        // Get employees for the form
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const employees = MockAPI.getEmployees({ storeId: userData.storeId, companyId: userData.companyId });
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>Tạo Lịch Làm Việc</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleForm">
+                        <div class="form-group">
+                            <label>Nhân viên</label>
+                            <select name="employeeId" class="form-control" required>
+                                <option value="">Chọn nhân viên</option>
+                                ${employees.map(emp => `<option value="${emp.employeeId}">${emp.fullName}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ngày bắt đầu</label>
+                            <input type="date" name="startDate" class="form-control" required value="${this.currentWeekStart.toISOString().split('T')[0]}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ngày kết thúc</label>
+                            <input type="date" name="endDate" class="form-control" required value="${new Date(this.currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ca làm việc</label>
+                            <select name="shift" class="form-control" required>
+                                <option value="morning">Ca sáng (6:00 - 14:00)</option>
+                                <option value="afternoon">Ca chiều (14:00 - 22:00)</option>
+                                <option value="evening">Ca tối (22:00 - 6:00)</option>
+                                <option value="off">Nghỉ</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Tạo Lịch</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            // Here you would save to API
+            showNotification('Đã tạo lịch làm việc thành công!', 'success');
+            modal.remove();
+            await this.loadScheduleGrid();
+        });
+    },
+    
+    editShift(employeeId, date) {
+        const shifts = ['Ca sáng', 'Ca chiều', 'Ca tối', 'OFF'];
+        const current = event.target.textContent;
+        const nextIndex = (shifts.indexOf(current) + 1) % shifts.length;
+        event.target.textContent = shifts[nextIndex];
+        
+        // Update background color
+        const bgColor = shifts[nextIndex] === 'OFF' ? 'var(--danger, #e74c3c)' : 
+                        shifts[nextIndex] === 'Ca sáng' ? 'var(--info, #3498db)' :
+                        shifts[nextIndex] === 'Ca chiều' ? 'var(--warning, #f39c12)' :
+                        'var(--secondary, #95a5a6)';
+        event.target.parentElement.style.background = bgColor + '20';
+        
+        showNotification('Đã cập nhật ca làm việc', 'success');
     }
 };

@@ -57,8 +57,8 @@
     }
     
     function initializeDashboard() {
-        // CH Dashboard - Store Department
-        console.log('✅ CH Dashboard loading...');
+        // Dashboard initialization
+        console.log('✅ Dashboard loading...');
         
         // Check authentication
         const token = localStorage.getItem('authToken') || (typeof SimpleStorage !== 'undefined' ? SimpleStorage.get('authToken') : null);
@@ -70,9 +70,9 @@
             return;
         }
         
-        // Initialize Router for CH department
+        // Initialize Router
         if (typeof HRMRouter !== 'undefined') {
-            HRMRouter.init('CH');
+            HRMRouter.init();
         } else {
             console.error('HRMRouter not found');
         }

@@ -10,8 +10,9 @@ const HRMRouter = {
     /**
      * Initialize router
      */
-    init(department) {
-        this.currentDepartment = department; // 'VP' or 'CH'
+    init() {
+        // Initialize router - no department parameter needed
+        // Access control based on user role/permissions, not department type
         
         // Listen for hash changes
         window.addEventListener('hashchange', () => this.handleRoute());
@@ -131,43 +132,43 @@ const HRMRouter = {
         const vpModules = {
             'home': {
                 title: 'Tổng Quan VP',
-                loader: () => HRMModules.VP.renderDashboard(),
-                onLoad: () => HRMModules.VP.initDashboard()
+                loader: () => HRMModules.renderDashboard(),
+                onLoad: () => HRMModules.initDashboard()
             },
             'employee-management': {
                 title: 'Quản Lý Nhân Viên',
-                loader: () => HRMModules.VP.renderEmployeeManagement(),
-                onLoad: () => HRMModules.VP.initEmployeeManagement()
+                loader: () => HRMModules.renderEmployeeManagement(),
+                onLoad: () => HRMModules.initEmployeeManagement()
             },
             'approve-registration': {
                 title: 'Duyệt Đăng Ký',
-                loader: () => HRMModules.VP.renderApproveRegistration(),
-                onLoad: () => HRMModules.VP.initApproveRegistration()
+                loader: () => HRMModules.renderApproveRegistration(),
+                onLoad: () => HRMModules.initApproveRegistration()
             },
             'departments': {
                 title: 'Phòng Ban',
-                loader: () => HRMModules.VP.renderDepartments(),
-                onLoad: () => HRMModules.VP.initDepartments()
+                loader: () => HRMModules.renderDepartments(),
+                onLoad: () => HRMModules.initDepartments()
             },
             'positions': {
                 title: 'Chức Vụ',
-                loader: () => HRMModules.VP.renderPositions(),
-                onLoad: () => HRMModules.VP.initPositions()
+                loader: () => HRMModules.renderPositions(),
+                onLoad: () => HRMModules.initPositions()
             },
             'salary-management': {
                 title: 'Quản Lý Lương',
-                loader: () => HRMModules.VP.renderSalaryManagement(),
-                onLoad: () => HRMModules.VP.initSalaryManagement()
+                loader: () => HRMModules.renderSalaryManagement(),
+                onLoad: () => HRMModules.initSalaryManagement()
             },
             'timesheet-approval': {
                 title: 'Duyệt Bảng Công',
-                loader: () => HRMModules.VP.renderTimesheetApproval(),
-                onLoad: () => HRMModules.VP.initTimesheetApproval()
+                loader: () => HRMModules.renderTimesheetApproval(),
+                onLoad: () => HRMModules.initTimesheetApproval()
             },
             'reports': {
                 title: 'Báo Cáo',
-                loader: () => HRMModules.VP.renderReports(),
-                onLoad: () => HRMModules.VP.initReports()
+                loader: () => HRMModules.renderReports(),
+                onLoad: () => HRMModules.initReports()
             }
         };
         
@@ -175,43 +176,43 @@ const HRMRouter = {
         const chModules = {
             'home': {
                 title: 'Trang Chủ',
-                loader: () => HRMModules.CH.renderDashboard(),
-                onLoad: () => HRMModules.CH.initDashboard()
+                loader: () => HRMModules.renderDashboard(),
+                onLoad: () => HRMModules.initDashboard()
             },
             'attendance': {
                 title: 'Chấm Công',
-                loader: () => HRMModules.CH.renderAttendance(),
-                onLoad: () => HRMModules.CH.initAttendance()
+                loader: () => HRMModules.renderAttendance(),
+                onLoad: () => HRMModules.initAttendance()
             },
             'schedule': {
                 title: 'Lịch Làm Việc',
-                loader: () => HRMModules.CH.renderSchedule(),
-                onLoad: () => HRMModules.CH.initSchedule()
+                loader: () => HRMModules.renderSchedule(),
+                onLoad: () => HRMModules.initSchedule()
             },
             'timesheet': {
                 title: 'Bảng Công',
-                loader: () => HRMModules.CH.renderTimesheet(),
-                onLoad: () => HRMModules.CH.initTimesheet()
+                loader: () => HRMModules.renderTimesheet(),
+                onLoad: () => HRMModules.initTimesheet()
             },
             'salary': {
                 title: 'Lương',
-                loader: () => HRMModules.CH.renderSalary(),
-                onLoad: () => HRMModules.CH.initSalary()
+                loader: () => HRMModules.renderSalary(),
+                onLoad: () => HRMModules.initSalary()
             },
             'requests': {
                 title: 'Yêu Cầu',
-                loader: () => HRMModules.CH.renderRequests(),
-                onLoad: () => HRMModules.CH.initRequests()
+                loader: () => HRMModules.renderRequests(),
+                onLoad: () => HRMModules.initRequests()
             },
             'notifications': {
                 title: 'Thông Báo',
-                loader: () => HRMModules.CH.renderNotifications(),
-                onLoad: () => HRMModules.CH.initNotifications()
+                loader: () => HRMModules.renderNotifications(),
+                onLoad: () => HRMModules.initNotifications()
             },
             'profile': {
                 title: 'Thông Tin Cá Nhân',
-                loader: () => HRMModules.CH.renderProfile(),
-                onLoad: () => HRMModules.CH.initProfile()
+                loader: () => HRMModules.renderProfile(),
+                onLoad: () => HRMModules.initProfile()
             }
         };
         
