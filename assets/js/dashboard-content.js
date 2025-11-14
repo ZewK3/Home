@@ -80,14 +80,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">bolt</span>
-                        Thao tác nhanh
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">bolt</span>
+                    Thao tác nhanh
+                </h3>
+                <div class="section-body">
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('attendance')">
                         <span class="material-icons-round">check_circle</span>
                         Chấm công
@@ -103,14 +101,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">history</span>
-                        Hoạt động gần đây
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">history</span>
+                    Hoạt động gần đây
+                </h3>
+                <div class="section-body">
                     <div id="recentActivities">
                         <div class="spinner-sm"></div>
                     </div>
@@ -141,14 +137,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">bolt</span>
-                        Thao tác nhanh
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">bolt</span>
+                    Thao tác nhanh
+                </h3>
+                <div class="section-body">
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('process-requests')">
                         <span class="material-icons-round">approval</span>
                         Xử lý yêu cầu
@@ -160,14 +154,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">people</span>
-                        Hiệu suất nhóm
-                    </h2>
-                </div>
-                <div class="card-body">
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">people</span>
+                    Hiệu suất nhóm
+                </h3>
+                <div class="section-body">
                     <div id="teamPerformance">
                         <div class="spinner-sm"></div>
                     </div>
@@ -204,12 +196,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">bolt</span>
                         Thao tác nhanh
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <button class="btn btn-primary btn-full mb-md" onclick="navigateToFunction('approve-registration')">
@@ -231,12 +223,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">cloud</span>
                         Cloudflare Analytics
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="cloudflareStats">
@@ -245,12 +237,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">storage</span>
                         Trạng thái hệ thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="systemStatus">
@@ -273,23 +265,89 @@ const DashboardContent = {
      * PHASE 4: Mobile-Optimized Schedule UI (7-day swipe view)
      */
     async renderSchedule() {
-        const today = new Date();
-        const weekStart = this.getWeekStart(today);
-        const userData = SimpleStorage.get('userData');
+        const content = `
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">calendar_today</span>
+                    Lịch làm việc của tôi
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="scheduleWeekFilter" class="form-select" onchange="DashboardContent.filterSchedule()">
+                            <option value="current">Tuần này</option>
+                            <option value="next">Tuần sau</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <div id="scheduleContent">
+                        <div class="spinner-sm"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">info</span>
+                    Thông tin lịch làm
+                </h3>
+                <div class="section-body">
+                    <div class="info-box">
+                        <p><strong>Tổng giờ làm tuần này:</strong> <span id="schedTotalHours">0</span> giờ</p>
+                        <p><strong>Số ca đã hoàn thành:</strong> <span id="schedCompletedShifts">0</span></p>
+                        <p><strong>Số ca sắp tới:</strong> <span id="schedUpcomingShifts">0</span></p>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        // Determine if user has schedule management permissions
-        const permissions = userData?.permissions || '';
-        const permissionList = permissions.split(',');
-        const isManager = permissionList.includes('schedule_manage') || permissionList.includes('shift_manage');
+        setTimeout(() => this.loadMySchedule(), 100);
+        return content;
+    },
+    
+    async loadMySchedule() {
+        const scheduleContainer = document.getElementById('scheduleContent');
+        if (!scheduleContainer) return;
         
-        // Permission-based schedule view
-        if (isManager) {
-            // Manager/Admin: Team schedule management
-            return this.renderScheduleManagement(weekStart);
-        } else {
-            // Worker: Personal schedule view with registration
-            return this.renderScheduleRegistration(weekStart);
-        }
+        // Mock schedule data - similar to shifts
+        const mySchedule = [
+            { id: 1, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' },
+            { id: 2, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca chiều', time: '13:00 - 17:00', status: 'upcoming' },
+            { id: 3, date: '2025-11-08', day: 'Chủ Nhật', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'completed' },
+            { id: 4, date: '2025-11-10', day: 'Thứ Ba', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' },
+            { id: 5, date: '2025-11-11', day: 'Thứ Tư', shift: 'Ca chiều', time: '13:00 - 17:00', status: 'upcoming' }
+        ];
+        
+        const html = mySchedule.map(sched => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <h4>${sched.shift} - ${sched.day}</h4>
+                    <p>${sched.date} • ${sched.time}</p>
+                </div>
+                <span class="badge ${sched.status === 'completed' ? 'badge-success' : 'badge-info'}">
+                    ${sched.status === 'completed' ? 'Đã làm' : 'Sắp tới'}
+                </span>
+            </div>
+        `).join('');
+        
+        scheduleContainer.innerHTML = html || '<p class="text-muted">Chưa có lịch làm việc</p>';
+        
+        // Update stats
+        const totalHours = mySchedule.filter(s => s.status === 'completed').length * 4;
+        const completed = mySchedule.filter(s => s.status === 'completed').length;
+        const upcoming = mySchedule.filter(s => s.status === 'upcoming').length;
+        
+        const totalHoursEl = document.getElementById('schedTotalHours');
+        const completedEl = document.getElementById('schedCompletedShifts');
+        const upcomingEl = document.getElementById('schedUpcomingShifts');
+        
+        if (totalHoursEl) totalHoursEl.textContent = totalHours;
+        if (completedEl) completedEl.textContent = completed;
+        if (upcomingEl) upcomingEl.textContent = upcoming;
+    },
+    
+    filterSchedule() {
+        // Reload schedule based on filter
+        this.loadMySchedule();
     },
 
     getWeekStart(date) {
@@ -302,15 +360,15 @@ const DashboardContent = {
 
     async renderScheduleRegistration(weekStart) {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header schedule-header">
                     <button id="prevWeek" class="icon-btn-small" aria-label="Tuần trước">
                         <span class="material-icons-round">chevron_left</span>
                     </button>
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">calendar_month</span>
                         <span id="weekTitle">Tuần này</span>
-                    </h2>
+                    </span>
                     <button id="nextWeek" class="icon-btn-small" aria-label="Tuần sau">
                         <span class="material-icons-round">chevron_right</span>
                     </button>
@@ -447,15 +505,15 @@ const DashboardContent = {
 
     async renderScheduleManagement(weekStart) {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header schedule-header">
                     <button id="prevWeek" class="icon-btn-small" aria-label="Tuần trước">
                         <span class="material-icons-round">chevron_left</span>
                     </button>
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">calendar_month</span>
                         <span id="weekTitle">Xếp lịch nhóm</span>
-                    </h2>
+                    </span>
                     <button id="nextWeek" class="icon-btn-small" aria-label="Tuần sau">
                         <span class="material-icons-round">chevron_right</span>
                     </button>
@@ -580,12 +638,12 @@ const DashboardContent = {
      */
     async renderProfile() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">person</span>
                         Thông tin cá nhân
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="profileContent">
@@ -673,12 +731,12 @@ const DashboardContent = {
      */
     async renderAttendance() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">how_to_reg</span>
                         Chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-lg">
@@ -693,12 +751,12 @@ const DashboardContent = {
                 </div>
             </div>
 
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">history</span>
                         Lịch sử chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="attendanceHistory">
@@ -831,12 +889,12 @@ const DashboardContent = {
         this.selectedYear = this.selectedYear || currentYear;
 
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">table_chart</span>
                         Bảng công tháng ${this.selectedMonth}/${this.selectedYear}
-                    </h2>
+                    </span>
                     <div class="month-year-selector" style="display: flex; gap: 10px; margin-top: 10px;">
                         <select id="monthSelector" class="form-select" style="flex: 1;">
                             ${Array.from({length: 12}, (_, i) => i + 1).map(m => 
@@ -998,12 +1056,12 @@ const DashboardContent = {
      */
     renderSubmitRequest() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">send</span>
                         Gửi yêu cầu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <form id="requestForm" onsubmit="event.preventDefault(); DashboardContent.submitRequest();">
@@ -1072,12 +1130,12 @@ const DashboardContent = {
      */
     async renderAttendanceRequest() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">assignment</span>
                         Đơn từ chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="requestsList">
@@ -1130,12 +1188,12 @@ const DashboardContent = {
      */
     async renderProcessRequests() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">pending_actions</span>
                         Xử lý yêu cầu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="pendingRequestsList">
@@ -1215,12 +1273,12 @@ const DashboardContent = {
      */
     async renderApproveRegistration() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">how_to_reg</span>
                         Duyệt đăng ký
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="pendingRegistrationsList">
@@ -1301,12 +1359,12 @@ const DashboardContent = {
      */
     async renderGrantAccess() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">admin_panel_settings</span>
                         Phân quyền
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div id="employeesList">
@@ -1377,7 +1435,7 @@ const DashboardContent = {
 
     // Placeholder functions for other features
     renderWorkManagement() {
-        return '<div class="card"><div class="card-body"><div class="message">Quản lý công</div></div></div>';
+        return '<div class="section"><div class="card-body"><div class="message">Quản lý công</div></div></div>';
     },
 
 
@@ -1387,12 +1445,12 @@ const DashboardContent = {
      */
     async renderNotifications() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">notifications</span>
                         Thông báo
-                    </h2>
+                    </span>
                     <button class="btn btn-sm" onclick="DashboardContent.markAllRead()">
                         <span class="material-icons-round">done_all</span>
                         Đánh dấu tất cả đã đọc
@@ -1502,12 +1560,12 @@ const DashboardContent = {
         const weekStart = this.getMonday(today);
         
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">event_available</span>
                         Đăng ký ca làm việc
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="schedule-week-nav">
@@ -1633,12 +1691,12 @@ const DashboardContent = {
 
     async renderScheduleManagement() {
         const content = `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">calendar_month</span>
                         Quản lý ca làm việc
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message info">
@@ -1756,12 +1814,12 @@ const DashboardContent = {
     // Additional render methods for admin dashboard
     async renderEmployeeManagement() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">groups</span>
                         Quản lý nhân viên
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1775,12 +1833,12 @@ const DashboardContent = {
 
     async renderAttendanceApproval() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">fact_check</span>
                         Duyệt chấm công
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1793,50 +1851,182 @@ const DashboardContent = {
     },
 
     async renderShiftManagement() {
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">schedule</span>
-                        Quản lý ca làm việc
-                    </h2>
-                </div>
-                <div class="card-body">
+        const content = `
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">schedule</span>
+                    Danh sách ca làm việc
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="shiftFilterWeek" class="form-select">
+                            <option value="current">Tuần này</option>
+                            <option value="next">Tuần sau</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
                     <div id="shiftsList">
                         <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">add_circle</span>
+                    Tạo ca mới
+                </h3>
+                <div class="section-body">
+                    <button class="btn btn-primary btn-full" onclick="DashboardContent.showAddShiftForm()">
+                        <span class="material-icons-round">add</span>
+                        Thêm ca làm việc
+                    </button>
+                </div>
+            </div>
         `;
+        
+        setTimeout(() => this.loadShiftsList(), 100);
+        return content;
+    },
+    
+    async loadShiftsList() {
+        const shiftsContainer = document.getElementById('shiftsList');
+        if (!shiftsContainer) return;
+        
+        // Mock data for shifts
+        const shifts = [
+            { id: 1, name: 'Ca sáng', startTime: '08:00', endTime: '12:00', employees: 5 },
+            { id: 2, name: 'Ca chiều', startTime: '13:00', endTime: '17:00', employees: 4 },
+            { id: 3, name: 'Ca tối', startTime: '18:00', endTime: '22:00', employees: 3 }
+        ];
+        
+        const html = shifts.map(shift => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <h4>${shift.name}</h4>
+                    <p>${shift.startTime} - ${shift.endTime} • ${shift.employees} nhân viên</p>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="DashboardContent.editShift(${shift.id})">
+                    <span class="material-icons-round">edit</span>
+                </button>
+            </div>
+        `).join('');
+        
+        shiftsContainer.innerHTML = html || '<p class="text-muted">Chưa có ca làm việc</p>';
+    },
+    
+    showAddShiftForm() {
+        showNotification('Chức năng thêm ca đang được phát triển', 'info');
+    },
+    
+    editShift(shiftId) {
+        showNotification(`Chỉnh sửa ca #${shiftId} đang được phát triển`, 'info');
     },
 
     async renderReports() {
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">assessment</span>
-                        Báo cáo tổng hợp
-                    </h2>
+        const content = `
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">assessment</span>
+                    Báo cáo tổng hợp
+                </h3>
+                <div class="section-body">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalEmployees">--</div>
+                            <div class="stat-label">Tổng nhân viên</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalAttendance">--</div>
+                            <div class="stat-label">Chấm công hôm nay</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalRequests">--</div>
+                            <div class="stat-label">Yêu cầu chờ</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="message">
-                        <span class="material-icons-round">construction</span>
-                        <p>Chức năng đang được phát triển</p>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">calendar_month</span>
+                    Báo cáo theo tháng
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="reportMonth" class="form-select">
+                            <option value="1">Tháng 1</option>
+                            <option value="2">Tháng 2</option>
+                            <option value="3">Tháng 3</option>
+                            <option value="4">Tháng 4</option>
+                            <option value="5">Tháng 5</option>
+                            <option value="6">Tháng 6</option>
+                            <option value="7">Tháng 7</option>
+                            <option value="8">Tháng 8</option>
+                            <option value="9">Tháng 9</option>
+                            <option value="10">Tháng 10</option>
+                            <option value="11">Tháng 11</option>
+                            <option value="12">Tháng 12</option>
+                        </select>
+                        <select id="reportYear" class="form-select">
+                            <option value="2025">2025</option>
+                            <option value="2024">2024</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="DashboardContent.generateReport()">
+                            <span class="material-icons-round">download</span>
+                            Xuất báo cáo
+                        </button>
+                    </div>
+                    <div id="monthlyReport">
+                        <div class="message">
+                            <span class="material-icons-round">info</span>
+                            <p>Chọn tháng và nhấn "Xuất báo cáo" để xem chi tiết</p>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
+        
+        setTimeout(() => this.loadReportStats(), 100);
+        return content;
+    },
+    
+    async loadReportStats() {
+        // Mock report statistics
+        const stats = {
+            totalEmployees: 25,
+            totalAttendance: 18,
+            totalRequests: 3
+        };
+        
+        const employeesEl = document.getElementById('totalEmployees');
+        const attendanceEl = document.getElementById('totalAttendance');
+        const requestsEl = document.getElementById('totalRequests');
+        
+        if (employeesEl) employeesEl.textContent = stats.totalEmployees;
+        if (attendanceEl) attendanceEl.textContent = stats.totalAttendance;
+        if (requestsEl) requestsEl.textContent = stats.totalRequests;
+    },
+    
+    generateReport() {
+        const month = document.getElementById('reportMonth')?.value;
+        const year = document.getElementById('reportYear')?.value;
+        showNotification(`Đang xuất báo cáo tháng ${month}/${year}...`, 'info');
+        
+        setTimeout(() => {
+            showNotification('Báo cáo đã được tải xuống', 'success');
+        }, 1500);
     },
 
     async renderAnalytics() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">analytics</span>
                         Phân tích dữ liệu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1850,12 +2040,12 @@ const DashboardContent = {
 
     async renderSystemSettings() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">settings</span>
                         Cài đặt hệ thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1869,12 +2059,12 @@ const DashboardContent = {
 
     async renderSystemLogs() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">history</span>
                         Nhật ký hệ thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1887,32 +2077,88 @@ const DashboardContent = {
     },
 
     async renderWorkManagement() {
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">work</span>
-                        Quản lý công việc
-                    </h2>
+        const content = `
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">work</span>
+                    Công việc hôm nay
+                </h3>
+                <div class="section-body">
+                    <div id="todayWork">
+                        <div class="spinner-sm"></div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="message">
-                        <span class="material-icons-round">info</span>
-                        <p>Xem thông tin công việc của bạn</p>
+            </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">pending_actions</span>
+                    Công việc sắp tới
+                </h3>
+                <div class="section-body">
+                    <div id="upcomingWork">
+                        <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
         `;
+        
+        setTimeout(() => this.loadWorkTasks(), 100);
+        return content;
+    },
+    
+    async loadWorkTasks() {
+        const todayContainer = document.getElementById('todayWork');
+        const upcomingContainer = document.getElementById('upcomingWork');
+        
+        // Mock work tasks
+        const todayTasks = [
+            { id: 1, title: 'Kiểm tra hàng tồn kho', time: '09:00', status: 'pending' },
+            { id: 2, title: 'Họp nhóm', time: '14:00', status: 'pending' },
+            { id: 3, title: 'Báo cáo doanh thu', time: '16:00', status: 'completed' }
+        ];
+        
+        const upcomingTasks = [
+            { id: 4, title: 'Đào tạo nhân viên mới', date: 'Thứ 2', time: '10:00' },
+            { id: 5, title: 'Kiểm tra an toàn', date: 'Thứ 3', time: '15:00' }
+        ];
+        
+        if (todayContainer) {
+            const todayHtml = todayTasks.map(task => `
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <h4>${task.title}</h4>
+                        <p>${task.time}</p>
+                    </div>
+                    <span class="badge ${task.status === 'completed' ? 'badge-success' : 'badge-warning'}">
+                        ${task.status === 'completed' ? 'Hoàn thành' : 'Chờ xử lý'}
+                    </span>
+                </div>
+            `).join('');
+            todayContainer.innerHTML = todayHtml || '<p class="text-muted">Không có công việc hôm nay</p>';
+        }
+        
+        if (upcomingContainer) {
+            const upcomingHtml = upcomingTasks.map(task => `
+                <div class="list-item">
+                    <div class="list-item-content">
+                        <h4>${task.title}</h4>
+                        <p>${task.date} • ${task.time}</p>
+                    </div>
+                </div>
+            `).join('');
+            upcomingContainer.innerHTML = upcomingHtml || '<p class="text-muted">Không có công việc sắp tới</p>';
+        }
     },
 
     async renderSubmitRequest() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">send</span>
                         Gửi yêu cầu
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="message">
@@ -1925,46 +2171,113 @@ const DashboardContent = {
     },
 
     async renderShifts() {
-        return `
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="material-icons-round">schedule</span>
-                        Ca làm
-                    </h2>
-                </div>
-                <div class="card-body">
+        const content = `
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">schedule</span>
+                    Ca làm việc của tôi
+                </h3>
+                <div class="section-body">
+                    <div class="filters mb-md">
+                        <select id="shiftWeekFilter" class="form-select" onchange="DashboardContent.filterShifts()">
+                            <option value="current">Tuần này</option>
+                            <option value="next">Tuần sau</option>
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
                     <div id="shiftsContent">
                         <div class="spinner-sm"></div>
                     </div>
                 </div>
             </div>
+            
+            <div class="section">
+                <h3 class="section-title">
+                    <span class="material-icons-round">info</span>
+                    Thông tin ca làm
+                </h3>
+                <div class="section-body">
+                    <div class="info-box">
+                        <p><strong>Tổng giờ làm tuần này:</strong> <span id="totalHours">0</span> giờ</p>
+                        <p><strong>Số ca đã hoàn thành:</strong> <span id="completedShifts">0</span></p>
+                        <p><strong>Số ca sắp tới:</strong> <span id="upcomingShifts">0</span></p>
+                    </div>
+                </div>
+            </div>
         `;
+        
+        setTimeout(() => this.loadMyShifts(), 100);
+        return content;
+    },
+    
+    async loadMyShifts() {
+        const shiftsContainer = document.getElementById('shiftsContent');
+        if (!shiftsContainer) return;
+        
+        // Mock shift data
+        const myShifts = [
+            { id: 1, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' },
+            { id: 2, date: '2025-11-09', day: 'Thứ Hai', shift: 'Ca chiều', time: '13:00 - 17:00', status: 'upcoming' },
+            { id: 3, date: '2025-11-08', day: 'Chủ Nhật', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'completed' },
+            { id: 4, date: '2025-11-10', day: 'Thứ Ba', shift: 'Ca sáng', time: '08:00 - 12:00', status: 'upcoming' }
+        ];
+        
+        const html = myShifts.map(shift => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <h4>${shift.shift} - ${shift.day}</h4>
+                    <p>${shift.date} • ${shift.time}</p>
+                </div>
+                <span class="badge ${shift.status === 'completed' ? 'badge-success' : 'badge-info'}">
+                    ${shift.status === 'completed' ? 'Đã làm' : 'Sắp tới'}
+                </span>
+            </div>
+        `).join('');
+        
+        shiftsContainer.innerHTML = html || '<p class="text-muted">Chưa có ca làm việc</p>';
+        
+        // Update stats
+        const totalHours = myShifts.filter(s => s.status === 'completed').length * 4;
+        const completed = myShifts.filter(s => s.status === 'completed').length;
+        const upcoming = myShifts.filter(s => s.status === 'upcoming').length;
+        
+        const totalHoursEl = document.getElementById('totalHours');
+        const completedEl = document.getElementById('completedShifts');
+        const upcomingEl = document.getElementById('upcomingShifts');
+        
+        if (totalHoursEl) totalHoursEl.textContent = totalHours;
+        if (completedEl) completedEl.textContent = completed;
+        if (upcomingEl) upcomingEl.textContent = upcoming;
+    },
+    
+    filterShifts() {
+        // Reload shifts based on filter
+        this.loadMyShifts();
     },
 
     async renderSalary() {
-        // Delegate to HRMModules.CH.renderSalary which has full implementation
-        const html = await HRMModules.CH.renderSalary();
-        setTimeout(() => HRMModules.CH.initSalary(), 100);
+        // Delegate to HRMModules.renderSalary which has full implementation
+        const html = await HRMModules.renderSalary();
+        setTimeout(() => HRMModules.initSalary(), 100);
         return html;
     },
 
     async renderLeaveRequest() {
-        // Delegate to HRMModules.CH.renderRequests which has full implementation
-        const html = await HRMModules.CH.renderRequests();
-        setTimeout(() => HRMModules.CH.initRequests(), 100);
+        // Delegate to HRMModules.renderRequests which has full implementation
+        const html = await HRMModules.renderRequests();
+        setTimeout(() => HRMModules.initRequests(), 100);
         return html;
     },
     
     async renderProcessRequests() {
         // Manager/Admin module for processing employee requests
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">pending_actions</span>
                         Xử Lý Yêu Cầu
-                    </h2>
+                    </span>
                     <div class="filters">
                         <select id="requestStatusFilter" class="form-select">
                             <option value="">Tất cả</option>
@@ -2552,12 +2865,12 @@ const DashboardContent = {
      */
     async renderSystemSettings() {
         return `
-            <div class="card">
+            <div class="section">
                 <div class="card-header">
-                    <h2 class="card-title">
+                    <span class="title-content">
                         <span class="material-icons-round">settings</span>
                         Cài Đặt Hệ Thống
-                    </h2>
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="settings-tabs">
@@ -3684,7 +3997,87 @@ const DashboardContent = {
         container.innerHTML = html;
     },
 
-    showCreateScheduleForm() {
-        showNotification('Form tạo lịch sẽ được phát triển', 'info');
+    async showCreateScheduleForm() {
+        // Get employees for the form
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const employees = MockAPI.getEmployees({ storeId: userData.storeId, companyId: userData.companyId });
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h3>Tạo Lịch Làm Việc</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">
+                        <span class="material-icons">close</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleForm">
+                        <div class="form-group">
+                            <label>Nhân viên</label>
+                            <select name="employeeId" class="form-control" required>
+                                <option value="">Chọn nhân viên</option>
+                                ${employees.map(emp => `<option value="${emp.employeeId}">${emp.fullName}</option>`).join('')}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ngày bắt đầu</label>
+                            <input type="date" name="startDate" class="form-control" required value="${this.currentWeekStart.toISOString().split('T')[0]}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ngày kết thúc</label>
+                            <input type="date" name="endDate" class="form-control" required value="${new Date(this.currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Ca làm việc</label>
+                            <select name="shift" class="form-control" required>
+                                <option value="morning">Ca sáng (6:00 - 14:00)</option>
+                                <option value="afternoon">Ca chiều (14:00 - 22:00)</option>
+                                <option value="evening">Ca tối (22:00 - 6:00)</option>
+                                <option value="off">Nghỉ</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Hủy</button>
+                            <button type="submit" class="btn btn-primary">Tạo Lịch</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            // Here you would save to API
+            showNotification('Đã tạo lịch làm việc thành công!', 'success');
+            modal.remove();
+            await this.loadScheduleGrid();
+        });
+    },
+    
+    editShift(employeeId, date) {
+        const shifts = ['Ca sáng', 'Ca chiều', 'Ca tối', 'OFF'];
+        const current = event.target.textContent;
+        const nextIndex = (shifts.indexOf(current) + 1) % shifts.length;
+        event.target.textContent = shifts[nextIndex];
+        
+        // Update background color
+        const bgColor = shifts[nextIndex] === 'OFF' ? 'var(--danger, #e74c3c)' : 
+                        shifts[nextIndex] === 'Ca sáng' ? 'var(--info, #3498db)' :
+                        shifts[nextIndex] === 'Ca chiều' ? 'var(--warning, #f39c12)' :
+                        'var(--secondary, #95a5a6)';
+        event.target.parentElement.style.background = bgColor + '20';
+        
+        showNotification('Đã cập nhật ca làm việc', 'success');
     }
 };

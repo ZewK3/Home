@@ -35,7 +35,7 @@ const ALLOWED_ORIGIN = "*";
 
 async function getVerifiedPendingRegistration(db, employeeId) {
   return await db.prepare(`
-    SELECT employeeId, email, password, fullName, phone, storeId, departmentId, positionId
+    SELECT employeeId, email, password, fullName, phone, storeId, companyId, positionId
     FROM pending_registrations 
     WHERE employeeId = ? AND status = 'verified'
   `).bind(employeeId).first();
@@ -49,7 +49,7 @@ async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) 
     
     await db.prepare(`
       INSERT INTO employees 
-      (employeeId, fullName, email, password, phone, storeId, departmentId, positionId, approval_status, is_active, hire_date, created_at)
+      (employeeId, fullName, email, password, phone, storeId, companyId, positionId, approval_status, is_active, hire_date, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved', 1, ?, ?)
     `).bind(
       pendingReg.employeeId,
@@ -58,7 +58,7 @@ async function createEmployeeFromPendingRegistration(db, pendingReg, timestamp) 
       pendingReg.password, // Use the already hashed password from pending_registrations
       pendingReg.phone,
       pendingReg.storeId,
-      pendingReg.departmentId || null,
+      pendingReg.companyId || null,
       pendingReg.positionId || null,
       timestamp, // hire_date
       timestamp  // created_at
@@ -506,11 +506,11 @@ async function authController_login(body, db, origin) {
     const user = await db
       .prepare(`
         SELECT e.employeeId, e.password, e.fullName, e.email, e.storeId, 
-               e.is_active, e.departmentId, e.positionId,
+               e.is_active, e.companyId, e.positionId,
                d.departmentName, d.departmentCode,
                p.positionName, p.positionCode, p.positionLevel
         FROM employees e
-        LEFT JOIN departments d ON e.departmentId = d.departmentId
+        LEFT JOIN departments d ON e.companyId = d.companyId
         LEFT JOIN positions p ON e.positionId = p.positionId
         WHERE e.employeeId = ? AND e.is_active = 1
       `)
@@ -552,7 +552,7 @@ async function authController_login(body, db, origin) {
         fullName: user.fullName,
         email: user.email,
         storeId: user.storeId,
-        departmentId: user.departmentId,
+        companyId: user.companyId,
         positionId: user.positionId,
         departmentName: user.departmentName,
         departmentCode: user.departmentCode,
@@ -2248,7 +2248,7 @@ async function notificationController_markAllRead(body, db, origin, authenticate
 async function departmentController_getAll(url, params, db, origin) {
   try {
     const departments = await db.prepare(`
-      SELECT departmentId, departmentName, departmentCode, description,
+      SELECT companyId, departmentName, departmentCode, description,
              workHoursPerDay, workDaysPerMonth, requiresShiftAssignment, createdAt
       FROM departments
       ORDER BY departmentCode
@@ -2271,14 +2271,14 @@ async function departmentController_getAll(url, params, db, origin) {
 // Department Controller - Get by ID
 async function departmentController_getById(url, params, db, origin) {
   try {
-    const { departmentId } = params;
+    const { companyId } = params;
     
     const department = await db.prepare(`
-      SELECT departmentId, departmentName, departmentCode, description,
+      SELECT companyId, departmentName, departmentCode, description,
              workHoursPerDay, workDaysPerMonth, requiresShiftAssignment, createdAt
       FROM departments
-      WHERE departmentId = ?
-    `).bind(departmentId).first();
+      WHERE companyId = ?
+    `).bind(companyId).first();
 
     if (!department) {
       return jsonResponse({ 
@@ -2289,8 +2289,8 @@ async function departmentController_getById(url, params, db, origin) {
 
     // Get employee count
     const employeeCount = await db.prepare(`
-      SELECT COUNT(*) as count FROM employees WHERE departmentId = ?
-    `).bind(departmentId).first();
+      SELECT COUNT(*) as count FROM employees WHERE companyId = ?
+    `).bind(companyId).first();
 
     department.employeeCount = employeeCount?.count || 0;
 
@@ -2316,25 +2316,25 @@ async function departmentController_getById(url, params, db, origin) {
 async function positionController_getAll(url, params, db, origin) {
   try {
     const urlParams = new URLSearchParams(url.search);
-    const departmentId = urlParams.get("departmentId");
+    const companyId = urlParams.get("companyId");
     
     let query = `
-      SELECT p.positionId, p.departmentId, p.positionName, p.positionCode,
+      SELECT p.positionId, p.companyId, p.positionName, p.positionCode,
              p.positionLevel, p.baseSalaryRate, p.salaryType, p.description,
              p.permissions, p.isActive, p.createdAt,
              d.departmentName, d.departmentCode
       FROM positions p
-      LEFT JOIN departments d ON p.departmentId = d.departmentId
+      LEFT JOIN departments d ON p.companyId = d.companyId
       WHERE p.isActive = 1
     `;
     
     const params_bind = [];
-    if (departmentId) {
-      query += ` AND p.departmentId = ?`;
-      params_bind.push(departmentId);
+    if (companyId) {
+      query += ` AND p.companyId = ?`;
+      params_bind.push(companyId);
     }
     
-    query += ` ORDER BY p.departmentId, p.positionLevel, p.positionCode`;
+    query += ` ORDER BY p.companyId, p.positionLevel, p.positionCode`;
     
     const stmt = db.prepare(query);
     const positions = await (params_bind.length > 0 ? stmt.bind(...params_bind) : stmt).all();
@@ -2359,12 +2359,12 @@ async function positionController_getById(url, params, db, origin) {
     const { positionId } = params;
     
     const position = await db.prepare(`
-      SELECT p.positionId, p.departmentId, p.positionName, p.positionCode,
+      SELECT p.positionId, p.companyId, p.positionName, p.positionCode,
              p.positionLevel, p.baseSalaryRate, p.salaryType, p.description,
              p.permissions, p.isActive, p.createdAt,
              d.departmentName, d.departmentCode
       FROM positions p
-      LEFT JOIN departments d ON p.departmentId = d.departmentId
+      LEFT JOIN departments d ON p.companyId = d.companyId
       WHERE p.positionId = ?
     `).bind(positionId).first();
 
@@ -2433,7 +2433,7 @@ async function salaryController_getRecords(url, params, db, origin) {
     
     const query = `
       SELECT s.salaryId, s.employeeId, s.month, s.year,
-             s.departmentId, s.positionId, s.baseSalary, s.workDays, s.standardDays,
+             s.companyId, s.positionId, s.baseSalary, s.workDays, s.standardDays,
              s.workHours, s.overtimeHours, s.overtimePay, s.bonus, s.deduction,
              s.totalSalary, s.status, s.calculatedAt, s.approvedBy, s.approvedAt,
              s.paidAt, s.notes,
@@ -2442,7 +2442,7 @@ async function salaryController_getRecords(url, params, db, origin) {
              p.positionName
       FROM salary_records s
       LEFT JOIN employees e ON s.employeeId = e.employeeId
-      LEFT JOIN departments d ON s.departmentId = d.departmentId
+      LEFT JOIN departments d ON s.companyId = d.companyId
       LEFT JOIN positions p ON s.positionId = p.positionId
       ${whereClause}
       ORDER BY s.year DESC, s.month DESC, s.employeeId
@@ -2479,11 +2479,11 @@ async function salaryController_calculate(body, db, origin) {
 
     // Get employee info with position and department
     const employee = await db.prepare(`
-      SELECT e.employeeId, e.fullName, e.departmentId, e.positionId,
+      SELECT e.employeeId, e.fullName, e.companyId, e.positionId,
              d.workDaysPerMonth, d.workHoursPerDay, d.requiresShiftAssignment,
              p.baseSalaryRate, p.salaryType
       FROM employees e
-      LEFT JOIN departments d ON e.departmentId = d.departmentId
+      LEFT JOIN departments d ON e.companyId = d.companyId
       LEFT JOIN positions p ON e.positionId = p.positionId
       WHERE e.employeeId = ?
     `).bind(employeeId).first();
@@ -2550,7 +2550,7 @@ async function salaryController_calculate(body, db, origin) {
         UPDATE salary_records
         SET baseSalary = ?, workDays = ?, standardDays = ?,
             workHours = ?, overtimeHours = ?, overtimePay = ?,
-            totalSalary = ?, departmentId = ?, positionId = ?,
+            totalSalary = ?, companyId = ?, positionId = ?,
             calculatedAt = datetime('now')
         WHERE salaryId = ?
       `).bind(
@@ -2561,7 +2561,7 @@ async function salaryController_calculate(body, db, origin) {
         timesheet.overtimeHours,
         overtimePay,
         totalSalary,
-        employee.departmentId,
+        employee.companyId,
         employee.positionId,
         existing.salaryId
       ).run();
@@ -2582,7 +2582,7 @@ async function salaryController_calculate(body, db, origin) {
       // Insert new record
       const result = await db.prepare(`
         INSERT INTO salary_records
-        (employeeId, month, year, departmentId, positionId,
+        (employeeId, month, year, companyId, positionId,
          baseSalary, workDays, standardDays, workHours, overtimeHours,
          overtimePay, totalSalary, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
@@ -2590,7 +2590,7 @@ async function salaryController_calculate(body, db, origin) {
         employeeId,
         month,
         year,
-        employee.departmentId,
+        employee.companyId,
         employee.positionId,
         baseSalary,
         timesheet.workDays,
@@ -2766,11 +2766,11 @@ async function employeeController_getPersonalStats(url, db, origin, authenticate
     // Get basic employee info
     const employeeStmt = await db.prepare(`
       SELECT e.employeeId, e.fullName, e.email, e.storeId, e.is_active, e.phone,
-             e.departmentId, e.positionId,
+             e.companyId, e.positionId,
              d.departmentName, d.departmentCode,
              p.positionName, p.positionCode, p.positionLevel
       FROM employees e
-      LEFT JOIN departments d ON e.departmentId = d.departmentId
+      LEFT JOIN departments d ON e.companyId = d.companyId
       LEFT JOIN positions p ON e.positionId = p.positionId
       WHERE e.employeeId = ?
     `);
@@ -2957,11 +2957,11 @@ async function employeeController_getAll(url, params, db, origin, userId) {
       SELECT 
         e.employeeId, e.fullName, e.email, e.phone, e.storeId,
         e.is_active, e.created_at, e.last_login_at,
-        e.departmentId, e.positionId,
+        e.companyId, e.positionId,
         d.departmentName, d.departmentCode,
         p.positionName, p.positionCode, p.positionLevel
       FROM employees e
-      LEFT JOIN departments d ON e.departmentId = d.departmentId
+      LEFT JOIN departments d ON e.companyId = d.companyId
       LEFT JOIN positions p ON e.positionId = p.positionId
       ${whereClause}
       ORDER BY e.fullName ASC
@@ -3208,7 +3208,7 @@ function initializeRouter() {
   // DEPARTMENT ROUTES
   // =====================================================
   router.addRoute('GET', '/api/departments', departmentController_getAll, true);
-  router.addRoute('GET', '/api/departments/:departmentId', departmentController_getById, true);
+  router.addRoute('GET', '/api/departments/:companyId', departmentController_getById, true);
   
   // =====================================================
   // POSITION ROUTES
