@@ -174,28 +174,6 @@ CREATE TABLE employee_requests (
 -- =====================================================
 
 -- Pending registrations table - With company support
-CREATE TABLE pending_registrations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employeeId TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    fullName TEXT NOT NULL,
-    phone TEXT,
-    storeId TEXT,
-    companyId TEXT,                       -- FK to companies
-    positionId TEXT,
-    verification_code TEXT,
-    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'verified', 'approved', 'rejected')),
-    created_at TEXT DEFAULT (datetime('now')),
-    verified_at TEXT,
-    approved_at TEXT,
-    approved_by TEXT,
-    FOREIGN KEY (storeId) REFERENCES stores(storeId),
-    FOREIGN KEY (companyId) REFERENCES companies(companyId),
-    FOREIGN KEY (positionId) REFERENCES positions(positionId),
-    FOREIGN KEY (approved_by) REFERENCES employees(employeeId)
-);
-
 -- User change history
 CREATE TABLE user_change_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -312,12 +290,6 @@ CREATE INDEX idx_notifications_employee_read ON notifications(employeeId, isRead
 CREATE INDEX idx_notifications_created ON notifications(createdAt DESC);
 CREATE INDEX idx_notifications_type ON notifications(type);
 CREATE INDEX idx_notifications_companyId ON notifications(companyId);
-
--- Pending registrations indexes
-CREATE INDEX idx_pending_reg_employeeId ON pending_registrations(employeeId);
-CREATE INDEX idx_pending_reg_email ON pending_registrations(email);
-CREATE INDEX idx_pending_reg_status ON pending_registrations(status);
-CREATE INDEX idx_pending_reg_companyId ON pending_registrations(companyId);
 
 -- User change history indexes
 CREATE INDEX idx_user_change_employeeId ON user_change_history(employeeId);
