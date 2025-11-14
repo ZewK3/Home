@@ -25,8 +25,6 @@ CREATE TABLE companies (
     companyId TEXT PRIMARY KEY,          -- Example: COMP001, COMP002
     companyName TEXT NOT NULL,            -- Example: MayCha Tea Company
     description TEXT,
-    workHoursPerDay INTEGER DEFAULT 8,    -- Default work hours per day
-    workDaysPerMonth INTEGER DEFAULT 26,  -- Default work days per month
     createdAt TEXT DEFAULT (datetime('now'))
 );
 
@@ -119,7 +117,7 @@ CREATE TABLE timesheets (
 
 -- Shifts table - COMPLETELY RESTRUCTURED
 CREATE TABLE shifts (
-    shiftId INTEGER PRIMARY KEY AUTOINCREMENT,
+    shiftId TEXT PRIMARY KEY,             -- e.g., 'S4_1', 'S8_1', 'S12_1'
     shiftName TEXT NOT NULL,              -- e.g., 'Ca 08:00-12:00'
     startTime INTEGER NOT NULL,           -- e.g., 8 (for 08:00)
     endTime INTEGER NOT NULL,             -- e.g., 12 (for 12:00)
@@ -134,7 +132,7 @@ CREATE TABLE shift_assignments (
     assignmentId INTEGER PRIMARY KEY AUTOINCREMENT,
     employeeId TEXT NOT NULL,
     companyId TEXT,                       -- FK to companies
-    shiftId INTEGER NOT NULL,
+    shiftId TEXT NOT NULL,
     date TEXT NOT NULL,
     assignedBy TEXT,
     createdAt TEXT DEFAULT (datetime('now')),
@@ -364,9 +362,9 @@ CREATE INDEX idx_employee_requests_list_covering ON employee_requests(status, em
 -- INITIAL DATA - COMPANIES
 -- =====================================================
 
-INSERT INTO companies (companyId, companyName, description, workHoursPerDay, workDaysPerMonth) VALUES
-('COMP001', 'MayCha Tea Company', 'Công ty trà sữa MayCha', 8, 26),
-('COMP002', 'Highlands Coffee Company', 'Công ty cà phê Highlands', 8, 26);
+INSERT INTO companies (companyId, companyName, description) VALUES
+('COMP001', 'MayCha Tea Company', 'Công ty trà sữa MayCha'),
+('COMP002', 'Highlands Coffee Company', 'Công ty cà phê Highlands');
 
 -- =====================================================
 -- INITIAL DATA - STORES
@@ -402,38 +400,104 @@ INSERT INTO positions (positionId, companyId, positionName, baseSalaryRate, sala
 -- INITIAL DATA - SHIFTS
 -- =====================================================
 
--- 4-hour shifts
-INSERT INTO shifts (shiftName, startTime, endTime, totalTime, companyId) VALUES 
-('Ca 08:00-12:00', 8, 12, 4, NULL),
-('Ca 09:00-13:00', 9, 13, 4, NULL),
-('Ca 10:00-14:00', 10, 14, 4, NULL),
-('Ca 11:00-15:00', 11, 15, 4, NULL),
-('Ca 12:00-16:00', 12, 16, 4, NULL),
-('Ca 13:00-17:00', 13, 17, 4, NULL),
-('Ca 14:00-18:00', 14, 18, 4, NULL),
-('Ca 15:00-19:00', 15, 19, 4, NULL),
-('Ca 16:00-20:00', 16, 20, 4, NULL),
-('Ca 17:00-21:00', 17, 21, 4, NULL),
-('Ca 18:00-22:00', 18, 22, 4, NULL),
-('Ca 19:00-23:00', 19, 23, 4, NULL);
+-- 4-hour shifts (12 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S4_1', 'Ca 08:00-12:00', 8, 12, 4, NULL),
+('S4_2', 'Ca 09:00-13:00', 9, 13, 4, NULL),
+('S4_3', 'Ca 10:00-14:00', 10, 14, 4, NULL),
+('S4_4', 'Ca 11:00-15:00', 11, 15, 4, NULL),
+('S4_5', 'Ca 12:00-16:00', 12, 16, 4, NULL),
+('S4_6', 'Ca 13:00-17:00', 13, 17, 4, NULL),
+('S4_7', 'Ca 14:00-18:00', 14, 18, 4, NULL),
+('S4_8', 'Ca 15:00-19:00', 15, 19, 4, NULL),
+('S4_9', 'Ca 16:00-20:00', 16, 20, 4, NULL),
+('S4_10', 'Ca 17:00-21:00', 17, 21, 4, NULL),
+('S4_11', 'Ca 18:00-22:00', 18, 22, 4, NULL),
+('S4_12', 'Ca 19:00-23:00', 19, 23, 4, NULL);
 
--- 8-hour shifts
-INSERT INTO shifts (shiftName, startTime, endTime, totalTime, companyId) VALUES 
-('Ca 08:00-16:00', 8, 16, 8, NULL),
-('Ca 09:00-17:00', 9, 17, 8, NULL),
-('Ca 10:00-18:00', 10, 18, 8, NULL),
-('Ca 11:00-19:00', 11, 19, 8, NULL),
-('Ca 12:00-20:00', 12, 20, 8, NULL),
-('Ca 13:00-21:00', 13, 21, 8, NULL),
-('Ca 14:00-22:00', 14, 22, 8, NULL),
-('Ca 15:00-23:00', 15, 23, 8, NULL);
+-- 5-hour shifts (11 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S5_1', 'Ca 08:00-13:00', 8, 13, 5, NULL),
+('S5_2', 'Ca 09:00-14:00', 9, 14, 5, NULL),
+('S5_3', 'Ca 10:00-15:00', 10, 15, 5, NULL),
+('S5_4', 'Ca 11:00-16:00', 11, 16, 5, NULL),
+('S5_5', 'Ca 12:00-17:00', 12, 17, 5, NULL),
+('S5_6', 'Ca 13:00-18:00', 13, 18, 5, NULL),
+('S5_7', 'Ca 14:00-19:00', 14, 19, 5, NULL),
+('S5_8', 'Ca 15:00-20:00', 15, 20, 5, NULL),
+('S5_9', 'Ca 16:00-21:00', 16, 21, 5, NULL),
+('S5_10', 'Ca 17:00-22:00', 17, 22, 5, NULL),
+('S5_11', 'Ca 18:00-23:00', 18, 23, 5, NULL);
 
--- 12-hour shifts
-INSERT INTO shifts (shiftName, startTime, endTime, totalTime, companyId) VALUES 
-('Ca 08:00-20:00', 8, 20, 12, NULL),
-('Ca 09:00-21:00', 9, 21, 12, NULL),
-('Ca 10:00-22:00', 10, 22, 12, NULL),
-('Ca 11:00-23:00', 11, 23, 12, NULL);
+-- 6-hour shifts (10 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S6_1', 'Ca 08:00-14:00', 8, 14, 6, NULL),
+('S6_2', 'Ca 09:00-15:00', 9, 15, 6, NULL),
+('S6_3', 'Ca 10:00-16:00', 10, 16, 6, NULL),
+('S6_4', 'Ca 11:00-17:00', 11, 17, 6, NULL),
+('S6_5', 'Ca 12:00-18:00', 12, 18, 6, NULL),
+('S6_6', 'Ca 13:00-19:00', 13, 19, 6, NULL),
+('S6_7', 'Ca 14:00-20:00', 14, 20, 6, NULL),
+('S6_8', 'Ca 15:00-21:00', 15, 21, 6, NULL),
+('S6_9', 'Ca 16:00-22:00', 16, 22, 6, NULL),
+('S6_10', 'Ca 17:00-23:00', 17, 23, 6, NULL);
+
+-- 7-hour shifts (9 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S7_1', 'Ca 08:00-15:00', 8, 15, 7, NULL),
+('S7_2', 'Ca 09:00-16:00', 9, 16, 7, NULL),
+('S7_3', 'Ca 10:00-17:00', 10, 17, 7, NULL),
+('S7_4', 'Ca 11:00-18:00', 11, 18, 7, NULL),
+('S7_5', 'Ca 12:00-19:00', 12, 19, 7, NULL),
+('S7_6', 'Ca 13:00-20:00', 13, 20, 7, NULL),
+('S7_7', 'Ca 14:00-21:00', 14, 21, 7, NULL),
+('S7_8', 'Ca 15:00-22:00', 15, 22, 7, NULL),
+('S7_9', 'Ca 16:00-23:00', 16, 23, 7, NULL);
+
+-- 8-hour shifts (8 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S8_1', 'Ca 08:00-16:00', 8, 16, 8, NULL),
+('S8_2', 'Ca 09:00-17:00', 9, 17, 8, NULL),
+('S8_3', 'Ca 10:00-18:00', 10, 18, 8, NULL),
+('S8_4', 'Ca 11:00-19:00', 11, 19, 8, NULL),
+('S8_5', 'Ca 12:00-20:00', 12, 20, 8, NULL),
+('S8_6', 'Ca 13:00-21:00', 13, 21, 8, NULL),
+('S8_7', 'Ca 14:00-22:00', 14, 22, 8, NULL),
+('S8_8', 'Ca 15:00-23:00', 15, 23, 8, NULL);
+
+-- 9-hour shifts (7 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S9_1', 'Ca 08:00-17:00', 8, 17, 9, NULL),
+('S9_2', 'Ca 09:00-18:00', 9, 18, 9, NULL),
+('S9_3', 'Ca 10:00-19:00', 10, 19, 9, NULL),
+('S9_4', 'Ca 11:00-20:00', 11, 20, 9, NULL),
+('S9_5', 'Ca 12:00-21:00', 12, 21, 9, NULL),
+('S9_6', 'Ca 13:00-22:00', 13, 22, 9, NULL),
+('S9_7', 'Ca 14:00-23:00', 14, 23, 9, NULL);
+
+-- 10-hour shifts (6 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S10_1', 'Ca 08:00-18:00', 8, 18, 10, NULL),
+('S10_2', 'Ca 09:00-19:00', 9, 19, 10, NULL),
+('S10_3', 'Ca 10:00-20:00', 10, 20, 10, NULL),
+('S10_4', 'Ca 11:00-21:00', 11, 21, 10, NULL),
+('S10_5', 'Ca 12:00-22:00', 12, 22, 10, NULL),
+('S10_6', 'Ca 13:00-23:00', 13, 23, 10, NULL);
+
+-- 11-hour shifts (5 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S11_1', 'Ca 08:00-19:00', 8, 19, 11, NULL),
+('S11_2', 'Ca 09:00-20:00', 9, 20, 11, NULL),
+('S11_3', 'Ca 10:00-21:00', 10, 21, 11, NULL),
+('S11_4', 'Ca 11:00-22:00', 11, 22, 11, NULL),
+('S11_5', 'Ca 12:00-23:00', 12, 23, 11, NULL);
+
+-- 12-hour shifts (4 shifts)
+INSERT INTO shifts (shiftId, shiftName, startTime, endTime, totalTime, companyId) VALUES 
+('S12_1', 'Ca 08:00-20:00', 8, 20, 12, NULL),
+('S12_2', 'Ca 09:00-21:00', 9, 21, 12, NULL),
+('S12_3', 'Ca 10:00-22:00', 10, 22, 12, NULL),
+('S12_4', 'Ca 11:00-23:00', 11, 23, 12, NULL);
 
 -- =====================================================
 -- EMPLOYEE STATS CACHE
